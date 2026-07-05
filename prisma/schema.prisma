@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model SiteContentRecord {
+  id        String   @id @default("main")
+  content   Json
+  updatedAt DateTime @updatedAt
+}
+
+model MediaFile {
+  id        String   @id @default(cuid())
+  filename  String
+  url       String
+  folder    String   @default("uploads")
+  mimeType  String
+  size      Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model ContentBackup {
+  id        String   @id @default(cuid())
+  label     String?
+  content   Json
+  createdAt DateTime @default(now())
+}
+
+model Room {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String
+  price       Int
+  image       String?
+  bookings    Booking[]
+}
+
+model Booking {
+  id            Int      @id @default(autoincrement())
+  name          String
+  email         String
+  checkIn       DateTime
+  checkOut      DateTime
+  guests        Int
+  status        String   @default("pending")
+  paymentStatus String   @default("unpaid")
+  createdAt     DateTime @default(now())
+  roomId        Int
+  room          Room     @relation(fields: [roomId], references: [id])
+}

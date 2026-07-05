@@ -1,0 +1,24 @@
+{
+  "terminal.integrated.env.windows": {
+    "Path": "C:\\Program Files\\nodejs;${env:Path}"
+  },
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell",
+      "env": {
+        "Path": "C:\\Program Files\\nodejs;${env:Path}"
+      }
+    },
+    "Command Prompt": {
+      "path": [
+        "${env:windir}\\System32\\cmd.exe"
+      ],
+      "icon": "terminal-cmd",
+      "env": {
+        "Path": "C:\\Program Files\\nodejs;${env:Path}"
+      }
+    }
+  },
+  "terminal.integrated.defaultProfile.windows": "Command Prompt"
+}

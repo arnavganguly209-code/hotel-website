@@ -1,0 +1,158 @@
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap");
+@import "../styles/variables.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-display: "Cinzel", "Cormorant Garamond", Georgia, serif;
+    --font-body: "Jost", system-ui, -apple-system, sans-serif;
+    --font-accent: "Cormorant Garamond", Georgia, serif;
+    --background: 150 30% 97%;
+    --foreground: 150 20% 8%;
+    --card: 40 33% 98%;
+    --card-foreground: 150 20% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 20% 8%;
+    --primary: 42 45% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 150 20% 95%;
+    --secondary-foreground: 150 20% 12%;
+    --muted: 150 10% 40%;
+    --muted-foreground: 150 10% 40%;
+    --accent: 42 45% 58%;
+    --accent-foreground: 150 20% 8%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 42 45% 58% / 0.15;
+    --input: 42 45% 58% / 0.15;
+    --ring: 42 45% 58% / 0.4;
+    --radius: 0.125rem;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-luxury-cream text-luxury-forest antialiased;
+    font-family: var(--font-body);
+    background-image: linear-gradient(
+      180deg,
+      #faf6ee 0%,
+      #fff9f2 35%,
+      #eaf2e8 70%,
+      #f6ecd7 100%
+    );
+    background-attachment: fixed;
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  ::selection {
+    background-color: rgba(200, 161, 69, 0.25);
+    color: #0f2420;
+  }
+}
+
+@layer components {
+  .nav-link::after {
+    content: "";
+    @apply absolute -bottom-1 left-0 h-px w-0 bg-luxury-gold transition-all duration-500;
+  }
+
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+
+  .luxury-divider {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-luxury-gold/40 to-transparent;
+  }
+
+  .glass-panel {
+    @apply border border-white/60 backdrop-blur-[25px];
+    background: rgba(255, 249, 242, 0.72);
+    box-shadow: 0 35px 90px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  }
+
+  .glass-panel-dark {
+    @apply border border-luxury-gold/20 bg-luxury-forest/40 backdrop-blur-[25px];
+    box-shadow: 0 20px 70px rgba(24, 56, 47, 0.12);
+  }
+
+  .luxury-glass-card {
+    @apply overflow-hidden border border-white/55 backdrop-blur-[25px] transition-all duration-700 hover:-translate-y-1;
+    background: rgba(255, 249, 242, 0.68);
+    box-shadow: 0 35px 90px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  }
+
+  .luxury-glass-card:hover {
+    box-shadow: 0 35px 90px rgba(0, 0, 0, 0.14);
+  }
+
+  .section-glow::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    height: 12rem;
+    width: min(100%, 720px);
+    transform: translateX(-50%);
+    pointer-events: none;
+    opacity: 0.6;
+    background: radial-gradient(ellipse at center, rgba(200, 161, 69, 0.12) 0%, transparent 70%);
+  }
+
+  .gold-border-glow {
+    @apply border border-luxury-gold/30;
+    box-shadow: 0 12px 40px rgba(200, 161, 69, 0.22);
+  }
+
+  .section-padding {
+    @apply px-6 py-24 md:px-8 md:py-32 lg:py-40;
+  }
+
+  .luxury-card {
+    @apply overflow-hidden border border-white/55 backdrop-blur-[25px] transition-all duration-700 hover:-translate-y-1;
+    background: rgba(255, 249, 242, 0.68);
+    box-shadow: 0 35px 90px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  }
+
+  .text-gradient-gold {
+    @apply bg-gradient-to-r from-luxury-gold via-luxury-gold-light to-luxury-gold bg-clip-text text-transparent;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+
+.animate-accordion-down {
+  animation: accordion-down 0.3s ease-out;
+}
+
+.animate-accordion-up {
+  animation: accordion-up 0.3s ease-out;
+}

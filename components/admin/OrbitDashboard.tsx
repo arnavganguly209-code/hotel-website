@@ -1,0 +1,1063 @@
+"use client";
+
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import {
+  LayoutDashboard,
+  Home,
+  Building2,
+  Utensils,
+  MapPin,
+  Globe,
+  Bed,
+  Star,
+  Image,
+  Search,
+  Settings,
+  LogOut,
+  Save,
+  ExternalLink,
+  Loader2,
+  Sparkles,
+  Waves,
+  Grid3X3,
+  PanelTop,
+  MessageSquare,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
+import { FileUpload } from "@/components/admin/FileUpload";
+import { AdminMediaField } from "@/components/admin/AdminMediaField";
+import { HeroBuilder } from "@/components/admin/HeroBuilder";
+import type { SiteContent } from "@/lib/cms/types";
+import { cn } from "@/lib/utils";
+
+const SECTIONS = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "theme", label: "Theme Settings", icon: Sparkles },
+  { id: "hotel", label: "Hotel Info", icon: Building2 },
+  { id: "header", label: "Header", icon: PanelTop },
+  { id: "hero", label: "Hero", icon: Home },
+  { id: "homepage", label: "Homepage Sections", icon: Grid3X3 },
+  { id: "overview", label: "Welcome", icon: Home },
+  { id: "experiences", label: "Home Experiences", icon: Sparkles },
+  { id: "culture", label: "Culture Section", icon: Globe },
+  { id: "facilities", label: "Facilities", icon: Grid3X3 },
+  { id: "rooms", label: "Rooms", icon: Bed },
+  { id: "dining", label: "Dining Page", icon: Utensils },
+  { id: "spa", label: "Spa Page", icon: Waves },
+  { id: "culturalExperience", label: "Cultural Page", icon: Globe },
+  { id: "about", label: "About Page", icon: Globe },
+  { id: "gallery", label: "Gallery", icon: Image },
+  { id: "reviews", label: "Testimonials", icon: Star },
+  { id: "contact", label: "Contact", icon: MessageSquare },
+  { id: "footer", label: "Footer", icon: PanelTop },
+  { id: "seo", label: "SEO", icon: Search },
+  { id: "media", label: "Media Library", icon: Image },
+  { id: "backups", label: "Backups", icon: Save },
+  { id: "settings", label: "Settings", icon: Settings },
+] as const;
+
+type SectionId = (typeof SECTIONS)[number]["id"];
+
+interface OrbitDashboardProps {
+  initialContent: SiteContent;
+}
+
+export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
+  const router = useRouter();
+  const [content, setContent] = useState<SiteContent>(initialContent);
+  const [activeSection, setActiveSection] = useState<SectionId>("hotel");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(true);
+  const [autoSaveError, setAutoSaveError] = useState(false);
+  const isFirstRender = useRef(true);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const update = <K extends keyof SiteContent>(
+    key: K,
+    value: SiteContent[K]
+  ) => {
+    setContent((prev) => ({ ...prev, [key]: value }));
+    setSaved(false);
+    setAutoSaveError(false);
+  };
+
+  const persistContent = useCallback(async (payload: SiteContent) => {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/content", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setAutoSaveError(false);
+      } else {
+        setAutoSaveError(true);
+      }
+    } catch {
+      setAutoSaveError(true);
+    } finally {
+      setSaving(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      void persistContent(content);
+    }, 1800);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, [content, persistContent]);
+
+  const handleSave = async () => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    await persistContent(content);
+  };
+
+  const handleLogout = async () => {
+    await fetch("/api/orbit/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "logout" }),
+    });
+    router.push("/orbit");
+  };
+
+  return (
+    <div className="flex min-h-screen">
+      <aside className="fixed left-0 top-0 z-40 flex h-full w-64 flex-col border-r border-luxury-gold/15 bg-luxury-green">
+        <div className="border-b border-luxury-gold/15 p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center border border-luxury-gold/30 bg-luxury-gold/10">
+              <Sparkles className="h-5 w-5 text-luxury-gold" />
+            </div>
+            <div>
+              <p className="font-display text-sm font-medium text-white">Orbit Admin</p>
+              <p className="text-[10px] uppercase tracking-wider text-luxury-gold/50">CMS Dashboard</p>
+            </div>
+          </div>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto p-4">
+          <ul className="space-y-1">
+            {SECTIONS.map((section) => (
+              <li key={section.id}>
+                <button
+                  onClick={() => setActiveSection(section.id)}
+                  className={cn(
+                    "flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-all",
+                    activeSection === section.id
+                      ? "bg-luxury-gold/15 text-luxury-gold-light"
+                      : "text-white/50 hover:bg-white/5 hover:text-white/80"
+                  )}
+                >
+                  <section.icon className="h-4 w-4" />
+                  {section.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="border-t border-luxury-gold/15 p-4 space-y-2">
+          <Button variant="outline" size="sm" className="w-full border-luxury-gold/30 text-luxury-gold" asChild>
+            <Link href="/" target="_blank">
+              <ExternalLink className="h-4 w-4" />
+              View Website
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full text-white/50 hover:text-white"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
+        </div>
+      </aside>
+
+      <main className="ml-64 flex-1">
+        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-luxury-gold/15 bg-[#0a0f0c]/90 px-8 py-4 backdrop-blur-xl">
+          <div>
+            <h1 className="font-display text-xl font-medium text-white">
+              {SECTIONS.find((s) => s.id === activeSection)?.label}
+            </h1>
+            <p className="text-xs text-white/40">Edit website content</p>
+          </div>
+          <div className="flex items-center gap-3">
+            {saving && <span className="text-xs text-luxury-gold">Saving…</span>}
+            {!saving && saved && (
+              <span className="text-xs text-emerald-400">All changes saved</span>
+            )}
+            {!saving && autoSaveError && (
+              <span className="text-xs text-red-400">Save failed — retry</span>
+            )}
+            <Button variant="gold" onClick={handleSave} disabled={saving}>
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
+              Save Changes
+            </Button>
+          </div>
+        </header>
+
+        <motion.div
+          key={activeSection}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-8"
+        >
+          <div className="mx-auto max-w-3xl space-y-6">
+            {activeSection === "hotel" && (
+              <>
+                <AdminInput label="Hotel Name" value={content.hotel.name} onChange={(e) => update("hotel", { ...content.hotel, name: e.target.value })} />
+                <AdminInput label="Tagline" value={content.hotel.tagline} onChange={(e) => update("hotel", { ...content.hotel, tagline: e.target.value })} />
+                <AdminTextarea label="Description" rows={3} value={content.hotel.description} onChange={(e) => update("hotel", { ...content.hotel, description: e.target.value })} />
+                <AdminInput label="Location" value={content.hotel.location} onChange={(e) => update("hotel", { ...content.hotel, location: e.target.value })} />
+                <AdminInput label="Address" value={content.hotel.address} onChange={(e) => update("hotel", { ...content.hotel, address: e.target.value })} />
+                <AdminInput label="Phone" value={content.hotel.phone} onChange={(e) => update("hotel", { ...content.hotel, phone: e.target.value })} />
+                <AdminInput label="Email" value={content.hotel.email} onChange={(e) => update("hotel", { ...content.hotel, email: e.target.value })} />
+                <AdminInput label="Facebook URL" value={content.hotel.social.facebook} onChange={(e) => update("hotel", { ...content.hotel, social: { ...content.hotel.social, facebook: e.target.value } })} />
+                <AdminInput label="Instagram URL" value={content.hotel.social.instagram} onChange={(e) => update("hotel", { ...content.hotel, social: { ...content.hotel.social, instagram: e.target.value } })} />
+                <AdminInput label="Twitter URL" value={content.hotel.social.twitter} onChange={(e) => update("hotel", { ...content.hotel, social: { ...content.hotel.social, twitter: e.target.value } })} />
+                <AdminInput label="TripAdvisor URL" value={content.hotel.social.tripadvisor} onChange={(e) => update("hotel", { ...content.hotel, social: { ...content.hotel.social, tripadvisor: e.target.value } })} />
+              </>
+            )}
+
+            {activeSection === "dashboard" && (
+              <div className="space-y-4 rounded border border-luxury-gold/10 p-6">
+                <p className="text-sm text-white/70">Welcome to Orbit CMS. Changes auto-save to the database as you edit.</p>
+                <div className="grid grid-cols-2 gap-4 text-sm text-white/50">
+                  <p>Rooms: {content.rooms.length}</p>
+                  <p>Gallery: {content.gallery.length}</p>
+                  <p>Reviews: {content.reviews.length}</p>
+                  <p>Media: {content.mediaLibrary.length}</p>
+                </div>
+              </div>
+            )}
+
+            {activeSection === "theme" && (
+              <>
+                <AdminInput label="Primary Color" value={content.theme.primary} onChange={(e) => update("theme", { ...content.theme, primary: e.target.value })} />
+                <AdminInput label="Secondary Color" value={content.theme.secondary} onChange={(e) => update("theme", { ...content.theme, secondary: e.target.value })} />
+                <AdminInput label="Accent (Gold)" value={content.theme.accent} onChange={(e) => update("theme", { ...content.theme, accent: e.target.value })} />
+                <AdminInput label="Champagne Gold" value={content.theme.champagne} onChange={(e) => update("theme", { ...content.theme, champagne: e.target.value })} />
+                <AdminInput label="Background" value={content.theme.background} onChange={(e) => update("theme", { ...content.theme, background: e.target.value })} />
+                <AdminInput label="Border Radius" value={content.theme.borderRadius} onChange={(e) => update("theme", { ...content.theme, borderRadius: e.target.value })} />
+                <AdminInput label="Animation Speed (slow/normal/fast)" value={content.theme.animationSpeed} onChange={(e) => update("theme", { ...content.theme, animationSpeed: e.target.value as "slow" | "normal" | "fast" })} />
+                <AdminInput label="Header Style (glass/solid/transparent)" value={content.theme.headerStyle} onChange={(e) => update("theme", { ...content.theme, headerStyle: e.target.value as "glass" | "solid" | "transparent" })} />
+                <AdminInput label="Footer Style (cream/gradient/champagne)" value={content.theme.footerStyle} onChange={(e) => update("theme", { ...content.theme, footerStyle: e.target.value as "cream" | "gradient" | "champagne" })} />
+              </>
+            )}
+
+            {activeSection === "header" && (
+              <>
+                <label className="flex items-center gap-3 text-sm text-white/70">
+                  <input type="checkbox" checked={content.header.useLogo} onChange={(e) => update("header", { ...content.header, useLogo: e.target.checked })} className="accent-luxury-gold" />
+                  Use Logo instead of Text
+                </label>
+                <label className="flex items-center gap-3 text-sm text-white/70">
+                  <input type="checkbox" checked={content.header.showText} onChange={(e) => update("header", { ...content.header, showText: e.target.checked })} className="accent-luxury-gold" />
+                  Show Text
+                </label>
+                <label className="flex items-center gap-3 text-sm text-white/70">
+                  <input type="checkbox" checked={content.header.hideText} onChange={(e) => update("header", { ...content.header, hideText: e.target.checked })} className="accent-luxury-gold" />
+                  Hide Header Text
+                </label>
+                <AdminInput label="Header Text" value={content.header.headerText} onChange={(e) => update("header", { ...content.header, headerText: e.target.value })} />
+                <AdminInput label="Logo URL" value={content.header.logoSrc} onChange={(e) => update("header", { ...content.header, logoSrc: e.target.value })} />
+                <FileUpload label="Upload Logo" folder="logo" accept="image/*" value={content.header.logoSrc} onChange={(url) => update("header", { ...content.header, logoSrc: url })} />
+                <Button type="button" variant="outline" size="sm" className="border-red-400/30 text-red-400" onClick={() => update("header", { ...content.header, logoSrc: "", useLogo: false })}>Remove Logo</Button>
+                <AdminInput label="Logo Size (px)" type="number" value={content.header.logoSize} onChange={(e) => update("header", { ...content.header, logoSize: Number(e.target.value) })} />
+                <AdminInput label="Header Height (px)" type="number" value={content.header.height} onChange={(e) => update("header", { ...content.header, height: Number(e.target.value) })} />
+                <label className="flex items-center gap-3 text-sm text-white/70">
+                  <input type="checkbox" checked={content.header.sticky} onChange={(e) => update("header", { ...content.header, sticky: e.target.checked })} className="accent-luxury-gold" />
+                  Sticky Header
+                </label>
+                <label className="flex items-center gap-3 text-sm text-white/70">
+                  <input type="checkbox" checked={content.header.transparent} onChange={(e) => update("header", { ...content.header, transparent: e.target.checked })} className="accent-luxury-gold" />
+                  Transparent on Home
+                </label>
+                <AdminInput label="Background Color" value={content.header.backgroundColor} onChange={(e) => update("header", { ...content.header, backgroundColor: e.target.value })} />
+                <AdminInput label="Text Color" value={content.header.textColor} onChange={(e) => update("header", { ...content.header, textColor: e.target.value })} />
+                <AdminInput label="Phone" value={content.header.phone} onChange={(e) => update("header", { ...content.header, phone: e.target.value })} />
+                <AdminInput label="Book Button Text" value={content.header.bookButtonText} onChange={(e) => update("header", { ...content.header, bookButtonText: e.target.value })} />
+              </>
+            )}
+
+            {activeSection === "hero" && (
+              <HeroBuilder
+                hero={content.hero}
+                rooms={content.rooms}
+                onChange={(hero) => update("hero", hero)}
+              />
+            )}
+
+            {activeSection === "homepage" && (
+              <>
+                {(Object.keys(content.homeSections) as Array<keyof SiteContent["homeSections"]>).map((key) => {
+                  const section = content.homeSections[key];
+                  return (
+                    <div key={key} className="space-y-3 border border-luxury-gold/10 p-4">
+                      <p className="font-medium capitalize text-luxury-gold">{key.replace(/([A-Z])/g, " $1")}</p>
+                      <label className="flex items-center gap-3 text-sm text-white/70">
+                        <input type="checkbox" checked={section.enabled} onChange={(e) => update("homeSections", { ...content.homeSections, [key]: { ...section, enabled: e.target.checked } })} className="accent-luxury-gold" />
+                        Enabled
+                      </label>
+                      <AdminInput label="Order" type="number" value={section.order} onChange={(e) => update("homeSections", { ...content.homeSections, [key]: { ...section, order: Number(e.target.value) } })} />
+                      {"title" in section && (
+                        <>
+                          <AdminInput label="Title" value={section.title ?? ""} onChange={(e) => update("homeSections", { ...content.homeSections, [key]: { ...section, title: e.target.value } })} />
+                          <AdminTextarea label="Description" rows={2} value={section.description ?? ""} onChange={(e) => update("homeSections", { ...content.homeSections, [key]: { ...section, description: e.target.value } })} />
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
+            )}
+
+            {activeSection === "overview" && (
+              <>
+                <AdminInput label="Eyebrow" value={content.overview.eyebrow} onChange={(e) => update("overview", { ...content.overview, eyebrow: e.target.value })} />
+                <AdminInput label="Title" value={content.overview.title} onChange={(e) => update("overview", { ...content.overview, title: e.target.value })} />
+                <AdminTextarea label="Content" rows={4} value={content.overview.content} onChange={(e) => update("overview", { ...content.overview, content: e.target.value })} />
+                {content.overview.stats.map((stat, i) => (
+                  <div key={i} className="grid grid-cols-3 gap-4 border border-luxury-gold/10 p-4">
+                    <AdminInput label={`Stat ${i + 1} Value`} type="number" value={stat.value} onChange={(e) => {
+                      const stats = [...content.overview.stats];
+                      stats[i] = { ...stat, value: Number(e.target.value) };
+                      update("overview", { ...content.overview, stats });
+                    }} />
+                    <AdminInput label="Suffix" value={stat.suffix} onChange={(e) => {
+                      const stats = [...content.overview.stats];
+                      stats[i] = { ...stat, suffix: e.target.value };
+                      update("overview", { ...content.overview, stats });
+                    }} />
+                    <AdminInput label="Label" value={stat.label} onChange={(e) => {
+                      const stats = [...content.overview.stats];
+                      stats[i] = { ...stat, label: e.target.value };
+                      update("overview", { ...content.overview, stats });
+                    }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {activeSection === "experiences" && (
+              <>
+                {content.experiences.map((exp, i) => (
+                  <div key={exp.id} className="space-y-4 border border-luxury-gold/10 p-6">
+                    <div className="flex items-center gap-2 text-luxury-gold">
+                      {exp.variant === "spa" ? <Waves className="h-4 w-4" /> : <Utensils className="h-4 w-4" />}
+                      <span className="text-sm font-medium">{exp.title}</span>
+                    </div>
+                    <AdminInput label="Title" value={exp.title} onChange={(e) => {
+                      const experiences = [...content.experiences];
+                      experiences[i] = { ...exp, title: e.target.value };
+                      update("experiences", experiences);
+                    }} />
+                    <AdminTextarea label="Content" rows={3} value={exp.content} onChange={(e) => {
+                      const experiences = [...content.experiences];
+                      experiences[i] = { ...exp, content: e.target.value };
+                      update("experiences", experiences);
+                    }} />
+                    <AdminInput label="Image URL" value={exp.imageSrc} onChange={(e) => {
+                      const experiences = [...content.experiences];
+                      experiences[i] = { ...exp, imageSrc: e.target.value };
+                      update("experiences", experiences);
+                    }} />
+                    <FileUpload label="Upload Image" folder="dining" value={exp.imageSrc} onChange={(url) => {
+                      const experiences = [...content.experiences];
+                      experiences[i] = { ...exp, imageSrc: url };
+                      update("experiences", experiences);
+                    }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {activeSection === "culture" && (
+              <>
+                <AdminInput label="Eyebrow" value={content.culture.eyebrow} onChange={(e) => update("culture", { ...content.culture, eyebrow: e.target.value })} />
+                <AdminInput label="Title" value={content.culture.title} onChange={(e) => update("culture", { ...content.culture, title: e.target.value })} />
+                <AdminTextarea label="Homepage Content" rows={12} value={content.culture.content} onChange={(e) => update("culture", { ...content.culture, content: e.target.value })} />
+                <AdminMediaField
+                  label="Culture Media (Image / Video)"
+                  folder="culture"
+                  value={content.culture.media}
+                  onChange={(media) =>
+                    update("culture", {
+                      ...content.culture,
+                      media,
+                      imageSrc: media.imageSrc || content.culture.imageSrc,
+                    })
+                  }
+                />
+                <AdminInput label="Quote" value={content.culture.quote} onChange={(e) => update("culture", { ...content.culture, quote: e.target.value })} />
+                <AdminInput label="Quote Author" value={content.culture.quoteAuthor} onChange={(e) => update("culture", { ...content.culture, quoteAuthor: e.target.value })} />
+                <AdminInput label="CTA Text" value={content.culture.ctaText} onChange={(e) => update("culture", { ...content.culture, ctaText: e.target.value })} />
+                <AdminInput label="CTA Link" value={content.culture.ctaHref} onChange={(e) => update("culture", { ...content.culture, ctaHref: e.target.value })} />
+                {content.culture.stats.map((stat, i) => (
+                  <div key={stat.label} className="grid grid-cols-3 gap-4 border border-luxury-gold/10 p-4">
+                    <AdminInput label="Value" value={stat.value} onChange={(e) => {
+                      const stats = [...content.culture.stats];
+                      stats[i] = { ...stat, value: e.target.value };
+                      update("culture", { ...content.culture, stats });
+                    }} />
+                    <AdminInput label="Label" value={stat.label} onChange={(e) => {
+                      const stats = [...content.culture.stats];
+                      stats[i] = { ...stat, label: e.target.value };
+                      update("culture", { ...content.culture, stats });
+                    }} />
+                    <AdminInput label="Icon" value={stat.icon} onChange={(e) => {
+                      const stats = [...content.culture.stats];
+                      stats[i] = { ...stat, icon: e.target.value };
+                      update("culture", { ...content.culture, stats });
+                    }} />
+                  </div>
+                ))}
+                {content.culture.highlights.map((item, i) => (
+                  <div key={item.id} className="space-y-3 border border-luxury-gold/10 p-4">
+                    <AdminInput label="Highlight Title" value={item.title} onChange={(e) => {
+                      const highlights = [...content.culture.highlights];
+                      highlights[i] = { ...item, title: e.target.value };
+                      update("culture", { ...content.culture, highlights });
+                    }} />
+                    <AdminTextarea label="Description" rows={2} value={item.description} onChange={(e) => {
+                      const highlights = [...content.culture.highlights];
+                      highlights[i] = { ...item, description: e.target.value };
+                      update("culture", { ...content.culture, highlights });
+                    }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {activeSection === "facilities" && (
+              <>
+                <AdminInput label="Section Eyebrow" value={content.facilitiesSection.eyebrow} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, eyebrow: e.target.value })} />
+                <AdminInput label="Section Title" value={content.facilitiesSection.title} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, title: e.target.value })} />
+                <AdminTextarea label="Section Description" rows={2} value={content.facilitiesSection.description} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, description: e.target.value })} />
+                <AdminTextarea label="Caption (below media)" rows={2} value={content.facilitiesSection.caption} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, caption: e.target.value })} />
+                <AdminMediaField
+                  label="Amenities Media (Image / Video)"
+                  folder="facilities"
+                  value={content.facilitiesSection.media}
+                  onChange={(media) => update("facilitiesSection", { ...content.facilitiesSection, media })}
+                />
+                <p className="text-xs uppercase tracking-widest text-white/40">Amenity Cards</p>
+                {content.facilities.map((facility, i) => (
+                  <div key={facility.id} className="space-y-3 border border-luxury-gold/10 p-4">
+                    <AdminInput label="Name" value={facility.name} onChange={(e) => {
+                      const facilities = [...content.facilities];
+                      facilities[i] = { ...facility, name: e.target.value };
+                      update("facilities", facilities);
+                    }} />
+                    <AdminTextarea label="Description" rows={2} value={facility.description} onChange={(e) => {
+                      const facilities = [...content.facilities];
+                      facilities[i] = { ...facility, description: e.target.value };
+                      update("facilities", facilities);
+                    }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {activeSection === "rooms" && (
+              <>
+                <AdminInput label="Section Eyebrow" value={content.roomsSection.eyebrow} onChange={(e) => update("roomsSection", { ...content.roomsSection, eyebrow: e.target.value })} />
+                <AdminInput label="Section Title" value={content.roomsSection.title} onChange={(e) => update("roomsSection", { ...content.roomsSection, title: e.target.value })} />
+                <AdminInput label="CTA Button Text" value={content.roomsSection.ctaText} onChange={(e) => update("roomsSection", { ...content.roomsSection, ctaText: e.target.value })} />
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-luxury-gold/30 text-luxury-gold"
+                    onClick={() => update("rooms", [...content.rooms, {
+                      id: `room-${Date.now()}`,
+                      name: "New Room",
+                      price: 50,
+                      guests: "2 Guests",
+                      size: "30 m²",
+                      bedType: "Queen Bed",
+                      features: ["Premium Comfort"],
+                      description: "A luxurious room designed for your comfort.",
+                      longDescription: "A luxurious room designed for your comfort with premium amenities and refined service.",
+                      imageSrc: "/media/rooms/placeholder.jpg",
+                      gallery: ["/media/rooms/placeholder.jpg"],
+                      amenities: ["Premium Comfort", "Complimentary Wi-Fi"],
+                      policies: ["Check-in from 2:00 PM · Check-out by 12:00 PM"],
+                    }])}
+                  >
+                    <Plus className="h-4 w-4" /> Add Room
+                  </Button>
+                </div>
+                {content.rooms.map((room, i) => (
+                  <div key={room.id} className="space-y-4 border border-luxury-gold/10 p-6">
+                    <div className="flex items-center justify-between">
+                      <p className="font-display text-lg text-luxury-gold">{room.name}</p>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-400 hover:text-red-300"
+                        onClick={() => update("rooms", content.rooms.filter((_, idx) => idx !== i))}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <AdminInput label="Room Name" value={room.name} onChange={(e) => {
+                      const rooms = [...content.rooms];
+                      rooms[i] = { ...room, name: e.target.value };
+                      update("rooms", rooms);
+                    }} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <AdminInput label="Price ($)" type="number" value={room.price} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, price: Number(e.target.value) };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Guests" value={room.guests} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, guests: e.target.value };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Size" value={room.size} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, size: e.target.value };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Bed Type" value={room.bedType} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, bedType: e.target.value };
+                        update("rooms", rooms);
+                      }} />
+                    </div>
+                    <AdminInput label="Features (comma separated)" value={room.features.join(", ")} onChange={(e) => {
+                      const rooms = [...content.rooms];
+                      rooms[i] = { ...room, features: e.target.value.split(",").map((f) => f.trim()) };
+                      update("rooms", rooms);
+                    }} />
+                    <AdminTextarea label="Description" rows={2} value={room.description} onChange={(e) => {
+                      const rooms = [...content.rooms];
+                      rooms[i] = { ...room, description: e.target.value };
+                      update("rooms", rooms);
+                    }} />
+                    <AdminTextarea label="Long Description (Detail Page)" rows={4} value={room.longDescription} onChange={(e) => {
+                      const rooms = [...content.rooms];
+                      rooms[i] = { ...room, longDescription: e.target.value };
+                      update("rooms", rooms);
+                    }} />
+                    <AdminInput label="Image URL" value={room.imageSrc} onChange={(e) => {
+                      const rooms = [...content.rooms];
+                      rooms[i] = { ...room, imageSrc: e.target.value };
+                      update("rooms", rooms);
+                    }} />
+                    <FileUpload label="Upload Room Image" folder="rooms" value={room.imageSrc} onChange={(url) => {
+                      const rooms = [...content.rooms];
+                      rooms[i] = { ...room, imageSrc: url };
+                      update("rooms", rooms);
+                    }} />
+                    <AdminInput label="Gallery URLs (comma separated)" value={room.gallery.join(", ")} onChange={(e) => {
+                      const rooms = [...content.rooms];
+                      rooms[i] = { ...room, gallery: e.target.value.split(",").map((f) => f.trim()).filter(Boolean) };
+                      update("rooms", rooms);
+                    }} />
+                    <AdminInput label="Amenities (comma separated)" value={room.amenities.join(", ")} onChange={(e) => {
+                      const rooms = [...content.rooms];
+                      rooms[i] = { ...room, amenities: e.target.value.split(",").map((f) => f.trim()).filter(Boolean) };
+                      update("rooms", rooms);
+                    }} />
+                    <AdminTextarea label="Policies (one per line)" rows={4} value={room.policies.join("\n")} onChange={(e) => {
+                      const rooms = [...content.rooms];
+                      rooms[i] = { ...room, policies: e.target.value.split("\n").map((f) => f.trim()).filter(Boolean) };
+                      update("rooms", rooms);
+                    }} />
+                  </div>
+                ))}
+                <div className="space-y-3 border border-luxury-gold/10 p-4">
+                  <p className="text-sm font-medium text-luxury-gold">Room Booking Form</p>
+                  <AdminInput label="Submit Label" value={content.roomBooking.submitLabel} onChange={(e) => update("roomBooking", { ...content.roomBooking, submitLabel: e.target.value })} />
+                  <AdminInput label="Pay Online Label" value={content.roomBooking.payOnlineLabel} onChange={(e) => update("roomBooking", { ...content.roomBooking, payOnlineLabel: e.target.value })} />
+                  <AdminInput label="Pay At Hotel Label" value={content.roomBooking.payAtHotelLabel} onChange={(e) => update("roomBooking", { ...content.roomBooking, payAtHotelLabel: e.target.value })} />
+                  <AdminInput label="Special Request Label" value={content.roomBooking.specialRequestLabel} onChange={(e) => update("roomBooking", { ...content.roomBooking, specialRequestLabel: e.target.value })} />
+                  <AdminTextarea label="Availability Note" rows={2} value={content.roomBooking.availabilityNote} onChange={(e) => update("roomBooking", { ...content.roomBooking, availabilityNote: e.target.value })} />
+                </div>
+              </>
+            )}
+
+            {activeSection === "reviews" && (
+              <>
+                {content.reviews.map((review, i) => (
+                  <div key={review.id} className="space-y-4 border border-luxury-gold/10 p-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <AdminInput label="Guest Name" value={review.name} onChange={(e) => {
+                        const reviews = [...content.reviews];
+                        reviews[i] = { ...review, name: e.target.value };
+                        update("reviews", reviews);
+                      }} />
+                      <AdminInput label="Country" value={review.country} onChange={(e) => {
+                        const reviews = [...content.reviews];
+                        reviews[i] = { ...review, country: e.target.value };
+                        update("reviews", reviews);
+                      }} />
+                    </div>
+                    <AdminTextarea label="Review" rows={3} value={review.review} onChange={(e) => {
+                      const reviews = [...content.reviews];
+                      reviews[i] = { ...review, review: e.target.value };
+                      update("reviews", reviews);
+                    }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {activeSection === "gallery" && (
+              <>
+                <AdminInput label="Section Title" value={content.gallerySection.title} onChange={(e) => update("gallerySection", { ...content.gallerySection, title: e.target.value })} />
+                <AdminTextarea label="Section Description" rows={2} value={content.gallerySection.description} onChange={(e) => update("gallerySection", { ...content.gallerySection, description: e.target.value })} />
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-luxury-gold/30 text-luxury-gold"
+                    onClick={() => update("gallery", [...content.gallery, {
+                      id: `g-${Date.now()}`,
+                      src: "/media/gallery/new.jpg",
+                      title: "New Image",
+                      category: "General",
+                      type: "image" as const,
+                    }])}
+                  >
+                    <Plus className="h-4 w-4" /> Add Item
+                  </Button>
+                </div>
+                {content.gallery.map((item, i) => (
+                  <div key={item.id} className="space-y-4 border border-luxury-gold/10 p-4">
+                    <div className="flex justify-end">
+                      <Button type="button" variant="ghost" size="sm" className="text-red-400" onClick={() => update("gallery", content.gallery.filter((_, idx) => idx !== i))}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <AdminInput label="Title" value={item.title} onChange={(e) => {
+                        const gallery = [...content.gallery];
+                        gallery[i] = { ...item, title: e.target.value };
+                        update("gallery", gallery);
+                      }} />
+                      <AdminInput label="Category" value={item.category} onChange={(e) => {
+                        const gallery = [...content.gallery];
+                        gallery[i] = { ...item, category: e.target.value };
+                        update("gallery", gallery);
+                      }} />
+                    </div>
+                    <AdminInput label="Type (image or video)" value={item.type} onChange={(e) => {
+                      const gallery = [...content.gallery];
+                      gallery[i] = { ...item, type: e.target.value as "image" | "video" };
+                      update("gallery", gallery);
+                    }} />
+                    <AdminInput label="Media URL" value={item.src} onChange={(e) => {
+                      const gallery = [...content.gallery];
+                      gallery[i] = { ...item, src: e.target.value };
+                      update("gallery", gallery);
+                    }} />
+                    <FileUpload label="Upload Media" folder="gallery" accept="image/*,video/*" value={item.src} onChange={(url) => {
+                      const gallery = [...content.gallery];
+                      gallery[i] = { ...item, src: url };
+                      update("gallery", gallery);
+                    }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {activeSection === "dining" && (
+              <>
+                <AdminInput label="Hero Title" value={content.diningPage.hero.title} onChange={(e) => update("diningPage", { ...content.diningPage, hero: { ...content.diningPage.hero, title: e.target.value } })} />
+                <AdminTextarea label="Intro Content" rows={3} value={content.diningPage.intro.content} onChange={(e) => update("diningPage", { ...content.diningPage, intro: { ...content.diningPage.intro, content: e.target.value } })} />
+                {content.diningPage.venues.map((venue, i) => (
+                  <div key={venue.id} className="space-y-4 border border-luxury-gold/10 p-6">
+                    <AdminInput label="Venue Name" value={venue.name} onChange={(e) => {
+                      const venues = [...content.diningPage.venues];
+                      venues[i] = { ...venue, name: e.target.value };
+                      update("diningPage", { ...content.diningPage, venues });
+                    }} />
+                    <AdminTextarea label="Description" rows={2} value={venue.description} onChange={(e) => {
+                      const venues = [...content.diningPage.venues];
+                      venues[i] = { ...venue, description: e.target.value };
+                      update("diningPage", { ...content.diningPage, venues });
+                    }} />
+                    <AdminInput label="Image URL" value={venue.imageSrc} onChange={(e) => {
+                      const venues = [...content.diningPage.venues];
+                      venues[i] = { ...venue, imageSrc: e.target.value };
+                      update("diningPage", { ...content.diningPage, venues });
+                    }} />
+                    <FileUpload label="Upload Image" folder="dining" value={venue.imageSrc} onChange={(url) => {
+                      const venues = [...content.diningPage.venues];
+                      venues[i] = { ...venue, imageSrc: url };
+                      update("diningPage", { ...content.diningPage, venues });
+                    }} />
+                  </div>
+                ))}
+                <AdminInput label="CTA Title" value={content.diningPage.cta.title} onChange={(e) => update("diningPage", { ...content.diningPage, cta: { ...content.diningPage.cta, title: e.target.value } })} />
+              </>
+            )}
+
+            {activeSection === "spa" && (
+              <>
+                <AdminInput label="Hero Title" value={content.spaPage.hero.title} onChange={(e) => update("spaPage", { ...content.spaPage, hero: { ...content.spaPage.hero, title: e.target.value } })} />
+                <AdminTextarea label="Philosophy" rows={4} value={content.spaPage.philosophy.content} onChange={(e) => update("spaPage", { ...content.spaPage, philosophy: { ...content.spaPage.philosophy, content: e.target.value } })} />
+                <FileUpload label="Philosophy Image" folder="spa" value={content.spaPage.philosophy.imageSrc} onChange={(url) => update("spaPage", { ...content.spaPage, philosophy: { ...content.spaPage.philosophy, imageSrc: url } })} />
+                {content.spaPage.services.map((service, i) => (
+                  <div key={service.id} className="space-y-3 border border-luxury-gold/10 p-4">
+                    <AdminInput label="Service Name" value={service.name} onChange={(e) => {
+                      const services = [...content.spaPage.services];
+                      services[i] = { ...service, name: e.target.value };
+                      update("spaPage", { ...content.spaPage, services });
+                    }} />
+                    <AdminTextarea label="Description" rows={2} value={service.description} onChange={(e) => {
+                      const services = [...content.spaPage.services];
+                      services[i] = { ...service, description: e.target.value };
+                      update("spaPage", { ...content.spaPage, services });
+                    }} />
+                  </div>
+                ))}
+                <AdminInput label="CTA Title" value={content.spaPage.cta.title} onChange={(e) => update("spaPage", { ...content.spaPage, cta: { ...content.spaPage.cta, title: e.target.value } })} />
+              </>
+            )}
+
+            {activeSection === "culturalExperience" && (
+              <>
+                <AdminInput label="Hero Title" value={content.culturalExperiencePage.hero.title} onChange={(e) => update("culturalExperiencePage", { ...content.culturalExperiencePage, hero: { ...content.culturalExperiencePage.hero, title: e.target.value } })} />
+                <AdminInput label="Hero Subtitle" value={content.culturalExperiencePage.hero.subtitle} onChange={(e) => update("culturalExperiencePage", { ...content.culturalExperiencePage, hero: { ...content.culturalExperiencePage.hero, subtitle: e.target.value } })} />
+                <AdminTextarea label="Hero Description" rows={2} value={content.culturalExperiencePage.hero.description} onChange={(e) => update("culturalExperiencePage", { ...content.culturalExperiencePage, hero: { ...content.culturalExperiencePage.hero, description: e.target.value } })} />
+                <AdminMediaField
+                  label="Hero Media (Image / Video)"
+                  folder="culture"
+                  value={content.culturalExperiencePage.hero.media}
+                  onChange={(media) =>
+                    update("culturalExperiencePage", {
+                      ...content.culturalExperiencePage,
+                      hero: {
+                        ...content.culturalExperiencePage.hero,
+                        media,
+                        imageSrc: media.imageSrc || content.culturalExperiencePage.hero.imageSrc,
+                      },
+                    })
+                  }
+                />
+                <AdminInput label="SEO Title" value={content.culturalExperiencePage.seo.title} onChange={(e) => update("culturalExperiencePage", { ...content.culturalExperiencePage, seo: { ...content.culturalExperiencePage.seo, title: e.target.value } })} />
+                <AdminTextarea label="SEO Description" rows={2} value={content.culturalExperiencePage.seo.description} onChange={(e) => update("culturalExperiencePage", { ...content.culturalExperiencePage, seo: { ...content.culturalExperiencePage.seo, description: e.target.value } })} />
+                <AdminInput label="OG Image URL" value={content.culturalExperiencePage.seo.ogImage ?? ""} onChange={(e) => update("culturalExperiencePage", { ...content.culturalExperiencePage, seo: { ...content.culturalExperiencePage.seo, ogImage: e.target.value } })} />
+                <AdminInput label="Story Title" value={content.culturalExperiencePage.story.title} onChange={(e) => update("culturalExperiencePage", { ...content.culturalExperiencePage, story: { ...content.culturalExperiencePage.story, title: e.target.value } })} />
+                <AdminTextarea label="Culture Story (Rich Text)" rows={14} value={content.culturalExperiencePage.story.content} onChange={(e) => update("culturalExperiencePage", { ...content.culturalExperiencePage, story: { ...content.culturalExperiencePage.story, content: e.target.value } })} />
+                {content.culturalExperiencePage.gallery.map((item, i) => (
+                  <div key={item.id} className="space-y-3 border border-luxury-gold/10 p-4">
+                    <AdminInput label="Title" value={item.title} onChange={(e) => {
+                      const gallery = [...content.culturalExperiencePage.gallery];
+                      gallery[i] = { ...item, title: e.target.value };
+                      update("culturalExperiencePage", { ...content.culturalExperiencePage, gallery });
+                    }} />
+                    <AdminInput label="Image URL" value={item.src} onChange={(e) => {
+                      const gallery = [...content.culturalExperiencePage.gallery];
+                      gallery[i] = { ...item, src: e.target.value };
+                      update("culturalExperiencePage", { ...content.culturalExperiencePage, gallery });
+                    }} />
+                    <FileUpload label="Upload" folder="culture" value={item.src} onChange={(url) => {
+                      const gallery = [...content.culturalExperiencePage.gallery];
+                      gallery[i] = { ...item, src: url };
+                      update("culturalExperiencePage", { ...content.culturalExperiencePage, gallery });
+                    }} />
+                  </div>
+                ))}
+                {content.culturalExperiencePage.experienceCards.map((card, i) => (
+                  <div key={card.id} className="space-y-3 border border-luxury-gold/10 p-4">
+                    <AdminInput label="Title" value={card.title} onChange={(e) => {
+                      const experienceCards = [...content.culturalExperiencePage.experienceCards];
+                      experienceCards[i] = { ...card, title: e.target.value };
+                      update("culturalExperiencePage", { ...content.culturalExperiencePage, experienceCards });
+                    }} />
+                    <AdminTextarea label="Description" rows={2} value={card.description} onChange={(e) => {
+                      const experienceCards = [...content.culturalExperiencePage.experienceCards];
+                      experienceCards[i] = { ...card, description: e.target.value };
+                      update("culturalExperiencePage", { ...content.culturalExperiencePage, experienceCards });
+                    }} />
+                  </div>
+                ))}
+                {content.culturalExperiencePage.faq.map((item, i) => (
+                  <div key={item.id} className="space-y-3 border border-luxury-gold/10 p-4">
+                    <AdminInput label="Question" value={item.question} onChange={(e) => {
+                      const faq = [...content.culturalExperiencePage.faq];
+                      faq[i] = { ...item, question: e.target.value };
+                      update("culturalExperiencePage", { ...content.culturalExperiencePage, faq });
+                    }} />
+                    <AdminTextarea label="Answer" rows={3} value={item.answer} onChange={(e) => {
+                      const faq = [...content.culturalExperiencePage.faq];
+                      faq[i] = { ...item, answer: e.target.value };
+                      update("culturalExperiencePage", { ...content.culturalExperiencePage, faq });
+                    }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {activeSection === "about" && (
+              <>
+                <AdminTextarea label="History" rows={4} value={content.aboutPage.history.content} onChange={(e) => update("aboutPage", { ...content.aboutPage, history: { ...content.aboutPage.history, content: e.target.value } })} />
+                <AdminTextarea label="Mission" rows={3} value={content.aboutPage.mission.content} onChange={(e) => update("aboutPage", { ...content.aboutPage, mission: { ...content.aboutPage.mission, content: e.target.value } })} />
+                <AdminTextarea label="Vision" rows={3} value={content.aboutPage.vision.content} onChange={(e) => update("aboutPage", { ...content.aboutPage, vision: { ...content.aboutPage.vision, content: e.target.value } })} />
+                {content.aboutPage.timeline.map((item, i) => (
+                  <div key={item.year} className="grid grid-cols-3 gap-4 border border-luxury-gold/10 p-4">
+                    <AdminInput label="Year" value={item.year} onChange={(e) => {
+                      const timeline = [...content.aboutPage.timeline];
+                      timeline[i] = { ...item, year: e.target.value };
+                      update("aboutPage", { ...content.aboutPage, timeline });
+                    }} />
+                    <AdminInput label="Title" value={item.title} onChange={(e) => {
+                      const timeline = [...content.aboutPage.timeline];
+                      timeline[i] = { ...item, title: e.target.value };
+                      update("aboutPage", { ...content.aboutPage, timeline });
+                    }} />
+                    <AdminTextarea label="Description" rows={2} value={item.description} onChange={(e) => {
+                      const timeline = [...content.aboutPage.timeline];
+                      timeline[i] = { ...item, description: e.target.value };
+                      update("aboutPage", { ...content.aboutPage, timeline });
+                    }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {activeSection === "contact" && (
+              <>
+                <AdminInput label="Eyebrow" value={content.contact.eyebrow} onChange={(e) => update("contact", { ...content.contact, eyebrow: e.target.value })} />
+                <AdminInput label="Title" value={content.contact.title} onChange={(e) => update("contact", { ...content.contact, title: e.target.value })} />
+                <AdminTextarea label="Description" rows={3} value={content.contact.description} onChange={(e) => update("contact", { ...content.contact, description: e.target.value })} />
+                <AdminInput label="Working Hours" value={content.contact.workingHours} onChange={(e) => update("contact", { ...content.contact, workingHours: e.target.value })} />
+                <AdminTextarea label="Google Map Embed URL" rows={2} value={content.contact.mapEmbedUrl} onChange={(e) => update("contact", { ...content.contact, mapEmbedUrl: e.target.value })} />
+                <AdminInput label="Phone (Hotel Info)" value={content.hotel.phone} onChange={(e) => update("hotel", { ...content.hotel, phone: e.target.value })} />
+                <AdminInput label="Email (Hotel Info)" value={content.hotel.email} onChange={(e) => update("hotel", { ...content.hotel, email: e.target.value })} />
+                <AdminInput label="Address (Hotel Info)" value={content.hotel.address} onChange={(e) => update("hotel", { ...content.hotel, address: e.target.value })} />
+              </>
+            )}
+
+            {activeSection === "seo" && (
+              <>
+                <AdminInput label="Page Title" value={content.seo.title} onChange={(e) => update("seo", { ...content.seo, title: e.target.value })} />
+                <AdminTextarea label="Meta Description" rows={3} value={content.seo.description} onChange={(e) => update("seo", { ...content.seo, description: e.target.value })} />
+                <AdminTextarea label="Keywords" rows={2} value={content.seo.keywords} onChange={(e) => update("seo", { ...content.seo, keywords: e.target.value })} />
+                <AdminInput label="Open Graph Image URL" value={content.seo.ogImage} onChange={(e) => update("seo", { ...content.seo, ogImage: e.target.value })} />
+                <FileUpload label="Upload OG Image" folder="seo" value={content.seo.ogImage} onChange={(url) => update("seo", { ...content.seo, ogImage: url })} />
+                <AdminInput label="Favicon URL" value={content.seo.favicon} onChange={(e) => update("seo", { ...content.seo, favicon: e.target.value })} />
+                <FileUpload label="Upload Favicon" folder="seo" accept="image/*" value={content.seo.favicon} onChange={(url) => update("seo", { ...content.seo, favicon: url })} />
+                <AdminInput label="Google Analytics ID" value={content.seo.googleAnalytics} onChange={(e) => update("seo", { ...content.seo, googleAnalytics: e.target.value })} />
+                <AdminInput label="Google Tag Manager ID" value={content.seo.googleTagManager} onChange={(e) => update("seo", { ...content.seo, googleTagManager: e.target.value })} />
+                <label className="flex items-center gap-3 text-sm text-white/70">
+                  <input type="checkbox" checked={content.seo.robotsAllow} onChange={(e) => update("seo", { ...content.seo, robotsAllow: e.target.checked })} className="accent-luxury-gold" />
+                  Allow search engines to index site (robots.txt)
+                </label>
+              </>
+            )}
+
+            {activeSection === "settings" && (
+              <>
+                <AdminInput label="Booking Email" value={content.settings.bookingEmail} onChange={(e) => update("settings", { ...content.settings, bookingEmail: e.target.value })} />
+                <p className="text-xs text-white/40">Booking inquiries are routed to this email address.</p>
+              </>
+            )}
+
+            {activeSection === "footer" && (
+              <>
+                <p className="text-sm text-white/50">Edit every footer section — brand, links, contact, newsletter, gallery, payments, colors, and legal.</p>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Brand</p>
+                  <AdminInput label="Brand Name" value={content.footer.brandName} onChange={(e) => update("footer", { ...content.footer, brandName: e.target.value })} />
+                  <AdminTextarea label="Description" rows={3} value={content.footer.description} onChange={(e) => update("footer", { ...content.footer, description: e.target.value })} />
+                  <AdminInput label="Tagline (optional)" value={content.footer.tagline} onChange={(e) => update("footer", { ...content.footer, tagline: e.target.value })} />
+                  <AdminInput label="Footer Logo URL" value={content.footer.logoSrc} onChange={(e) => update("footer", { ...content.footer, logoSrc: e.target.value })} />
+                  <FileUpload label="Upload Footer Logo" folder="logo" accept="image/*" value={content.footer.logoSrc} onChange={(url) => update("footer", { ...content.footer, logoSrc: url })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <div className="flex items-center justify-between">
+                    <p className="font-display text-lg text-luxury-gold">Quick Links</p>
+                    <Button type="button" variant="outline" size="sm" className="border-luxury-gold/30 text-luxury-gold" onClick={() => update("footer", { ...content.footer, quickLinks: [...content.footer.quickLinks, { label: "New Link", href: "/" }] })}>
+                      <Plus className="h-4 w-4" /> Add Link
+                    </Button>
+                  </div>
+                  {content.footer.quickLinks.map((link, i) => (
+                    <div key={`${link.href}-${i}`} className="grid grid-cols-[1fr_1fr_auto] gap-3">
+                      <AdminInput label="Label" value={link.label} onChange={(e) => {
+                        const quickLinks = [...content.footer.quickLinks];
+                        quickLinks[i] = { ...link, label: e.target.value };
+                        update("footer", { ...content.footer, quickLinks });
+                      }} />
+                      <AdminInput label="URL" value={link.href} onChange={(e) => {
+                        const quickLinks = [...content.footer.quickLinks];
+                        quickLinks[i] = { ...link, href: e.target.value };
+                        update("footer", { ...content.footer, quickLinks });
+                      }} />
+                      <Button type="button" variant="ghost" size="sm" className="mt-6 text-red-400" onClick={() => update("footer", { ...content.footer, quickLinks: content.footer.quickLinks.filter((_, idx) => idx !== i) })}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Contact</p>
+                  <AdminInput label="Phone" value={content.footer.contact.phone} onChange={(e) => update("footer", { ...content.footer, contact: { ...content.footer.contact, phone: e.target.value } })} />
+                  <AdminInput label="Email" value={content.footer.contact.email} onChange={(e) => update("footer", { ...content.footer, contact: { ...content.footer.contact, email: e.target.value } })} />
+                  <AdminInput label="Location" value={content.footer.contact.location} onChange={(e) => update("footer", { ...content.footer, contact: { ...content.footer.contact, location: e.target.value } })} />
+                  <AdminInput label="Front Desk" value={content.footer.contact.frontDesk} onChange={(e) => update("footer", { ...content.footer, contact: { ...content.footer.contact, frontDesk: e.target.value } })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Newsletter</p>
+                  <AdminInput label="Heading" value={content.footer.newsletter.heading} onChange={(e) => update("footer", { ...content.footer, newsletter: { ...content.footer.newsletter, heading: e.target.value } })} />
+                  <AdminTextarea label="Description" rows={2} value={content.footer.newsletter.description} onChange={(e) => update("footer", { ...content.footer, newsletter: { ...content.footer.newsletter, description: e.target.value } })} />
+                  <AdminInput label="Placeholder" value={content.footer.newsletter.placeholder} onChange={(e) => update("footer", { ...content.footer, newsletter: { ...content.footer.newsletter, placeholder: e.target.value } })} />
+                  <AdminInput label="Button Text" value={content.footer.newsletter.buttonText} onChange={(e) => update("footer", { ...content.footer, newsletter: { ...content.footer.newsletter, buttonText: e.target.value } })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Social Links</p>
+                  <AdminInput label="Facebook" value={content.footer.social.facebook} onChange={(e) => update("footer", { ...content.footer, social: { ...content.footer.social, facebook: e.target.value } })} />
+                  <AdminInput label="Instagram" value={content.footer.social.instagram} onChange={(e) => update("footer", { ...content.footer, social: { ...content.footer.social, instagram: e.target.value } })} />
+                  <AdminInput label="YouTube" value={content.footer.social.youtube} onChange={(e) => update("footer", { ...content.footer, social: { ...content.footer.social, youtube: e.target.value } })} />
+                  <AdminInput label="X (Twitter)" value={content.footer.social.twitter} onChange={(e) => update("footer", { ...content.footer, social: { ...content.footer.social, twitter: e.target.value } })} />
+                  <AdminInput label="LinkedIn" value={content.footer.social.linkedin} onChange={(e) => update("footer", { ...content.footer, social: { ...content.footer.social, linkedin: e.target.value } })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Gallery Preview (6 images)</p>
+                  {content.footer.galleryPreview.map((img, i) => (
+                    <div key={img.id} className="space-y-3 border border-luxury-gold/5 p-4">
+                      <AdminInput label="Alt Text" value={img.alt} onChange={(e) => {
+                        const galleryPreview = [...content.footer.galleryPreview];
+                        galleryPreview[i] = { ...img, alt: e.target.value };
+                        update("footer", { ...content.footer, galleryPreview });
+                      }} />
+                      <AdminInput label="Image URL" value={img.src} onChange={(e) => {
+                        const galleryPreview = [...content.footer.galleryPreview];
+                        galleryPreview[i] = { ...img, src: e.target.value };
+                        update("footer", { ...content.footer, galleryPreview });
+                      }} />
+                      <FileUpload label="Upload Image" folder="gallery" value={img.src} onChange={(url) => {
+                        const galleryPreview = [...content.footer.galleryPreview];
+                        galleryPreview[i] = { ...img, src: url };
+                        update("footer", { ...content.footer, galleryPreview });
+                      }} />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Payments</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input type="checkbox" checked={content.footer.showPayments} onChange={(e) => update("footer", { ...content.footer, showPayments: e.target.checked })} className="accent-luxury-gold" />
+                    Show Payment Bar
+                  </label>
+                  <AdminInput label="Payment Label" value={content.footer.paymentLabel} onChange={(e) => update("footer", { ...content.footer, paymentLabel: e.target.value })} />
+                  <p className="text-xs text-white/40">Toggle payment logos (Visa, Mastercard, UnionPay, Alipay, UPI, eSewa)</p>
+                  {(["visa", "mastercard", "unionpay", "alipay", "upi", "esewa"] as const).map((id) => (
+                    <label key={id} className="flex items-center gap-3 text-sm capitalize text-white/70">
+                      <input
+                        type="checkbox"
+                        checked={content.footer.enabledPayments.includes(id)}
+                        onChange={(e) => {
+                          const enabled = e.target.checked
+                            ? [...content.footer.enabledPayments, id]
+                            : content.footer.enabledPayments.filter((p) => p !== id);
+                          update("footer", { ...content.footer, enabledPayments: enabled });
+                        }}
+                        className="accent-luxury-gold"
+                      />
+                      {id}
+                    </label>
+                  ))}
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Legal & Developer</p>
+                  <AdminInput label="Copyright Text (after year)" value={content.footer.copyrightText} onChange={(e) => update("footer", { ...content.footer, copyrightText: e.target.value })} />
+                  <AdminInput label="Developer Label" value={content.footer.developerLabel} onChange={(e) => update("footer", { ...content.footer, developerLabel: e.target.value })} />
+                  <AdminInput label="Developer URL" value={content.footer.developerUrl} onChange={(e) => update("footer", { ...content.footer, developerUrl: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Colors & Spacing</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput label="Top Background" value={content.footer.colors.topBackground} onChange={(e) => update("footer", { ...content.footer, colors: { ...content.footer.colors, topBackground: e.target.value } })} />
+                    <AdminInput label="Bottom Background" value={content.footer.colors.bottomBackground} onChange={(e) => update("footer", { ...content.footer, colors: { ...content.footer.colors, bottomBackground: e.target.value } })} />
+                    <AdminInput label="Gold Accent" value={content.footer.colors.gold} onChange={(e) => update("footer", { ...content.footer, colors: { ...content.footer.colors, gold: e.target.value } })} />
+                    <AdminInput label="Text Color" value={content.footer.colors.text} onChange={(e) => update("footer", { ...content.footer, colors: { ...content.footer.colors, text: e.target.value } })} />
+                  </div>
+                  <AdminInput label="Section Padding Y (px)" type="number" value={content.footer.spacing.sectionPaddingY} onChange={(e) => update("footer", { ...content.footer, spacing: { ...content.footer.spacing, sectionPaddingY: Number(e.target.value) } })} />
+                </div>
+              </>
+            )}
+
+            {activeSection === "media" && (
+              <>
+                <p className="text-sm text-white/50">Upload files via section editors or use the upload below. Files are stored in /public/media.</p>
+                <FileUpload label="Upload to Library" folder="library" accept="image/*,video/*" value="" onChange={(url) => {
+                  const asset = {
+                    id: `m-${Date.now()}`,
+                    filename: url.split("/").pop() ?? "file",
+                    url,
+                    folder: "library",
+                    mimeType: "image/jpeg",
+                    size: 0,
+                    createdAt: new Date().toISOString(),
+                  };
+                  update("mediaLibrary", [...content.mediaLibrary, asset]);
+                }} />
+                {content.mediaLibrary.map((item, i) => (
+                  <div key={item.id} className="flex items-center justify-between border border-luxury-gold/10 p-3">
+                    <span className="truncate text-sm text-white/70">{item.filename}</span>
+                    <Button type="button" variant="ghost" size="sm" className="text-red-400" onClick={() => update("mediaLibrary", content.mediaLibrary.filter((_, idx) => idx !== i))}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {activeSection === "backups" && (
+              <>
+                <p className="text-sm text-white/50 mb-4">Create a snapshot of all website content. Restores apply instantly.</p>
+                <Button variant="gold" onClick={async () => {
+                  await fetch("/api/backups", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "create", label: `Manual backup ${new Date().toLocaleString()}` }) });
+                  setSaved(true);
+                }}>Create Backup Now</Button>
+                <p className="mt-4 text-xs text-white/40">Backups are stored in the database when connected, otherwise saved to /data.</p>
+              </>
+            )}
+          </div>
+        </motion.div>
+      </main>
+    </div>
+  );
+}

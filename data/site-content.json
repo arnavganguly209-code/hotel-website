@@ -1,0 +1,1502 @@
+{
+  "hotel": {
+    "name": "Hotel Thamel Park & Spa",
+    "tagline": "Luxury Stay Experience in the Heart of Thamel, Kathmandu",
+    "description": "Experience refined comfort, elevated dining, wellness experiences, and exceptional hospitality in the heart of Kathmandu.",
+    "location": "Thamel, Kathmandu, Nepal",
+    "address": "Thamel, Kathmandu 44600, Nepal",
+    "phone": "+977-1-4412345",
+    "email": "reservations@hotelthamelpark.com",
+    "social": {
+      "facebook": "https://facebook.com/hotelthamelpark",
+      "instagram": "https://instagram.com/hotelthamelpark",
+      "twitter": "https://twitter.com/hotelthamelpark",
+      "tripadvisor": "https://tripadvisor.com/hotelthamelpark"
+    }
+  },
+  "header": {
+    "useLogo": false,
+    "showText": true,
+    "hideText": false,
+    "headerText": "HOTEL THAMEL PARK & SPA",
+    "logoSrc": "/media/logo/hotel-logo.png",
+    "logoSize": 48,
+    "height": 72,
+    "sticky": true,
+    "transparent": true,
+    "backgroundColor": "#FDFBF7",
+    "textColor": "#183426",
+    "showStars": false,
+    "phone": "+977-1-4412345",
+    "showPhone": true,
+    "bookButtonText": "Book Now",
+    "menuItems": [
+      {
+        "label": "Overview",
+        "href": "/"
+      },
+      {
+        "label": "Rooms",
+        "href": "/rooms"
+      },
+      {
+        "label": "Dining",
+        "href": "/dining"
+      },
+      {
+        "label": "Spa & Wellness",
+        "href": "/spa"
+      },
+      {
+        "label": "Gallery",
+        "href": "/gallery"
+      },
+      {
+        "label": "About",
+        "href": "/about"
+      },
+      {
+        "label": "Contact",
+        "href": "/contact"
+      }
+    ],
+    "overlayMenuItems": []
+  },
+  "hero": {
+    "layout": "premium",
+    "type": "premium",
+    "showTitle": true,
+    "welcomeText": "HOTEL",
+    "title": "THAMEL PARK & SPA",
+    "subtitle": "WHERE LUXURY MEETS SERENITY",
+    "description": "Experience unparalleled comfort, exquisite hospitality, and the true essence of relaxation.",
+    "videoSrc": "",
+    "imageSrc": "/media/hero/hero-background.png",
+    "poster": "",
+    "overlayOpacity": 0,
+    "overlayColor": "#184D3D",
+    "height": "screen",
+    "animation": "both",
+    "showBookingBar": true,
+    "showScrollIndicator": false,
+    "primaryButton": {
+      "fontFamily": "var(--font-display)",
+      "fontWeight": 500,
+      "fontSize": "0.75rem",
+      "mobileFontSize": "0.875rem",
+      "tabletFontSize": "1rem",
+      "desktopFontSize": "1.125rem",
+      "color": "#FFFFFF",
+      "gradient": "",
+      "letterSpacing": "0.18em",
+      "lineHeight": "1.6",
+      "alignment": "left",
+      "textShadow": "none",
+      "animation": "fade",
+      "text": "DISCOVER MORE",
+      "href": "/#overview",
+      "visible": true,
+      "icon": "chevron-right",
+      "iconPosition": "right",
+      "backgroundColor": "#184D3D",
+      "backgroundGradient": "",
+      "borderColor": "transparent",
+      "borderRadius": "9999px",
+      "shadow": "0 8px 32px rgba(24, 77, 61, 0.25)",
+      "hoverAnimation": "scale",
+      "size": "lg",
+      "padding": "1rem 1.75rem"
+    },
+    "secondaryButton": {
+      "fontFamily": "var(--font-display)",
+      "fontWeight": 500,
+      "fontSize": "0.75rem",
+      "mobileFontSize": "0.875rem",
+      "tabletFontSize": "1rem",
+      "desktopFontSize": "1.125rem",
+      "color": "#184D3D",
+      "gradient": "",
+      "letterSpacing": "0.18em",
+      "lineHeight": "1.6",
+      "alignment": "left",
+      "textShadow": "none",
+      "animation": "fade",
+      "text": "EXPLORE ROOMS",
+      "href": "/rooms",
+      "visible": true,
+      "icon": "chevron-right",
+      "iconPosition": "right",
+      "backgroundColor": "rgba(255,255,255,0.85)",
+      "backgroundGradient": "",
+      "borderColor": "#C89A3D",
+      "borderRadius": "9999px",
+      "shadow": "0 8px 32px rgba(24, 77, 61, 0.25)",
+      "hoverAnimation": "scale",
+      "size": "lg",
+      "padding": "1rem 1.75rem"
+    },
+    "colors": {
+      "cream": "#F8F3EA",
+      "lightCream": "#FDFBF7",
+      "royalGreen": "#184D3D",
+      "premiumGold": "#C89A3D",
+      "softOrange": "#E9A546",
+      "accent": "#C89A3D",
+      "green": "#184D3D",
+      "white": "#FDFBF7",
+      "dark": "#0F2E24",
+      "champagne": "#EED8B3"
+    },
+    "image": {
+      "src": "/media/hero/hero-background.png",
+      "mobileSrc": "/media/hero/hero-background.png",
+      "tabletSrc": "/media/hero/hero-background.png",
+      "desktopSrc": "/media/hero/hero-background.png",
+      "alt": "Hotel Thamel Park & Spa with Himalayan mountain views",
+      "position": "center",
+      "scale": 1,
+      "brightness": 100,
+      "contrast": 100,
+      "saturation": 100,
+      "exposure": 100,
+      "blur": 0,
+      "rotate": 0,
+      "flipX": false,
+      "flipY": false,
+      "overlayColor": "transparent",
+      "gradientOverlay": "radial-gradient(circle at 70% 50%, rgba(200, 154, 61, 0.15) 0%, transparent 60%)",
+      "overlayOpacity": 0,
+      "borderRadius": "50%",
+      "parallax": true,
+      "backgroundSize": "cover",
+      "backgroundRepeat": "no-repeat",
+      "backgroundAttachment": "scroll",
+      "animation": "float",
+      "preload": true
+    },
+    "logo": {
+      "src": "/media/logo/hotel-logo.png",
+      "width": 120,
+      "height": 120,
+      "opacity": 1,
+      "rotation": 0,
+      "borderRadius": "0",
+      "shadow": "none",
+      "glow": "0 0 40px rgba(200, 154, 61, 0.2)",
+      "background": "transparent",
+      "visible": true,
+      "padding": "0",
+      "margin": "0 0 1.5rem 0",
+      "positionDesktop": "left",
+      "positionTablet": "center",
+      "positionMobile": "center"
+    },
+    "welcomeStyle": {
+      "fontFamily": "var(--font-display)",
+      "fontWeight": 500,
+      "fontSize": "0.75rem",
+      "mobileFontSize": "0.65rem",
+      "tabletFontSize": "1rem",
+      "desktopFontSize": "0.8rem",
+      "color": "#184D3D",
+      "gradient": "",
+      "letterSpacing": "0.35em",
+      "lineHeight": "1.6",
+      "alignment": "left",
+      "textShadow": "none",
+      "animation": "fade"
+    },
+    "titleStyle": {
+      "fontFamily": "var(--font-display)",
+      "fontWeight": 500,
+      "fontSize": "2.5rem",
+      "mobileFontSize": "1.75rem",
+      "tabletFontSize": "2rem",
+      "desktopFontSize": "2.75rem",
+      "color": "#184D3D",
+      "gradient": "",
+      "letterSpacing": "0.12em",
+      "lineHeight": "1.15",
+      "alignment": "left",
+      "textShadow": "none",
+      "animation": "fade"
+    },
+    "subtitleStyle": {
+      "fontFamily": "var(--font-display)",
+      "fontWeight": 500,
+      "fontSize": "0.7rem",
+      "mobileFontSize": "0.6rem",
+      "tabletFontSize": "1rem",
+      "desktopFontSize": "0.75rem",
+      "color": "#C89A3D",
+      "gradient": "",
+      "letterSpacing": "0.4em",
+      "lineHeight": "1.6",
+      "alignment": "left",
+      "textShadow": "none",
+      "animation": "fade"
+    },
+    "descriptionStyle": {
+      "fontFamily": "var(--font-body)",
+      "fontWeight": 400,
+      "fontSize": "0.95rem",
+      "mobileFontSize": "0.875rem",
+      "tabletFontSize": "1rem",
+      "desktopFontSize": "1rem",
+      "color": "#4A5E56",
+      "gradient": "",
+      "letterSpacing": "0.02em",
+      "lineHeight": "1.75",
+      "alignment": "left",
+      "textShadow": "none",
+      "animation": "fade"
+    },
+    "bookingBar": {
+      "enabled": true,
+      "fixedPosition": false,
+      "background": "rgba(255, 255, 255, 0.72)",
+      "glassEffect": true,
+      "blur": 20,
+      "shadow": "0 12px 48px rgba(24, 77, 61, 0.12)",
+      "borderRadius": "1.25rem",
+      "height": "auto",
+      "maxWidth": "72rem",
+      "padding": "0",
+      "margin": "0 auto",
+      "gap": "0",
+      "buttonText": "CHECK AVAILABILITY",
+      "buttonGradient": "linear-gradient(135deg, #C89A3D 0%, #E9A546 100%)",
+      "buttonColor": "#FFFFFF",
+      "buttonHeight": "72px",
+      "buttonWidth": "100%",
+      "buttonBorderRadius": "22px",
+      "buttonShadow": "0 20px 50px rgba(190,150,50,0.35)",
+      "fieldBorderRadius": "20px",
+      "fieldPadding": "16px 20px",
+      "labelFontSize": "11px",
+      "valueFontSize": "18px",
+      "labelLetterSpacing": "0.2em",
+      "spacing": "0",
+      "colors": {
+        "label": "#C9A44C",
+        "value": "#18382F",
+        "divider": "#C9A44C",
+        "border": "rgba(255,255,255,0.65)",
+        "buttonText": "#FFFFFF",
+        "buttonGradientFrom": "#D8B25B",
+        "buttonGradientTo": "#B98B2C"
+      },
+      "labels": {
+        "checkIn": "CHECK IN",
+        "checkOut": "CHECK OUT",
+        "guests": "GUESTS",
+        "children": "CHILDREN",
+        "room": "ROOM"
+      },
+      "icons": {
+        "checkIn": "calendar",
+        "checkOut": "calendar",
+        "guests": "users",
+        "children": "baby",
+        "room": "bed-double"
+      },
+      "animations": {
+        "entrance": true,
+        "float": true,
+        "buttonGlow": true,
+        "hoverGlow": true,
+        "buttonLift": true
+      },
+      "responsive": {
+        "desktopBottom": "0px",
+        "desktopMaxWidth": "1700px",
+        "desktopWidth": "95%",
+        "desktopMinWidth": "0",
+        "mobileBottom": "0px",
+        "mobileHorizontalInset": "12px",
+        "mobileRadius": "26px",
+        "mobilePadding": "16px"
+      },
+      "fields": {
+        "checkIn": true,
+        "checkOut": true,
+        "guests": true,
+        "children": true,
+        "room": true
+      }
+    },
+    "effects": {
+      "goldenGlow": true,
+      "creamGlow": true,
+      "orangeGlow": false,
+      "greenGlow": false,
+      "lightRays": true,
+      "fog": false,
+      "floatingLeaves": true,
+      "floatingShapes": true,
+      "particles": false,
+      "blur": 0,
+      "gradient": "radial-gradient(ellipse at 75% 40%, rgba(200, 154, 61, 0.12) 0%, transparent 55%)"
+    },
+    "floating": {
+      "shapeCount": 4,
+      "shapeSize": 32,
+      "rotation": 45,
+      "speed": 22,
+      "opacity": 0.25,
+      "animation": "float",
+      "randomMovement": true
+    },
+    "animations": {
+      "entrance": "fade",
+      "scrollReveal": true,
+      "mouseParallax": true,
+      "transitionDuration": 0.9,
+      "easing": "0.22, 1, 0.36, 1"
+    },
+    "responsive": {
+      "desktopPadding": "6rem 2rem 2rem",
+      "tabletPadding": "5rem 1.5rem 1.5rem",
+      "mobilePadding": "5.5rem 1.25rem 1.25rem",
+      "imageSizeDesktop": 520,
+      "imageSizeTablet": 380,
+      "imageSizeMobile": 280,
+      "contentAlignment": "left"
+    },
+    "seo": {
+      "heroTitle": "Hotel Thamel Park & Spa | Luxury in Thamel, Kathmandu",
+      "metaTitle": "Hotel Thamel Park & Spa | Luxury Hotel in Thamel, Kathmandu",
+      "metaDescription": "Experience unparalleled comfort and refined hospitality at Hotel Thamel Park & Spa in the heart of Thamel, Kathmandu.",
+      "ogImage": "/media/hero/hero-background.png",
+      "twitterImage": "/media/hero/hero-background.png",
+      "altText": "Hotel Thamel Park & Spa luxury property with Himalayan views",
+      "schemaEnabled": true
+    }
+  },
+  "homeSections": {
+    "hero": {
+      "enabled": true,
+      "order": 0
+    },
+    "welcome": {
+      "enabled": true,
+      "order": 1,
+      "eyebrow": "Welcome",
+      "title": "In the Heart of Thamel",
+      "description": "Outstanding hospitality in Kathmandu."
+    },
+    "aboutPreview": {
+      "enabled": true,
+      "order": 2,
+      "eyebrow": "Heritage",
+      "title": "Authentic Cultural Experience",
+      "description": "Experience Nepali warmth and charm."
+    },
+    "rooms": {
+      "enabled": true,
+      "order": 3,
+      "eyebrow": "Accommodations",
+      "title": "The Rooms",
+      "description": "Sanctuaries of refined comfort.",
+      "ctaText": "View All Rooms",
+      "ctaHref": "/rooms"
+    },
+    "facilities": {
+      "enabled": true,
+      "order": 4,
+      "eyebrow": "Amenities",
+      "title": "World-Class Facilities",
+      "description": "Every detail curated for your comfort."
+    },
+    "dining": {
+      "enabled": true,
+      "order": 5,
+      "eyebrow": "Culinary",
+      "title": "Dining Experiences",
+      "description": "From Korean cuisine to rooftop evenings."
+    },
+    "spa": {
+      "enabled": true,
+      "order": 6,
+      "eyebrow": "Wellness",
+      "title": "Spa & Renewal",
+      "description": "Restore body, mind, and spirit."
+    },
+    "gallery": {
+      "enabled": true,
+      "order": 7,
+      "eyebrow": "Visual Journey",
+      "title": "Moments of Elegance",
+      "description": "Discover our world of luxury."
+    },
+    "testimonials": {
+      "enabled": true,
+      "order": 8,
+      "eyebrow": "Guest Voices",
+      "title": "Testimonials",
+      "description": "Stories from our distinguished guests."
+    },
+    "cta": {
+      "enabled": true,
+      "order": 9,
+      "eyebrow": "Reservations",
+      "title": "Begin Your Journey",
+      "description": "Our concierge awaits your arrival.",
+      "ctaText": "Contact Us",
+      "ctaHref": "/contact"
+    }
+  },
+  "overview": {
+    "eyebrow": "Welcome",
+    "title": "In the Heart of Thamel, Outstanding Hospitality",
+    "content": "Hotel Thamel Park & Spa is a premium hotel located in the heart of Thamel, Kathmandu, offering comfortable rooms, fine dining, wellness experiences, and warm Nepalese hospitality.",
+    "stats": [
+      {
+        "value": 20,
+        "suffix": "+",
+        "label": "Years of Hospitality"
+      },
+      {
+        "value": 84,
+        "suffix": "",
+        "label": "Luxury Rooms"
+      },
+      {
+        "value": 25,
+        "suffix": "K+",
+        "label": "Happy Guests"
+      }
+    ],
+    "galleryImages": [
+      "/media/gallery/01.jpg",
+      "/media/gallery/02.jpg",
+      "/media/gallery/03.jpg",
+      "/media/gallery/04.jpg"
+    ]
+  },
+  "roomsSection": {
+    "eyebrow": "Accommodations",
+    "title": "The Rooms",
+    "description": "Each room is a sanctuary of refined comfort, designed for discerning travelers seeking the finest hospitality.",
+    "ctaText": "Discover All Rooms",
+    "ctaHref": "/rooms"
+  },
+  "experiences": [
+    {
+      "id": "garden-restaurant",
+      "title": "Garden View & Korean Restaurant",
+      "content": "Garden View & Korean Restaurant offers a relaxing dining experience with beautiful ambience, delicious cuisine, and memorable hospitality.",
+      "imageSrc": "/media/dining/korean-restaurant.jpg",
+      "imagePosition": "left",
+      "variant": "dining"
+    },
+    {
+      "id": "lobby-cafe",
+      "title": "Cafe in Lobby Area",
+      "content": "Enjoy premium coffee and relaxing moments at our lobby cafe, perfect for meetings and casual conversations.",
+      "imageSrc": "/media/dining/lobby-cafe.jpg",
+      "imagePosition": "right",
+      "variant": "cafe"
+    },
+    {
+      "id": "sky-lounge",
+      "title": "Sky Lounge Restaurant & Bar",
+      "content": "Experience rooftop dining, refreshing drinks, and a beautiful atmosphere at Sky Lounge Restaurant & Bar.",
+      "imageSrc": "/media/dining/skyz-lounge.jpg",
+      "imagePosition": "left",
+      "variant": "lounge"
+    },
+    {
+      "id": "spa-wellness",
+      "title": "Spa & Wellness",
+      "content": "Relax and refresh with our premium spa and wellness experiences designed for complete comfort.",
+      "imageSrc": "/media/spa/wellness.jpg",
+      "imagePosition": "right",
+      "variant": "spa"
+    }
+  ],
+  "locationAdvantages": [
+    {
+      "id": "thamel",
+      "title": "Thamel",
+      "distance": "Prime Location",
+      "icon": "MapPin"
+    },
+    {
+      "id": "airport",
+      "title": "Tribhuvan International Airport",
+      "distance": "6 KM",
+      "icon": "Plane"
+    },
+    {
+      "id": "pashupatinath",
+      "title": "Pashupatinath Temple",
+      "distance": "5 KM",
+      "icon": "Landmark"
+    },
+    {
+      "id": "swayambhunath",
+      "title": "Swayambhunath Stupa",
+      "distance": "3 KM",
+      "icon": "Church"
+    },
+    {
+      "id": "durbar",
+      "title": "Kathmandu Durbar Square",
+      "distance": "1.5 KM",
+      "icon": "Castle"
+    },
+    {
+      "id": "garden",
+      "title": "Garden of Dreams",
+      "distance": "400 M",
+      "icon": "Flower2"
+    }
+  ],
+  "culture": {
+    "eyebrow": "Nepali Heritage",
+    "title": "Authentic Cultural Experience",
+    "content": "Experience authentic Nepali culture, traditional hospitality, and the unique charm of Kathmandu while staying with us.",
+    "imageSrc": "/media/culture/nepali-culture.jpg",
+    "media": {
+      "type": "image",
+      "imageSrc": "/media/culture/nepali-culture.jpg",
+      "videoSrc": "",
+      "poster": "",
+      "alt": "Authentic Nepali cultural experience in Kathmandu",
+      "caption": "Discover the soul of Nepal from the heart of Thamel"
+    },
+    "quote": "In Nepal, every courtyard holds a story, every temple a prayer, and every guest a blessing.",
+    "quoteAuthor": "Nepali Proverb",
+    "stats": [
+      {
+        "value": "7",
+        "label": "UNESCO Sites Nearby",
+        "icon": "Landmark"
+      },
+      {
+        "value": "2000+",
+        "label": "Years of Heritage",
+        "icon": "History"
+      },
+      {
+        "value": "50+",
+        "label": "Curated Experiences",
+        "icon": "Compass"
+      }
+    ],
+    "highlights": [
+      {
+        "id": "h1",
+        "title": "Heritage Walks",
+        "description": "Private guided tours through UNESCO monuments and hidden courtyards.",
+        "icon": "Footprints"
+      },
+      {
+        "id": "h2",
+        "title": "Local Cuisine",
+        "description": "Authentic Newari feasts, momo tastings, and market-to-table experiences.",
+        "icon": "UtensilsCrossed"
+      },
+      {
+        "id": "h3",
+        "title": "Temple Visits",
+        "description": "Sunrise ceremonies, evening aarti, and spiritual guidance.",
+        "icon": "Church"
+      },
+      {
+        "id": "h4",
+        "title": "Festival Calendar",
+        "description": "Dashain, Tihar, Holi, and Indra Jatra celebrations year-round.",
+        "icon": "Sparkles"
+      }
+    ],
+    "timeline": [
+      {
+        "year": "Morning",
+        "title": "Temple & Heritage Walk",
+        "description": "Begin with Swayambhunath or Durbar Square at golden hour."
+      },
+      {
+        "year": "Afternoon",
+        "title": "Artisan Quarter",
+        "description": "Visit Patan workshops for brass, thangka, and woodcarving."
+      },
+      {
+        "year": "Evening",
+        "title": "Cultural Dining",
+        "description": "Newari feast or rooftop dinner with Himalayan views."
+      }
+    ],
+    "ctaText": "Explore Cultural Experience",
+    "ctaHref": "/cultural-experience"
+  },
+  "facilitiesSection": {
+    "eyebrow": "World-Class Amenities",
+    "title": "All the Essentials for a Refined Stay",
+    "description": "Every detail has been curated to deliver the comfort, convenience, and elegance expected of an international five-star retreat.",
+    "caption": "Inspired by Nepalese hospitality, surrounded by comfort to offer a truly different experience.",
+    "media": {
+      "type": "image",
+      "imageSrc": "",
+      "videoSrc": "",
+      "poster": "",
+      "alt": "Premium hotel amenities and facilities",
+      "caption": "Premium Amenities"
+    }
+  },
+  "culturalExperiencePage": {
+    "hero": {
+      "title": "Cultural Experience",
+      "subtitle": "Nepali Heritage",
+      "description": "Immerse yourself in the traditions, temples, cuisine, and living heritage of Kathmandu Valley.",
+      "imageSrc": "/media/culture/nepali-culture.jpg",
+      "media": {
+        "type": "image",
+        "imageSrc": "/media/culture/nepali-culture.jpg",
+        "videoSrc": "",
+        "poster": "",
+        "alt": "Cultural experience in Kathmandu",
+        "caption": ""
+      }
+    },
+    "seo": {
+      "title": "Cultural Experience | Hotel Thamel Park & Spa",
+      "description": "Discover authentic Nepali culture, UNESCO heritage, local cuisine, temples, and curated Kathmandu experiences at Hotel Thamel Park & Spa.",
+      "canonical": "/cultural-experience",
+      "ogImage": "/media/culture/nepali-culture.jpg"
+    },
+    "story": {
+      "title": "The Soul of Kathmandu",
+      "content": "Welcome to a journey through the cultural heart of Nepal — curated for discerning travellers who seek depth, beauty, and genuine connection. Kathmandu Valley has been a crossroads of civilisation for over two millennia, and Thamel remains its most celebrated gateway for explorers from every corner of the world.\n\nNepali hospitality is not merely a service philosophy; it is a sacred duty rooted in the Sanskrit principle of \"Atithi Devo Bhava\" — the guest is god. At Hotel Thamel Park & Spa, this tradition informs every interaction, from personalised welcome rituals to thoughtful cultural recommendations tailored to your interests.\n\nThe valley's UNESCO World Heritage ensemble represents one of the world's most extraordinary concentrations of living heritage. Pashupatinath Temple, one of Hinduism's holiest shrines, draws pilgrims along the sacred Bagmati River. Boudhanath's immense mandala stupa is a centre of Tibetan Buddhist devotion. Kathmandu Durbar Square preserves the royal legacy of the Malla kings through exquisite pagoda architecture and courtyards that have witnessed coronations and festivals for centuries.\n\nLocal food tells the story of Nepal's diverse geography and communities. Himalayan trout, Terai grains, hill-region pickles, and Kathmandu Valley's distinctive Newari cuisine each offer a chapter in the nation's culinary narrative. Our team arranges market visits, cooking demonstrations, and reservations at celebrated local establishments where authenticity is never compromised for convenience.\n\nWalking tours reveal Thamel's layered history — from its origins as a rest stop for trans-Himalayan traders to its evolution as a cosmopolitan neighbourhood where trekkers, scholars, and artists converge. Wander through Asan bazaar's spice-laden lanes, discover hidden bahals (courtyard monasteries), and ascend to viewpoints where the snow-capped Langtang range frames the urban skyline.\n\nTraditional architecture throughout the valley — tiered temples, carved toranas, and red-brick townhouses with ornately framed windows — reflects a mastery of wood, stone, and spiritual symbolism. Our cultural concierge provides expert context, ensuring every excursion becomes an education in Nepal's artistic and religious heritage.\n\nWhether you join us during Dashain's family reunions, Tihar's festival of lights, or the monsoon-season tranquillity when the valley breathes in emerald green, your luxury stay becomes a canvas for authentic local experiences — refined, respectful, and unforgettable."
+    },
+    "gallery": [
+      {
+        "id": "cg1",
+        "src": "/media/culture/nepali-culture.jpg",
+        "title": "Heritage Courtyard",
+        "alt": "Traditional Nepali courtyard"
+      },
+      {
+        "id": "cg2",
+        "src": "/media/gallery/01.jpg",
+        "title": "Temple Architecture",
+        "alt": "Pagoda temple architecture"
+      },
+      {
+        "id": "cg3",
+        "src": "/media/gallery/02.jpg",
+        "title": "Local Festival",
+        "alt": "Nepali festival celebration"
+      },
+      {
+        "id": "cg4",
+        "src": "/media/gallery/03.jpg",
+        "title": "Artisan Craft",
+        "alt": "Traditional artisan workshop"
+      },
+      {
+        "id": "cg5",
+        "src": "/media/gallery/04.jpg",
+        "title": "Himalayan Vista",
+        "alt": "Himalayan mountain view from Kathmandu"
+      },
+      {
+        "id": "cg6",
+        "src": "/media/gallery/05.jpg",
+        "title": "Cultural Dining",
+        "alt": "Traditional Nepali dining"
+      }
+    ],
+    "timeline": [
+      {
+        "year": "Day 1",
+        "title": "Arrival & Orientation",
+        "description": "Welcome ritual, Thamel heritage walk, and sunset viewpoints."
+      },
+      {
+        "year": "Day 2",
+        "title": "UNESCO Heritage Circuit",
+        "description": "Swayambhunath, Boudhanath, and Pashupatinath with expert guide."
+      },
+      {
+        "year": "Day 3",
+        "title": "Art & Architecture",
+        "description": "Patan and Bhaktapur Durbar Squares, artisan workshops, and local lunch."
+      },
+      {
+        "year": "Day 4",
+        "title": "Culinary Journey",
+        "description": "Market visit, cooking class, and Newari feast experience."
+      },
+      {
+        "year": "Day 5",
+        "title": "Mountain Excursion",
+        "description": "Nagarkot sunrise or Chandragiri cable car with panoramic views."
+      }
+    ],
+    "experienceCards": [
+      {
+        "id": "e1",
+        "title": "Private Heritage Tours",
+        "description": "Expert-led walks through UNESCO sites and hidden courtyards.",
+        "icon": "Landmark"
+      },
+      {
+        "id": "e2",
+        "title": "Temple Ceremonies",
+        "description": "Morning prayers and evening aarti at sacred sites.",
+        "icon": "Church"
+      },
+      {
+        "id": "e3",
+        "title": "Local Food Trails",
+        "description": "Curated tastings from street food to fine Newari dining.",
+        "icon": "UtensilsCrossed"
+      },
+      {
+        "id": "e4",
+        "title": "Festival Experiences",
+        "description": "Seasonal celebrations with cultural context and access.",
+        "icon": "Sparkles"
+      },
+      {
+        "id": "e5",
+        "title": "Artisan Workshops",
+        "description": "Brass, thangka, pottery, and woodcarving demonstrations.",
+        "icon": "Palette"
+      },
+      {
+        "id": "e6",
+        "title": "Luxury Concierge",
+        "description": "Personalised itineraries blending culture with five-star comfort.",
+        "icon": "ConciergeBell"
+      }
+    ],
+    "faq": [
+      {
+        "id": "f1",
+        "question": "How far are UNESCO sites from the hotel?",
+        "answer": "Most major heritage sites are within 20–45 minutes by car. Our concierge arranges private transport and expert guides."
+      },
+      {
+        "id": "f2",
+        "question": "Can you arrange authentic local dining?",
+        "answer": "Yes. We offer curated restaurant reservations, private Newari feasts, cooking classes, and guided food walks in Thamel and beyond."
+      },
+      {
+        "id": "f3",
+        "question": "Are cultural tours suitable for families?",
+        "answer": "Absolutely. We tailor walking tours, temple visits, and festival experiences for all ages and mobility levels."
+      },
+      {
+        "id": "f4",
+        "question": "When is the best time to visit for festivals?",
+        "answer": "Dashain (September–October) and Tihar (October–November) are peak festival seasons. Holi (March) and Indra Jatra (September) are also spectacular."
+      }
+    ]
+  },
+  "facilities": [
+    {
+      "id": "wifi",
+      "name": "Free Wi-Fi",
+      "description": "High-speed internet throughout the hotel.",
+      "icon": "Wifi"
+    },
+    {
+      "id": "transfer",
+      "name": "Airport Transfer",
+      "description": "Seamless arrival and departure assistance.",
+      "icon": "Plane"
+    },
+    {
+      "id": "room-service",
+      "name": "Room Service",
+      "description": "In-room dining available around the clock.",
+      "icon": "ConciergeBell"
+    },
+    {
+      "id": "restaurant",
+      "name": "Restaurant",
+      "description": "Fine dining with international and local cuisine.",
+      "icon": "UtensilsCrossed"
+    },
+    {
+      "id": "lounge",
+      "name": "Lounge",
+      "description": "Elegant rooftop lounge with panoramic views.",
+      "icon": "Wine"
+    },
+    {
+      "id": "spa",
+      "name": "Spa",
+      "description": "Premium wellness treatments and therapies.",
+      "icon": "Sparkles"
+    },
+    {
+      "id": "family",
+      "name": "Family Rooms",
+      "description": "Spacious accommodations for families.",
+      "icon": "Users"
+    },
+    {
+      "id": "housekeeping",
+      "name": "Daily Housekeeping",
+      "description": "Impeccable room maintenance every day.",
+      "icon": "Sparkle"
+    },
+    {
+      "id": "front-desk",
+      "name": "Front Desk 24/7",
+      "description": "Always available for your needs.",
+      "icon": "Clock"
+    },
+    {
+      "id": "sauna",
+      "name": "Sauna & Steam",
+      "description": "Rejuvenating thermal wellness experiences.",
+      "icon": "Flame"
+    }
+  ],
+  "rooms": [
+    {
+      "id": "super-deluxe-twin",
+      "name": "Super Deluxe Twin Room",
+      "price": 60,
+      "guests": "2 Guests",
+      "size": "32 m²",
+      "bedType": "Twin Beds",
+      "features": [
+        "Twin Beds",
+        "City View",
+        "En-suite Bathroom",
+        "Climate Control"
+      ],
+      "description": "An exquisite twin room offering refined comfort with elegant furnishings and serene ambiance for discerning travelers.",
+      "longDescription": "The Super Deluxe Twin Room is designed for travellers who appreciate space, symmetry, and refined detail. Twin beds dressed in premium linens, a dedicated work area, and a serene city outlook create an atmosphere of calm sophistication. En-suite marble bathroom, climate control, and complimentary high-speed Wi-Fi complete your sanctuary in Thamel.",
+      "imageSrc": "/media/rooms/super-deluxe-twin.jpg",
+      "gallery": [
+        "/media/rooms/super-deluxe-twin.jpg",
+        "/media/gallery/06.jpg",
+        "/media/gallery/01.jpg"
+      ],
+      "amenities": [
+        "Twin Beds",
+        "City View",
+        "En-suite Bathroom",
+        "Climate Control",
+        "Premium Linens",
+        "Complimentary Wi-Fi"
+      ],
+      "policies": [
+        "Check-in from 2:00 PM · Check-out by 12:00 PM",
+        "Non-smoking rooms throughout the property",
+        "Valid photo identification required at check-in",
+        "Cancellation policy applies — contact reservations for details"
+      ]
+    },
+    {
+      "id": "super-deluxe",
+      "name": "Super Deluxe Room",
+      "price": 60,
+      "guests": "2 Guests",
+      "size": "35 m²",
+      "bedType": "King Bed",
+      "features": [
+        "King Bed",
+        "Garden View",
+        "Mini Bar",
+        "Premium Linens"
+      ],
+      "description": "A spacious sanctuary of luxury featuring a king bed, sophisticated décor, and every amenity for an exceptional stay.",
+      "longDescription": "Our Super Deluxe Room is a generous retreat featuring a king bed, garden-facing views, and interiors composed in warm cream and sage tones. A curated mini bar, seating area, and premium bath amenities elevate every moment. Ideal for couples and solo travellers seeking understated luxury in the heart of Kathmandu.",
+      "imageSrc": "/media/rooms/super-deluxe.jpg",
+      "gallery": [
+        "/media/rooms/super-deluxe.jpg",
+        "/media/gallery/02.jpg",
+        "/media/gallery/03.jpg"
+      ],
+      "amenities": [
+        "King Bed",
+        "Garden View",
+        "Mini Bar",
+        "Premium Linens",
+        "Seating Area",
+        "In-room Safe"
+      ],
+      "policies": [
+        "Check-in from 2:00 PM · Check-out by 12:00 PM",
+        "Non-smoking rooms throughout the property",
+        "Valid photo identification required at check-in",
+        "Cancellation policy applies — contact reservations for details"
+      ]
+    },
+    {
+      "id": "family-room",
+      "name": "Family Room",
+      "price": 55,
+      "guests": "3–4 Guests",
+      "size": "42 m²",
+      "bedType": "Multiple Beds",
+      "features": [
+        "Family Friendly",
+        "Spacious",
+        "Seating Area",
+        "Extra Storage"
+      ],
+      "description": "Generously designed for families, combining comfort and space with thoughtful amenities for memorable stays.",
+      "longDescription": "The Family Room offers generous proportions for parents and children travelling together. Multiple sleeping configurations, a spacious seating area, and additional storage ensure everyone enjoys comfort and privacy. Thoughtful touches — from extra towels to flexible bedding — reflect our commitment to family hospitality at a luxury standard.",
+      "imageSrc": "/media/rooms/family-room.jpg",
+      "gallery": [
+        "/media/rooms/family-room.jpg",
+        "/media/gallery/04.jpg",
+        "/media/gallery/05.jpg"
+      ],
+      "amenities": [
+        "Family Friendly",
+        "Spacious Layout",
+        "Seating Area",
+        "Extra Storage",
+        "Climate Control",
+        "Complimentary Wi-Fi"
+      ],
+      "policies": [
+        "Check-in from 2:00 PM · Check-out by 12:00 PM",
+        "Non-smoking rooms throughout the property",
+        "Valid photo identification required at check-in",
+        "Cancellation policy applies — contact reservations for details"
+      ]
+    },
+    {
+      "id": "standard-deluxe",
+      "name": "Standard Deluxe Room",
+      "price": 50,
+      "guests": "2 Guests",
+      "size": "28 m²",
+      "bedType": "Queen Bed",
+      "features": [
+        "Queen Bed",
+        "Premium Comfort",
+        "Work Space",
+        "Complimentary WiFi"
+      ],
+      "description": "Elegant simplicity meets luxury comfort in our thoughtfully curated standard deluxe accommodation.",
+      "longDescription": "The Standard Deluxe Room distils our luxury philosophy into an elegantly efficient space. A queen bed with premium linens, dedicated work surface, and refined bath amenities provide everything discerning travellers require. Perfect for business visits and cultural explorers who value quality without excess.",
+      "imageSrc": "/media/rooms/standard-deluxe.jpg",
+      "gallery": [
+        "/media/rooms/standard-deluxe.jpg",
+        "/media/gallery/06.jpg",
+        "/media/gallery/02.jpg"
+      ],
+      "amenities": [
+        "Queen Bed",
+        "Premium Comfort",
+        "Work Space",
+        "Complimentary WiFi",
+        "En-suite Bathroom",
+        "Daily Housekeeping"
+      ],
+      "policies": [
+        "Check-in from 2:00 PM · Check-out by 12:00 PM",
+        "Non-smoking rooms throughout the property",
+        "Valid photo identification required at check-in",
+        "Cancellation policy applies — contact reservations for details"
+      ]
+    }
+  ],
+  "roomBooking": {
+    "submitLabel": "Request Availability",
+    "payOnlineLabel": "Pay Online",
+    "payAtHotelLabel": "Pay At Hotel",
+    "specialRequestLabel": "Special Requests",
+    "availabilityNote": "Our reservations team will confirm availability and respond within 24 hours."
+  },
+  "diningPage": {
+    "hero": {
+      "title": "Culinary Excellence",
+      "subtitle": "Dining",
+      "description": "From authentic Korean cuisine to rooftop evenings, every meal is an occasion.",
+      "imageSrc": "/media/dining/korean-restaurant.jpg"
+    },
+    "seo": {
+      "title": "Dining | Hotel Thamel Park & Spa",
+      "description": "Fine dining, Korean restaurant, and Sky Lounge at Hotel Thamel Park & Spa, Kathmandu."
+    },
+    "intro": {
+      "title": "A World of Flavors",
+      "content": "Our restaurants celebrate global cuisine with local soul — crafted by expert chefs in settings designed for memorable dining experiences."
+    },
+    "venues": [
+      {
+        "id": "korean-restaurant",
+        "name": "Garden View Korean Restaurant",
+        "tagline": "Authentic flavors in an elegant garden sanctuary",
+        "description": "Savor authentic Korean cuisine in a serene garden setting, where premium ingredients and warm hospitality create unforgettable meals.",
+        "features": [
+          "Authentic Korean Cuisine",
+          "Premium Ingredients",
+          "Garden Ambience",
+          "Family Dining"
+        ],
+        "imageSrc": "/media/dining/korean-restaurant.jpg"
+      },
+      {
+        "id": "sky-lounge",
+        "name": "Sky Lounge Restaurant & Bar",
+        "tagline": "Elevated evenings above the Kathmandu skyline",
+        "description": "Experience rooftop dining with signature cocktails, panoramic city views, and an atmosphere of refined celebration.",
+        "features": [
+          "Rooftop Views",
+          "Signature Cocktails",
+          "Live Atmosphere",
+          "Private Events"
+        ],
+        "imageSrc": "/media/dining/skyz-lounge.jpg"
+      },
+      {
+        "id": "lobby-cafe",
+        "name": "Lobby Cafe",
+        "tagline": "Premium coffee and quiet moments",
+        "description": "Begin your day with artisan coffee or unwind with light fare in our elegant lobby cafe — perfect for meetings and relaxation.",
+        "features": [
+          "Artisan Coffee",
+          "Light Fare",
+          "All-Day Service",
+          "Meeting Friendly"
+        ],
+        "imageSrc": "/media/dining/lobby-cafe.jpg"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "Chef-Crafted Menus",
+        "description": "Seasonal ingredients prepared with international expertise."
+      },
+      {
+        "title": "Private Dining",
+        "description": "Intimate settings for celebrations and business gatherings."
+      },
+      {
+        "title": "Wine Selection",
+        "description": "Curated wines paired with every course."
+      }
+    ],
+    "gallery": [
+      {
+        "id": "d1",
+        "src": "/media/dining/korean-restaurant.jpg",
+        "title": "Garden Restaurant"
+      },
+      {
+        "id": "d2",
+        "src": "/media/dining/skyz-lounge.jpg",
+        "title": "Sky Lounge"
+      },
+      {
+        "id": "d3",
+        "src": "/media/dining/lobby-cafe.jpg",
+        "title": "Lobby Cafe"
+      }
+    ],
+    "cta": {
+      "title": "Reserve Your Table",
+      "description": "Our concierge team is ready to arrange your perfect dining experience.",
+      "buttonText": "Make a Reservation"
+    }
+  },
+  "spaPage": {
+    "hero": {
+      "title": "Spa & Wellness",
+      "subtitle": "Rejuvenation",
+      "description": "A sanctuary dedicated to restoration, renewal, and the art of well-being.",
+      "imageSrc": "/media/spa/wellness.jpg"
+    },
+    "seo": {
+      "title": "Spa & Wellness | Hotel Thamel Park & Spa",
+      "description": "Luxury spa treatments, massage, sauna, and wellness at Hotel Thamel Park & Spa."
+    },
+    "philosophy": {
+      "title": "The Art of Renewal",
+      "content": "Our wellness sanctuary blends time-honored healing traditions with contemporary luxury. Each treatment is a bespoke journey designed to restore harmony to body, mind, and spirit.",
+      "imageSrc": "/media/spa/treatment.jpg"
+    },
+    "services": [
+      {
+        "id": "massage",
+        "name": "Massage",
+        "description": "Therapeutic and relaxation massage treatments tailored to your needs."
+      },
+      {
+        "id": "steam",
+        "name": "Steam",
+        "description": "Purifying steam sessions to detoxify and rejuvenate the body."
+      },
+      {
+        "id": "sauna",
+        "name": "Sauna",
+        "description": "Traditional sauna experiences for deep relaxation and wellness."
+      },
+      {
+        "id": "waxing",
+        "name": "Waxing",
+        "description": "Professional grooming services in a serene spa environment."
+      },
+      {
+        "id": "wellness",
+        "name": "Wellness Packages",
+        "description": "Comprehensive spa journeys combining multiple treatments."
+      },
+      {
+        "id": "aromatherapy",
+        "name": "Aromatherapy",
+        "description": "Essential oil blends to harmonize body, mind, and spirit."
+      }
+    ],
+    "gallery": [
+      {
+        "id": "s1",
+        "src": "/media/spa/wellness.jpg",
+        "title": "Wellness Haven"
+      },
+      {
+        "id": "s2",
+        "src": "/media/spa/treatment.jpg",
+        "title": "Spa Treatment"
+      },
+      {
+        "id": "s3",
+        "src": "/media/gallery/05.jpg",
+        "title": "Thermal Suite"
+      }
+    ],
+    "cta": {
+      "title": "Book Your Appointment",
+      "description": "Reserve your wellness journey with our spa concierge team.",
+      "buttonText": "Schedule Treatment"
+    }
+  },
+  "aboutPage": {
+    "hero": {
+      "title": "Our Story",
+      "subtitle": "About",
+      "description": "A sanctuary of refined luxury where exceptional hospitality meets the soul of Kathmandu.",
+      "imageSrc": "/media/gallery/01.jpg"
+    },
+    "seo": {
+      "title": "About | Hotel Thamel Park & Spa",
+      "description": "Discover the story, mission, and vision of Hotel Thamel Park & Spa in Thamel, Kathmandu."
+    },
+    "history": {
+      "title": "A Legacy of Hospitality",
+      "content": "Founded in the heart of Thamel, Hotel Thamel Park & Spa has grown into a destination beloved by international travelers. Our commitment to warm Nepalese hospitality and world-class standards defines every guest experience."
+    },
+    "mission": {
+      "title": "Our Mission",
+      "content": "To deliver exceptional luxury hospitality that honors Nepalese warmth while meeting the expectations of discerning global travelers."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "content": "To be recognized as Kathmandu's premier boutique luxury hotel — a place where every guest feels genuinely welcomed, restored, and inspired."
+    },
+    "facilities": [
+      {
+        "name": "Luxury Rooms",
+        "description": "Four distinctive room categories designed for comfort.",
+        "icon": "Bed"
+      },
+      {
+        "name": "Fine Dining",
+        "description": "Multiple restaurants and a rooftop lounge.",
+        "icon": "UtensilsCrossed"
+      },
+      {
+        "name": "Spa & Wellness",
+        "description": "Full-service spa with massage, sauna, and steam.",
+        "icon": "Sparkles"
+      },
+      {
+        "name": "Concierge",
+        "description": "24/7 front desk and travel assistance.",
+        "icon": "ConciergeBell"
+      }
+    ],
+    "timeline": [
+      {
+        "year": "2004",
+        "title": "Foundation",
+        "description": "Hotel Thamel Park opens in the heart of Thamel."
+      },
+      {
+        "year": "2012",
+        "title": "Spa Launch",
+        "description": "Premium wellness center and spa facilities introduced."
+      },
+      {
+        "year": "2018",
+        "title": "Sky Lounge",
+        "description": "Rooftop restaurant and bar opens to international acclaim."
+      },
+      {
+        "year": "2024",
+        "title": "Renovation",
+        "description": "Complete luxury renovation across all guest rooms."
+      }
+    ]
+  },
+  "reviews": [
+    {
+      "id": "1",
+      "name": "Elena Richardson",
+      "country": "United Kingdom",
+      "rating": 5,
+      "review": "An absolutely exceptional stay. The attention to detail, the spa experience, and the Korean restaurant exceeded every expectation."
+    },
+    {
+      "id": "2",
+      "name": "James Nakamura",
+      "country": "Japan",
+      "rating": 5,
+      "review": "The Sky Lounge at sunset is unforgettable. Impeccable service throughout our stay — truly world-class hospitality."
+    },
+    {
+      "id": "3",
+      "name": "Sophie Laurent",
+      "country": "France",
+      "rating": 5,
+      "review": "From the moment we arrived, every detail was perfect. The family room was spacious and elegant."
+    }
+  ],
+  "gallery": [
+    {
+      "id": "1",
+      "src": "/media/gallery/01.jpg",
+      "title": "Grand Arrival",
+      "category": "Hotel",
+      "type": "image"
+    },
+    {
+      "id": "2",
+      "src": "/media/gallery/02.jpg",
+      "title": "Garden Sanctuary",
+      "category": "Hotel",
+      "type": "image"
+    },
+    {
+      "id": "3",
+      "src": "/media/gallery/03.jpg",
+      "title": "Culinary Artistry",
+      "category": "Restaurant",
+      "type": "image"
+    },
+    {
+      "id": "4",
+      "src": "/media/gallery/04.jpg",
+      "title": "Rooftop Serenity",
+      "category": "Restaurant",
+      "type": "image"
+    },
+    {
+      "id": "5",
+      "src": "/media/gallery/05.jpg",
+      "title": "Wellness Haven",
+      "category": "Spa",
+      "type": "image"
+    },
+    {
+      "id": "6",
+      "src": "/media/gallery/06.jpg",
+      "title": "Suite Living",
+      "category": "Rooms",
+      "type": "image"
+    },
+    {
+      "id": "7",
+      "src": "/media/rooms/super-deluxe.jpg",
+      "title": "Super Deluxe",
+      "category": "Rooms",
+      "type": "image"
+    },
+    {
+      "id": "8",
+      "src": "/media/spa/wellness.jpg",
+      "title": "Spa Retreat",
+      "category": "Spa",
+      "type": "image"
+    },
+    {
+      "id": "9",
+      "src": "/media/dining/skyz-lounge.jpg",
+      "title": "Evening Celebration",
+      "category": "Events",
+      "type": "image"
+    }
+  ],
+  "gallerySection": {
+    "eyebrow": "Visual Journey",
+    "title": "Moments of Elegance",
+    "description": "Discover the artistry of luxury hospitality captured across our world."
+  },
+  "galleryPage": {
+    "seo": {
+      "title": "Gallery | Hotel Thamel Park & Spa",
+      "description": "Explore luxury rooms, spa, dining, and hotel moments at Hotel Thamel Park & Spa."
+    }
+  },
+  "roomsPage": {
+    "seo": {
+      "title": "Rooms & Suites | Hotel Thamel Park & Spa",
+      "description": "Luxury accommodations in Thamel — Super Deluxe, Family Room, and more."
+    }
+  },
+  "contactPage": {
+    "seo": {
+      "title": "Contact | Hotel Thamel Park & Spa",
+      "description": "Contact Hotel Thamel Park & Spa for reservations, spa appointments, and inquiries."
+    }
+  },
+  "contact": {
+    "eyebrow": "Get in Touch",
+    "title": "Begin Your Luxury Journey",
+    "description": "Whether you seek a reservation, spa appointment, or bespoke arrangement, our concierge team is dedicated to exceeding your expectations.",
+    "frontDesk": "24 Hours, 7 Days",
+    "mapEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.234567890123!2d85.3105!3d27.7172!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sThamel%2C%20Kathmandu!5e0!3m2!1sen!2snp!4v1234567890",
+    "workingHours": "Front Desk: 24/7 | Restaurant: 7:00 AM – 11:00 PM | Spa: 9:00 AM – 9:00 PM"
+  },
+  "seo": {
+    "title": "Hotel Thamel Park & Spa | Luxury Hotel in Thamel, Kathmandu",
+    "description": "Experience ultra-luxury hospitality at Hotel Thamel Park & Spa — premium rooms, fine dining, spa wellness, and authentic Nepalese warmth in the heart of Thamel, Kathmandu.",
+    "keywords": "luxury hotel Kathmandu, boutique hotel Thamel, Hotel Thamel Park Spa, spa hotel Kathmandu, fine dining Kathmandu",
+    "ogImage": "/media/og-image.jpg",
+    "favicon": "/favicon.ico",
+    "googleAnalytics": "",
+    "googleTagManager": "",
+    "robotsAllow": true
+  },
+  "theme": {
+    "primary": "#244736",
+    "secondary": "#183426",
+    "accent": "#C99A4A",
+    "champagne": "#D8B46A",
+    "background": "#F8F5EE",
+    "borderRadius": "0.75rem",
+    "fontDisplay": "Cinzel, serif",
+    "fontBody": "Jost, sans-serif",
+    "animationSpeed": "slow",
+    "headerStyle": "glass",
+    "footerStyle": "gradient"
+  },
+  "settings": {
+    "bookingEmail": "reservations@hotelthamelpark.com"
+  },
+  "footer": {
+    "logoSrc": "",
+    "brandName": "HOTEL THAMEL PARK & SPA",
+    "description": "A haven of warmth, tranquility and refined hospitality in the heart of Thamel, Kathmandu.",
+    "tagline": "Where Nepalese warmth meets international luxury.",
+    "quickLinks": [
+      {
+        "label": "Overview",
+        "href": "/"
+      },
+      {
+        "label": "Rooms",
+        "href": "/rooms"
+      },
+      {
+        "label": "Dining",
+        "href": "/dining"
+      },
+      {
+        "label": "Spa & Wellness",
+        "href": "/spa"
+      },
+      {
+        "label": "Gallery",
+        "href": "/gallery"
+      },
+      {
+        "label": "About Us",
+        "href": "/about"
+      },
+      {
+        "label": "Contact Us",
+        "href": "/contact"
+      }
+    ],
+    "contact": {
+      "phone": "+977 1-4412345",
+      "email": "info@hotelthamelpark.com",
+      "location": "Thamel, Kathmandu Nepal",
+      "frontDesk": "24/7 Front Desk Assistance"
+    },
+    "newsletter": {
+      "heading": "NEWSLETTER",
+      "description": "Subscribe to get special offers, exclusive deals and updates.",
+      "buttonText": "Subscribe",
+      "placeholder": "Your email address"
+    },
+    "newsletterText": "Subscribe for exclusive offers and luxury experiences.",
+    "galleryPreview": [
+      {
+        "id": "fg1",
+        "src": "/media/gallery/01.jpg",
+        "alt": "Grand Arrival"
+      },
+      {
+        "id": "fg2",
+        "src": "/media/gallery/02.jpg",
+        "alt": "Garden Sanctuary"
+      },
+      {
+        "id": "fg3",
+        "src": "/media/gallery/03.jpg",
+        "alt": "Culinary Artistry"
+      },
+      {
+        "id": "fg4",
+        "src": "/media/gallery/04.jpg",
+        "alt": "Rooftop Serenity"
+      },
+      {
+        "id": "fg5",
+        "src": "/media/gallery/05.jpg",
+        "alt": "Wellness Haven"
+      },
+      {
+        "id": "fg6",
+        "src": "/media/gallery/06.jpg",
+        "alt": "Suite Living"
+      }
+    ],
+    "showPayments": true,
+    "paymentLabel": "SECURE PAYMENTS",
+    "enabledPayments": [
+      "visa",
+      "mastercard",
+      "unionpay",
+      "alipay",
+      "upi",
+      "esewa"
+    ],
+    "copyrightText": "Hotel Thamel Park & Spa. All Rights Reserved.",
+    "developerLabel": "Developed By The Global Orbit",
+    "developerUrl": "https://theglobalorbit.com/",
+    "social": {
+      "facebook": "https://facebook.com/hotelthamelpark",
+      "instagram": "https://instagram.com/hotelthamelpark",
+      "youtube": "https://youtube.com/hotelthamelpark",
+      "twitter": "https://twitter.com/hotelthamelpark",
+      "linkedin": "https://linkedin.com/company/hotelthamelpark"
+    },
+    "colors": {
+      "topBackground": "#F8F5EE",
+      "bottomBackground": "#183426",
+      "gold": "#C99A4A",
+      "text": "#244736"
+    },
+    "spacing": {
+      "sectionPaddingY": 80
+    }
+  },
+  "mediaLibrary": []
+}
