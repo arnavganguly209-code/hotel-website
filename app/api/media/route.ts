@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/cms/auth";
-import { isDatabaseAvailable, prisma } from "@/lib/db";
+import { isDatabaseAvailable, db } from "@/lib/db";
 import { promises as fs } from "fs";
 import path from "path";
 
@@ -9,8 +9,8 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (isDatabaseAvailable() && prisma) {
-    const files = await prisma.mediaFile.findMany({ orderBy: { createdAt: "desc" } });
+  if (isDatabaseAvailable()) {
+    const files = await db.mediaFile.findMany({ orderBy: { createdAt: "desc" } });
     return NextResponse.json({ files });
   }
 
@@ -23,8 +23,8 @@ export async function DELETE(request: Request) {
   }
 
   const { id, url } = await request.json();
-  if (isDatabaseAvailable() && prisma && id) {
-    await prisma.mediaFile.delete({ where: { id } }).catch(() => null);
+  if (isDatabaseAvailable() && id) {
+    await db.mediaFile.delete({ where: { id } }).catch(() => null);
   }
 
   if (url && url.startsWith("/media/")) {
