@@ -17,6 +17,8 @@
 
 # next.js
 /.next/
+/.open-next/
+/.wrangler/
 /out/
 
 # production
@@ -34,6 +36,7 @@ yarn-error.log*
 
 # env files
 .env*.local
+.dev.vars
 
 # typescript
 *.tsbuildinfo
