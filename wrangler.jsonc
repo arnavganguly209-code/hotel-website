@@ -1,5 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
+  // Workers project (OpenNext). Do NOT set pages_build_output_dir — that enables
+  // static Pages upload and will try to publish .next/cache (25 MiB limit).
   "name": "hotel-thamel-park-spa",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-03-01",
@@ -16,5 +18,8 @@
       "binding": "WORKER_SELF_REFERENCE",
       "service": "hotel-thamel-park-spa"
     }
-  ]
+  ],
+  "observability": {
+    "enabled": true
+  }
 }
