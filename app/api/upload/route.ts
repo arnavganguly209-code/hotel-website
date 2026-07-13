@@ -1,13 +1,60 @@
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/cms/auth";
-import { configureCloudinary } from "@/lib/cloudinary";
+import {
+  cloudinarySafeLog,
+  deleteCloudinaryAsset,
+  formatUploadError,
+  getCloudinary,
+  getCloudinaryDebugInfo,
+  uploadCloudinaryBuffer,
+  verifyCloudinaryCredentials,
+  type CloudinaryResourceType,
+} from "@/lib/cloudinary";
+import { revalidateSiteContent } from "@/lib/cms/revalidate";
 
 export const dynamic = "force-dynamic";
 
-function resourceTypeFromMime(mime: string): "image" | "video" | "raw" {
+function resourceTypeFromMime(mime: string): CloudinaryResourceType {
   if (mime.startsWith("video/")) return "video";
   if (mime.startsWith("image/")) return "image";
   return "raw";
+}
+
+function sanitizeFolder(folder: string): string {
+  return folder
+    .trim()
+    .replace(/[^a-zA-Z0-9_/-]/g, "")
+    .replace(/^\/+|\/+$/g, "")
+    .slice(0, 80) || "uploads";
+}
+
+/** Authenticated credential check — safe for production debugging (no secrets exposed). */
+export async function GET() {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { creds } = getCloudinary();
+    const verification = await verifyCloudinaryCredentials();
+    const debug = getCloudinaryDebugInfo();
+    return NextResponse.json(
+      {
+        ok: verification.ok,
+        ...cloudinarySafeLog(creds),
+        credentialSource: creds.source,
+        message: verification.message,
+        debug,
+      },
+      { status: verification.ok ? 200 : 500 }
+    );
+  } catch (error) {
+    const formatted = formatUploadError(error);
+    return NextResponse.json(
+      { ok: false, error: formatted.message, code: formatted.code, debug: formatted.debug },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: Request) {
@@ -15,44 +62,77 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    configureCloudinary();
-    const { v2: cloudinary } = await import("cloudinary");
+  let folder = "uploads";
 
+  try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
-    const folder = (formData.get("folder") as string) || "uploads";
-    const oldPublicId = (formData.get("oldPublicId") as string) || "";
+    folder = sanitizeFolder((formData.get("folder") as string) || "uploads");
+    const oldPublicId = ((formData.get("oldPublicId") as string) || "").trim();
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const resourceType = resourceTypeFromMime(file.type || "image/jpeg");
+    const mimeType = file.type || "application/octet-stream";
+    const resourceType = resourceTypeFromMime(mimeType);
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const dataUri = `data:${file.type || "application/octet-stream"};base64,${buffer.toString("base64")}`;
 
-    const result = await cloudinary.uploader.upload(dataUri, {
+    if (buffer.length === 0) {
+      return NextResponse.json({ error: "Empty file" }, { status: 400 });
+    }
+
+    const { creds } = getCloudinary();
+    console.info("[Upload] Starting", cloudinarySafeLog(creds, folder));
+
+    const result = await uploadCloudinaryBuffer(buffer, {
       folder,
-      resource_type: resourceType,
+      resourceType,
+      mimeType,
     });
 
     if (oldPublicId) {
       try {
-        await cloudinary.uploader.destroy(oldPublicId, { resource_type: resourceType });
+        await deleteCloudinaryAsset(oldPublicId, resourceType);
+        console.info("[Upload] Replaced asset — deleted previous public_id:", oldPublicId);
       } catch (error) {
         console.warn("[Upload] Could not delete replaced asset:", oldPublicId, error);
       }
     }
 
+    revalidateSiteContent();
+
+    console.info("[Upload] Success", {
+      ...cloudinarySafeLog(creds, folder),
+      publicId: result.public_id,
+      version: result.version,
+      bytes: buffer.length,
+    });
+
     return NextResponse.json({
       url: result.secure_url,
       public_id: result.public_id,
       resource_type: resourceType,
+      version: result.version,
     });
   } catch (error) {
-    console.error("[Upload] Failed:", error);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    const formatted = formatUploadError(error);
+    console.error("[Upload] Failed:", {
+      message: formatted.message,
+      code: formatted.code,
+      folder,
+      debug: formatted.debug,
+      raw: error instanceof Error ? error.message : String(error),
+    });
+
+    return NextResponse.json(
+      {
+        error: formatted.message,
+        code: formatted.code,
+        debug: formatted.debug,
+      },
+      { status: 500 }
+    );
   }
 }

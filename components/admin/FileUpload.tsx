@@ -49,7 +49,10 @@ export function FileUpload({
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok || !data.url) {
-        setError(data.error ?? "Upload failed");
+        setError(data.error ?? data.message ?? "Upload failed");
+        if (data.debug) {
+          console.warn("[FileUpload] Upload error debug:", data.debug);
+        }
         return;
       }
       const result: UploadResult = {

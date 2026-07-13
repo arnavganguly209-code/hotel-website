@@ -1,3 +1,5 @@
+/** Client-safe Cloudinary URL helpers (no server SDK import). */
+
 export function isCloudinaryUrl(url: string): boolean {
   return url.includes("res.cloudinary.com/");
 }

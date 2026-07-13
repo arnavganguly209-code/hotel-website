@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/cms/auth";
-import { deleteCloudinaryAsset, deleteCloudinaryByUrl, publicIdFromUrl } from "@/lib/cloudinary";
+import {
+  cloudinarySafeLog,
+  deleteCloudinaryAsset,
+  deleteCloudinaryByUrl,
+  getCloudinary,
+  publicIdFromUrl,
+} from "@/lib/cloudinary";
 import { revalidateSiteContent } from "@/lib/cms/revalidate";
 
 export const dynamic = "force-dynamic";
@@ -18,8 +24,14 @@ export async function DELETE(request: Request) {
     };
 
     const resourceType = body.resourceType ?? "image";
+    const { creds } = getCloudinary();
 
     if (body.publicId) {
+      console.info("[Media] Delete request", {
+        ...cloudinarySafeLog(creds),
+        publicId: body.publicId,
+        resourceType,
+      });
       await deleteCloudinaryAsset(body.publicId, resourceType);
     } else if (body.url) {
       await deleteCloudinaryByUrl(body.url, resourceType);
