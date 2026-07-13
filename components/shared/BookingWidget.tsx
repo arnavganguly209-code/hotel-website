@@ -5,7 +5,7 @@ import { Calendar, Users, Baby, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { routes } from "@/lib/navigation";
+import { buildAvailabilityUrl } from "@/lib/booking/utils";
 import { cn } from "@/lib/utils";
 import { PremiumFloatingBookingBar } from "@/components/booking/PremiumFloatingBookingBar";
 import type { HeroBookingBarSettings } from "@/lib/cms/hero-builder-types";
@@ -24,12 +24,11 @@ export function BookingWidget({ variant = "hero", className, rooms = [], booking
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState("2");
   const [children, setChildren] = useState("0");
-  const [roomId, setRoomId] = useState(rooms[0]?.id ?? "");
+  const [roomQuantity, setRoomQuantity] = useState("1");
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const params = new URLSearchParams({ checkIn, checkOut, guests, children, room: roomId });
-    router.push(`${routes.contact}?${params.toString()}`);
+    router.push(buildAvailabilityUrl({ checkIn, checkOut, guests, children, rooms: roomQuantity }));
   };
 
   if (variant === "hero") {
@@ -107,17 +106,17 @@ export function BookingWidget({ variant = "hero", className, rooms = [], booking
         </div>
         <div className="space-y-2">
           <label htmlFor="inline-room" className={labelClass}>
-            Room
+            Rooms
           </label>
           <select
             id="inline-room"
-            value={roomId}
-            onChange={(e) => setRoomId(e.target.value)}
+            value={roomQuantity}
+            onChange={(e) => setRoomQuantity(e.target.value)}
             className="flex h-11 w-full rounded-xl border border-luxury-gold/15 bg-luxury-cream/60 px-4 text-sm"
           >
-            {rooms.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.name}
+            {[1, 2, 3, 4, 5].map((n) => (
+              <option key={n} value={n}>
+                {n}
               </option>
             ))}
           </select>

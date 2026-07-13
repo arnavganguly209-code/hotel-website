@@ -12,7 +12,7 @@ import {
   ChevronDown,
   Users,
 } from "lucide-react";
-import { routes } from "@/lib/navigation";
+import { buildAvailabilityUrl } from "@/lib/booking/utils";
 import { cn } from "@/lib/utils";
 import { luxuryEase } from "@/lib/animations";
 import { defaultHeroBuilder } from "@/lib/cms/hero-builder-defaults";
@@ -33,11 +33,13 @@ const ICON_MAP: Record<string, LucideIcon> = {
   "bed-double": BedDouble,
 };
 
-const LABEL_GOLD = "#C9A44C";
+const LABEL_GOLD = "#D4B06A";
 const VALUE_WHITE = "#FFFFFF";
-const PLACEHOLDER_IVORY = "rgba(255,249,240,0.55)";
-const FIELD_GLASS = "rgba(45,90,61,0.42)";
-const FIELD_BORDER = "rgba(255,255,255,0.18)";
+const PLACEHOLDER_IVORY = "rgba(255,249,240,0.65)";
+const FIELD_GLASS = "rgba(24,52,38,0.72)";
+const FIELD_BORDER = "rgba(212,176,106,0.28)";
+const FRAME_BG =
+  "linear-gradient(135deg, rgba(36,71,54,0.94) 0%, rgba(24,52,38,0.92) 42%, rgba(36,71,54,0.9) 100%)";
 
 function resolveIcon(name: string): LucideIcon {
   return ICON_MAP[name] ?? Calendar;
@@ -178,7 +180,7 @@ function MobileAccordionItem({
   children: React.ReactNode;
 }) {
   return (
-    <div className="overflow-hidden rounded-[18px] border border-white/50 bg-white/30 transition-colors duration-500 hover:bg-white/40">
+    <div className="overflow-hidden rounded-[18px] border border-luxury-gold/25 bg-luxury-green-dark/55 transition-colors duration-500 hover:border-luxury-gold/40">
       <button
         type="button"
         onClick={onToggle}
@@ -190,7 +192,7 @@ function MobileAccordionItem({
             <p className="text-[9px] font-semibold uppercase tracking-[0.2em]" style={{ color: LABEL_GOLD }}>
               {label}
             </p>
-            <p className="truncate text-sm font-bold" style={{ color: "#244736" }}>
+            <p className="truncate text-sm font-bold text-white">
               {summary}
             </p>
           </div>
@@ -206,7 +208,7 @@ function MobileAccordionItem({
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.55, ease: luxuryEase }}
-            className="overflow-hidden border-t border-white/35 px-4 pb-4 pt-1"
+            className="overflow-hidden border-t border-luxury-gold/15 px-4 pb-4 pt-1"
           >
             {children}
           </motion.div>
@@ -228,7 +230,7 @@ export function PremiumFloatingBookingBar({
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState("2");
   const [childrenCount, setChildrenCount] = useState("0");
-  const [roomId, setRoomId] = useState(rooms[0]?.id ?? "");
+  const [roomQuantity, setRoomQuantity] = useState("1");
   const [mobileOpen, setMobileOpen] = useState<string | null>("checkIn");
 
   const show = (key: keyof HeroBookingBarSettings["fields"]) => settings.fields[key] !== false;
@@ -236,17 +238,17 @@ export function PremiumFloatingBookingBar({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     router.push(
-      `${routes.contact}?${new URLSearchParams({
+      buildAvailabilityUrl({
         checkIn,
         checkOut,
         guests,
         children: childrenCount,
-        room: roomId,
-      }).toString()}`
+        rooms: roomQuantity,
+      })
     );
   };
 
-  const selectedRoom = rooms.find((r) => r.id === roomId)?.name ?? "Select room";
+  const roomLabel = `${roomQuantity} ${roomQuantity === "1" ? "Room" : "Rooms"}`;
   const guestLabel = `${guests} ${guests === "1" ? "Guest" : "Guests"}`;
 
   const visibleFieldCount = (
@@ -255,16 +257,14 @@ export function PremiumFloatingBookingBar({
   const gridColumns = `repeat(${visibleFieldCount + 1}, minmax(0, 1fr))`;
 
   const glassStyle: React.CSSProperties = {
-    background:
-      settings.background ||
-      "linear-gradient(135deg, rgba(240,236,223,0.88) 0%, rgba(234,242,232,0.82) 100%)",
-    backdropFilter: `blur(${settings.blur ?? 28}px)`,
-    WebkitBackdropFilter: `blur(${settings.blur ?? 28}px)`,
-    border: "1px solid rgba(246,236,215,0.9)",
+    background: settings.background || FRAME_BG,
+    backdropFilter: `blur(${settings.blur ?? 32}px)`,
+    WebkitBackdropFilter: `blur(${settings.blur ?? 32}px)`,
+    border: "1px solid rgba(212,176,106,0.35)",
     borderRadius: settings.borderRadius || "28px",
     boxShadow:
       settings.shadow ||
-      "0 32px 90px rgba(24,56,47,0.12), 0 0 0 1px rgba(255,255,255,0.5), inset 0 1px 0 rgba(255,255,255,0.8)",
+      "0 32px 90px rgba(10,24,18,0.35), 0 0 0 1px rgba(212,176,106,0.15), inset 0 1px 0 rgba(255,255,255,0.12)",
     boxSizing: "border-box",
   };
 
@@ -339,10 +339,10 @@ export function PremiumFloatingBookingBar({
         )}
         {show("room") && (
           <FieldCell id="hero-room" label={settings.labels.room} icon={resolveIcon(settings.icons.room)} bordered={false}>
-            <SelectValue id="hero-room" value={roomId} onChange={setRoomId} display={selectedRoom}>
-              {rooms.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
+            <SelectValue id="hero-room" value={roomQuantity} onChange={setRoomQuantity} display={roomLabel}>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>
+                  {n} {n === 1 ? "Room" : "Rooms"}
                 </option>
               ))}
             </SelectValue>
@@ -453,14 +453,14 @@ export function PremiumFloatingBookingBar({
             id="m-room"
             label={settings.labels.room}
             icon={BedDouble}
-            summary={selectedRoom}
+            summary={roomLabel}
             open={mobileOpen === "room"}
             onToggle={() => setMobileOpen((v) => (v === "room" ? null : "room"))}
           >
-            <SelectValue id="m-room" value={roomId} onChange={setRoomId} display={selectedRoom}>
-              {rooms.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
+            <SelectValue id="m-room" value={roomQuantity} onChange={setRoomQuantity} display={roomLabel}>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>
+                  {n}
                 </option>
               ))}
             </SelectValue>

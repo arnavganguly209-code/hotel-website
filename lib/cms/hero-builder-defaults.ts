@@ -168,7 +168,7 @@ export const defaultHeroBuilder: HeroBuilderSettings = {
   bookingBar: {
     enabled: true,
     fixedPosition: false,
-    background: "linear-gradient(135deg, rgba(240,236,223,0.88) 0%, rgba(234,242,232,0.82) 100%)",
+    background: "linear-gradient(135deg, rgba(36,71,54,0.94) 0%, rgba(24,52,38,0.92) 50%, rgba(36,71,54,0.9) 100%)",
     glassEffect: true,
     blur: 28,
     shadow: "0 32px 90px rgba(24,56,47,0.12), 0 0 0 1px rgba(255,255,255,0.5), inset 0 1px 0 rgba(255,255,255,0.8)",
@@ -205,7 +205,7 @@ export const defaultHeroBuilder: HeroBuilderSettings = {
       checkOut: "CHECK OUT",
       guests: "GUESTS",
       children: "CHILDREN",
-      room: "ROOM",
+      room: "ROOMS",
     },
     icons: {
       checkIn: "calendar",

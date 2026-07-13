@@ -212,6 +212,7 @@ export interface SiteContent {
     name: string;
     price: number;
     guests: string;
+    maxGuests?: number;
     size: string;
     bedType: string;
     features: string[];
@@ -221,6 +222,8 @@ export interface SiteContent {
     gallery: string[];
     amenities: string[];
     policies: string[];
+    available?: boolean;
+    breakfastPrice?: number;
   }>;
   roomBooking: {
     submitLabel: string;
@@ -228,6 +231,11 @@ export interface SiteContent {
     payAtHotelLabel: string;
     specialRequestLabel: string;
     availabilityNote: string;
+    breakfastRoomOnlyLabel?: string;
+    breakfastWithLabel?: string;
+    breakfastNote?: string;
+    confirmationTitle?: string;
+    confirmationMessage?: string;
   };
   roomsSection: {
     eyebrow: string;

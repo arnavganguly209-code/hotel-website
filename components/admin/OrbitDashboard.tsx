@@ -500,6 +500,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       name: "New Room",
                       price: 50,
                       guests: "2 Guests",
+                      maxGuests: 2,
                       size: "30 m²",
                       bedType: "Queen Bed",
                       features: ["Premium Comfort"],
@@ -509,6 +510,8 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       gallery: ["/media/rooms/placeholder.jpg"],
                       amenities: ["Premium Comfort", "Complimentary Wi-Fi"],
                       policies: ["Check-in from 2:00 PM · Check-out by 12:00 PM"],
+                      available: true,
+                      breakfastPrice: 15,
                     }])}
                   >
                     <Plus className="h-4 w-4" /> Add Room
@@ -534,14 +537,24 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       update("rooms", rooms);
                     }} />
                     <div className="grid grid-cols-2 gap-4">
-                      <AdminInput label="Price ($)" type="number" value={room.price} onChange={(e) => {
+                      <AdminInput label="Price ($/night)" type="number" value={room.price} onChange={(e) => {
                         const rooms = [...content.rooms];
                         rooms[i] = { ...room, price: Number(e.target.value) };
                         update("rooms", rooms);
                       }} />
-                      <AdminInput label="Guests" value={room.guests} onChange={(e) => {
+                      <AdminInput label="Breakfast add-on ($)" type="number" value={room.breakfastPrice ?? 15} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, breakfastPrice: Number(e.target.value) };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Guests label" value={room.guests} onChange={(e) => {
                         const rooms = [...content.rooms];
                         rooms[i] = { ...room, guests: e.target.value };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Max guests" type="number" value={room.maxGuests ?? 2} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, maxGuests: Number(e.target.value) };
                         update("rooms", rooms);
                       }} />
                       <AdminInput label="Size" value={room.size} onChange={(e) => {
@@ -555,6 +568,18 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                         update("rooms", rooms);
                       }} />
                     </div>
+                    <label className="flex items-center gap-2 text-sm text-white/70">
+                      <input
+                        type="checkbox"
+                        checked={room.available !== false}
+                        onChange={(e) => {
+                          const rooms = [...content.rooms];
+                          rooms[i] = { ...room, available: e.target.checked };
+                          update("rooms", rooms);
+                        }}
+                      />
+                      Available for booking
+                    </label>
                     <AdminInput label="Features (comma separated)" value={room.features.join(", ")} onChange={(e) => {
                       const rooms = [...content.rooms];
                       rooms[i] = { ...room, features: e.target.value.split(",").map((f) => f.trim()) };
@@ -570,21 +595,61 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       rooms[i] = { ...room, longDescription: e.target.value };
                       update("rooms", rooms);
                     }} />
-                    <AdminInput label="Image URL" value={room.imageSrc} onChange={(e) => {
-                      const rooms = [...content.rooms];
-                      rooms[i] = { ...room, imageSrc: e.target.value };
-                      update("rooms", rooms);
-                    }} />
-                    <FileUpload label="Upload Room Image" folder="rooms" value={room.imageSrc} onChange={(url) => {
+                    <FileUpload label="Upload Cover Image" folder="rooms" value={room.imageSrc} replacePublicId={room.imageSrc} onChange={(url) => {
                       const rooms = [...content.rooms];
                       rooms[i] = { ...room, imageSrc: url };
                       update("rooms", rooms);
                     }} />
-                    <AdminInput label="Gallery URLs (comma separated)" value={room.gallery.join(", ")} onChange={(e) => {
-                      const rooms = [...content.rooms];
-                      rooms[i] = { ...room, gallery: e.target.value.split(",").map((f) => f.trim()).filter(Boolean) };
-                      update("rooms", rooms);
-                    }} />
+                    <div className="space-y-3">
+                      <p className="text-xs text-white/50">Gallery images</p>
+                      {(room.gallery.length ? room.gallery : [room.imageSrc]).map((src, gi) => (
+                        <div key={`${room.id}-gallery-${gi}`} className="flex items-end gap-2">
+                          <div className="flex-1">
+                            <FileUpload
+                              label={`Gallery Image ${gi + 1}`}
+                              folder="rooms"
+                              value={src}
+                              replacePublicId={src}
+                              onChange={(url) => {
+                                const rooms = [...content.rooms];
+                                const gallery = [...(room.gallery.length ? room.gallery : [room.imageSrc])];
+                                gallery[gi] = url;
+                                rooms[i] = { ...room, gallery };
+                                update("rooms", rooms);
+                              }}
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-400"
+                            onClick={() => {
+                              const rooms = [...content.rooms];
+                              const gallery = (room.gallery.length ? room.gallery : [room.imageSrc]).filter((_, idx) => idx !== gi);
+                              rooms[i] = { ...room, gallery: gallery.length ? gallery : [room.imageSrc] };
+                              update("rooms", rooms);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="border-luxury-gold/30 text-luxury-gold"
+                        onClick={() => {
+                          const rooms = [...content.rooms];
+                          const gallery = [...(room.gallery.length ? room.gallery : [room.imageSrc]), room.imageSrc];
+                          rooms[i] = { ...room, gallery };
+                          update("rooms", rooms);
+                        }}
+                      >
+                        <Plus className="h-4 w-4" /> Add Gallery Image
+                      </Button>
+                    </div>
                     <AdminInput label="Amenities (comma separated)" value={room.amenities.join(", ")} onChange={(e) => {
                       const rooms = [...content.rooms];
                       rooms[i] = { ...room, amenities: e.target.value.split(",").map((f) => f.trim()).filter(Boolean) };
@@ -604,6 +669,11 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   <AdminInput label="Pay At Hotel Label" value={content.roomBooking.payAtHotelLabel} onChange={(e) => update("roomBooking", { ...content.roomBooking, payAtHotelLabel: e.target.value })} />
                   <AdminInput label="Special Request Label" value={content.roomBooking.specialRequestLabel} onChange={(e) => update("roomBooking", { ...content.roomBooking, specialRequestLabel: e.target.value })} />
                   <AdminTextarea label="Availability Note" rows={2} value={content.roomBooking.availabilityNote} onChange={(e) => update("roomBooking", { ...content.roomBooking, availabilityNote: e.target.value })} />
+                  <AdminInput label="Breakfast Room Only Label" value={content.roomBooking.breakfastRoomOnlyLabel ?? "Room Only"} onChange={(e) => update("roomBooking", { ...content.roomBooking, breakfastRoomOnlyLabel: e.target.value })} />
+                  <AdminInput label="Breakfast With Label" value={content.roomBooking.breakfastWithLabel ?? "With Breakfast"} onChange={(e) => update("roomBooking", { ...content.roomBooking, breakfastWithLabel: e.target.value })} />
+                  <AdminTextarea label="Breakfast Note" rows={2} value={content.roomBooking.breakfastNote ?? ""} onChange={(e) => update("roomBooking", { ...content.roomBooking, breakfastNote: e.target.value })} />
+                  <AdminInput label="Confirmation Title" value={content.roomBooking.confirmationTitle ?? ""} onChange={(e) => update("roomBooking", { ...content.roomBooking, confirmationTitle: e.target.value })} />
+                  <AdminTextarea label="Confirmation Message" rows={2} value={content.roomBooking.confirmationMessage ?? ""} onChange={(e) => update("roomBooking", { ...content.roomBooking, confirmationMessage: e.target.value })} />
                 </div>
               </>
             )}

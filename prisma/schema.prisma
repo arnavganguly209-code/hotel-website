@@ -39,15 +39,27 @@ model Room {
 }
 
 model Booking {
-  id            Int      @id @default(autoincrement())
-  name          String
-  email         String
-  checkIn       DateTime
-  checkOut      DateTime
-  guests        Int
-  status        String   @default("pending")
-  paymentStatus String   @default("unpaid")
-  createdAt     DateTime @default(now())
-  roomId        Int
-  room          Room     @relation(fields: [roomId], references: [id])
+  id              Int       @id @default(autoincrement())
+  name            String
+  email           String
+  phone           String    @default("")
+  country         String    @default("")
+  checkIn         DateTime
+  checkOut        DateTime
+  guests          Int
+  children        Int       @default(0)
+  roomQuantity    Int       @default(1)
+  roomSlug        String    @default("")
+  roomName        String    @default("")
+  breakfast       String    @default("room-only")
+  specialRequests String    @default("")
+  paymentMethod   String    @default("hotel")
+  totalAmount     Int       @default(0)
+  nights          Int       @default(1)
+  status          String    @default("pending")
+  paymentStatus   String    @default("unpaid")
+  transactionId   String?
+  createdAt       DateTime  @default(now())
+  roomId          Int?
+  room            Room?     @relation(fields: [roomId], references: [id])
 }

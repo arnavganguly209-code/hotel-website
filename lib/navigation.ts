@@ -2,6 +2,8 @@ export const routes = {
   home: "/",
   about: "/about",
   rooms: "/rooms",
+  availability: "/rooms/availability",
+  book: "/book",
   dining: "/dining",
   spa: "/spa",
   gallery: "/gallery",

@@ -9,12 +9,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     routes.home,
     routes.about,
     routes.rooms,
+    routes.availability,
+    routes.book,
     routes.dining,
     routes.spa,
     routes.gallery,
+    routes.culturalExperience,
     routes.contact,
     routes.privacy,
     routes.terms,
+    ...content.rooms.map((room) => `/rooms/${room.id}`),
   ];
 
   return publicRoutes.map((path) => ({

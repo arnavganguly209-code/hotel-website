@@ -44,7 +44,7 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
         initial={{ x: "-100%" }}
         animate={{ x: 0 }}
         exit={{ x: "-100%" }}
-        transition={{ type: "spring", damping: 32, stiffness: 280 }}
+        transition={{ type: "tween", duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
         className="fixed inset-y-0 left-0 z-[100] flex w-full max-w-md flex-col border-r border-white/10 bg-luxury-cream-light/90 shadow-2xl backdrop-blur-2xl"
       >
         <div className="flex items-center justify-between border-b border-luxury-green/10 px-6 py-5">

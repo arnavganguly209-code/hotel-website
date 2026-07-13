@@ -1,4 +1,5 @@
 import type { SiteContent } from "./types";
+import { parseMaxGuests } from "@/lib/booking/utils";
 
 export const DEFAULT_ROOM_POLICIES = [
   "Check-in from 2:00 PM · Check-out by 12:00 PM",
@@ -20,6 +21,9 @@ export function enrichRoom(defaults: Room, partial: Partial<Room>): Room {
 
   return {
     ...merged,
+    maxGuests: partial.maxGuests ?? defaults.maxGuests ?? parseMaxGuests(merged.guests),
+    available: partial.available ?? defaults.available ?? true,
+    breakfastPrice: partial.breakfastPrice ?? defaults.breakfastPrice ?? 15,
     longDescription:
       partial.longDescription ?? defaults.longDescription ?? `${merged.description} Thoughtfully appointed with premium linens, refined furnishings, and the attentive service that defines Hotel Thamel Park & Spa.`,
     gallery:

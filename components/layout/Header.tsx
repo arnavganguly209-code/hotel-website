@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -7,11 +8,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/Logo";
-import { PremiumNavDrawer } from "@/components/shared/PremiumNavDrawer";
 import { routes } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { useScrolled } from "@/hooks/useScrolled";
 import type { SiteContent } from "@/lib/cms/types";
+
+const PremiumNavDrawer = dynamic(
+  () => import("@/components/shared/PremiumNavDrawer").then((m) => m.PremiumNavDrawer),
+  { ssr: false, loading: () => null }
+);
 
 interface HeaderProps {
   header: SiteContent["header"];
@@ -116,7 +121,7 @@ export function Header({ header, hotelName }: HeaderProps) {
               className="hidden rounded-full border-0 bg-gradient-to-r from-[#C89A3D] to-[#E9A546] px-5 uppercase tracking-[0.16em] text-white shadow-[0_6px_24px_rgba(200,154,61,0.35)] hover:opacity-95 sm:inline-flex"
               asChild
             >
-              <Link href={routes.contact}>{header.bookButtonText}</Link>
+              <Link href={routes.rooms}>{header.bookButtonText}</Link>
             </Button>
           </div>
         </div>

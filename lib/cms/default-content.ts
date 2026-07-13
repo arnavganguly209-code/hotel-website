@@ -363,11 +363,16 @@ export const defaultContent: SiteContent = {
     },
   ],
   roomBooking: {
-    submitLabel: "Request Availability",
+    submitLabel: "Confirm Reservation",
     payOnlineLabel: "Pay Online",
     payAtHotelLabel: "Pay At Hotel",
     specialRequestLabel: "Special Requests",
-    availabilityNote: "Our reservations team will confirm availability and respond within 24 hours.",
+    availabilityNote: "Complete your details below. Our team will confirm your reservation promptly.",
+    breakfastRoomOnlyLabel: "Room Only",
+    breakfastWithLabel: "With Breakfast",
+    breakfastNote: "Breakfast is served daily at our Garden Restaurant from 7:00 AM to 10:30 AM.",
+    confirmationTitle: "Reservation Received",
+    confirmationMessage: "Thank you. Your booking request has been received. We will confirm availability and send details to your email shortly.",
   },
   diningPage: {
     hero: {
