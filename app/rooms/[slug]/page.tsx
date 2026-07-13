@@ -5,6 +5,10 @@ import { InnerPageHero } from "@/components/shared/InnerPageHero";
 import { RoomDetailPage } from "@/sections/pages/RoomDetailPage";
 import { bookingSearchFromParams } from "@/lib/booking/utils";
 
+/** Always render from latest CMS — never serve a stale statically generated room page. */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface RoomDetailRouteProps {
   params: Promise<{ slug: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -19,11 +23,6 @@ export async function generateMetadata({ params }: RoomDetailRouteProps): Promis
     title: `${room.name} | ${content.hotel.name}`,
     description: room.description,
   };
-}
-
-export async function generateStaticParams() {
-  const content = await getContent();
-  return content.rooms.map((room) => ({ slug: room.id }));
 }
 
 export default async function RoomDetailRoute({ params, searchParams }: RoomDetailRouteProps) {

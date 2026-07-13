@@ -11,6 +11,7 @@
     "preview": "npm run cf:build && opennextjs-cloudflare preview",
     "deploy": "npm run cf:build && npm run cf:deploy",
     "upload": "npm run cf:build && opennextjs-cloudflare upload",
+    "deploy:vercel": "node scripts/vercel-prod-deploy.mjs",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
