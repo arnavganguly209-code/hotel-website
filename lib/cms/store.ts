@@ -42,20 +42,20 @@ export async function getContent(): Promise<SiteContent> {
 export async function saveContent(content: SiteContent): Promise<void> {
   const merged = mergeWithDefaults(content);
 
-  await fs.mkdir(path.dirname(CONTENT_PATH), { recursive: true });
-  await fs.writeFile(CONTENT_PATH, JSON.stringify(merged, null, 2), "utf-8");
-
-  if (isDatabaseAvailable()) {
-    try {
-      await db.siteContentRecord.upsert({
-        where: { id: RECORD_ID },
-        create: { id: RECORD_ID, content: merged as object },
-        update: { content: merged as object },
-      });
-    } catch (error) {
-      console.warn("[CMS] Database save failed; content saved to file.", error);
-    }
+  if (!isDatabaseAvailable()) {
+    throw new Error("Database not available");
   }
+
+  await db.siteContentRecord.upsert({
+    where: { id: RECORD_ID },
+    create: {
+      id: RECORD_ID,
+      content: merged as object,
+    },
+    update: {
+      content: merged as object,
+    },
+  });
 }
 
 export async function createBackup(label?: string): Promise<void> {
