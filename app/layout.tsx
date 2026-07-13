@@ -11,6 +11,7 @@ import { SiteShell } from "@/components/layout/SiteShell";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getContent();

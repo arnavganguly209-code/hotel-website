@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidateSiteContent } from "@/lib/cms/revalidate";
 import { isAuthenticated } from "@/lib/cms/auth";
 import { createBackup, listBackups, restoreBackup } from "@/lib/cms/store";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   if (!(await isAuthenticated())) {
@@ -16,16 +18,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { action, id, label } = await request.json();
+  const body = await request.json();
+  const action = body.action as string;
 
   if (action === "create") {
-    await createBackup(label);
+    await createBackup(body.label);
     return NextResponse.json({ success: true });
   }
 
-  if (action === "restore" && id) {
-    const ok = await restoreBackup(id);
-    if (ok) revalidatePath("/", "layout");
+  if (action === "restore") {
+    const ok = await restoreBackup(body.id);
+    if (ok) revalidateSiteContent();
     return NextResponse.json({ success: ok });
   }
 

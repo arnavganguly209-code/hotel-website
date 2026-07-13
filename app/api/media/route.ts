@@ -1,36 +1,40 @@
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/cms/auth";
-import { isDatabaseAvailable, db } from "@/lib/db";
-import { promises as fs } from "fs";
-import path from "path";
+import { deleteCloudinaryAsset, deleteCloudinaryByUrl, publicIdFromUrl } from "@/lib/cloudinary";
+import { revalidateSiteContent } from "@/lib/cms/revalidate";
 
-export async function GET() {
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  if (isDatabaseAvailable()) {
-    const files = await db.mediaFile.findMany({ orderBy: { createdAt: "desc" } });
-    return NextResponse.json({ files });
-  }
-
-  return NextResponse.json({ files: [] });
-}
+export const dynamic = "force-dynamic";
 
 export async function DELETE(request: Request) {
   if (!(await isAuthenticated())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id, url } = await request.json();
-  if (isDatabaseAvailable() && id) {
-    await db.mediaFile.delete({ where: { id } }).catch(() => null);
-  }
+  try {
+    const body = (await request.json()) as {
+      publicId?: string;
+      url?: string;
+      resourceType?: "image" | "video";
+    };
 
-  if (url && url.startsWith("/media/")) {
-    const filePath = path.join(process.cwd(), "public", url.replace(/^\//, ""));
-    await fs.unlink(filePath).catch(() => null);
-  }
+    const resourceType = body.resourceType ?? "image";
 
-  return NextResponse.json({ success: true });
+    if (body.publicId) {
+      await deleteCloudinaryAsset(body.publicId, resourceType);
+    } else if (body.url) {
+      await deleteCloudinaryByUrl(body.url, resourceType);
+    } else {
+      return NextResponse.json({ error: "publicId or url required" }, { status: 400 });
+    }
+
+    revalidateSiteContent();
+
+    return NextResponse.json({
+      success: true,
+      publicId: body.publicId ?? publicIdFromUrl(body.url ?? ""),
+    });
+  } catch (error) {
+    console.error("[Media] Delete failed:", error);
+    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
+  }
 }

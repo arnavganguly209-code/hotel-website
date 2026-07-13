@@ -2,15 +2,22 @@ import type { SiteContent } from "./types";
 import { defaultContent } from "./default-content";
 import { enrichRoom } from "./room-helpers";
 
+/** Preserve explicit empty values — never fall back to defaults when the field was set. */
+function definedString(value: string | undefined, fallback: string): string {
+  return value !== undefined ? value : fallback;
+}
+
+function definedArray<T>(value: T[] | undefined, fallback: T[]): T[] {
+  return value !== undefined ? value : fallback;
+}
+
 export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
   return {
     hotel: { ...defaultContent.hotel, ...partial.hotel },
     header: {
       ...defaultContent.header,
       ...partial.header,
-      menuItems: partial.header?.menuItems?.length
-        ? partial.header.menuItems
-        : defaultContent.header.menuItems,
+      menuItems: definedArray(partial.header?.menuItems, defaultContent.header.menuItems),
       overlayMenuItems: partial.header?.overlayMenuItems ?? defaultContent.header.overlayMenuItems,
     },
     hero: mergeHero(defaultContent.hero, partial.hero),
@@ -31,46 +38,39 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     overview: {
       ...defaultContent.overview,
       ...partial.overview,
-      stats: partial.overview?.stats?.length ? partial.overview.stats : defaultContent.overview.stats,
-      galleryImages: partial.overview?.galleryImages?.length
-        ? partial.overview.galleryImages
-        : defaultContent.overview.galleryImages,
+      stats: definedArray(partial.overview?.stats, defaultContent.overview.stats),
+      galleryImages: definedArray(
+        partial.overview?.galleryImages,
+        defaultContent.overview.galleryImages
+      ),
     },
     roomsSection: { ...defaultContent.roomsSection, ...(partial.roomsSection ?? {}) },
-    experiences: partial.experiences?.length ? partial.experiences : defaultContent.experiences,
-    locationAdvantages: partial.locationAdvantages?.length
-      ? partial.locationAdvantages
-      : defaultContent.locationAdvantages,
+    experiences: definedArray(partial.experiences, defaultContent.experiences),
+    locationAdvantages: definedArray(partial.locationAdvantages, defaultContent.locationAdvantages),
     culture: mergeCulture(defaultContent.culture, partial.culture),
     facilitiesSection: mergeFacilitiesSection(defaultContent.facilitiesSection, partial.facilitiesSection),
     culturalExperiencePage: mergeCulturalExperiencePage(
       defaultContent.culturalExperiencePage,
       partial.culturalExperiencePage
     ),
-    facilities: partial.facilities?.length
-      ? partial.facilities.map((f, i) => ({
-          ...defaultContent.facilities[i],
-          ...f,
-          description: f.description ?? defaultContent.facilities[i]?.description ?? "",
-        }))
-      : defaultContent.facilities,
-    rooms: partial.rooms?.length
-      ? partial.rooms.map((room, i) =>
-          enrichRoom(defaultContent.rooms[i] ?? defaultContent.rooms[0], room)
-        )
-      : defaultContent.rooms,
+    facilities: definedArray(partial.facilities, defaultContent.facilities).map((f, i) => ({
+      ...(defaultContent.facilities[i] ?? defaultContent.facilities[0]),
+      ...f,
+      description: f.description ?? defaultContent.facilities[i]?.description ?? "",
+    })),
+    rooms: definedArray(partial.rooms, defaultContent.rooms).map((room, i) =>
+      enrichRoom(defaultContent.rooms[i] ?? defaultContent.rooms[0], room)
+    ),
     roomBooking: { ...defaultContent.roomBooking, ...(partial.roomBooking ?? {}) },
     diningPage: mergePageSection(defaultContent.diningPage, partial.diningPage),
     spaPage: mergePageSection(defaultContent.spaPage, partial.spaPage),
     aboutPage: mergeAboutPage(defaultContent.aboutPage, partial.aboutPage),
-    reviews: partial.reviews?.length ? partial.reviews : defaultContent.reviews,
-    gallery: partial.gallery?.length
-      ? partial.gallery.map((item, i) => ({
-          ...(defaultContent.gallery[i] ?? defaultContent.gallery[0]),
-          ...item,
-          type: item.type ?? "image",
-        }))
-      : defaultContent.gallery,
+    reviews: definedArray(partial.reviews, defaultContent.reviews),
+    gallery: definedArray(partial.gallery, defaultContent.gallery).map((item, i) => ({
+      ...(defaultContent.gallery[i] ?? defaultContent.gallery[0]),
+      ...item,
+      type: item.type ?? "image",
+    })),
     gallerySection: { ...defaultContent.gallerySection, ...(partial.gallerySection ?? {}) },
     galleryPage: { ...defaultContent.galleryPage, ...(partial.galleryPage ?? {}) },
     roomsPage: { ...defaultContent.roomsPage, ...(partial.roomsPage ?? {}) },
@@ -87,17 +87,17 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       social: { ...defaultContent.footer.social, ...(partial.footer?.social ?? {}) },
       colors: { ...defaultContent.footer.colors, ...(partial.footer?.colors ?? {}) },
       spacing: { ...defaultContent.footer.spacing, ...(partial.footer?.spacing ?? {}) },
-      quickLinks: partial.footer?.quickLinks?.length
-        ? partial.footer.quickLinks
-        : defaultContent.footer.quickLinks,
-      galleryPreview: partial.footer?.galleryPreview?.length
-        ? partial.footer.galleryPreview
-        : defaultContent.footer.galleryPreview,
-      enabledPayments: partial.footer?.enabledPayments?.length
-        ? partial.footer.enabledPayments
-        : defaultContent.footer.enabledPayments,
+      quickLinks: definedArray(partial.footer?.quickLinks, defaultContent.footer.quickLinks),
+      galleryPreview: definedArray(
+        partial.footer?.galleryPreview,
+        defaultContent.footer.galleryPreview
+      ),
+      enabledPayments: definedArray(
+        partial.footer?.enabledPayments,
+        defaultContent.footer.enabledPayments
+      ),
     },
-    mediaLibrary: partial.mediaLibrary?.length ? partial.mediaLibrary : defaultContent.mediaLibrary,
+    mediaLibrary: definedArray(partial.mediaLibrary, defaultContent.mediaLibrary),
   };
 }
 
@@ -161,14 +161,31 @@ function mergeCulture(
     media: {
       ...defaults.media,
       ...(partial.media ?? {}),
-      imageSrc:
-        partial.media?.imageSrc || partial.imageSrc || defaults.media.imageSrc,
+      imageSrc: definedString(
+        partial.media?.imageSrc,
+        definedString(partial.imageSrc, defaults.media.imageSrc)
+      ),
+      imagePublicId: definedString(
+        partial.media?.imagePublicId,
+        defaults.media.imagePublicId ?? ""
+      ),
+      videoPublicId: definedString(
+        partial.media?.videoPublicId,
+        defaults.media.videoPublicId ?? ""
+      ),
+      posterPublicId: definedString(
+        partial.media?.posterPublicId,
+        defaults.media.posterPublicId ?? ""
+      ),
     },
-    stats: partial.stats?.length ? partial.stats : defaults.stats,
-    highlights: partial.highlights?.length ? partial.highlights : defaults.highlights,
-    timeline: partial.timeline?.length ? partial.timeline : defaults.timeline,
-    content: partial.content || defaults.content,
-    imageSrc: partial.imageSrc ?? partial.media?.imageSrc ?? defaults.imageSrc,
+    stats: definedArray(partial.stats, defaults.stats),
+    highlights: definedArray(partial.highlights, defaults.highlights),
+    timeline: definedArray(partial.timeline, defaults.timeline),
+    content: definedString(partial.content, defaults.content),
+    imageSrc: definedString(
+      partial.imageSrc,
+      definedString(partial.media?.imageSrc, defaults.imageSrc)
+    ),
   };
 }
 
@@ -199,12 +216,10 @@ function mergeCulturalExperiencePage(
     },
     seo: { ...defaults.seo, ...(partial.seo ?? {}) },
     story: { ...defaults.story, ...(partial.story ?? {}) },
-    gallery: partial.gallery?.length ? partial.gallery : defaults.gallery,
-    timeline: partial.timeline?.length ? partial.timeline : defaults.timeline,
-    experienceCards: partial.experienceCards?.length
-      ? partial.experienceCards
-      : defaults.experienceCards,
-    faq: partial.faq?.length ? partial.faq : defaults.faq,
+    gallery: definedArray(partial.gallery, defaults.gallery),
+    timeline: definedArray(partial.timeline, defaults.timeline),
+    experienceCards: definedArray(partial.experienceCards, defaults.experienceCards),
+    faq: definedArray(partial.faq, defaults.faq),
   };
 }
 
@@ -221,7 +236,7 @@ function mergeAboutPage(
     history: { ...defaults.history, ...(partial.history ?? {}) },
     mission: { ...defaults.mission, ...(partial.mission ?? {}) },
     vision: { ...defaults.vision, ...(partial.vision ?? {}) },
-    facilities: partial.facilities?.length ? partial.facilities : defaults.facilities,
-    timeline: partial.timeline?.length ? partial.timeline : defaults.timeline,
+    facilities: definedArray(partial.facilities, defaults.facilities),
+    timeline: definedArray(partial.timeline, defaults.timeline),
   };
 }

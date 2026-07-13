@@ -1,72 +1,64 @@
-import { promises as fs } from "fs";
-import path from "path";
+import { unstable_noStore as noStore } from "next/cache";
 import type { SiteContent } from "./types";
 import { defaultContent } from "./default-content";
 import { mergeWithDefaults } from "./merge";
+import { CMS_CONTENT_TAG } from "./revalidate";
 import { isDatabaseAvailable, db } from "@/lib/db";
 
-const CONTENT_PATH = path.join(process.cwd(), "data", "site-content.json");
 const RECORD_ID = "main";
 
-async function readFromFile(): Promise<SiteContent | null> {
-  try {
-    const raw = await fs.readFile(CONTENT_PATH, "utf-8");
-    return mergeWithDefaults(JSON.parse(raw) as Partial<SiteContent>);
-  } catch {
-    return null;
-  }
-}
-
-async function readFromDatabase(): Promise<SiteContent | null> {
-  if (!isDatabaseAvailable()) return null;
-  try {
-    const record = await db.siteContentRecord.findUnique({ where: { id: RECORD_ID } });
-    if (!record?.content) return null;
-    return mergeWithDefaults(record.content as Partial<SiteContent>);
-  } catch (error) {
-    console.warn("[CMS] Database read failed, using fallback.", error);
-    return null;
-  }
-}
-
+/**
+ * CMS content is sourced exclusively from PostgreSQL on Vercel.
+ * mergeWithDefaults is only used to hydrate missing schema keys — never to override saved values.
+ */
 export async function getContent(): Promise<SiteContent> {
-  const fromDb = await readFromDatabase();
-  if (fromDb) return fromDb;
-
-  const fromFile = await readFromFile();
-  if (fromFile) return fromFile;
-
-  return defaultContent;
-}
-
-export async function saveContent(content: SiteContent): Promise<void> {
-  const merged = mergeWithDefaults(content);
+  noStore();
 
   if (!isDatabaseAvailable()) {
-    throw new Error("Database not available");
+    console.error("[CMS] DATABASE_URL is not configured — cannot load CMS content.");
+    return mergeWithDefaults({});
+  }
+
+  try {
+    const record = await db.siteContentRecord.findUnique({ where: { id: RECORD_ID } });
+    if (!record?.content) {
+      return mergeWithDefaults({});
+    }
+    return mergeWithDefaults(record.content as Partial<SiteContent>);
+  } catch (error) {
+    console.error("[CMS] Database read failed:", error);
+    throw new Error("Failed to load site content from database");
+  }
+}
+
+/** Persist exact CMS payload from Orbit — no default merge on write. */
+export async function saveContent(content: SiteContent): Promise<void> {
+  if (!isDatabaseAvailable()) {
+    throw new Error("DATABASE_URL is required to save CMS content");
   }
 
   await db.siteContentRecord.upsert({
     where: { id: RECORD_ID },
     create: {
       id: RECORD_ID,
-      content: merged as object,
+      content: content as object,
     },
     update: {
-      content: merged as object,
+      content: content as object,
     },
   });
 }
 
 export async function createBackup(label?: string): Promise<void> {
-  const content = await getContent();
   if (!isDatabaseAvailable()) {
-    const backupPath = path.join(process.cwd(), "data", `backup-${Date.now()}.json`);
-    await fs.writeFile(backupPath, JSON.stringify(content, null, 2), "utf-8");
-    return;
+    throw new Error("DATABASE_URL is required to create backups");
   }
+  const content = await getContent();
   await db.contentBackup.create({
-    data: { label: label ?? `Backup ${new Date().toISOString()}`, content: content as object },
+    data: {
+      label: label ?? `Backup ${new Date().toISOString()}`,
+      content: content as object,
+    },
   });
 }
 
@@ -86,3 +78,5 @@ export async function restoreBackup(id: string): Promise<boolean> {
   await saveContent(mergeWithDefaults(backup.content as Partial<SiteContent>));
   return true;
 }
+
+export { CMS_CONTENT_TAG };

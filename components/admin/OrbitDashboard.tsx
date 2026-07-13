@@ -31,6 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
 import { FileUpload } from "@/components/admin/FileUpload";
+import { deleteCmsMedia } from "@/lib/cms/client-media";
 import { AdminMediaField } from "@/components/admin/AdminMediaField";
 import { HeroBuilder } from "@/components/admin/HeroBuilder";
 import type { SiteContent } from "@/lib/cms/types";
@@ -94,10 +95,12 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        cache: "no-store",
       });
       if (res.ok) {
         setSaved(true);
         setAutoSaveError(false);
+        router.refresh();
       } else {
         setAutoSaveError(true);
       }
@@ -106,7 +109,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -1021,12 +1024,13 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
             {activeSection === "media" && (
               <>
-                <p className="text-sm text-white/50">Upload files via section editors or use the upload below. Files are stored in /public/media.</p>
-                <FileUpload label="Upload to Library" folder="library" accept="image/*,video/*" value="" onChange={(url) => {
+                <p className="text-sm text-white/50">Upload files to Cloudinary via section editors or the library below. Changes save to PostgreSQL and appear on the live site immediately.</p>
+                <FileUpload label="Upload to Library" folder="library" accept="image/*,video/*" value="" onChange={(url, result) => {
                   const asset = {
                     id: `m-${Date.now()}`,
                     filename: url.split("/").pop() ?? "file",
                     url,
+                    publicId: result?.publicId,
                     folder: "library",
                     mimeType: "image/jpeg",
                     size: 0,
@@ -1037,7 +1041,10 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 {content.mediaLibrary.map((item, i) => (
                   <div key={item.id} className="flex items-center justify-between border border-luxury-gold/10 p-3">
                     <span className="truncate text-sm text-white/70">{item.filename}</span>
-                    <Button type="button" variant="ghost" size="sm" className="text-red-400" onClick={() => update("mediaLibrary", content.mediaLibrary.filter((_, idx) => idx !== i))}>
+                    <Button type="button" variant="ghost" size="sm" className="text-red-400" onClick={() => {
+                      void deleteCmsMedia({ url: item.url, publicId: item.publicId });
+                      update("mediaLibrary", content.mediaLibrary.filter((_, idx) => idx !== i));
+                    }}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -1052,7 +1059,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   await fetch("/api/backups", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "create", label: `Manual backup ${new Date().toLocaleString()}` }) });
                   setSaved(true);
                 }}>Create Backup Now</Button>
-                <p className="mt-4 text-xs text-white/40">Backups are stored in the database when connected, otherwise saved to /data.</p>
+                <p className="mt-4 text-xs text-white/40">Backups are stored in PostgreSQL.</p>
               </>
             )}
           </div>

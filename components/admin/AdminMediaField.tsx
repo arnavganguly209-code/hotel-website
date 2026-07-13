@@ -4,6 +4,7 @@ import { FileUpload } from "@/components/admin/FileUpload";
 import { AdminInput } from "@/components/admin/AdminFields";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import { deleteCmsMedia } from "@/lib/cms/client-media";
 import type { CmsMedia } from "@/lib/cms/types";
 
 interface AdminMediaFieldProps {
@@ -15,6 +16,32 @@ interface AdminMediaFieldProps {
 
 export function AdminMediaField({ label, value, onChange, folder = "uploads" }: AdminMediaFieldProps) {
   const set = (patch: Partial<CmsMedia>) => onChange({ ...value, ...patch });
+
+  const handleRemove = async () => {
+    if (value.type === "image" && (value.imagePublicId || value.imageSrc)) {
+      await deleteCmsMedia({
+        publicId: value.imagePublicId,
+        url: value.imageSrc,
+        resourceType: "image",
+      });
+    }
+    if (value.type === "video" && (value.videoPublicId || value.videoSrc)) {
+      await deleteCmsMedia({
+        publicId: value.videoPublicId,
+        url: value.videoSrc,
+        resourceType: "video",
+      });
+    }
+    onChange({
+      ...value,
+      imageSrc: "",
+      imagePublicId: "",
+      videoSrc: "",
+      videoPublicId: "",
+      poster: "",
+      posterPublicId: "",
+    });
+  };
 
   return (
     <div className="space-y-4 rounded-lg border border-luxury-gold/15 p-4">
@@ -47,7 +74,13 @@ export function AdminMediaField({ label, value, onChange, folder = "uploads" }: 
             folder={folder}
             accept="image/*"
             value={value.imageSrc}
-            onChange={(url) => set({ imageSrc: url })}
+            replacePublicId={value.imagePublicId}
+            onChange={(url, result) =>
+              set({
+                imageSrc: url,
+                imagePublicId: result?.publicId ?? value.imagePublicId,
+              })
+            }
           />
         </>
       ) : (
@@ -62,7 +95,13 @@ export function AdminMediaField({ label, value, onChange, folder = "uploads" }: 
             folder={folder}
             accept="video/*"
             value={value.videoSrc}
-            onChange={(url) => set({ videoSrc: url })}
+            replacePublicId={value.videoPublicId}
+            onChange={(url, result) =>
+              set({
+                videoSrc: url,
+                videoPublicId: result?.publicId ?? value.videoPublicId,
+              })
+            }
           />
           <AdminInput
             label="Poster URL"
@@ -92,14 +131,7 @@ export function AdminMediaField({ label, value, onChange, folder = "uploads" }: 
             variant="ghost"
             size="sm"
             className="text-red-400 hover:text-red-300"
-            onClick={() =>
-              onChange({
-                ...value,
-                imageSrc: "",
-                videoSrc: "",
-                poster: "",
-              })
-            }
+            onClick={() => void handleRemove()}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Remove Media

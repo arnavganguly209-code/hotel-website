@@ -58,6 +58,7 @@ export interface MediaAsset {
   id: string;
   filename: string;
   url: string;
+  publicId?: string;
   folder: string;
   mimeType: string;
   size: number;
@@ -67,8 +68,11 @@ export interface MediaAsset {
 export interface CmsMedia {
   type: "image" | "video";
   imageSrc: string;
+  imagePublicId?: string;
   videoSrc: string;
+  videoPublicId?: string;
   poster: string;
+  posterPublicId?: string;
   alt: string;
   caption?: string;
 }

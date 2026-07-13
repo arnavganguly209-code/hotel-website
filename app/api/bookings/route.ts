@@ -1,10 +1,8 @@
-import { promises as fs } from "fs";
-import path from "path";
+import { isDatabaseAvailable, db } from "@/lib/db";
 
-const BOOKINGS_PATH = path.join(process.cwd(), "data", "bookings.json");
+export const dynamic = "force-dynamic";
 
 interface BookingRecord {
-  id: number;
   name: string;
   email: string;
   checkIn: string;
@@ -12,39 +10,39 @@ interface BookingRecord {
   guests: number;
   children?: number;
   roomId: string;
-  createdAt: string;
 }
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-
-    const booking: BookingRecord = {
-      id: Date.now(),
-      name: body.name,
-      email: body.email,
-      checkIn: body.checkIn,
-      checkOut: body.checkOut,
-      guests: Number(body.guests),
-      children: body.children ? Number(body.children) : 0,
-      roomId: String(body.roomId ?? ""),
-      createdAt: new Date().toISOString(),
-    };
-
-    let bookings: BookingRecord[] = [];
-    try {
-      bookings = JSON.parse(await fs.readFile(BOOKINGS_PATH, "utf-8")) as BookingRecord[];
-    } catch {
-      bookings = [];
+    if (!isDatabaseAvailable()) {
+      return Response.json(
+        { success: false, error: "Database not configured" },
+        { status: 503 }
+      );
     }
 
-    bookings.push(booking);
-    await fs.mkdir(path.dirname(BOOKINGS_PATH), { recursive: true });
-    await fs.writeFile(BOOKINGS_PATH, JSON.stringify(bookings, null, 2), "utf-8");
+    const body = (await req.json()) as BookingRecord;
+
+    const room = await db.room.findFirst({
+      where: { name: { contains: body.roomId, mode: "insensitive" } },
+    });
+
+    const booking = await db.booking.create({
+      data: {
+        name: body.name,
+        email: body.email,
+        checkIn: new Date(body.checkIn),
+        checkOut: new Date(body.checkOut),
+        guests: Number(body.guests),
+        roomId: room?.id ?? 1,
+        status: "pending",
+        paymentStatus: "unpaid",
+      },
+    });
 
     return Response.json({ success: true, booking });
   } catch (error) {
-    console.error(error);
+    console.error("[Bookings]", error);
     return Response.json({ success: false, error: "Booking failed" }, { status: 500 });
   }
 }
