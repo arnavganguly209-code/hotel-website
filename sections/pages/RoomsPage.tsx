@@ -81,11 +81,16 @@ export function RoomsPage({ rooms }: RoomsPageProps) {
                   </ul>
                 </div>
 
-                <div className="mt-8">
-                  <Button variant="gold" size="lg" className="w-full uppercase tracking-wider sm:w-auto" asChild>
-                    <Link href={roomDetailPath(room.id)}>
-                      Book Now
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <Button variant="gold" size="lg" className="w-full gap-2 uppercase tracking-[0.14em] sm:w-auto" asChild>
+                    <Link href={roomDetailPath(room.id)} prefetch>
+                      Explore Room
                       <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="lg" className="w-full gap-2 uppercase tracking-[0.14em] sm:w-auto" asChild>
+                    <Link href={roomDetailPath(room.id)} prefetch>
+                      View Details
                     </Link>
                   </Button>
                 </div>

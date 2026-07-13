@@ -53,7 +53,7 @@ function formatDisplayDate(value: string) {
 
 function mergeSettings(bookingBar?: HeroBookingBarSettings): HeroBookingBarSettings {
   const d = defaultHeroBuilder.bookingBar;
-  if (!bookingBar) return d;
+  if (!bookingBar) return { ...d, background: FRAME_BG };
   return {
     ...d,
     ...bookingBar,
@@ -63,6 +63,7 @@ function mergeSettings(bookingBar?: HeroBookingBarSettings): HeroBookingBarSetti
     icons: { ...d.icons, ...bookingBar.icons },
     animations: { ...d.animations, ...bookingBar.animations },
     responsive: { ...d.responsive, ...bookingBar.responsive },
+    background: FRAME_BG,
   };
 }
 
@@ -254,7 +255,7 @@ export function PremiumFloatingBookingBar({
   const visibleFieldCount = (
     ["checkIn", "checkOut", "guests", "children", "room"] as const
   ).filter((key) => show(key)).length;
-  const gridColumns = `repeat(${visibleFieldCount + 1}, minmax(0, 1fr))`;
+  const gridColumns = `repeat(${visibleFieldCount}, minmax(0, 1fr)) minmax(168px, 1.25fr)`;
 
   const glassStyle: React.CSSProperties = {
     background: settings.background || FRAME_BG,
@@ -348,13 +349,13 @@ export function PremiumFloatingBookingBar({
             </SelectValue>
           </FieldCell>
         )}
-        <div className="flex min-w-0 items-center justify-center px-2">
+        <div className="flex min-w-[168px] items-center justify-center px-1.5">
           <motion.button
             type="submit"
             whileHover={{ scale: 1.04, y: -3, boxShadow: "0 32px 70px rgba(190,150,50,0.5)" }}
             whileTap={{ scale: 0.98 }}
             transition={{ duration: 0.5, ease: luxuryEase }}
-            className="group relative flex h-[80px] w-full items-center justify-center gap-2.5 overflow-hidden rounded-[22px] px-4 text-[11px] font-bold uppercase tracking-[0.18em] text-white xl:text-xs"
+            className="group relative flex h-[80px] w-full min-w-[168px] items-center justify-center gap-2 overflow-hidden rounded-[22px] px-3 text-[10px] font-bold uppercase leading-tight tracking-[0.12em] text-white xl:text-[11px] xl:tracking-[0.14em]"
             style={{
               background: settings.buttonGradient || "linear-gradient(180deg, #E8C878 0%, #C9A44C 45%, #B98B2C 100%)",
               boxShadow: settings.buttonShadow || "0 24px 60px rgba(201,164,76,0.45), inset 0 1px 0 rgba(255,255,255,0.35)",
@@ -366,7 +367,7 @@ export function PremiumFloatingBookingBar({
               animate={{ x: "250%" }}
               transition={{ duration: 2.8, repeat: Infinity, repeatDelay: 1.2, ease: luxuryEase }}
             />
-            <span className="relative truncate">{settings.buttonText}</span>
+            <span className="relative text-center">{settings.buttonText}</span>
             <ArrowRight className="relative h-4 w-4 shrink-0 transition-transform duration-500 group-hover:translate-x-1" />
           </motion.button>
         </div>

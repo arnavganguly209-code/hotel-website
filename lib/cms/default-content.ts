@@ -83,7 +83,7 @@ export const defaultContent: SiteContent = {
       id: "garden-restaurant",
       title: "Garden View & Korean Restaurant",
       content:
-        "Garden View & Korean Restaurant offers an elegant dining experience where panoramic greenery meets the precision of Korean culinary artistry. Our chefs prepare authentic dishes using premium ingredients, served in a serene setting ideal for intimate dinners and distinguished gatherings.\n\nFrom sizzling barbecue to refined banchan presentations, every course is composed with care. The atmosphere balances soft lighting, natural textures, and attentive service — creating an occasion worthy of your stay in Kathmandu.",
+        "Garden View & Korean Restaurant offers an elegant dining experience where panoramic greenery meets the precision of Korean culinary artistry. Our chefs prepare authentic dishes using premium ingredients — from hand-cut sashimi to flame-kissed barbecue — served in a serene setting ideal for intimate dinners and distinguished gatherings.\n\nFrom sizzling tabletop grills to refined banchan presentations, every course is composed with care. The atmosphere balances soft lighting, natural textures, and attentive service — creating an occasion worthy of your stay in Kathmandu.\n\nWhether celebrating a milestone or hosting a private dinner, our team crafts bespoke menus and wine pairings that honour both Korean tradition and the cosmopolitan spirit of Thamel.",
       imageSrc: "/media/dining/korean-restaurant.jpg",
       imagePosition: "left",
       variant: "dining",
@@ -110,7 +110,7 @@ export const defaultContent: SiteContent = {
       id: "spa-wellness",
       title: "Spa & Wellness",
       content:
-        "Our spa and wellness sanctuary is a haven of restoration — blending Himalayan healing traditions with contemporary luxury therapies. Each treatment is tailored to renew body, mind, and spirit in an environment of absolute tranquillity.\n\nFrom therapeutic massage and steam rituals to bespoke wellness journeys, every experience is designed to complement your stay. Emerge refreshed, centred, and ready to embrace the cultural wonders of Kathmandu.",
+        "Our spa and wellness sanctuary is a haven of restoration — blending Himalayan healing traditions with contemporary luxury therapies. Each treatment is tailored to renew body, mind, and spirit in an environment of absolute tranquillity.\n\nFrom therapeutic massage and steam rituals to bespoke wellness journeys, every experience is designed to complement your stay. Emerge refreshed, centred, and ready to embrace the cultural wonders of Kathmandu.\n\nPrivate treatment suites, aromatherapy baths, and couples' rituals draw on indigenous herbs and time-honoured techniques — delivered by therapists trained in both Eastern and Western wellness disciplines.",
       imageSrc: "/media/spa/wellness.jpg",
       imagePosition: "right",
       variant: "spa",
@@ -195,9 +195,9 @@ export const defaultContent: SiteContent = {
     eyebrow: "World-Class Amenities",
     title: "All the Essentials for a Refined Stay",
     description:
-      "Every detail has been curated to deliver the comfort, convenience, and elegance expected of an international five-star retreat.",
+      "Every detail has been curated to deliver the comfort, convenience, and elegance expected of an international five-star retreat. From the moment you arrive, our team anticipates your needs with discreet, personalised service that defines true luxury hospitality.\n\nOur facilities span wellness, dining, business, and leisure — each designed to complement your exploration of Kathmandu while providing a sanctuary of calm when you return. Climate-controlled interiors, premium linens, and artisanal bath amenities set the tone in every space.",
     caption:
-      "Inspired by Nepalese hospitality, surrounded by comfort to offer a truly different experience.",
+      "Inspired by Nepalese hospitality, surrounded by comfort to offer a truly different experience. From 24-hour concierge and valet parking to a temperature-controlled pool, fitness studio, and executive business centre — every amenity reflects international standards, thoughtfully integrated with Nepalese warmth.",
     media: {
       type: "image",
       imageSrc: "",

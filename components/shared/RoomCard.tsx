@@ -89,9 +89,10 @@ export function RoomCard({ room }: RoomCardProps) {
 
         <Link
           href={roomDetailPath(room.id)}
-          className="group/link mt-auto inline-flex items-center gap-2 pt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-luxury-forest transition-colors duration-500 hover:text-luxury-gold"
+          prefetch
+          className="group/link mt-auto inline-flex items-center gap-2.5 rounded-full border border-luxury-gold/25 bg-luxury-forest px-5 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-white transition-all duration-500 hover:-translate-y-0.5 hover:border-luxury-gold/50 hover:bg-luxury-green-dark hover:shadow-lg"
         >
-          Discover More
+          Explore Room
           <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 group-hover/link:translate-x-1" />
         </Link>
       </div>

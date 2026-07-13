@@ -82,6 +82,7 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
             >
               <Link
                 href={item.href}
+                prefetch
                 onClick={onClose}
                 className="group relative flex items-center justify-between py-4"
               >
@@ -104,7 +105,7 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
             {header.phone}
           </a>
           <Button variant="gold" size="lg" className="w-full rounded-xl uppercase tracking-wider" asChild>
-            <Link href={routes.contact} onClick={onClose}>
+            <Link href={routes.contact} prefetch onClick={onClose}>
               {header.bookButtonText}
             </Link>
           </Button>

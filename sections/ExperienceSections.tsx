@@ -13,12 +13,23 @@ interface ExperienceSectionsProps {
   experiences: SiteContent["experiences"];
 }
 
+const EXPERIENCE_META: Record<string, { eyebrow: string; href: string; cta: string }> = {
+  dining: { eyebrow: "Fine Dining", href: routes.dining, cta: "Explore Dining" },
+  cafe: { eyebrow: "Lobby Café", href: routes.dining, cta: "View Café Experience" },
+  lounge: { eyebrow: "Rooftop Experience", href: routes.dining, cta: "Explore Sky Lounge" },
+  spa: { eyebrow: "Spa & Wellness", href: routes.spa, cta: "Explore Wellness" },
+  culture: { eyebrow: "Nepali Heritage", href: routes.culturalExperience, cta: "Explore Culture" },
+  room: { eyebrow: "Accommodations", href: routes.rooms, cta: "View Rooms" },
+  gallery: { eyebrow: "Gallery", href: routes.gallery, cta: "View Gallery" },
+};
+
 export function ExperienceSections({ experiences }: ExperienceSectionsProps) {
   return (
     <>
       {experiences.map((exp, index) => {
         const imageLeft = exp.imagePosition === "left";
         const paragraphs = exp.content.split(/\n\n+/).filter(Boolean);
+        const meta = EXPERIENCE_META[exp.variant] ?? EXPERIENCE_META.dining;
         const bgStyle =
           index % 2 === 0
             ? { background: "linear-gradient(180deg, #FFF9F2 0%, #FAF6EE 100%)" }
@@ -31,49 +42,60 @@ export function ExperienceSections({ experiences }: ExperienceSectionsProps) {
             className="section-padding section-glow relative overflow-hidden"
             style={bgStyle}
           >
-            <div className="mx-auto max-w-7xl">
-              <div className="grid items-stretch gap-12 lg:grid-cols-2 lg:gap-20">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(201,164,76,0.04)_0%,transparent_55%)]" />
+            <div className="relative mx-auto max-w-7xl">
+              <div className="grid items-stretch gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20">
                 <motion.div
                   variants={fadeUp}
-                  className={`flex ${imageLeft ? "order-1" : "order-1 lg:order-2"}`}
+                  className={`relative min-h-[400px] lg:min-h-[580px] ${imageLeft ? "order-1" : "order-1 lg:order-2"}`}
                 >
-                  <div className="relative w-full">
-                    <LuxuryImageBox
-                      src={exp.imageSrc}
-                      alt={exp.title}
-                      label={exp.title}
-                      variant={exp.variant}
-                      className="aspect-[4/5] h-full max-h-[480px] min-h-[360px] w-full"
-                    />
-                    <div className="pointer-events-none absolute -bottom-3 -right-3 h-full w-full rounded-[28px] border border-luxury-gold/15" />
-                  </div>
+                  <LuxuryImageBox
+                    src={exp.imageSrc}
+                    alt={exp.title}
+                    label={exp.title}
+                    variant={exp.variant}
+                    className="h-full min-h-[400px] w-full lg:min-h-[580px]"
+                  />
                 </motion.div>
 
                 <motion.div
                   variants={luxuryStagger}
                   initial="hidden"
                   whileInView="visible"
-                  viewport={{ once: true }}
-                  className={`flex flex-col justify-center lg:max-h-[480px] ${imageLeft ? "order-2" : "order-2 lg:order-1"}`}
+                  viewport={{ once: true, margin: "-80px" }}
+                  className={`flex flex-col justify-center lg:min-h-[580px] ${imageLeft ? "order-2" : "order-2 lg:order-1"}`}
                 >
-                  <motion.p variants={fadeUp} className="mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-luxury-gold-label">
-                    Experience
+                  <motion.p
+                    variants={fadeUp}
+                    className="mb-4 text-[11px] font-semibold uppercase tracking-[0.32em] text-luxury-gold-label"
+                  >
+                    {meta.eyebrow}
                   </motion.p>
-                  <motion.h2 variants={fadeUp} className="font-display text-3xl font-normal leading-tight text-luxury-forest md:text-4xl lg:text-[2.5rem]">
+                  <motion.h2
+                    variants={fadeUp}
+                    className="font-display text-3xl font-medium leading-[1.12] text-luxury-forest md:text-4xl lg:text-[2.75rem]"
+                  >
                     {exp.title}
                   </motion.h2>
-                  <motion.div variants={fadeUp} className="my-5 h-px w-16 bg-gradient-to-r from-luxury-gold/50 to-transparent" />
-                  <motion.div variants={fadeUp} className="space-y-4 text-base leading-[1.8] text-luxury-muted md:text-[17px]">
-                    {paragraphs.slice(0, 2).map((para, i) => (
+                  <motion.div
+                    variants={fadeUp}
+                    className="my-6 h-px w-20 bg-gradient-to-r from-luxury-gold via-luxury-gold/40 to-transparent"
+                  />
+                  <motion.div
+                    variants={fadeUp}
+                    className="space-y-5 text-[15px] leading-[1.85] text-luxury-muted md:text-base"
+                  >
+                    {paragraphs.slice(0, 3).map((para, i) => (
                       <p key={i}>{para}</p>
                     ))}
                   </motion.div>
                   <motion.div variants={fadeUp}>
                     <Link
-                      href={exp.variant === "spa" ? routes.spa : routes.dining}
-                      className="group mt-10 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-luxury-forest transition-colors duration-500 hover:text-luxury-gold"
+                      href={meta.href}
+                      prefetch
+                      className="group mt-10 inline-flex items-center gap-2.5 rounded-full border border-luxury-gold/30 bg-luxury-gold px-7 py-3.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white shadow-luxury-gold transition-all duration-500 hover:-translate-y-0.5 hover:shadow-lg"
                     >
-                      Explore More
+                      {meta.cta}
                       <ArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
                     </Link>
                   </motion.div>

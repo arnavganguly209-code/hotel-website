@@ -24,9 +24,8 @@ function resolveCultureMedia(content: SiteContent["culture"]): CmsMedia {
 
 export function NepaliCulture({ content }: NepaliCultureProps) {
   const media = resolveCultureMedia(content);
-  const homeParagraph =
-    content.content.split(/\n\n+/).filter(Boolean)[0] ??
-    content.content;
+  const paragraphs = content.content.split(/\n\n+/).filter(Boolean);
+  const homeCopy = paragraphs.slice(0, 3);
   const highlights = content.highlights.slice(0, 4);
   const stats = content.stats.slice(0, 3);
 
@@ -66,9 +65,11 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
               </h2>
               <div className="my-5 h-px w-16 bg-gradient-to-r from-luxury-gold via-luxury-gold/50 to-transparent" />
 
-              <p className="text-[15px] leading-[1.8] text-luxury-muted md:text-base">
-                {homeParagraph}
-              </p>
+              <div className="space-y-5 text-[15px] leading-[1.85] text-luxury-muted md:text-base">
+                {homeCopy.map((para, i) => (
+                  <p key={i}>{para}</p>
+                ))}
+              </div>
 
               {content.quote ? (
                 <blockquote className="relative mt-6 rounded-[20px] border border-white/60 bg-white/45 px-5 py-5 backdrop-blur-[18px]">
@@ -129,7 +130,7 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
               className="mt-8 gap-2 self-start uppercase tracking-[0.18em] lg:mt-6"
               asChild
             >
-              <Link href={content.ctaHref}>
+              <Link href={content.ctaHref} prefetch>
                 {content.ctaText}
                 <ArrowRight className="h-4 w-4" />
               </Link>
