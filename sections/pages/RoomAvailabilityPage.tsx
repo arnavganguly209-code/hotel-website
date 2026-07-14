@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import Image from "next/image";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { ArrowRight, Check, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { fadeUp, luxuryStagger } from "@/lib/animations";
@@ -62,7 +62,7 @@ export function RoomAvailabilityPage({ rooms, search }: RoomAvailabilityPageProp
                   className="group overflow-hidden rounded-[28px] border border-white/70 bg-gradient-to-br from-white/90 to-luxury-sage/30 shadow-luxury-lg transition duration-700 hover:-translate-y-1 hover:shadow-luxury-gold"
                 >
                   <div className="relative aspect-[16/10] overflow-hidden">
-                    <Image
+                    <SafeImage
                       src={room.imageSrc}
                       alt={room.name}
                       fill

@@ -8,7 +8,7 @@ import { isDatabaseAvailable, db } from "@/lib/db";
 const RECORD_ID = "main";
 
 /**
- * CMS content is sourced exclusively from PostgreSQL on Vercel.
+ * CMS content is sourced exclusively from PostgreSQL (Hostinger VPS localhost).
  * mergeWithDefaults is only used to hydrate missing schema keys — never to override saved values.
  */
 export async function getContent(): Promise<SiteContent> {

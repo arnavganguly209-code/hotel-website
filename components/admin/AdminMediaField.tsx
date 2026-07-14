@@ -1,20 +1,31 @@
 "use client";
 
-import { FileUpload } from "@/components/admin/FileUpload";
 import { AdminInput } from "@/components/admin/AdminFields";
 import { Button } from "@/components/ui/button";
+import { ImagePicker } from "@/components/admin/media/ImagePicker";
 import { Trash2 } from "lucide-react";
 import { deleteCmsMedia } from "@/lib/cms/client-media";
-import type { CmsMedia } from "@/lib/cms/types";
+import type { CmsMedia, MediaAsset } from "@/lib/cms/types";
 
 interface AdminMediaFieldProps {
   label: string;
   value: CmsMedia;
   onChange: (media: CmsMedia) => void;
   folder?: string;
+  category?: string;
+  library: MediaAsset[];
+  onLibraryChange: (library: MediaAsset[]) => void;
 }
 
-export function AdminMediaField({ label, value, onChange, folder = "uploads" }: AdminMediaFieldProps) {
+export function AdminMediaField({
+  label,
+  value,
+  onChange,
+  folder = "uploads",
+  category = "General",
+  library,
+  onLibraryChange,
+}: AdminMediaFieldProps) {
   const set = (patch: Partial<CmsMedia>) => onChange({ ...value, ...patch });
 
   const handleRemove = async () => {
@@ -25,19 +36,12 @@ export function AdminMediaField({ label, value, onChange, folder = "uploads" }: 
         resourceType: "image",
       });
     }
-    if (value.type === "video" && (value.videoPublicId || value.videoSrc)) {
-      await deleteCmsMedia({
-        publicId: value.videoPublicId,
-        url: value.videoSrc,
-        resourceType: "video",
-      });
-    }
     onChange({
       ...value,
       imageSrc: "",
       imagePublicId: "",
-      videoSrc: "",
-      videoPublicId: "",
+      videoSrc: value.videoSrc,
+      videoPublicId: value.videoPublicId,
       poster: "",
       posterPublicId: "",
     });
@@ -63,26 +67,20 @@ export function AdminMediaField({ label, value, onChange, folder = "uploads" }: 
       </div>
 
       {value.type === "image" ? (
-        <>
-          <AdminInput
-            label="Image URL"
-            value={value.imageSrc}
-            onChange={(e) => set({ imageSrc: e.target.value })}
-          />
-          <FileUpload
-            label="Upload Image"
-            folder={folder}
-            accept="image/jpeg,image/jpg,image/png,image/webp"
-            value={value.imageSrc}
-            replacePublicId={value.imagePublicId}
-            onChange={(url, result) =>
-              set({
-                imageSrc: url,
-                imagePublicId: result?.publicId ?? value.imagePublicId,
-              })
-            }
-          />
-        </>
+        <ImagePicker
+          label="Select or Upload Image"
+          value={value.imageSrc}
+          folder={folder}
+          category={category}
+          library={library}
+          onLibraryChange={onLibraryChange}
+          onChange={(url, asset) =>
+            set({
+              imageSrc: url,
+              imagePublicId: asset?.publicId ?? value.imagePublicId,
+            })
+          }
+        />
       ) : (
         <>
           <AdminInput
@@ -91,25 +89,21 @@ export function AdminMediaField({ label, value, onChange, folder = "uploads" }: 
             onChange={(e) => set({ videoSrc: e.target.value })}
           />
           <p className="text-xs text-white/40">
-            Video files are not uploaded to the server. Paste an external video URL below, or upload a poster image.
+            Paste a video URL. Upload a poster image below for the thumbnail.
           </p>
-          <FileUpload
-            label="Upload Poster Image"
-            folder={folder}
-            accept="image/jpeg,image/jpg,image/png,image/webp"
+          <ImagePicker
+            label="Poster Image"
             value={value.poster}
-            replacePublicId={value.posterPublicId}
-            onChange={(url, result) =>
+            folder={folder}
+            category={category}
+            library={library}
+            onLibraryChange={onLibraryChange}
+            onChange={(url, asset) =>
               set({
                 poster: url,
-                posterPublicId: result?.publicId ?? value.posterPublicId,
+                posterPublicId: asset?.publicId ?? value.posterPublicId,
               })
             }
-          />
-          <AdminInput
-            label="Poster URL"
-            value={value.poster}
-            onChange={(e) => set({ poster: e.target.value })}
           />
         </>
       )}
@@ -122,24 +116,16 @@ export function AdminMediaField({ label, value, onChange, folder = "uploads" }: 
       />
 
       {(value.imageSrc || value.videoSrc) && (
-        <div className="space-y-2">
-          {value.type === "image" && value.imageSrc ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={value.imageSrc} alt={value.alt || "Preview"} className="max-h-40 rounded border border-white/10 object-cover" />
-          ) : value.videoSrc ? (
-            <video src={value.videoSrc} controls className="max-h-40 w-full rounded border border-white/10" />
-          ) : null}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="text-red-400 hover:text-red-300"
-            onClick={() => void handleRemove()}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Remove Media
-          </Button>
-        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="text-red-400 hover:text-red-300"
+          onClick={() => void handleRemove()}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Remove Media
+        </Button>
       )}
     </div>
   );

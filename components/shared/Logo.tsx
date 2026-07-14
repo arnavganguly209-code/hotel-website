@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { cn } from "@/lib/utils";
 import { routes } from "@/lib/navigation";
 
@@ -45,7 +45,7 @@ export function Logo({
       aria-label={`${name} — Home`}
     >
       {showLogoImage ? (
-        <Image
+        <SafeImage
           src={logoSrc}
           alt={name}
           width={logoSize * 2}

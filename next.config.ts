@@ -1,10 +1,11 @@
 import type { NextConfig } from "next";
-import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   images: {
+    // Hostinger VPS: serve local /public files directly (no optimizer).
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
@@ -15,7 +16,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
   },
   experimental: {
-    // Allow Orbit image uploads up to 10MB through App Router Route Handlers / Server Actions.
+    // Orbit image uploads up to 10MB (App Router / Server Actions).
     serverActions: {
       bodySizeLimit: "10mb",
     },
@@ -23,5 +24,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
-initOpenNextCloudflareForDev();

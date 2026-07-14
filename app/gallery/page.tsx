@@ -33,12 +33,15 @@ export default async function GalleryRoute() {
             className="mb-4"
           />
           <MasonryGallery
-            items={content.gallery.map((g) => ({
-              id: g.id,
-              src: g.src,
-              title: g.title,
-              category: g.category,
-            }))}
+            items={content.gallery
+              .filter((g) => g.active !== false && Boolean(g.src))
+              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+              .map((g) => ({
+                id: g.id,
+                src: g.src,
+                title: g.title,
+                category: g.category,
+              }))}
             columns={3}
           />
         </div>

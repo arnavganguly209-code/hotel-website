@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { heroImageFilters } from "@/lib/hero/style-utils";
 import type { HeroImageSettings } from "@/lib/cms/hero-builder-types";
@@ -61,7 +61,7 @@ export function HeroBlendedImage({ image, alt, width, mouseParallax = true }: He
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="relative h-full w-full overflow-hidden" style={maskStyle}>
-          <Image
+          <SafeImage
             src={src}
             alt={alt}
             fill

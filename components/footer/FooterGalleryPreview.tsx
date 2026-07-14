@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { motion } from "framer-motion";
 import { fadeUp, staggerContainer } from "@/lib/animations";
 import { routes } from "@/lib/navigation";
@@ -32,7 +32,7 @@ export function FooterGalleryPreview({ images }: FooterGalleryPreviewProps) {
               href={routes.gallery}
               className="group relative block aspect-[4/3] overflow-hidden rounded-xl border border-luxury-gold/10 shadow-luxury"
             >
-              <Image
+              <SafeImage
                 src={img.src}
                 alt={img.alt}
                 fill

@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { luxuryEase } from "@/lib/animations";
 import type { CmsMedia } from "@/lib/cms/types";
+import { SafeImage } from "@/components/shared/SafeImage";
 
 interface LuxuryMediaFrameProps {
   media: CmsMedia;
@@ -123,14 +123,13 @@ export function LuxuryMediaFrame({
           />
         </video>
       ) : showImage ? (
-        <Image
+        <SafeImage
           src={imageSrc}
           alt={media.alt}
           fill
           priority={priority}
           className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
           onError={() => setImageError(true)}
-          sizes="(max-width: 1024px) 100vw, 45vw"
         />
       ) : (
         <LuxuryPlaceholder label={label || media.caption || media.alt || "Premium Media"} />

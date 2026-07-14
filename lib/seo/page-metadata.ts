@@ -8,7 +8,7 @@ export function buildPageMetadata(
   siteName = "Hotel Thamel Park & Spa"
 ): Metadata {
   const url = `${SITE_URL}${path === "/" ? "" : path}`;
-  const ogImage = seo.ogImage ?? "/media/og-image.jpg";
+  const ogImage = seo.ogImage ?? "/media/hero/hero-background.png";
 
   return {
     title: seo.title,

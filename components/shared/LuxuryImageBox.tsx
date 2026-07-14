@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { cn } from "@/lib/utils";
 
 interface LuxuryImageBoxProps {
@@ -50,13 +50,12 @@ export function LuxuryImageBox({
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
-          <Image
+          <SafeImage
             src={src}
             alt={alt}
             fill
             className="object-cover"
             onError={() => setError(true)}
-            sizes="(max-width: 768px) 100vw, 50vw"
           />
         </motion.div>
       ) : (

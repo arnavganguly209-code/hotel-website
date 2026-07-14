@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { Undo2, Redo2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
-import { FileUpload } from "@/components/admin/FileUpload";
+import { ImagePicker } from "@/components/admin/media/ImagePicker";
 import { PremiumHero } from "@/components/hero/PremiumHero";
 import type { HeroBuilderSettings } from "@/lib/cms/hero-builder-types";
 import type { SiteContent } from "@/lib/cms/types";
@@ -28,6 +28,8 @@ interface HeroBuilderProps {
   hero: HeroBuilderSettings;
   rooms: SiteContent["rooms"];
   onChange: (hero: HeroBuilderSettings) => void;
+  library: SiteContent["mediaLibrary"];
+  onLibraryChange: (library: SiteContent["mediaLibrary"]) => void;
 }
 
 function Slider({
@@ -73,7 +75,7 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-export function HeroBuilder({ hero, rooms, onChange }: HeroBuilderProps) {
+export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }: HeroBuilderProps) {
   const [tab, setTab] = useState<Tab>("Preview");
   const [history, setHistory] = useState<HeroBuilderSettings[]>([hero]);
   const [historyIndex, setHistoryIndex] = useState(0);
@@ -173,7 +175,23 @@ export function HeroBuilder({ hero, rooms, onChange }: HeroBuilderProps) {
         <>
           <Panel title="Hero Background Image">
             <AdminInput label="Image URL" value={hero.image.src} onChange={(e) => patchNested("image", { ...hero.image, src: e.target.value, desktopSrc: e.target.value })} />
-            <FileUpload label="Upload Hero Image" folder="hero" accept="image/*" value={hero.image.src} onChange={(url) => patchNested("image", { ...hero.image, src: url, desktopSrc: url, tabletSrc: url, mobileSrc: url })} />
+            <ImagePicker
+              label="Hero Background Image"
+              folder="hero"
+              category="Hero"
+              value={hero.image.src}
+              library={library}
+              onLibraryChange={onLibraryChange}
+              onChange={(url) =>
+                patchNested("image", {
+                  ...hero.image,
+                  src: url,
+                  desktopSrc: url,
+                  tabletSrc: url,
+                  mobileSrc: url,
+                })
+              }
+            />
             <AdminInput label="Alt Text" value={hero.image.alt} onChange={(e) => patchNested("image", { ...hero.image, alt: e.target.value })} />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <AdminInput label="Mobile Image URL" value={hero.image.mobileSrc} onChange={(e) => patchNested("image", { ...hero.image, mobileSrc: e.target.value })} />
@@ -209,7 +227,15 @@ export function HeroBuilder({ hero, rooms, onChange }: HeroBuilderProps) {
             Show Logo
           </label>
           <AdminInput label="Logo URL" value={hero.logo.src} onChange={(e) => patchNested("logo", { ...hero.logo, src: e.target.value })} />
-          <FileUpload label="Upload Logo (PNG/SVG/WebP)" folder="logo" accept="image/*" value={hero.logo.src} onChange={(url) => patchNested("logo", { ...hero.logo, src: url })} />
+          <ImagePicker
+            label="Hero Logo"
+            folder="logo"
+            category="General"
+            value={hero.logo.src}
+            library={library}
+            onLibraryChange={onLibraryChange}
+            onChange={(url) => patchNested("logo", { ...hero.logo, src: url })}
+          />
           <div className="grid grid-cols-2 gap-4">
             <Slider label="Width (px)" value={hero.logo.width} min={60} max={200} onChange={(v) => patchNested("logo", { ...hero.logo, width: v })} />
             <Slider label="Opacity" value={Math.round(hero.logo.opacity * 100)} min={0} max={100} onChange={(v) => patchNested("logo", { ...hero.logo, opacity: v / 100 })} />

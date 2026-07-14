@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { motion } from "framer-motion";
 import { FooterLuxuryDivider } from "@/components/footer/FooterLuxuryDivider";
 import { fadeUp } from "@/lib/animations";
@@ -18,7 +18,7 @@ export function FooterBrand({ footer }: FooterBrandProps) {
     >
       <div className="mb-4 flex flex-col items-center gap-3 lg:items-start">
         {footer.logoSrc ? (
-          <Image
+          <SafeImage
             src={footer.logoSrc}
             alt={footer.brandName}
             width={56}

@@ -63,6 +63,11 @@ export interface MediaAsset {
   mimeType: string;
   size: number;
   createdAt: string;
+  /** Display title in the media library */
+  title?: string;
+  alt?: string;
+  /** Gallery | Rooms | Spa | Dining | Culture | General | Hero | Blog | Other */
+  category?: string;
 }
 
 export interface CmsMedia {
@@ -290,6 +295,9 @@ export interface SiteContent {
     title: string;
     category: string;
     type: "image" | "video";
+    alt?: string;
+    active?: boolean;
+    order?: number;
   }>;
   gallerySection: {
     eyebrow: string;

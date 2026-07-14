@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { cn } from "@/lib/utils";
 import { luxuryEase } from "@/lib/animations";
 
@@ -16,7 +16,7 @@ interface LuxuryRoomGalleryProps {
 export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryProps) {
   const [active, setActive] = useState(0);
   const touchStart = useRef<number | null>(null);
-  const gallery = images.length ? images : ["/media/rooms/placeholder.jpg"];
+  const gallery = images.length ? images : ["/media/rooms/super-deluxe.jpg"];
 
   const go = (dir: -1 | 1) => {
     setActive((i) => (i + dir + gallery.length) % gallery.length);
@@ -45,12 +45,11 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
             transition={{ duration: 0.65, ease: luxuryEase }}
             className="relative aspect-[4/3] w-full"
           >
-            <Image
+            <SafeImage
               src={gallery[active]}
               alt={alt}
               fill
               priority={active === 0}
-              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-luxury-green-dark/35 via-transparent to-transparent" />
@@ -105,7 +104,7 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
                 i === active ? "border-luxury-gold shadow-luxury-gold" : "border-white/50 opacity-75 hover:opacity-100"
               )}
             >
-              <Image src={src} alt="" fill sizes="120px" className="object-cover" />
+              <SafeImage src={src} alt="" fill className="object-cover" />
             </button>
           ))}
         </div>

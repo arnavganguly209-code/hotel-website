@@ -19,7 +19,10 @@ export function GalleryHomeSection({
   gallery,
   section = defaultContent.gallerySection,
 }: GalleryHomeSectionProps) {
-  const items = gallery.slice(0, 6);
+  const items = gallery
+    .filter((item) => item.active !== false && Boolean(item.src))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .slice(0, 6);
 
   return (
     <MotionSection

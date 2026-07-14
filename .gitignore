@@ -18,8 +18,6 @@
 # next.js
 /.next/
 /.next/cache/
-/.open-next/
-/.wrangler/
 /out/
 
 # production
@@ -40,7 +38,9 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files
-.env*.local
+.env
+.env.*
+!.env.example
 .dev.vars
 
 # typescript
@@ -49,5 +49,7 @@ next-env.d.ts
 
 /lib/generated
 
+# legacy platform leftovers (never commit)
 .vercel
-.env*
+.open-next
+.wrangler

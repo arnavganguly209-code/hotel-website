@@ -30,10 +30,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
-import { FileUpload } from "@/components/admin/FileUpload";
-import { deleteCmsMedia } from "@/lib/cms/client-media";
 import { AdminMediaField } from "@/components/admin/AdminMediaField";
 import { HeroBuilder } from "@/components/admin/HeroBuilder";
+import { MediaLibrary } from "@/components/admin/media/MediaLibrary";
+import { GalleryManager } from "@/components/admin/media/GalleryManager";
+import { ImagePicker } from "@/components/admin/media/ImagePicker";
 import type { SiteContent } from "@/lib/cms/types";
 import { cn } from "@/lib/utils";
 
@@ -286,7 +287,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 </label>
                 <AdminInput label="Header Text" value={content.header.headerText} onChange={(e) => update("header", { ...content.header, headerText: e.target.value })} />
                 <AdminInput label="Logo URL" value={content.header.logoSrc} onChange={(e) => update("header", { ...content.header, logoSrc: e.target.value })} />
-                <FileUpload label="Upload Logo" folder="logo" accept="image/*" value={content.header.logoSrc} onChange={(url) => update("header", { ...content.header, logoSrc: url })} />
+                <ImagePicker label="Header Logo" folder="logo" category="General" value={content.header.logoSrc} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => update("header", { ...content.header, logoSrc: url })} />
                 <Button type="button" variant="outline" size="sm" className="border-red-400/30 text-red-400" onClick={() => update("header", { ...content.header, logoSrc: "", useLogo: false })}>Remove Logo</Button>
                 <AdminInput label="Logo Size (px)" type="number" value={content.header.logoSize} onChange={(e) => update("header", { ...content.header, logoSize: Number(e.target.value) })} />
                 <AdminInput label="Header Height (px)" type="number" value={content.header.height} onChange={(e) => update("header", { ...content.header, height: Number(e.target.value) })} />
@@ -310,6 +311,8 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 hero={content.hero}
                 rooms={content.rooms}
                 onChange={(hero) => update("hero", hero)}
+                library={content.mediaLibrary}
+                onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
               />
             )}
 
@@ -387,7 +390,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       experiences[i] = { ...exp, imageSrc: e.target.value };
                       update("experiences", experiences);
                     }} />
-                    <FileUpload label="Upload Image" folder="dining" value={exp.imageSrc} onChange={(url) => {
+                    <ImagePicker label="Experience Image" folder="dining" category="Dining" value={exp.imageSrc} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => {
                       const experiences = [...content.experiences];
                       experiences[i] = { ...exp, imageSrc: url };
                       update("experiences", experiences);
@@ -413,6 +416,8 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       imageSrc: media.imageSrc || content.culture.imageSrc,
                     })
                   }
+                  library={content.mediaLibrary}
+                  onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
                 />
                 <AdminInput label="Quote" value={content.culture.quote} onChange={(e) => update("culture", { ...content.culture, quote: e.target.value })} />
                 <AdminInput label="Quote Author" value={content.culture.quoteAuthor} onChange={(e) => update("culture", { ...content.culture, quoteAuthor: e.target.value })} />
@@ -465,6 +470,8 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   folder="facilities"
                   value={content.facilitiesSection.media}
                   onChange={(media) => update("facilitiesSection", { ...content.facilitiesSection, media })}
+                  library={content.mediaLibrary}
+                  onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
                 />
                 <p className="text-xs uppercase tracking-widest text-white/40">Amenity Cards</p>
                 {content.facilities.map((facility, i) => (
@@ -506,8 +513,8 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       features: ["Premium Comfort"],
                       description: "A luxurious room designed for your comfort.",
                       longDescription: "A luxurious room designed for your comfort with premium amenities and refined service.",
-                      imageSrc: "/media/rooms/placeholder.jpg",
-                      gallery: ["/media/rooms/placeholder.jpg"],
+                      imageSrc: "/media/rooms/super-deluxe.jpg",
+                      gallery: ["/media/rooms/super-deluxe.jpg"],
                       amenities: ["Premium Comfort", "Complimentary Wi-Fi"],
                       policies: ["Check-in from 2:00 PM · Check-out by 12:00 PM"],
                       available: true,
@@ -595,7 +602,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       rooms[i] = { ...room, longDescription: e.target.value };
                       update("rooms", rooms);
                     }} />
-                    <FileUpload label="Upload Cover Image" folder="rooms" value={room.imageSrc} replacePublicId={room.imageSrc} onChange={(url) => {
+                    <ImagePicker label="Room Cover Image" folder="rooms" category="Rooms" value={room.imageSrc} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => {
                       const rooms = [...content.rooms];
                       rooms[i] = { ...room, imageSrc: url };
                       update("rooms", rooms);
@@ -605,19 +612,13 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       {(room.gallery.length ? room.gallery : [room.imageSrc]).map((src, gi) => (
                         <div key={`${room.id}-gallery-${gi}`} className="flex items-end gap-2">
                           <div className="flex-1">
-                            <FileUpload
-                              label={`Gallery Image ${gi + 1}`}
-                              folder="rooms"
-                              value={src}
-                              replacePublicId={src}
-                              onChange={(url) => {
+                            <ImagePicker label={`Gallery Image ${gi + 1}`} folder="rooms" category="Rooms" value={src} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => {
                                 const rooms = [...content.rooms];
                                 const gallery = [...(room.gallery.length ? room.gallery : [room.imageSrc])];
                                 gallery[gi] = url;
                                 rooms[i] = { ...room, gallery };
                                 update("rooms", rooms);
-                              }}
-                            />
+                              }} />
                           </div>
                           <Button
                             type="button"
@@ -705,63 +706,21 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
             )}
 
             {activeSection === "gallery" && (
-              <>
-                <AdminInput label="Section Title" value={content.gallerySection.title} onChange={(e) => update("gallerySection", { ...content.gallerySection, title: e.target.value })} />
-                <AdminTextarea label="Section Description" rows={2} value={content.gallerySection.description} onChange={(e) => update("gallerySection", { ...content.gallerySection, description: e.target.value })} />
-                <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="border-luxury-gold/30 text-luxury-gold"
-                    onClick={() => update("gallery", [...content.gallery, {
-                      id: `g-${Date.now()}`,
-                      src: "/media/gallery/new.jpg",
-                      title: "New Image",
-                      category: "General",
-                      type: "image" as const,
-                    }])}
-                  >
-                    <Plus className="h-4 w-4" /> Add Item
-                  </Button>
-                </div>
-                {content.gallery.map((item, i) => (
-                  <div key={item.id} className="space-y-4 border border-luxury-gold/10 p-4">
-                    <div className="flex justify-end">
-                      <Button type="button" variant="ghost" size="sm" className="text-red-400" onClick={() => update("gallery", content.gallery.filter((_, idx) => idx !== i))}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <AdminInput label="Title" value={item.title} onChange={(e) => {
-                        const gallery = [...content.gallery];
-                        gallery[i] = { ...item, title: e.target.value };
-                        update("gallery", gallery);
-                      }} />
-                      <AdminInput label="Category" value={item.category} onChange={(e) => {
-                        const gallery = [...content.gallery];
-                        gallery[i] = { ...item, category: e.target.value };
-                        update("gallery", gallery);
-                      }} />
-                    </div>
-                    <AdminInput label="Type (image or video)" value={item.type} onChange={(e) => {
-                      const gallery = [...content.gallery];
-                      gallery[i] = { ...item, type: e.target.value as "image" | "video" };
-                      update("gallery", gallery);
-                    }} />
-                    <AdminInput label="Media URL" value={item.src} onChange={(e) => {
-                      const gallery = [...content.gallery];
-                      gallery[i] = { ...item, src: e.target.value };
-                      update("gallery", gallery);
-                    }} />
-                    <FileUpload label="Upload Media" folder="gallery" accept="image/jpeg,image/jpg,image/png,image/webp" value={item.src} onChange={(url) => {
-                      const gallery = [...content.gallery];
-                      gallery[i] = { ...item, src: url };
-                      update("gallery", gallery);
-                    }} />
-                  </div>
-                ))}
-              </>
+              <GalleryManager
+                gallery={content.gallery}
+                onChange={(gallery) => update("gallery", gallery)}
+                library={content.mediaLibrary}
+                onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                sectionTitle={content.gallerySection.title}
+                sectionDescription={content.gallerySection.description}
+                onSectionMetaChange={(meta) =>
+                  update("gallerySection", {
+                    ...content.gallerySection,
+                    title: meta.title,
+                    description: meta.description,
+                  })
+                }
+              />
             )}
 
             {activeSection === "dining" && (
@@ -785,7 +744,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       venues[i] = { ...venue, imageSrc: e.target.value };
                       update("diningPage", { ...content.diningPage, venues });
                     }} />
-                    <FileUpload label="Upload Image" folder="dining" value={venue.imageSrc} onChange={(url) => {
+                    <ImagePicker label="Venue Image" folder="dining" category="Dining" value={venue.imageSrc} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => {
                       const venues = [...content.diningPage.venues];
                       venues[i] = { ...venue, imageSrc: url };
                       update("diningPage", { ...content.diningPage, venues });
@@ -800,7 +759,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
               <>
                 <AdminInput label="Hero Title" value={content.spaPage.hero.title} onChange={(e) => update("spaPage", { ...content.spaPage, hero: { ...content.spaPage.hero, title: e.target.value } })} />
                 <AdminTextarea label="Philosophy" rows={4} value={content.spaPage.philosophy.content} onChange={(e) => update("spaPage", { ...content.spaPage, philosophy: { ...content.spaPage.philosophy, content: e.target.value } })} />
-                <FileUpload label="Philosophy Image" folder="spa" value={content.spaPage.philosophy.imageSrc} onChange={(url) => update("spaPage", { ...content.spaPage, philosophy: { ...content.spaPage.philosophy, imageSrc: url } })} />
+                <ImagePicker label="Philosophy Image" folder="spa" category="Spa" value={content.spaPage.philosophy.imageSrc} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => update("spaPage", { ...content.spaPage, philosophy: { ...content.spaPage.philosophy, imageSrc: url } })} />
                 {content.spaPage.services.map((service, i) => (
                   <div key={service.id} className="space-y-3 border border-luxury-gold/10 p-4">
                     <AdminInput label="Service Name" value={service.name} onChange={(e) => {
@@ -838,6 +797,8 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       },
                     })
                   }
+                  library={content.mediaLibrary}
+                  onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
                 />
                 <AdminInput label="SEO Title" value={content.culturalExperiencePage.seo.title} onChange={(e) => update("culturalExperiencePage", { ...content.culturalExperiencePage, seo: { ...content.culturalExperiencePage.seo, title: e.target.value } })} />
                 <AdminTextarea label="SEO Description" rows={2} value={content.culturalExperiencePage.seo.description} onChange={(e) => update("culturalExperiencePage", { ...content.culturalExperiencePage, seo: { ...content.culturalExperiencePage.seo, description: e.target.value } })} />
@@ -856,7 +817,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       gallery[i] = { ...item, src: e.target.value };
                       update("culturalExperiencePage", { ...content.culturalExperiencePage, gallery });
                     }} />
-                    <FileUpload label="Upload" folder="culture" value={item.src} onChange={(url) => {
+                    <ImagePicker label="Culture Image" folder="culture" category="Culture" value={item.src} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => {
                       const gallery = [...content.culturalExperiencePage.gallery];
                       gallery[i] = { ...item, src: url };
                       update("culturalExperiencePage", { ...content.culturalExperiencePage, gallery });
@@ -940,9 +901,9 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 <AdminTextarea label="Meta Description" rows={3} value={content.seo.description} onChange={(e) => update("seo", { ...content.seo, description: e.target.value })} />
                 <AdminTextarea label="Keywords" rows={2} value={content.seo.keywords} onChange={(e) => update("seo", { ...content.seo, keywords: e.target.value })} />
                 <AdminInput label="Open Graph Image URL" value={content.seo.ogImage} onChange={(e) => update("seo", { ...content.seo, ogImage: e.target.value })} />
-                <FileUpload label="Upload OG Image" folder="seo" value={content.seo.ogImage} onChange={(url) => update("seo", { ...content.seo, ogImage: url })} />
+                <ImagePicker label="OG Image" folder="seo" category="General" value={content.seo.ogImage} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => update("seo", { ...content.seo, ogImage: url })} />
                 <AdminInput label="Favicon URL" value={content.seo.favicon} onChange={(e) => update("seo", { ...content.seo, favicon: e.target.value })} />
-                <FileUpload label="Upload Favicon" folder="seo" accept="image/*" value={content.seo.favicon} onChange={(url) => update("seo", { ...content.seo, favicon: url })} />
+                <ImagePicker label="Favicon" folder="seo" category="General" value={content.seo.favicon} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => update("seo", { ...content.seo, favicon: url })} />
                 <AdminInput label="Google Analytics ID" value={content.seo.googleAnalytics} onChange={(e) => update("seo", { ...content.seo, googleAnalytics: e.target.value })} />
                 <AdminInput label="Google Tag Manager ID" value={content.seo.googleTagManager} onChange={(e) => update("seo", { ...content.seo, googleTagManager: e.target.value })} />
                 <label className="flex items-center gap-3 text-sm text-white/70">
@@ -969,7 +930,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   <AdminTextarea label="Description" rows={3} value={content.footer.description} onChange={(e) => update("footer", { ...content.footer, description: e.target.value })} />
                   <AdminInput label="Tagline (optional)" value={content.footer.tagline} onChange={(e) => update("footer", { ...content.footer, tagline: e.target.value })} />
                   <AdminInput label="Footer Logo URL" value={content.footer.logoSrc} onChange={(e) => update("footer", { ...content.footer, logoSrc: e.target.value })} />
-                  <FileUpload label="Upload Footer Logo" folder="logo" accept="image/*" value={content.footer.logoSrc} onChange={(url) => update("footer", { ...content.footer, logoSrc: url })} />
+                  <ImagePicker label="Footer Logo" folder="logo" category="General" value={content.footer.logoSrc} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => update("footer", { ...content.footer, logoSrc: url })} />
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
@@ -1037,7 +998,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                         galleryPreview[i] = { ...img, src: e.target.value };
                         update("footer", { ...content.footer, galleryPreview });
                       }} />
-                      <FileUpload label="Upload Image" folder="gallery" value={img.src} onChange={(url) => {
+                      <ImagePicker label="Footer Preview Image" folder="gallery" category="Gallery" value={img.src} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => {
                         const galleryPreview = [...content.footer.galleryPreview];
                         galleryPreview[i] = { ...img, src: url };
                         update("footer", { ...content.footer, galleryPreview });
@@ -1093,33 +1054,10 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
             )}
 
             {activeSection === "media" && (
-              <>
-                <p className="text-sm text-white/50">Upload images to the local /public/uploads folder via section editors or the library below (JPG, PNG, WEBP, max 10MB). Changes save to PostgreSQL and appear on the live site immediately.</p>
-                <FileUpload label="Upload to Library" folder="library" accept="image/jpeg,image/jpg,image/png,image/webp" value="" onChange={(url, result) => {
-                  const asset = {
-                    id: `m-${Date.now()}`,
-                    filename: url.split("/").pop() ?? "file",
-                    url,
-                    publicId: result?.publicId,
-                    folder: "library",
-                    mimeType: "image/jpeg",
-                    size: 0,
-                    createdAt: new Date().toISOString(),
-                  };
-                  update("mediaLibrary", [...content.mediaLibrary, asset]);
-                }} />
-                {content.mediaLibrary.map((item, i) => (
-                  <div key={item.id} className="flex items-center justify-between border border-luxury-gold/10 p-3">
-                    <span className="truncate text-sm text-white/70">{item.filename}</span>
-                    <Button type="button" variant="ghost" size="sm" className="text-red-400" onClick={() => {
-                      void deleteCmsMedia({ url: item.url, publicId: item.publicId });
-                      update("mediaLibrary", content.mediaLibrary.filter((_, idx) => idx !== i));
-                    }}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </>
+              <MediaLibrary
+                library={content.mediaLibrary}
+                onChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+              />
             )}
 
             {activeSection === "backups" && (

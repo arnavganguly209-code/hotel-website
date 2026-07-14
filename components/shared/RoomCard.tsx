@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Bed, Maximize2, Users } from "lucide-react";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { roomDetailPath } from "@/lib/navigation";
 import { luxuryEase } from "@/lib/animations";
 import type { SiteContent } from "@/lib/cms/types";
@@ -30,13 +30,12 @@ export function RoomCard({ room }: RoomCardProps) {
     >
       <div className={`relative ${IMAGE_HEIGHT} w-full shrink-0 overflow-hidden`}>
         {room.imageSrc && !imageError ? (
-          <Image
+          <SafeImage
             src={room.imageSrc}
             alt={room.name}
             fill
             className="object-cover transition-transform duration-[1.1s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
             onError={() => setImageError(true)}
-            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-luxury-cream via-luxury-champagne to-luxury-sage">

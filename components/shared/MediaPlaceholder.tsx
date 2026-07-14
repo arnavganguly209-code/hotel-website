@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { cn } from "@/lib/utils";
 
 interface MediaPlaceholderProps {
@@ -60,14 +60,13 @@ export function MediaPlaceholder({
           whileHover={hoverScale ? { scale: 1.05 } : undefined}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
-          <Image
+          <SafeImage
             src={src}
             alt={alt}
             fill
             priority={priority}
             className="object-cover"
             onError={() => setError(true)}
-            sizes="(max-width: 768px) 100vw, 50vw"
           />
         </motion.div>
       ) : (
@@ -84,7 +83,7 @@ export function MediaPlaceholder({
               {label || alt}
             </p>
             <p className="mt-2 text-[9px] uppercase tracking-widest text-white/30">
-              Replace in /public/media
+              Replace in Orbit Media Library
             </p>
           </div>
         </div>
