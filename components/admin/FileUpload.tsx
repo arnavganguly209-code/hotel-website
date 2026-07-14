@@ -5,7 +5,9 @@ import { Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { UploadResult } from "@/lib/cms/client-media";
-import { publicIdFromCloudinaryUrl } from "@/lib/cms/media-utils";
+import { publicIdFromUploadUrl } from "@/lib/cms/media-utils";
+
+const DEFAULT_ACCEPT = "image/jpeg,image/jpg,image/png,image/webp";
 
 interface FileUploadProps {
   value: string;
@@ -14,7 +16,7 @@ interface FileUploadProps {
   label?: string;
   accept?: string;
   className?: string;
-  /** Cloudinary public_id of the asset being replaced (deleted after successful upload). */
+  /** Previous local public_id or URL to delete after a successful replace. */
   replacePublicId?: string;
 }
 
@@ -23,7 +25,7 @@ export function FileUpload({
   onChange,
   folder = "uploads",
   label = "Upload File",
-  accept = "image/*,video/*",
+  accept = DEFAULT_ACCEPT,
   className,
   replacePublicId,
 }: FileUploadProps) {
@@ -40,9 +42,13 @@ export function FileUpload({
     const formData = new FormData();
     formData.append("file", file);
     formData.append("folder", folder);
-    const oldId = replacePublicId || publicIdFromCloudinaryUrl(value) || "";
+
+    const oldId = replacePublicId || publicIdFromUploadUrl(value) || "";
     if (oldId) {
       formData.append("oldPublicId", oldId);
+    }
+    if (value) {
+      formData.append("oldUrl", value);
     }
 
     try {
@@ -50,15 +56,12 @@ export function FileUpload({
       const data = await res.json();
       if (!res.ok || !data.url) {
         setError(data.error ?? data.message ?? "Upload failed");
-        if (data.debug) {
-          console.warn("[FileUpload] Upload error debug:", data.debug);
-        }
         return;
       }
       const result: UploadResult = {
         url: data.url,
         publicId: data.public_id,
-        resourceType: data.resource_type,
+        resourceType: data.resource_type ?? "image",
       };
       onChange(data.url, result);
     } catch {

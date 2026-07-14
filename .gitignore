@@ -25,6 +25,10 @@
 # production
 /build
 
+# local Orbit uploads (Hostinger VPS filesystem)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
 # misc
 .DS_Store
 *.pem

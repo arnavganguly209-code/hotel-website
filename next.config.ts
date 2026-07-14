@@ -11,13 +11,14 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
-      {
-        protocol: "https",
-        hostname: "res.cloudinary.com",
-        pathname: "/**",
-      },
     ],
     minimumCacheTTL: 60,
+  },
+  experimental: {
+    // Allow Orbit image uploads up to 10MB through App Router Route Handlers / Server Actions.
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
   },
 };
 

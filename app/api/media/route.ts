@@ -1,15 +1,10 @@
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/cms/auth";
-import {
-  cloudinarySafeLog,
-  deleteCloudinaryAsset,
-  deleteCloudinaryByUrl,
-  getCloudinary,
-  publicIdFromUrl,
-} from "@/lib/cloudinary";
 import { revalidateSiteContent } from "@/lib/cms/revalidate";
+import { deleteLocalUpload, toPublicId } from "@/lib/uploads";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function DELETE(request: Request) {
   if (!(await isAuthenticated())) {
@@ -23,27 +18,20 @@ export async function DELETE(request: Request) {
       resourceType?: "image" | "video";
     };
 
-    const resourceType = body.resourceType ?? "image";
-    const { creds } = getCloudinary();
-
-    if (body.publicId) {
-      console.info("[Media] Delete request", {
-        ...cloudinarySafeLog(creds),
-        publicId: body.publicId,
-        resourceType,
-      });
-      await deleteCloudinaryAsset(body.publicId, resourceType);
-    } else if (body.url) {
-      await deleteCloudinaryByUrl(body.url, resourceType);
-    } else {
+    const target = (body.publicId || body.url || "").trim();
+    if (!target) {
       return NextResponse.json({ error: "publicId or url required" }, { status: 400 });
     }
+
+    const result = await deleteLocalUpload(target);
 
     revalidateSiteContent();
 
     return NextResponse.json({
       success: true,
-      publicId: body.publicId ?? publicIdFromUrl(body.url ?? ""),
+      deleted: result.deleted,
+      publicId: result.publicId ?? (body.publicId ? toPublicId(body.publicId) : null),
+      storage: "local",
     });
   } catch (error) {
     console.error("[Media] Delete failed:", error);

@@ -72,7 +72,7 @@ export function AdminMediaField({ label, value, onChange, folder = "uploads" }: 
           <FileUpload
             label="Upload Image"
             folder={folder}
-            accept="image/*"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
             value={value.imageSrc}
             replacePublicId={value.imagePublicId}
             onChange={(url, result) =>
@@ -90,16 +90,19 @@ export function AdminMediaField({ label, value, onChange, folder = "uploads" }: 
             value={value.videoSrc}
             onChange={(e) => set({ videoSrc: e.target.value })}
           />
+          <p className="text-xs text-white/40">
+            Video files are not uploaded to the server. Paste an external video URL below, or upload a poster image.
+          </p>
           <FileUpload
-            label="Upload Video"
+            label="Upload Poster Image"
             folder={folder}
-            accept="video/*"
-            value={value.videoSrc}
-            replacePublicId={value.videoPublicId}
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            value={value.poster}
+            replacePublicId={value.posterPublicId}
             onChange={(url, result) =>
               set({
-                videoSrc: url,
-                videoPublicId: result?.publicId ?? value.videoPublicId,
+                poster: url,
+                posterPublicId: result?.publicId ?? value.posterPublicId,
               })
             }
           />

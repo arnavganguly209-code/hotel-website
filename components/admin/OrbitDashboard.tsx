@@ -754,7 +754,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       gallery[i] = { ...item, src: e.target.value };
                       update("gallery", gallery);
                     }} />
-                    <FileUpload label="Upload Media" folder="gallery" accept="image/*,video/*" value={item.src} onChange={(url) => {
+                    <FileUpload label="Upload Media" folder="gallery" accept="image/jpeg,image/jpg,image/png,image/webp" value={item.src} onChange={(url) => {
                       const gallery = [...content.gallery];
                       gallery[i] = { ...item, src: url };
                       update("gallery", gallery);
@@ -1094,8 +1094,8 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
             {activeSection === "media" && (
               <>
-                <p className="text-sm text-white/50">Upload files to Cloudinary via section editors or the library below. Changes save to PostgreSQL and appear on the live site immediately.</p>
-                <FileUpload label="Upload to Library" folder="library" accept="image/*,video/*" value="" onChange={(url, result) => {
+                <p className="text-sm text-white/50">Upload images to the local /public/uploads folder via section editors or the library below (JPG, PNG, WEBP, max 10MB). Changes save to PostgreSQL and appear on the live site immediately.</p>
+                <FileUpload label="Upload to Library" folder="library" accept="image/jpeg,image/jpg,image/png,image/webp" value="" onChange={(url, result) => {
                   const asset = {
                     id: `m-${Date.now()}`,
                     filename: url.split("/").pop() ?? "file",
