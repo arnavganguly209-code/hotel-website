@@ -1,14 +1,6 @@
 /**
- * PM2 process file for Hostinger VPS (Ubuntu + Nginx + Node.js).
- *
- * Usage:
- *   npm run build
- *   pm2 start ecosystem.config.js
- *   pm2 save
- *   pm2 startup
- *
+ * PM2 — Hostinger VPS only (https://hotel.theglobalorbit.com)
  * Nginx should proxy_pass to http://127.0.0.1:3000
- * and set client_max_body_size 10M; for Orbit image uploads.
  */
 module.exports = {
   apps: [

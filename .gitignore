@@ -49,7 +49,11 @@ next-env.d.ts
 
 /lib/generated
 
-# legacy platform leftovers (never commit)
+# never commit hosted-platform leftovers (Hostinger VPS is the only deploy target)
 .vercel
+.vercel/
 .open-next
 .wrangler
+wrangler.toml
+wrangler.jsonc
+vercel.json
