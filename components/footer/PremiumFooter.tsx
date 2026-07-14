@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { motion } from "framer-motion";
+import { FooterAtmosphere } from "@/components/footer/FooterAtmosphere";
 import { FooterBrand } from "@/components/footer/FooterBrand";
 import { FooterQuickLinks } from "@/components/footer/FooterQuickLinks";
 import { FooterGuestServices } from "@/components/footer/FooterGuestServices";
@@ -17,7 +18,7 @@ interface PremiumFooterProps {
 
 export function PremiumFooter({ content }: PremiumFooterProps) {
   const { footer, header } = content;
-  const paddingY = footer.spacing.sectionPaddingY;
+  const paddingY = Math.max(footer.spacing.sectionPaddingY, 88);
   const logoSrc = footer.logoSrc || header.logoSrc || "";
 
   return (
@@ -31,25 +32,22 @@ export function PremiumFooter({ content }: PremiumFooterProps) {
         } as CSSProperties
       }
     >
-      <div
-        className="relative border-t border-luxury-gold/12"
-        style={{
-          background: `linear-gradient(180deg, ${footer.colors.topBackground} 0%, #FDFBF7 45%, ${footer.colors.topBackground} 100%)`,
-        }}
-      >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_15%_0%,rgba(201,154,74,0.06)_0%,transparent_45%)]" />
-        <div className="pointer-events-none absolute inset-0 opacity-[0.2] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiMyNDQ3MzYiIG9wYWNpdHk9IjAuMDMiLz48L3N2Zz4=')]" />
+      <div className="relative border-t border-luxury-gold/20">
+        <FooterAtmosphere />
 
         <div
-          className="relative mx-auto max-w-7xl px-6 lg:px-10"
-          style={{ paddingTop: paddingY, paddingBottom: Math.round(paddingY * 0.75) }}
+          className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10"
+          style={{
+            paddingTop: paddingY,
+            paddingBottom: Math.round(paddingY * 0.85),
+          }}
         >
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            className="grid grid-cols-1 gap-0 md:grid-cols-2 md:gap-x-10 md:gap-y-12 lg:grid-cols-5 lg:gap-x-8 lg:gap-y-0"
+            viewport={{ once: true, margin: "-50px" }}
+            className="grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-x-12 md:gap-y-14 lg:grid-cols-5 lg:gap-x-9 lg:gap-y-0"
           >
             <FooterBrand
               logoSrc={logoSrc}

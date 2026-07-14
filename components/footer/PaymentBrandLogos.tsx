@@ -63,7 +63,7 @@ export function PaymentBrandLogos({ enabled, className }: PaymentBrandLogosProps
   return (
     <ul
       className={cn(
-        "grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-2",
+        "mx-auto grid w-full max-w-[280px] grid-cols-2 gap-2.5 sm:max-w-none sm:grid-cols-3 lg:grid-cols-2",
         className
       )}
     >
@@ -72,11 +72,12 @@ export function PaymentBrandLogos({ enabled, className }: PaymentBrandLogosProps
           <div
             title={PAYMENT_BRANDS[id].label}
             className={cn(
-              "flex h-11 items-center justify-center rounded-sm px-2",
-              "border border-luxury-gold/30 bg-luxury-cream",
-              "shadow-[0_1px_2px_rgba(36,71,54,0.04)]",
-              "transition-all duration-400 ease-[0.22,1,0.36,1]",
-              "hover:-translate-y-0.5 hover:border-luxury-gold/55 hover:shadow-[0_4px_12px_rgba(36,71,54,0.06)]"
+              "flex h-12 items-center justify-center rounded-md px-2.5",
+              "border border-luxury-gold/35 bg-[#FFF9F2]",
+              "shadow-[0_2px_8px_rgba(24,56,47,0.04)]",
+              "transition-all duration-500 ease-[0.22,1,0.36,1]",
+              "hover:-translate-y-0.5 hover:border-luxury-gold/60",
+              "hover:shadow-[0_8px_18px_rgba(200,161,69,0.14)]"
             )}
           >
             <span className="sr-only">{PAYMENT_BRANDS[id].label}</span>

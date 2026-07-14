@@ -13,7 +13,7 @@
 module.exports = {
   apps: [
     {
-      name: "hotel-thamel-park-spa",
+      name: "hotel-thamel-park",
       cwd: __dirname,
       script: "node_modules/next/dist/bin/next",
       args: "start -H 0.0.0.0 -p 3000",

@@ -17,10 +17,18 @@ function LinkList({ links }: { links: SiteContent["footer"]["quickLinks"] }) {
         <li key={link.href}>
           <Link
             href={link.href}
-            className="group relative inline-block text-[13px] tracking-wide text-luxury-muted transition-colors duration-300 hover:text-luxury-gold"
+            className="group inline-flex items-center gap-2 font-body text-[13.5px] font-light tracking-[0.03em] text-luxury-forest/80 transition-all duration-500 hover:text-luxury-gold"
           >
-            {link.label}
-            <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-luxury-gold/70 transition-all duration-500 group-hover:w-full" />
+            <span
+              className="inline-block text-[9px] text-luxury-gold/45 transition-all duration-500 group-hover:translate-x-0.5 group-hover:text-luxury-gold"
+              aria-hidden
+            >
+              ▸
+            </span>
+            <span className="relative">
+              {link.label}
+              <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-luxury-gold/70 transition-all duration-500 group-hover:w-full" />
+            </span>
           </Link>
         </li>
       ))}

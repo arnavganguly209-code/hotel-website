@@ -1,3 +1,4 @@
+export { FooterAtmosphere } from "./FooterAtmosphere";
 export { FooterBrand } from "./FooterBrand";
 export { FooterQuickLinks } from "./FooterQuickLinks";
 export { FooterGuestServices } from "./FooterGuestServices";
@@ -6,5 +7,6 @@ export { FooterSecurePayments } from "./FooterSecurePayments";
 export { FooterBottomBar } from "./FooterBottomBar";
 export { FooterLuxuryDivider } from "./FooterLuxuryDivider";
 export { FooterAccordion } from "./FooterAccordion";
+export { FooterSectionHeading } from "./FooterSectionHeading";
 export { PaymentBrandLogos } from "./PaymentBrandLogos";
 export { PremiumFooter } from "./PremiumFooter";

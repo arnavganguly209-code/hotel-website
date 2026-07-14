@@ -1,0 +1,87 @@
+# Automatic production deploy → Hostinger VPS only (no Vercel / Cloudflare / Render).
+# Trigger: every push to main.
+#
+# Required GitHub Secrets (Settings → Secrets and variables → Actions):
+#   VPS_HOST      — e.g. hotel.theglobalorbit.com or server IP
+#   VPS_USER      — SSH user (e.g. root or deploy)
+#   VPS_PORT      — SSH port (usually 22)
+#   VPS_SSH_KEY   — private key (full PEM, including BEGIN/END lines)
+
+name: Deploy to Hostinger VPS
+
+on:
+  push:
+    branches:
+      - main
+  # Optional: re-run a deploy from the Actions tab without a new commit
+  workflow_dispatch:
+
+concurrency:
+  group: production-vps-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy hotel.theglobalorbit.com
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script_stop: true
+          command_timeout: 35m
+          script: |
+            set -euo pipefail
+
+            echo "==> Loading Node / PM2 environment"
+            export PATH="/usr/local/bin:/usr/bin:$PATH"
+            if [ -s "$HOME/.nvm/nvm.sh" ]; then
+              # shellcheck disable=SC1090
+              . "$HOME/.nvm/nvm.sh"
+            fi
+            if [ -s "$HOME/.bashrc" ]; then
+              # shellcheck disable=SC1090
+              . "$HOME/.bashrc" >/dev/null 2>&1 || true
+            fi
+
+            command -v git >/dev/null
+            command -v node >/dev/null
+            command -v npm >/dev/null
+            command -v pm2 >/dev/null
+
+            echo "Node: $(node -v)"
+            echo "npm:  $(npm -v)"
+            echo "PM2:  $(pm2 -v)"
+
+            APP_DIR="/var/www/hotel-website"
+            cd "$APP_DIR"
+
+            echo "==> Safety checks (.env + uploads must survive deploy)"
+            if [ ! -f .env ]; then
+              echo "ERROR: .env is missing in $APP_DIR — refusing to deploy."
+              exit 1
+            fi
+            mkdir -p public/uploads
+            # Never run git clean — keeps untracked .env and public/uploads/*
+
+            echo "==> Syncing code from origin/main"
+            git fetch origin
+            git reset --hard origin/main
+
+            # Ensure upload folder still exists after reset (gitignored contents untouched)
+            mkdir -p public/uploads
+            if [ ! -f public/uploads/.gitkeep ]; then
+              touch public/uploads/.gitkeep
+            fi
+
+            echo "==> Running versioned deploy script"
+            chmod +x scripts/vps-deploy.sh
+            bash scripts/vps-deploy.sh
+
+            echo "==> Deploy finished successfully"

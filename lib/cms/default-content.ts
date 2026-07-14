@@ -612,7 +612,7 @@ export const defaultContent: SiteContent = {
     logoSrc: "/media/logo/hotel-logo.png",
     brandName: "HOTEL THAMEL PARK",
     description:
-      "Experience refined hospitality in the heart of Thamel, where timeless elegance, exceptional comfort, and personalized service create unforgettable stays.",
+      "Experience timeless elegance, exceptional comfort, refined hospitality, and unforgettable stays in the heart of Kathmandu.",
     tagline: "Where Nepalese warmth meets international luxury.",
     quickLinks: [
       { label: "Overview", href: routes.home },

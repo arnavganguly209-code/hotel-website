@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { SafeImage } from "@/components/shared/SafeImage";
+import { FooterLuxuryDivider } from "@/components/footer/FooterLuxuryDivider";
 import { fadeUp } from "@/lib/animations";
 import { routes } from "@/lib/navigation";
 
@@ -12,8 +12,10 @@ interface FooterBrandProps {
   description: string;
 }
 
-const LOGO_WIDTH = 240;
-
+/**
+ * Official hotel logo only — transparent, unaltered, no box/background/name.
+ * Widths: 240 desktop · 200 tablet · 180 mobile
+ */
 export function FooterBrand({ logoSrc, brandName, description }: FooterBrandProps) {
   return (
     <motion.div
@@ -23,24 +25,29 @@ export function FooterBrand({ logoSrc, brandName, description }: FooterBrandProp
       {logoSrc ? (
         <Link
           href={routes.home}
-          className="mb-7 inline-block transition-opacity duration-500 hover:opacity-90"
+          className="mb-6 inline-block bg-transparent transition-opacity duration-500 hover:opacity-90"
           aria-label={`${brandName} — Home`}
         >
-          <SafeImage
+          {/* eslint-disable-next-line @next/next/no-img-element -- respect CMS logo transparency exactly */}
+          <img
             src={logoSrc}
             alt={brandName}
-            width={LOGO_WIDTH}
-            height={90}
-            className="h-auto object-contain object-left"
-            style={{ width: LOGO_WIDTH, maxWidth: "100%" }}
-            priority
+            width={240}
+            height={96}
+            className="block h-auto w-[180px] bg-transparent object-contain md:w-[200px] lg:w-[240px]"
+            decoding="async"
+            loading="eager"
           />
         </Link>
       ) : null}
 
-      <p className="max-w-[280px] text-[13px] leading-[1.85] tracking-wide text-luxury-muted/95 md:max-w-[260px]">
+      <FooterLuxuryDivider variant="brand" className="mx-auto mb-6 md:mx-0" />
+
+      <p className="max-w-[272px] font-body text-[13.5px] font-light leading-[1.9] tracking-[0.02em] text-luxury-forest/85 md:max-w-[250px]">
         {description}
       </p>
+
+      <FooterLuxuryDivider variant="brand" className="mx-auto mt-7 md:mx-0" />
     </motion.div>
   );
 }

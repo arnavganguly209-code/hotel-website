@@ -13,12 +13,9 @@ interface FooterSecurePaymentsProps {
 export function FooterSecurePayments({ label, enabledPayments }: FooterSecurePaymentsProps) {
   return (
     <motion.div variants={fadeUp} className="w-full">
-      <FooterAccordion title={label || "Secure Payments"}>
-        <div className="mx-auto w-full max-w-[280px] md:mx-0 md:max-w-none">
-          <PaymentBrandLogos
-            enabled={enabledPayments}
-            className="justify-items-center md:justify-items-stretch"
-          />
+      <FooterAccordion title={label || "Secure Payments"} centerMobile>
+        <div className="flex justify-center md:justify-start">
+          <PaymentBrandLogos enabled={enabledPayments} />
         </div>
       </FooterAccordion>
     </motion.div>

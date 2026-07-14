@@ -28,7 +28,7 @@ export function FooterNewsletter({ newsletter, social }: FooterNewsletterProps) 
   return (
     <motion.div variants={fadeUp} className="w-full">
       <FooterAccordion title="Stay Connected">
-        <p className="mb-5 text-[13px] leading-[1.8] tracking-wide text-luxury-muted/95">
+        <p className="mb-5 font-body text-[13px] font-light leading-[1.85] tracking-[0.02em] text-luxury-forest/80">
           {newsletter.description}
         </p>
 
@@ -50,19 +50,21 @@ export function FooterNewsletter({ newsletter, social }: FooterNewsletterProps) 
             placeholder={newsletter.placeholder}
             required
             className={cn(
-              "w-full border border-luxury-gold/25 bg-luxury-cream-light/70 px-4 py-3.5",
-              "text-[13px] tracking-wide text-luxury-green-dark outline-none",
-              "placeholder:text-luxury-muted/45",
-              "transition-colors duration-300 focus:border-luxury-gold/50"
+              "w-full rounded-md border border-luxury-gold/25 bg-luxury-cream-light px-4 py-3.5",
+              "font-body text-[13px] font-light tracking-[0.02em] text-luxury-forest",
+              "placeholder:text-luxury-muted/50 outline-none",
+              "shadow-[inset_0_1px_2px_rgba(24,56,47,0.03)]",
+              "transition-all duration-400 focus:border-luxury-gold/50 focus:shadow-[0_0_0_3px_rgba(200,161,69,0.08)]"
             )}
           />
           <button
             type="submit"
             className={cn(
-              "w-full border border-luxury-gold/40 bg-transparent px-5 py-3.5",
-              "font-display text-[11px] font-medium uppercase tracking-[0.28em] text-luxury-gold",
+              "w-full rounded-md bg-luxury-forest px-5 py-3.5",
+              "font-display text-[11px] font-medium uppercase tracking-[0.28em] text-luxury-cream",
+              "shadow-[0_6px_18px_rgba(24,56,47,0.14)]",
               "transition-all duration-500",
-              "hover:border-luxury-gold hover:bg-luxury-gold hover:text-white"
+              "hover:bg-luxury-gold hover:text-white hover:shadow-[0_8px_22px_rgba(200,161,69,0.28)]"
             )}
           >
             {newsletter.buttonText}
@@ -79,16 +81,17 @@ export function FooterNewsletter({ newsletter, social }: FooterNewsletterProps) 
                 rel="noopener noreferrer"
                 aria-label={s.label}
                 className={cn(
-                  "flex h-9 w-9 items-center justify-center",
-                  "border border-luxury-gold/20 text-luxury-muted",
-                  "transition-all duration-400",
-                  "hover:border-luxury-gold/45 hover:text-luxury-gold"
+                  "flex h-10 w-10 items-center justify-center rounded-full",
+                  "border border-luxury-gold/40 bg-transparent text-luxury-forest/70",
+                  "transition-all duration-500 ease-[0.22,1,0.36,1]",
+                  "hover:-translate-y-0.5 hover:border-luxury-gold hover:bg-luxury-gold hover:text-white",
+                  "hover:shadow-[0_6px_16px_rgba(200,161,69,0.25)]"
                 )}
               >
                 {"reactIcon" in s ? (
                   <s.icon className="h-3.5 w-3.5" />
                 ) : (
-                  <s.icon className="h-3.5 w-3.5" strokeWidth={1.25} />
+                  <s.icon className="h-3.5 w-3.5" strokeWidth={1.2} />
                 )}
               </a>
             ))}
