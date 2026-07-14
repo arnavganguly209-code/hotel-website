@@ -21,7 +21,7 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
         <SectionHeading
           eyebrow="Guest Experiences"
           title="What Our Guests Say"
-          description="Discover why discerning travelers from around the world choose Hotel Thamel Park & Spa."
+          description="Discover why discerning travelers from around the world choose Hotel Thamel Park."
         />
 
         <motion.div

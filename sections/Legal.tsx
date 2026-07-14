@@ -17,7 +17,7 @@ export function PrivacyPolicy() {
           </h2>
           <div className="mt-8 space-y-6 text-sm leading-relaxed text-luxury-muted">
             <p>
-              Hotel Thamel Park & Spa is committed to protecting your privacy. This
+              Hotel Thamel Park is committed to protecting your privacy. This
               policy outlines how we collect, use, and safeguard your personal
               information when you visit our website or stay at our property.
             </p>
@@ -57,7 +57,7 @@ export function TermsConditions() {
           </h2>
           <div className="mt-8 space-y-6 text-sm leading-relaxed text-luxury-muted">
             <p>
-              By making a reservation at Hotel Thamel Park & Spa, you agree to
+              By making a reservation at Hotel Thamel Park, you agree to
               these terms and conditions. All bookings are subject to availability
               and confirmation.
             </p>

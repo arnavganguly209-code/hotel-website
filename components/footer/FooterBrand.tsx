@@ -1,44 +1,45 @@
 "use client";
 
-import { SafeImage } from "@/components/shared/SafeImage";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { FooterLuxuryDivider } from "@/components/footer/FooterLuxuryDivider";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { fadeUp } from "@/lib/animations";
-import type { SiteContent } from "@/lib/cms/types";
+import { routes } from "@/lib/navigation";
 
 interface FooterBrandProps {
-  footer: SiteContent["footer"];
+  logoSrc: string;
+  brandName: string;
+  description: string;
 }
 
-export function FooterBrand({ footer }: FooterBrandProps) {
+const LOGO_WIDTH = 240;
+
+export function FooterBrand({ logoSrc, brandName, description }: FooterBrandProps) {
   return (
     <motion.div
       variants={fadeUp}
-      className="flex flex-col items-center text-center lg:items-start lg:text-left"
+      className="flex flex-col items-center text-center md:items-start md:text-left"
     >
-      <div className="mb-4 flex flex-col items-center gap-3 lg:items-start">
-        {footer.logoSrc ? (
+      {logoSrc ? (
+        <Link
+          href={routes.home}
+          className="mb-7 inline-block transition-opacity duration-500 hover:opacity-90"
+          aria-label={`${brandName} — Home`}
+        >
           <SafeImage
-            src={footer.logoSrc}
-            alt={footer.brandName}
-            width={56}
-            height={56}
-            className="h-14 w-auto object-contain"
+            src={logoSrc}
+            alt={brandName}
+            width={LOGO_WIDTH}
+            height={90}
+            className="h-auto object-contain object-left"
+            style={{ width: LOGO_WIDTH, maxWidth: "100%" }}
+            priority
           />
-        ) : (
-          <div className="flex h-14 w-14 items-center justify-center rounded-full border border-luxury-gold/30 bg-luxury-gold/10">
-            <span className="font-display text-xl font-medium text-luxury-gold">T</span>
-          </div>
-        )}
-        <h2 className="font-display text-sm font-medium leading-relaxed tracking-[0.18em] text-luxury-gold md:text-base">
-          {footer.brandName}
-        </h2>
-      </div>
+        </Link>
+      ) : null}
 
-      <FooterLuxuryDivider className="mb-5 w-full max-w-[200px]" />
-
-      <p className="max-w-xs text-sm leading-relaxed text-luxury-muted/90">
-        {footer.description}
+      <p className="max-w-[280px] text-[13px] leading-[1.85] tracking-wide text-luxury-muted/95 md:max-w-[260px]">
+        {description}
       </p>
     </motion.div>
   );

@@ -1,6 +1,6 @@
 /** Default long-form culture copy for homepage and dedicated page */
 
-export const CULTURE_HOME_CONTENT = `Nestled in the vibrant heart of Thamel, Hotel Thamel Park & Spa offers more than a luxurious address — it offers a gateway into the soul of Nepal. From the moment you arrive, you are welcomed with the warmth of traditional Nepali hospitality: a gentle namaste, fragrant marigold accents, and the unhurried grace that has defined this Himalayan nation for centuries.
+export const CULTURE_HOME_CONTENT = `Nestled in the vibrant heart of Thamel, Hotel Thamel Park offers more than a luxurious address — it offers a gateway into the soul of Nepal. From the moment you arrive, you are welcomed with the warmth of traditional Nepali hospitality: a gentle namaste, fragrant marigold accents, and the unhurried grace that has defined this Himalayan nation for centuries.
 
 Kathmandu is a living museum of culture, faith, and artistry. Within walking distance of our doors, UNESCO World Heritage sites rise above ancient courtyards — Swayambhunath's golden spire, the sacred stupas of Boudhanath, and the intricate woodcarvings of Patan Durbar Square. Our concierge curates private walking tours through hidden alleys where artisans still craft brass, thangka paintings, and hand-woven textiles using techniques passed down through generations.
 
@@ -14,7 +14,7 @@ Your luxury stay with us is designed to complement, never overshadow, this authe
 
 export const CULTURE_PAGE_STORY = `Welcome to a journey through the cultural heart of Nepal — curated for discerning travellers who seek depth, beauty, and genuine connection. Kathmandu Valley has been a crossroads of civilisation for over two millennia, and Thamel remains its most celebrated gateway for explorers from every corner of the world.
 
-Nepali hospitality is not merely a service philosophy; it is a sacred duty rooted in the Sanskrit principle of "Atithi Devo Bhava" — the guest is god. At Hotel Thamel Park & Spa, this tradition informs every interaction, from personalised welcome rituals to thoughtful cultural recommendations tailored to your interests.
+Nepali hospitality is not merely a service philosophy; it is a sacred duty rooted in the Sanskrit principle of "Atithi Devo Bhava" — the guest is god. At Hotel Thamel Park, this tradition informs every interaction, from personalised welcome rituals to thoughtful cultural recommendations tailored to your interests.
 
 The valley's UNESCO World Heritage ensemble represents one of the world's most extraordinary concentrations of living heritage. Pashupatinath Temple, one of Hinduism's holiest shrines, draws pilgrims along the sacred Bagmati River. Boudhanath's immense mandala stupa is a centre of Tibetan Buddhist devotion. Kathmandu Durbar Square preserves the royal legacy of the Malla kings through exquisite pagoda architecture and courtyards that have witnessed coronations and festivals for centuries.
 

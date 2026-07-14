@@ -24,23 +24,23 @@ export function FooterBottomBar({ footer }: FooterBottomBarProps) {
       className="border-t border-luxury-gold/30 bg-luxury-green-dark"
       style={{ backgroundColor: footer.colors.bottomBackground }}
     >
-      <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-6 py-5 text-center md:flex-row md:justify-between md:text-left lg:px-8">
-        <p className="text-xs text-luxury-cream/70">
+      <div className="mx-auto flex max-w-7xl flex-col items-center gap-5 px-6 py-6 text-center md:flex-row md:justify-between md:gap-8 md:px-8 md:py-7 md:text-left lg:px-10">
+        <p className="text-[11px] leading-relaxed tracking-[0.04em] text-luxury-cream/65">
           &copy; {year} {footer.copyrightText}
         </p>
 
-        <FooterLuxuryDivider variant="ornament" className="hidden md:flex" />
+        <FooterLuxuryDivider variant="ornament" className="hidden shrink-0 md:flex" />
 
-        <p className="text-xs text-luxury-cream/70">
+        <p className="text-[11px] leading-relaxed tracking-[0.04em] text-luxury-cream/65">
           {developerPrefix}{" "}
           <a
             href={footer.developerUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-luxury-champagne transition-colors duration-300 hover:text-luxury-gold"
+            className="inline-flex items-center gap-1.5 text-luxury-champagne transition-colors duration-300 hover:text-luxury-gold"
           >
             The Global Orbit
-            <ExternalLink className="h-3 w-3" strokeWidth={1.5} />
+            <ExternalLink className="h-3 w-3" strokeWidth={1.5} aria-hidden />
           </a>
         </p>
       </div>

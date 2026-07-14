@@ -922,15 +922,15 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
             {activeSection === "footer" && (
               <>
-                <p className="text-sm text-white/50">Edit every footer section — brand, links, contact, newsletter, gallery, payments, colors, and legal.</p>
+                <p className="text-sm text-white/50">Edit footer brand, links, guest services, newsletter, payments, colors, and legal. Logo displays at 240px — no text beside it.</p>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
                   <p className="font-display text-lg text-luxury-gold">Brand</p>
-                  <AdminInput label="Brand Name" value={content.footer.brandName} onChange={(e) => update("footer", { ...content.footer, brandName: e.target.value })} />
-                  <AdminTextarea label="Description" rows={3} value={content.footer.description} onChange={(e) => update("footer", { ...content.footer, description: e.target.value })} />
+                  <AdminInput label="Brand Name (aria / accessibility)" value={content.footer.brandName} onChange={(e) => update("footer", { ...content.footer, brandName: e.target.value })} />
+                  <AdminTextarea label="Luxury Description" rows={3} value={content.footer.description} onChange={(e) => update("footer", { ...content.footer, description: e.target.value })} />
                   <AdminInput label="Tagline (optional)" value={content.footer.tagline} onChange={(e) => update("footer", { ...content.footer, tagline: e.target.value })} />
                   <AdminInput label="Footer Logo URL" value={content.footer.logoSrc} onChange={(e) => update("footer", { ...content.footer, logoSrc: e.target.value })} />
-                  <ImagePicker label="Footer Logo" folder="logo" category="General" value={content.footer.logoSrc} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => update("footer", { ...content.footer, logoSrc: url })} />
+                  <ImagePicker label="Footer Logo (240px width)" folder="logo" category="General" value={content.footer.logoSrc} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => update("footer", { ...content.footer, logoSrc: url })} />
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
@@ -960,15 +960,15 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
-                  <p className="font-display text-lg text-luxury-gold">Contact</p>
+                  <p className="font-display text-lg text-luxury-gold">Guest Services</p>
                   <AdminInput label="Phone" value={content.footer.contact.phone} onChange={(e) => update("footer", { ...content.footer, contact: { ...content.footer.contact, phone: e.target.value } })} />
                   <AdminInput label="Email" value={content.footer.contact.email} onChange={(e) => update("footer", { ...content.footer, contact: { ...content.footer.contact, email: e.target.value } })} />
                   <AdminInput label="Location" value={content.footer.contact.location} onChange={(e) => update("footer", { ...content.footer, contact: { ...content.footer.contact, location: e.target.value } })} />
-                  <AdminInput label="Front Desk" value={content.footer.contact.frontDesk} onChange={(e) => update("footer", { ...content.footer, contact: { ...content.footer.contact, frontDesk: e.target.value } })} />
+                  <AdminInput label="24/7 Reception text" value={content.footer.contact.frontDesk} onChange={(e) => update("footer", { ...content.footer, contact: { ...content.footer.contact, frontDesk: e.target.value } })} />
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
-                  <p className="font-display text-lg text-luxury-gold">Newsletter</p>
+                  <p className="font-display text-lg text-luxury-gold">Stay Connected</p>
                   <AdminInput label="Heading" value={content.footer.newsletter.heading} onChange={(e) => update("footer", { ...content.footer, newsletter: { ...content.footer.newsletter, heading: e.target.value } })} />
                   <AdminTextarea label="Description" rows={2} value={content.footer.newsletter.description} onChange={(e) => update("footer", { ...content.footer, newsletter: { ...content.footer.newsletter, description: e.target.value } })} />
                   <AdminInput label="Placeholder" value={content.footer.newsletter.placeholder} onChange={(e) => update("footer", { ...content.footer, newsletter: { ...content.footer.newsletter, placeholder: e.target.value } })} />
@@ -985,33 +985,10 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
-                  <p className="font-display text-lg text-luxury-gold">Gallery Preview (6 images)</p>
-                  {content.footer.galleryPreview.map((img, i) => (
-                    <div key={img.id} className="space-y-3 border border-luxury-gold/5 p-4">
-                      <AdminInput label="Alt Text" value={img.alt} onChange={(e) => {
-                        const galleryPreview = [...content.footer.galleryPreview];
-                        galleryPreview[i] = { ...img, alt: e.target.value };
-                        update("footer", { ...content.footer, galleryPreview });
-                      }} />
-                      <AdminInput label="Image URL" value={img.src} onChange={(e) => {
-                        const galleryPreview = [...content.footer.galleryPreview];
-                        galleryPreview[i] = { ...img, src: e.target.value };
-                        update("footer", { ...content.footer, galleryPreview });
-                      }} />
-                      <ImagePicker label="Footer Preview Image" folder="gallery" category="Gallery" value={img.src} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => {
-                        const galleryPreview = [...content.footer.galleryPreview];
-                        galleryPreview[i] = { ...img, src: url };
-                        update("footer", { ...content.footer, galleryPreview });
-                      }} />
-                    </div>
-                  ))}
-                </div>
-
-                <div className="space-y-4 border border-luxury-gold/10 p-6">
-                  <p className="font-display text-lg text-luxury-gold">Payments</p>
+                  <p className="font-display text-lg text-luxury-gold">Secure Payments</p>
                   <label className="flex items-center gap-3 text-sm text-white/70">
                     <input type="checkbox" checked={content.footer.showPayments} onChange={(e) => update("footer", { ...content.footer, showPayments: e.target.checked })} className="accent-luxury-gold" />
-                    Show Payment Bar
+                    Show Secure Payments
                   </label>
                   <AdminInput label="Payment Label" value={content.footer.paymentLabel} onChange={(e) => update("footer", { ...content.footer, paymentLabel: e.target.value })} />
                   <p className="text-xs text-white/40">Toggle payment logos (Visa, Mastercard, UnionPay, Alipay, UPI, eSewa)</p>

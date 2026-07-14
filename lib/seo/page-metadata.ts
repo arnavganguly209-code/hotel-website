@@ -5,7 +5,7 @@ import type { PageSeo } from "@/lib/cms/types";
 export function buildPageMetadata(
   seo: PageSeo,
   path: string,
-  siteName = "Hotel Thamel Park & Spa"
+  siteName = "Hotel Thamel Park"
 ): Metadata {
   const url = `${SITE_URL}${path === "/" ? "" : path}`;
   const ogImage = seo.ogImage ?? "/media/hero/hero-background.png";

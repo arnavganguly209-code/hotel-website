@@ -90,7 +90,7 @@ export const defaultHeroBuilder: HeroBuilderSettings = {
     mobileSrc: "/media/hero/hero-background.png",
     tabletSrc: "/media/hero/hero-background.png",
     desktopSrc: "/media/hero/hero-background.png",
-    alt: "Hotel Thamel Park & Spa with Himalayan mountain views",
+    alt: "Hotel Thamel Park with Himalayan mountain views",
     position: "center",
     scale: 1,
     brightness: 100,
@@ -278,13 +278,13 @@ export const defaultHeroBuilder: HeroBuilderSettings = {
     contentAlignment: "left",
   },
   seo: {
-    heroTitle: "Hotel Thamel Park & Spa | Luxury in Thamel, Kathmandu",
-    metaTitle: "Hotel Thamel Park & Spa | Luxury Hotel in Thamel, Kathmandu",
+    heroTitle: "Hotel Thamel Park | Luxury in Thamel, Kathmandu",
+    metaTitle: "Hotel Thamel Park | Luxury Hotel in Thamel, Kathmandu",
     metaDescription:
-      "Experience unparalleled comfort and refined hospitality at Hotel Thamel Park & Spa in the heart of Thamel, Kathmandu.",
+      "Experience unparalleled comfort and refined hospitality at Hotel Thamel Park in the heart of Thamel, Kathmandu.",
     ogImage: "/media/hero/hero-background.png",
     twitterImage: "/media/hero/hero-background.png",
-    altText: "Hotel Thamel Park & Spa luxury property with Himalayan views",
+    altText: "Hotel Thamel Park luxury property with Himalayan views",
     schemaEnabled: true,
   },
 };

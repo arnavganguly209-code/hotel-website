@@ -1,12 +1,12 @@
 export const SITE_URL = "https://www.hotelthamelpark.com";
 
-export const SITE_NAME = "Hotel Thamel Park & Spa";
+export const SITE_NAME = "Hotel Thamel Park";
 
 export const SITE_DESCRIPTION =
   "Experience refined comfort, elevated dining, wellness experiences, and exceptional hospitality in the heart of Kathmandu. Luxury hotel in Thamel with Korean restaurant, Skyz Lounge, and premium spa.";
 
 export const SITE_KEYWORDS = [
-  "Hotel Thamel Park & Spa",
+  "Hotel Thamel Park",
   "Hotel in Thamel Kathmandu",
   "Luxury Hotel Kathmandu",
   "Best Hotel in Thamel",

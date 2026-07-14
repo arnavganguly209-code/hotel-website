@@ -25,7 +25,7 @@ export function enrichRoom(defaults: Room, partial: Partial<Room>): Room {
     available: partial.available ?? defaults.available ?? true,
     breakfastPrice: partial.breakfastPrice ?? defaults.breakfastPrice ?? 15,
     longDescription:
-      partial.longDescription ?? defaults.longDescription ?? `${merged.description} Thoughtfully appointed with premium linens, refined furnishings, and the attentive service that defines Hotel Thamel Park & Spa.`,
+      partial.longDescription ?? defaults.longDescription ?? `${merged.description} Thoughtfully appointed with premium linens, refined furnishings, and the attentive service that defines Hotel Thamel Park.`,
     gallery:
       partial.gallery?.length
         ? partial.gallery

@@ -20,7 +20,7 @@ export function WhyChooseUs() {
         <SectionHeading
           eyebrow="Distinction"
           title="Why Choose Us"
-          description="Eight pillars of excellence that define the Hotel Thamel Park & Spa experience."
+          description="Eight pillars of excellence that define the Hotel Thamel Park experience."
         />
 
         <motion.div

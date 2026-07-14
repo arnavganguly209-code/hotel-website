@@ -20,7 +20,7 @@ interface LogoProps {
 export function Logo({
   variant = "dark",
   className,
-  name = "Hotel Thamel Park & Spa",
+  name = "Hotel Thamel Park",
   headerText,
   useLogo = false,
   showText = true,

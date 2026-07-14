@@ -4,10 +4,9 @@ import type { CSSProperties } from "react";
 import { motion } from "framer-motion";
 import { FooterBrand } from "@/components/footer/FooterBrand";
 import { FooterQuickLinks } from "@/components/footer/FooterQuickLinks";
-import { FooterContact } from "@/components/footer/FooterContact";
+import { FooterGuestServices } from "@/components/footer/FooterGuestServices";
 import { FooterNewsletter } from "@/components/footer/FooterNewsletter";
-import { FooterGalleryPreview } from "@/components/footer/FooterGalleryPreview";
-import { FooterPaymentBar } from "@/components/footer/FooterPaymentBar";
+import { FooterSecurePayments } from "@/components/footer/FooterSecurePayments";
 import { FooterBottomBar } from "@/components/footer/FooterBottomBar";
 import { staggerContainer } from "@/lib/animations";
 import type { SiteContent } from "@/lib/cms/types";
@@ -17,8 +16,9 @@ interface PremiumFooterProps {
 }
 
 export function PremiumFooter({ content }: PremiumFooterProps) {
-  const { footer } = content;
+  const { footer, header } = content;
   const paddingY = footer.spacing.sectionPaddingY;
+  const logoSrc = footer.logoSrc || header.logoSrc || "";
 
   return (
     <footer
@@ -31,41 +31,41 @@ export function PremiumFooter({ content }: PremiumFooterProps) {
         } as CSSProperties
       }
     >
-      {/* Top cream section */}
       <div
-        className="relative border-t border-luxury-gold/10"
+        className="relative border-t border-luxury-gold/12"
         style={{
-          background: `linear-gradient(180deg, ${footer.colors.topBackground} 0%, #FDFBF7 40%, ${footer.colors.topBackground} 100%)`,
+          background: `linear-gradient(180deg, ${footer.colors.topBackground} 0%, #FDFBF7 45%, ${footer.colors.topBackground} 100%)`,
         }}
       >
-        {/* Subtle texture & light */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(216,180,106,0.08)_0%,transparent_50%)]" />
-        <div className="pointer-events-none absolute inset-0 opacity-[0.25] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiMyNDQ3MzYiIG9wYWNpdHk9IjAuMDMiLz48L3N2Zz4=')]" />
-        <div className="pointer-events-none absolute bottom-0 left-0 h-48 w-48 opacity-[0.04] bg-[radial-gradient(circle,rgba(36,71,54,0.4)_0%,transparent_70%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_15%_0%,rgba(201,154,74,0.06)_0%,transparent_45%)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.2] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiMyNDQ3MzYiIG9wYWNpdHk9IjAuMDMiLz48L3N2Zz4=')]" />
 
         <div
-          className="relative mx-auto max-w-7xl px-6 lg:px-8"
-          style={{ paddingTop: paddingY, paddingBottom: paddingY * 0.6 }}
+          className="relative mx-auto max-w-7xl px-6 lg:px-10"
+          style={{ paddingTop: paddingY, paddingBottom: Math.round(paddingY * 0.75) }}
         >
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 xl:gap-8"
+            viewport={{ once: true, margin: "-60px" }}
+            className="grid grid-cols-1 gap-0 md:grid-cols-2 md:gap-x-10 md:gap-y-12 lg:grid-cols-5 lg:gap-x-8 lg:gap-y-0"
           >
-            <FooterBrand footer={footer} />
+            <FooterBrand
+              logoSrc={logoSrc}
+              brandName={footer.brandName}
+              description={footer.description}
+            />
             <FooterQuickLinks links={footer.quickLinks} />
-            <FooterContact contact={footer.contact} />
+            <FooterGuestServices contact={footer.contact} />
             <FooterNewsletter newsletter={footer.newsletter} social={footer.social} />
-            <FooterGalleryPreview images={footer.galleryPreview} />
+            {footer.showPayments ? (
+              <FooterSecurePayments
+                label={footer.paymentLabel}
+                enabledPayments={footer.enabledPayments}
+              />
+            ) : null}
           </motion.div>
-
-          {footer.showPayments && (
-            <div className="mt-14 md:mt-16">
-              <FooterPaymentBar label={footer.paymentLabel} enabledPayments={footer.enabledPayments} />
-            </div>
-          )}
         </div>
       </div>
 

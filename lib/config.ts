@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "Hotel Thamel Park & Spa",
+  name: "Hotel Thamel Park",
   tagline: "Luxury Redefined",
   description:
     "Experience refined comfort, elevated dining, wellness experiences, and exceptional hospitality in the heart of Kathmandu.",

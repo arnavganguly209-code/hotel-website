@@ -90,7 +90,7 @@ export function Overview({ content }: OverviewProps) {
                   <LuxuryImageBox
                     src={images[carouselIndex]}
                     alt={`Gallery ${carouselIndex + 1}`}
-                    label="Hotel Thamel Park & Spa"
+                    label="Hotel Thamel Park"
                     variant="gallery"
                     className="h-full max-h-[420px] min-h-[220px] w-full"
                   />

@@ -45,7 +45,7 @@ export function Gallery() {
         <SectionHeading
           eyebrow="Experience"
           title="The Art of Luxury"
-          description="A visual journey through the essence of Hotel Thamel Park & Spa — expressed through design, not imagery."
+          description="A visual journey through the essence of Hotel Thamel Park — expressed through design, not imagery."
         />
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

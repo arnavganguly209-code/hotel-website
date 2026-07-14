@@ -28,7 +28,7 @@ export function Welcome() {
               className="space-y-8"
             >
               <p className="font-display text-2xl font-light leading-relaxed text-luxury-charcoal md:text-3xl">
-                In the vibrant heart of Thamel, Hotel Thamel Park & Spa offers an
+                In the vibrant heart of Thamel, Hotel Thamel Park offers an
                 oasis of tranquility where premium hospitality meets the soul of
                 Kathmandu.
               </p>

@@ -1,6 +1,6 @@
 {
   "hotel": {
-    "name": "Hotel Thamel Park & Spa",
+    "name": "Hotel Thamel Park",
     "tagline": "Luxury Stay Experience in the Heart of Thamel, Kathmandu",
     "description": "Experience refined comfort, elevated dining, wellness experiences, and exceptional hospitality in the heart of Kathmandu.",
     "location": "Thamel, Kathmandu, Nepal",
@@ -18,7 +18,7 @@
     "useLogo": false,
     "showText": true,
     "hideText": false,
-    "headerText": "HOTEL THAMEL PARK & SPA",
+    "headerText": "HOTEL THAMEL PARK",
     "logoSrc": "/media/logo/hotel-logo.png",
     "logoSize": 48,
     "height": 72,
@@ -67,7 +67,7 @@
     "type": "premium",
     "showTitle": true,
     "welcomeText": "HOTEL",
-    "title": "THAMEL PARK & SPA",
+    "title": "THAMEL PARK",
     "subtitle": "WHERE LUXURY MEETS SERENITY",
     "description": "Experience unparalleled comfort, exquisite hospitality, and the true essence of relaxation.",
     "videoSrc": "",
@@ -152,7 +152,7 @@
       "mobileSrc": "/media/hero/hero-background.png",
       "tabletSrc": "/media/hero/hero-background.png",
       "desktopSrc": "/media/hero/hero-background.png",
-      "alt": "Hotel Thamel Park & Spa with Himalayan mountain views",
+      "alt": "Hotel Thamel Park with Himalayan mountain views",
       "position": "center",
       "scale": 1,
       "brightness": 100,
@@ -364,12 +364,12 @@
       "contentAlignment": "left"
     },
     "seo": {
-      "heroTitle": "Hotel Thamel Park & Spa | Luxury in Thamel, Kathmandu",
-      "metaTitle": "Hotel Thamel Park & Spa | Luxury Hotel in Thamel, Kathmandu",
-      "metaDescription": "Experience unparalleled comfort and refined hospitality at Hotel Thamel Park & Spa in the heart of Thamel, Kathmandu.",
+      "heroTitle": "Hotel Thamel Park | Luxury in Thamel, Kathmandu",
+      "metaTitle": "Hotel Thamel Park | Luxury Hotel in Thamel, Kathmandu",
+      "metaDescription": "Experience unparalleled comfort and refined hospitality at Hotel Thamel Park in the heart of Thamel, Kathmandu.",
       "ogImage": "/media/hero/hero-background.png",
       "twitterImage": "/media/hero/hero-background.png",
-      "altText": "Hotel Thamel Park & Spa luxury property with Himalayan views",
+      "altText": "Hotel Thamel Park luxury property with Himalayan views",
       "schemaEnabled": true
     }
   },
@@ -449,7 +449,7 @@
   "overview": {
     "eyebrow": "Welcome",
     "title": "In the Heart of Thamel, Outstanding Hospitality",
-    "content": "Hotel Thamel Park & Spa is a premium hotel located in the heart of Thamel, Kathmandu, offering comfortable rooms, fine dining, wellness experiences, and warm Nepalese hospitality.",
+    "content": "Hotel Thamel Park is a premium hotel located in the heart of Thamel, Kathmandu, offering comfortable rooms, fine dining, wellness experiences, and warm Nepalese hospitality.",
     "stats": [
       {
         "value": 20,
@@ -661,14 +661,14 @@
       }
     },
     "seo": {
-      "title": "Cultural Experience | Hotel Thamel Park & Spa",
-      "description": "Discover authentic Nepali culture, UNESCO heritage, local cuisine, temples, and curated Kathmandu experiences at Hotel Thamel Park & Spa.",
+      "title": "Cultural Experience | Hotel Thamel Park",
+      "description": "Discover authentic Nepali culture, UNESCO heritage, local cuisine, temples, and curated Kathmandu experiences at Hotel Thamel Park.",
       "canonical": "/cultural-experience",
       "ogImage": "/media/culture/nepali-culture.jpg"
     },
     "story": {
       "title": "The Soul of Kathmandu",
-      "content": "Welcome to a journey through the cultural heart of Nepal — curated for discerning travellers who seek depth, beauty, and genuine connection. Kathmandu Valley has been a crossroads of civilisation for over two millennia, and Thamel remains its most celebrated gateway for explorers from every corner of the world.\n\nNepali hospitality is not merely a service philosophy; it is a sacred duty rooted in the Sanskrit principle of \"Atithi Devo Bhava\" — the guest is god. At Hotel Thamel Park & Spa, this tradition informs every interaction, from personalised welcome rituals to thoughtful cultural recommendations tailored to your interests.\n\nThe valley's UNESCO World Heritage ensemble represents one of the world's most extraordinary concentrations of living heritage. Pashupatinath Temple, one of Hinduism's holiest shrines, draws pilgrims along the sacred Bagmati River. Boudhanath's immense mandala stupa is a centre of Tibetan Buddhist devotion. Kathmandu Durbar Square preserves the royal legacy of the Malla kings through exquisite pagoda architecture and courtyards that have witnessed coronations and festivals for centuries.\n\nLocal food tells the story of Nepal's diverse geography and communities. Himalayan trout, Terai grains, hill-region pickles, and Kathmandu Valley's distinctive Newari cuisine each offer a chapter in the nation's culinary narrative. Our team arranges market visits, cooking demonstrations, and reservations at celebrated local establishments where authenticity is never compromised for convenience.\n\nWalking tours reveal Thamel's layered history — from its origins as a rest stop for trans-Himalayan traders to its evolution as a cosmopolitan neighbourhood where trekkers, scholars, and artists converge. Wander through Asan bazaar's spice-laden lanes, discover hidden bahals (courtyard monasteries), and ascend to viewpoints where the snow-capped Langtang range frames the urban skyline.\n\nTraditional architecture throughout the valley — tiered temples, carved toranas, and red-brick townhouses with ornately framed windows — reflects a mastery of wood, stone, and spiritual symbolism. Our cultural concierge provides expert context, ensuring every excursion becomes an education in Nepal's artistic and religious heritage.\n\nWhether you join us during Dashain's family reunions, Tihar's festival of lights, or the monsoon-season tranquillity when the valley breathes in emerald green, your luxury stay becomes a canvas for authentic local experiences — refined, respectful, and unforgettable."
+      "content": "Welcome to a journey through the cultural heart of Nepal — curated for discerning travellers who seek depth, beauty, and genuine connection. Kathmandu Valley has been a crossroads of civilisation for over two millennia, and Thamel remains its most celebrated gateway for explorers from every corner of the world.\n\nNepali hospitality is not merely a service philosophy; it is a sacred duty rooted in the Sanskrit principle of \"Atithi Devo Bhava\" — the guest is god. At Hotel Thamel Park, this tradition informs every interaction, from personalised welcome rituals to thoughtful cultural recommendations tailored to your interests.\n\nThe valley's UNESCO World Heritage ensemble represents one of the world's most extraordinary concentrations of living heritage. Pashupatinath Temple, one of Hinduism's holiest shrines, draws pilgrims along the sacred Bagmati River. Boudhanath's immense mandala stupa is a centre of Tibetan Buddhist devotion. Kathmandu Durbar Square preserves the royal legacy of the Malla kings through exquisite pagoda architecture and courtyards that have witnessed coronations and festivals for centuries.\n\nLocal food tells the story of Nepal's diverse geography and communities. Himalayan trout, Terai grains, hill-region pickles, and Kathmandu Valley's distinctive Newari cuisine each offer a chapter in the nation's culinary narrative. Our team arranges market visits, cooking demonstrations, and reservations at celebrated local establishments where authenticity is never compromised for convenience.\n\nWalking tours reveal Thamel's layered history — from its origins as a rest stop for trans-Himalayan traders to its evolution as a cosmopolitan neighbourhood where trekkers, scholars, and artists converge. Wander through Asan bazaar's spice-laden lanes, discover hidden bahals (courtyard monasteries), and ascend to viewpoints where the snow-capped Langtang range frames the urban skyline.\n\nTraditional architecture throughout the valley — tiered temples, carved toranas, and red-brick townhouses with ornately framed windows — reflects a mastery of wood, stone, and spiritual symbolism. Our cultural concierge provides expert context, ensuring every excursion becomes an education in Nepal's artistic and religious heritage.\n\nWhether you join us during Dashain's family reunions, Tihar's festival of lights, or the monsoon-season tranquillity when the valley breathes in emerald green, your luxury stay becomes a canvas for authentic local experiences — refined, respectful, and unforgettable."
     },
     "gallery": [
       {
@@ -1019,8 +1019,8 @@
       "imageSrc": "/media/dining/korean-restaurant.jpg"
     },
     "seo": {
-      "title": "Dining | Hotel Thamel Park & Spa",
-      "description": "Fine dining, Korean restaurant, and Sky Lounge at Hotel Thamel Park & Spa, Kathmandu."
+      "title": "Dining | Hotel Thamel Park",
+      "description": "Fine dining, Korean restaurant, and Sky Lounge at Hotel Thamel Park, Kathmandu."
     },
     "intro": {
       "title": "A World of Flavors",
@@ -1112,8 +1112,8 @@
       "imageSrc": "/media/spa/wellness.jpg"
     },
     "seo": {
-      "title": "Spa & Wellness | Hotel Thamel Park & Spa",
-      "description": "Luxury spa treatments, massage, sauna, and wellness at Hotel Thamel Park & Spa."
+      "title": "Spa & Wellness | Hotel Thamel Park",
+      "description": "Luxury spa treatments, massage, sauna, and wellness at Hotel Thamel Park."
     },
     "philosophy": {
       "title": "The Art of Renewal",
@@ -1183,12 +1183,12 @@
       "imageSrc": "/media/gallery/01.jpg"
     },
     "seo": {
-      "title": "About | Hotel Thamel Park & Spa",
-      "description": "Discover the story, mission, and vision of Hotel Thamel Park & Spa in Thamel, Kathmandu."
+      "title": "About | Hotel Thamel Park",
+      "description": "Discover the story, mission, and vision of Hotel Thamel Park in Thamel, Kathmandu."
     },
     "history": {
       "title": "A Legacy of Hospitality",
-      "content": "Founded in the heart of Thamel, Hotel Thamel Park & Spa has grown into a destination beloved by international travelers. Our commitment to warm Nepalese hospitality and world-class standards defines every guest experience."
+      "content": "Founded in the heart of Thamel, Hotel Thamel Park has grown into a destination beloved by international travelers. Our commitment to warm Nepalese hospitality and world-class standards defines every guest experience."
     },
     "mission": {
       "title": "Our Mission",
@@ -1338,20 +1338,20 @@
   },
   "galleryPage": {
     "seo": {
-      "title": "Gallery | Hotel Thamel Park & Spa",
-      "description": "Explore luxury rooms, spa, dining, and hotel moments at Hotel Thamel Park & Spa."
+      "title": "Gallery | Hotel Thamel Park",
+      "description": "Explore luxury rooms, spa, dining, and hotel moments at Hotel Thamel Park."
     }
   },
   "roomsPage": {
     "seo": {
-      "title": "Rooms & Suites | Hotel Thamel Park & Spa",
+      "title": "Rooms & Suites | Hotel Thamel Park",
       "description": "Luxury accommodations in Thamel — Super Deluxe, Family Room, and more."
     }
   },
   "contactPage": {
     "seo": {
-      "title": "Contact | Hotel Thamel Park & Spa",
-      "description": "Contact Hotel Thamel Park & Spa for reservations, spa appointments, and inquiries."
+      "title": "Contact | Hotel Thamel Park",
+      "description": "Contact Hotel Thamel Park for reservations, spa appointments, and inquiries."
     }
   },
   "contact": {
@@ -1363,8 +1363,8 @@
     "workingHours": "Front Desk: 24/7 | Restaurant: 7:00 AM – 11:00 PM | Spa: 9:00 AM – 9:00 PM"
   },
   "seo": {
-    "title": "Hotel Thamel Park & Spa | Luxury Hotel in Thamel, Kathmandu",
-    "description": "Experience ultra-luxury hospitality at Hotel Thamel Park & Spa — premium rooms, fine dining, spa wellness, and authentic Nepalese warmth in the heart of Thamel, Kathmandu.",
+    "title": "Hotel Thamel Park | Luxury Hotel in Thamel, Kathmandu",
+    "description": "Experience ultra-luxury hospitality at Hotel Thamel Park — premium rooms, fine dining, spa wellness, and authentic Nepalese warmth in the heart of Thamel, Kathmandu.",
     "keywords": "luxury hotel Kathmandu, boutique hotel Thamel, Hotel Thamel Park Spa, spa hotel Kathmandu, fine dining Kathmandu",
     "ogImage": "/media/og-image.jpg",
     "favicon": "/favicon.ico",
@@ -1389,9 +1389,9 @@
     "bookingEmail": "reservations@hotelthamelpark.com"
   },
   "footer": {
-    "logoSrc": "",
-    "brandName": "HOTEL THAMEL PARK & SPA",
-    "description": "A haven of warmth, tranquility and refined hospitality in the heart of Thamel, Kathmandu.",
+    "logoSrc": "/media/logo/hotel-logo.png",
+    "brandName": "HOTEL THAMEL PARK",
+    "description": "Experience refined hospitality in the heart of Thamel, where timeless elegance, exceptional comfort, and personalized service create unforgettable stays.",
     "tagline": "Where Nepalese warmth meets international luxury.",
     "quickLinks": [
       {
@@ -1415,61 +1415,30 @@
         "href": "/gallery"
       },
       {
-        "label": "About Us",
+        "label": "About",
         "href": "/about"
       },
       {
-        "label": "Contact Us",
+        "label": "Contact",
         "href": "/contact"
       }
     ],
     "contact": {
       "phone": "+977 1-4412345",
       "email": "info@hotelthamelpark.com",
-      "location": "Thamel, Kathmandu Nepal",
-      "frontDesk": "24/7 Front Desk Assistance"
+      "location": "Thamel, Kathmandu, Nepal",
+      "frontDesk": "Always available for our guests"
     },
     "newsletter": {
-      "heading": "NEWSLETTER",
-      "description": "Subscribe to get special offers, exclusive deals and updates.",
+      "heading": "Stay Connected",
+      "description": "Receive exclusive offers, seasonal experiences, and curated updates from Hotel Thamel Park.",
       "buttonText": "Subscribe",
       "placeholder": "Your email address"
     },
     "newsletterText": "Subscribe for exclusive offers and luxury experiences.",
-    "galleryPreview": [
-      {
-        "id": "fg1",
-        "src": "/media/gallery/01.jpg",
-        "alt": "Grand Arrival"
-      },
-      {
-        "id": "fg2",
-        "src": "/media/gallery/02.jpg",
-        "alt": "Garden Sanctuary"
-      },
-      {
-        "id": "fg3",
-        "src": "/media/gallery/03.jpg",
-        "alt": "Culinary Artistry"
-      },
-      {
-        "id": "fg4",
-        "src": "/media/gallery/04.jpg",
-        "alt": "Rooftop Serenity"
-      },
-      {
-        "id": "fg5",
-        "src": "/media/gallery/05.jpg",
-        "alt": "Wellness Haven"
-      },
-      {
-        "id": "fg6",
-        "src": "/media/gallery/06.jpg",
-        "alt": "Suite Living"
-      }
-    ],
+    "galleryPreview": [],
     "showPayments": true,
-    "paymentLabel": "SECURE PAYMENTS",
+    "paymentLabel": "Secure Payments",
     "enabledPayments": [
       "visa",
       "mastercard",
@@ -1478,7 +1447,7 @@
       "upi",
       "esewa"
     ],
-    "copyrightText": "Hotel Thamel Park & Spa. All Rights Reserved.",
+    "copyrightText": "Hotel Thamel Park. All Rights Reserved.",
     "developerLabel": "Developed By The Global Orbit",
     "developerUrl": "https://theglobalorbit.com/",
     "social": {

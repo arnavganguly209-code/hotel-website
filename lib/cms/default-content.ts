@@ -6,7 +6,7 @@ import { DEFAULT_ROOM_POLICIES } from "./room-helpers";
 
 export const defaultContent: SiteContent = {
   hotel: {
-    name: "Hotel Thamel Park & Spa",
+    name: "Hotel Thamel Park",
     tagline: "Luxury Stay Experience in the Heart of Thamel, Kathmandu",
     description:
       "Experience refined comfort, elevated dining, wellness experiences, and exceptional hospitality in the heart of Kathmandu.",
@@ -25,7 +25,7 @@ export const defaultContent: SiteContent = {
     useLogo: false,
     showText: true,
     hideText: false,
-    headerText: "HOTEL THAMEL PARK & SPA",
+    headerText: "HOTEL THAMEL PARK",
     logoSrc: "/media/logo/hotel-logo.png",
     logoSize: 48,
     height: 72,
@@ -57,7 +57,7 @@ export const defaultContent: SiteContent = {
     eyebrow: "Welcome",
     title: "In the Heart of Thamel, Outstanding Hospitality",
     content:
-      "Hotel Thamel Park & Spa is a refined sanctuary in the heart of Thamel, Kathmandu — where Nepalese warmth meets international five-star comfort. Our address places you steps from heritage sites, artisan markets, and the vibrant rhythm of the valley, while offering a calm retreat from the city’s energy.\n\nEvery space has been composed with intention: cream-toned interiors, sage-green accents, and golden details that echo the Himalayas at sunrise. From arrival to departure, our team anticipates your needs with discreet, gracious service.\n\nWhether you are here for culture, cuisine, wellness, or business, we invite you to experience hospitality that feels both authentically Nepali and unmistakably luxury.",
+      "Hotel Thamel Park is a refined sanctuary in the heart of Thamel, Kathmandu — where Nepalese warmth meets international five-star comfort. Our address places you steps from heritage sites, artisan markets, and the vibrant rhythm of the valley, while offering a calm retreat from the city’s energy.\n\nEvery space has been composed with intention: cream-toned interiors, sage-green accents, and golden details that echo the Himalayas at sunrise. From arrival to departure, our team anticipates your needs with discreet, gracious service.\n\nWhether you are here for culture, cuisine, wellness, or business, we invite you to experience hospitality that feels both authentically Nepali and unmistakably luxury.",
     stats: [
       { value: 20, suffix: "+", label: "Years of Hospitality" },
       { value: 84, suffix: "", label: "Luxury Rooms" },
@@ -224,9 +224,9 @@ export const defaultContent: SiteContent = {
       },
     },
     seo: {
-      title: "Cultural Experience | Hotel Thamel Park & Spa",
+      title: "Cultural Experience | Hotel Thamel Park",
       description:
-        "Discover authentic Nepali culture, UNESCO heritage, local cuisine, temples, and curated Kathmandu experiences at Hotel Thamel Park & Spa.",
+        "Discover authentic Nepali culture, UNESCO heritage, local cuisine, temples, and curated Kathmandu experiences at Hotel Thamel Park.",
       canonical: "/cultural-experience",
       ogImage: "/media/culture/nepali-culture.jpg",
     },
@@ -382,8 +382,8 @@ export const defaultContent: SiteContent = {
       imageSrc: "/media/dining/korean-restaurant.jpg",
     },
     seo: {
-      title: "Dining | Hotel Thamel Park & Spa",
-      description: "Fine dining, Korean restaurant, and Sky Lounge at Hotel Thamel Park & Spa, Kathmandu.",
+      title: "Dining | Hotel Thamel Park",
+      description: "Fine dining, Korean restaurant, and Sky Lounge at Hotel Thamel Park, Kathmandu.",
     },
     intro: {
       title: "A World of Flavors",
@@ -443,8 +443,8 @@ export const defaultContent: SiteContent = {
       imageSrc: "/media/spa/wellness.jpg",
     },
     seo: {
-      title: "Spa & Wellness | Hotel Thamel Park & Spa",
-      description: "Luxury spa treatments, massage, sauna, and wellness at Hotel Thamel Park & Spa.",
+      title: "Spa & Wellness | Hotel Thamel Park",
+      description: "Luxury spa treatments, massage, sauna, and wellness at Hotel Thamel Park.",
     },
     philosophy: {
       title: "The Art of Renewal",
@@ -479,13 +479,13 @@ export const defaultContent: SiteContent = {
       imageSrc: "/media/gallery/01.jpg",
     },
     seo: {
-      title: "About | Hotel Thamel Park & Spa",
-      description: "Discover the story, mission, and vision of Hotel Thamel Park & Spa in Thamel, Kathmandu.",
+      title: "About | Hotel Thamel Park",
+      description: "Discover the story, mission, and vision of Hotel Thamel Park in Thamel, Kathmandu.",
     },
     history: {
       title: "A Legacy of Hospitality",
       content:
-        "Founded in the heart of Thamel, Hotel Thamel Park & Spa has grown into a destination beloved by international travelers. Our commitment to warm Nepalese hospitality and world-class standards defines every guest experience.",
+        "Founded in the heart of Thamel, Hotel Thamel Park has grown into a destination beloved by international travelers. Our commitment to warm Nepalese hospitality and world-class standards defines every guest experience.",
     },
     mission: {
       title: "Our Mission",
@@ -564,26 +564,26 @@ export const defaultContent: SiteContent = {
   },
   galleryPage: {
     seo: {
-      title: "Gallery | Hotel Thamel Park & Spa",
-      description: "Explore luxury rooms, spa, dining, and hotel moments at Hotel Thamel Park & Spa.",
+      title: "Gallery | Hotel Thamel Park",
+      description: "Explore luxury rooms, spa, dining, and hotel moments at Hotel Thamel Park.",
     },
   },
   roomsPage: {
     seo: {
-      title: "Rooms & Suites | Hotel Thamel Park & Spa",
+      title: "Rooms & Suites | Hotel Thamel Park",
       description: "Luxury accommodations in Thamel — Super Deluxe, Family Room, and more.",
     },
   },
   contactPage: {
     seo: {
-      title: "Contact | Hotel Thamel Park & Spa",
-      description: "Contact Hotel Thamel Park & Spa for reservations, spa appointments, and inquiries.",
+      title: "Contact | Hotel Thamel Park",
+      description: "Contact Hotel Thamel Park for reservations, spa appointments, and inquiries.",
     },
   },
   seo: {
-    title: "Hotel Thamel Park & Spa | Luxury Hotel in Thamel, Kathmandu",
+    title: "Hotel Thamel Park | Luxury Hotel in Thamel, Kathmandu",
     description:
-      "Experience ultra-luxury hospitality at Hotel Thamel Park & Spa — premium rooms, fine dining, spa wellness, and authentic Nepalese warmth in the heart of Thamel, Kathmandu.",
+      "Experience ultra-luxury hospitality at Hotel Thamel Park — premium rooms, fine dining, spa wellness, and authentic Nepalese warmth in the heart of Thamel, Kathmandu.",
     keywords:
       "luxury hotel Kathmandu, boutique hotel Thamel, Hotel Thamel Park Spa, spa hotel Kathmandu, fine dining Kathmandu",
     ogImage: "/media/hero/hero-background.png",
@@ -609,10 +609,10 @@ export const defaultContent: SiteContent = {
     bookingEmail: "reservations@hotelthamelpark.com",
   },
   footer: {
-    logoSrc: "",
-    brandName: "HOTEL THAMEL PARK & SPA",
+    logoSrc: "/media/logo/hotel-logo.png",
+    brandName: "HOTEL THAMEL PARK",
     description:
-      "A haven of warmth, tranquility and refined hospitality in the heart of Thamel, Kathmandu.",
+      "Experience refined hospitality in the heart of Thamel, where timeless elegance, exceptional comfort, and personalized service create unforgettable stays.",
     tagline: "Where Nepalese warmth meets international luxury.",
     quickLinks: [
       { label: "Overview", href: routes.home },
@@ -620,34 +620,28 @@ export const defaultContent: SiteContent = {
       { label: "Dining", href: routes.dining },
       { label: "Spa & Wellness", href: routes.spa },
       { label: "Gallery", href: routes.gallery },
-      { label: "About Us", href: routes.about },
-      { label: "Contact Us", href: routes.contact },
+      { label: "About", href: routes.about },
+      { label: "Contact", href: routes.contact },
     ],
     contact: {
       phone: "+977 1-4412345",
       email: "info@hotelthamelpark.com",
-      location: "Thamel, Kathmandu Nepal",
-      frontDesk: "24/7 Front Desk Assistance",
+      location: "Thamel, Kathmandu, Nepal",
+      frontDesk: "Always available for our guests",
     },
     newsletter: {
-      heading: "NEWSLETTER",
-      description: "Subscribe to get special offers, exclusive deals and updates.",
+      heading: "Stay Connected",
+      description:
+        "Receive exclusive offers, seasonal experiences, and curated updates from Hotel Thamel Park.",
       buttonText: "Subscribe",
       placeholder: "Your email address",
     },
     newsletterText: "Subscribe for exclusive offers and luxury experiences.",
-    galleryPreview: [
-      { id: "fg1", src: "/media/gallery/01.jpg", alt: "Grand Arrival" },
-      { id: "fg2", src: "/media/gallery/02.jpg", alt: "Garden Sanctuary" },
-      { id: "fg3", src: "/media/gallery/03.jpg", alt: "Culinary Artistry" },
-      { id: "fg4", src: "/media/gallery/04.jpg", alt: "Rooftop Serenity" },
-      { id: "fg5", src: "/media/gallery/05.jpg", alt: "Wellness Haven" },
-      { id: "fg6", src: "/media/gallery/06.jpg", alt: "Suite Living" },
-    ],
+    galleryPreview: [],
     showPayments: true,
-    paymentLabel: "SECURE PAYMENTS",
+    paymentLabel: "Secure Payments",
     enabledPayments: ["visa", "mastercard", "unionpay", "alipay", "upi", "esewa"],
-    copyrightText: "Hotel Thamel Park & Spa. All Rights Reserved.",
+    copyrightText: "Hotel Thamel Park. All Rights Reserved.",
     developerLabel: "Developed By The Global Orbit",
     developerUrl: "https://theglobalorbit.com/",
     social: {

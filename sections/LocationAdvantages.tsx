@@ -23,7 +23,7 @@ export function LocationAdvantages({ locations }: LocationAdvantagesProps) {
         <SectionHeading
           eyebrow="Prime Location"
           title="In the Heart of Kathmandu"
-          description="Discover the finest attractions and cultural landmarks, all within easy reach of Hotel Thamel Park & Spa."
+          description="Discover the finest attractions and cultural landmarks, all within easy reach of Hotel Thamel Park."
         />
 
         <motion.div

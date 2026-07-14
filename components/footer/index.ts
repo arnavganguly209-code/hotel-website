@@ -1,10 +1,10 @@
 export { FooterBrand } from "./FooterBrand";
 export { FooterQuickLinks } from "./FooterQuickLinks";
-export { FooterContact } from "./FooterContact";
+export { FooterGuestServices } from "./FooterGuestServices";
 export { FooterNewsletter } from "./FooterNewsletter";
-export { FooterGalleryPreview } from "./FooterGalleryPreview";
-export { FooterPaymentBar } from "./FooterPaymentBar";
+export { FooterSecurePayments } from "./FooterSecurePayments";
 export { FooterBottomBar } from "./FooterBottomBar";
 export { FooterLuxuryDivider } from "./FooterLuxuryDivider";
+export { FooterAccordion } from "./FooterAccordion";
 export { PaymentBrandLogos } from "./PaymentBrandLogos";
 export { PremiumFooter } from "./PremiumFooter";
