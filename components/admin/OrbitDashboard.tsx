@@ -55,7 +55,7 @@ const SECTIONS = [
   { id: "experiences", label: "Home Experiences", icon: Sparkles },
   { id: "culture", label: "Cultural Experience", icon: Globe },
   { id: "facilities", label: "Facilities", icon: Grid3X3 },
-  { id: "rooms", label: "Rooms", icon: Bed },
+  { id: "rooms", label: "Rooms Section", icon: Bed },
   { id: "dining", label: "Dining Page", icon: Utensils },
   { id: "spa", label: "Spa Page", icon: Waves },
   { id: "culturalExperience", label: "Cultural Page", icon: Globe },
@@ -1009,10 +1009,67 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
             {activeSection === "rooms" && (
               <>
-                <AdminInput label="Section Eyebrow" value={content.roomsSection.eyebrow} onChange={(e) => update("roomsSection", { ...content.roomsSection, eyebrow: e.target.value })} />
-                <AdminInput label="Section Title" value={content.roomsSection.title} onChange={(e) => update("roomsSection", { ...content.roomsSection, title: e.target.value })} />
-                <AdminInput label="CTA Button Text" value={content.roomsSection.ctaText} onChange={(e) => update("roomsSection", { ...content.roomsSection, ctaText: e.target.value })} />
-                <div className="flex justify-end">
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Rooms Section</p>
+                  <p className="text-xs text-white/40">
+                    Homepage Accommodations section (below Cultural Experience). Card structure stays; atmosphere is editable.
+                  </p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.homeSections.rooms.enabled}
+                      onChange={(e) =>
+                        update("homeSections", {
+                          ...content.homeSections,
+                          rooms: { ...content.homeSections.rooms, enabled: e.target.checked },
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Show Section
+                  </label>
+                  <AdminInput label="Small Label (eyebrow)" value={content.roomsSection.eyebrow} onChange={(e) => update("roomsSection", { ...content.roomsSection, eyebrow: e.target.value })} />
+                  <AdminInput label="Main Heading" value={content.roomsSection.title} onChange={(e) => update("roomsSection", { ...content.roomsSection, title: e.target.value })} />
+                  <AdminTextarea label="Description (archive)" rows={2} value={content.roomsSection.description} onChange={(e) => update("roomsSection", { ...content.roomsSection, description: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Discover Button</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.roomsSection.ctaVisible !== false}
+                      onChange={(e) => update("roomsSection", { ...content.roomsSection, ctaVisible: e.target.checked })}
+                      className="accent-luxury-gold"
+                    />
+                    Show Discover Button
+                  </label>
+                  <AdminInput label="Button Text" value={content.roomsSection.ctaText} onChange={(e) => update("roomsSection", { ...content.roomsSection, ctaText: e.target.value })} />
+                  <AdminInput label="Button URL" value={content.roomsSection.ctaHref} onChange={(e) => update("roomsSection", { ...content.roomsSection, ctaHref: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Background &amp; Atmosphere</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput label="Background Top" value={content.roomsSection.backgroundTop} onChange={(e) => update("roomsSection", { ...content.roomsSection, backgroundTop: e.target.value })} />
+                    <AdminInput label="Background Bottom" value={content.roomsSection.backgroundBottom} onChange={(e) => update("roomsSection", { ...content.roomsSection, backgroundBottom: e.target.value })} />
+                    <AdminInput label="Heading Color" value={content.roomsSection.headingColor} onChange={(e) => update("roomsSection", { ...content.roomsSection, headingColor: e.target.value })} />
+                    <AdminInput label="Body Color" value={content.roomsSection.bodyColor} onChange={(e) => update("roomsSection", { ...content.roomsSection, bodyColor: e.target.value })} />
+                    <AdminInput label="Gold Accent" value={content.roomsSection.goldColor} onChange={(e) => update("roomsSection", { ...content.roomsSection, goldColor: e.target.value })} />
+                  </div>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.roomsSection.showMist !== false}
+                      onChange={(e) => update("roomsSection", { ...content.roomsSection, showMist: e.target.checked })}
+                      className="accent-luxury-gold"
+                    />
+                    Show Mist / Mountain Silhouettes
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between border border-luxury-gold/10 p-4">
+                  <p className="font-display text-lg text-luxury-gold">Room Cards</p>
                   <Button
                     type="button"
                     variant="outline"
@@ -1034,6 +1091,9 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       amenities: ["Premium Comfort", "Complimentary Wi-Fi"],
                       policies: ["Check-in from 2:00 PM · Check-out by 12:00 PM"],
                       available: true,
+                      visible: true,
+                      order: content.rooms.length,
+                      exploreText: "Explore Room",
                       breakfastPrice: 15,
                     }])}
                   >
@@ -1090,19 +1150,45 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                         rooms[i] = { ...room, bedType: e.target.value };
                         update("rooms", rooms);
                       }} />
+                      <AdminInput label="Display Order" type="number" value={room.order ?? i} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, order: Number(e.target.value) };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Explore Button Text" value={room.exploreText || "Explore Room"} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, exploreText: e.target.value };
+                        update("rooms", rooms);
+                      }} />
                     </div>
-                    <label className="flex items-center gap-2 text-sm text-white/70">
-                      <input
-                        type="checkbox"
-                        checked={room.available !== false}
-                        onChange={(e) => {
-                          const rooms = [...content.rooms];
-                          rooms[i] = { ...room, available: e.target.checked };
-                          update("rooms", rooms);
-                        }}
-                      />
-                      Available for booking
-                    </label>
+                    <div className="flex flex-wrap gap-4">
+                      <label className="flex items-center gap-2 text-sm text-white/70">
+                        <input
+                          type="checkbox"
+                          checked={room.visible !== false}
+                          onChange={(e) => {
+                            const rooms = [...content.rooms];
+                            rooms[i] = { ...room, visible: e.target.checked };
+                            update("rooms", rooms);
+                          }}
+                          className="accent-luxury-gold"
+                        />
+                        Show on Homepage
+                      </label>
+                      <label className="flex items-center gap-2 text-sm text-white/70">
+                        <input
+                          type="checkbox"
+                          checked={room.available !== false}
+                          onChange={(e) => {
+                            const rooms = [...content.rooms];
+                            rooms[i] = { ...room, available: e.target.checked };
+                            update("rooms", rooms);
+                          }}
+                          className="accent-luxury-gold"
+                        />
+                        Available for booking
+                      </label>
+                    </div>
                     <AdminInput label="Features (comma separated)" value={room.features.join(", ")} onChange={(e) => {
                       const rooms = [...content.rooms];
                       rooms[i] = { ...room, features: e.target.value.split(",").map((f) => f.trim()) };

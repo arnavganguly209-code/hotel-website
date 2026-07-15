@@ -11,21 +11,35 @@ import type { SiteContent } from "@/lib/cms/types";
 
 interface RoomCardProps {
   room: SiteContent["rooms"][number];
+  goldColor?: string;
+  headingColor?: string;
 }
 
-const IMAGE_HEIGHT = "h-[300px] sm:h-[320px]";
+const IMAGE_HEIGHT = "h-[280px] sm:h-[300px]";
 
-export function RoomCard({ room }: RoomCardProps) {
+export function RoomCard({
+  room,
+  goldColor = "#C5A059",
+  headingColor = "#062C24",
+}: RoomCardProps) {
   const [imageError, setImageError] = useState(false);
+  const explore = room.exploreText || "Explore Room";
 
   return (
     <motion.article
-      whileHover={{ y: -6 }}
+      whileHover={{ y: -5 }}
       transition={{ duration: 0.65, ease: luxuryEase }}
-      className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-white/60 backdrop-blur-[22px] transition-shadow duration-700 hover:shadow-float"
+      className="group flex h-full flex-col overflow-hidden rounded-[22px] transition-shadow duration-700"
       style={{
-        background: "linear-gradient(160deg, rgba(255,249,242,0.92) 0%, rgba(234,242,232,0.78) 100%)",
-        boxShadow: "0 22px 60px rgba(24,56,47,0.08), inset 0 1px 0 rgba(255,255,255,0.75)",
+        backgroundColor: "#FBF8F1",
+        border: `1px solid ${goldColor}55`,
+        boxShadow: "0 18px 42px rgba(15, 42, 34, 0.1)",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = `0 22px 48px rgba(15, 42, 34, 0.14), 0 0 0 1px ${goldColor}33`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = "0 18px 42px rgba(15, 42, 34, 0.1)";
       }}
     >
       <div className={`relative ${IMAGE_HEIGHT} w-full shrink-0 overflow-hidden`}>
@@ -34,31 +48,50 @@ export function RoomCard({ room }: RoomCardProps) {
             src={room.imageSrc}
             alt={room.name}
             fill
-            className="object-cover transition-transform duration-[1.1s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+            objectFit="cover"
+            className="object-cover object-center transition-transform duration-[1.1s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
+            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 280px"
             onError={() => setImageError(true)}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-luxury-cream via-luxury-champagne to-luxury-sage">
-            <p className="font-display text-xs uppercase tracking-[0.3em] text-luxury-gold/70">{room.name}</p>
+          <div className="flex h-full w-full items-center justify-center bg-[#EFE8DA]">
+            <p
+              className="font-display text-xs uppercase tracking-[0.3em]"
+              style={{ color: `${goldColor}99` }}
+            >
+              {room.name}
+            </p>
           </div>
         )}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-luxury-forest/30 via-transparent to-transparent opacity-60" />
         <div
-          className="absolute left-4 top-4 rounded-[14px] border border-white/50 px-3 py-2 backdrop-blur-md"
-          style={{ background: "rgba(255,249,242,0.88)" }}
+          className="absolute left-3 top-3 rounded-full px-3 py-1.5 shadow-sm"
+          style={{
+            backgroundColor: "rgba(255,255,255,0.94)",
+            border: "1px solid rgba(0,0,0,0.06)",
+          }}
         >
-          <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-luxury-muted">From</span>
-          <span className="ml-1 font-display text-lg font-medium text-luxury-forest">${room.price}</span>
-          <span className="text-[9px] uppercase text-luxury-muted"> / Night</span>
+          <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[#6B736C]">
+            From
+          </span>
+          <span
+            className="ml-1 font-display text-base font-semibold"
+            style={{ color: headingColor }}
+          >
+            ${room.price}
+          </span>
+          <span className="text-[9px] uppercase text-[#6B736C]"> / Night</span>
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-6">
-        <h3 className="line-clamp-2 min-h-[3.25rem] font-display text-lg leading-snug text-luxury-forest transition-colors duration-500 group-hover:text-luxury-gold md:text-xl">
+      <div className="flex flex-1 flex-col px-5 pb-5 pt-5">
+        <h3
+          className="line-clamp-2 min-h-[2.75rem] font-display text-[15px] font-semibold uppercase leading-snug tracking-[0.04em] md:text-base"
+          style={{ color: headingColor }}
+        >
           {room.name}
         </h3>
 
-        <div className="mt-4 grid min-h-[52px] grid-cols-1 gap-2 border-b border-luxury-gold/12 pb-4 sm:grid-cols-3 sm:gap-1">
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
           {[
             { icon: Maximize2, value: room.size },
             { icon: Users, value: room.guests },
@@ -66,32 +99,30 @@ export function RoomCard({ room }: RoomCardProps) {
           ].map(({ icon: Icon, value }) => (
             <span
               key={value}
-              className="flex items-center gap-1.5 truncate text-[11px] text-luxury-muted"
+              className="flex items-center gap-1.5 text-[11px]"
+              style={{ color: goldColor }}
               title={value}
             >
-              <Icon className="h-3.5 w-3.5 shrink-0 text-luxury-gold" strokeWidth={1.25} />
-              <span className="truncate">{value}</span>
+              <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.35} />
+              <span className="truncate text-[#6B736C]">{value}</span>
             </span>
           ))}
         </div>
 
-        <div className="relative mt-4 flex-1">
-          <p className="line-clamp-4 text-sm leading-[1.75] text-luxury-muted">{room.description}</p>
-          <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-8"
-            style={{
-              background: "linear-gradient(to bottom, transparent, rgba(250,246,238,0.98))",
-            }}
-            aria-hidden
-          />
-        </div>
+        <p className="mt-3 line-clamp-3 flex-1 text-[13px] leading-[1.7] text-[#5A635C]">
+          {room.description}
+        </p>
 
         <Link
           href={roomDetailPath(room.id)}
           prefetch
-          className="group/link mt-auto inline-flex items-center gap-2.5 rounded-full border border-luxury-gold/25 bg-luxury-forest px-5 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-white transition-all duration-500 hover:-translate-y-0.5 hover:border-luxury-gold/50 hover:bg-luxury-green-dark hover:shadow-lg"
+          className="group/link mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-white transition-all duration-500 hover:-translate-y-0.5 hover:shadow-lg"
+          style={{
+            backgroundColor: headingColor,
+            boxShadow: "0 8px 20px rgba(6, 44, 36, 0.2)",
+          }}
         >
-          Explore Room
+          {explore}
           <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 group-hover/link:translate-x-1" />
         </Link>
       </div>

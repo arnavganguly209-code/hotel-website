@@ -114,7 +114,12 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       cta: { ...defaultContent.homeSections.cta, ...partial.homeSections?.cta },
     },
     overview: mergeOverview(defaultContent.overview, partial.overview),
-    roomsSection: { ...defaultContent.roomsSection, ...(partial.roomsSection ?? {}) },
+    roomsSection: {
+      ...defaultContent.roomsSection,
+      ...(partial.roomsSection ?? {}),
+      ctaVisible: partial.roomsSection?.ctaVisible !== false,
+      showMist: partial.roomsSection?.showMist !== false,
+    },
     experiences: definedArray(partial.experiences, defaultContent.experiences),
     locationAdvantages: definedArray(partial.locationAdvantages, defaultContent.locationAdvantages),
     culture: mergeCulture(defaultContent.culture, partial.culture),

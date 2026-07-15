@@ -291,6 +291,10 @@ export interface SiteContent {
     amenities: string[];
     policies: string[];
     available?: boolean;
+    /** Homepage Accommodations section visibility */
+    visible?: boolean;
+    order?: number;
+    exploreText?: string;
     breakfastPrice?: number;
   }>;
   roomBooking: {
@@ -311,6 +315,13 @@ export interface SiteContent {
     description: string;
     ctaText: string;
     ctaHref: string;
+    ctaVisible: boolean;
+    showMist: boolean;
+    backgroundTop: string;
+    backgroundBottom: string;
+    goldColor: string;
+    headingColor: string;
+    bodyColor: string;
   };
   diningPage: {
     hero: PageHero;

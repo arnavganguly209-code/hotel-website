@@ -134,6 +134,13 @@ export const defaultContent: SiteContent = {
       "Each room is a sanctuary of refined comfort, designed for discerning travelers seeking the finest hospitality.",
     ctaText: "Discover All Rooms",
     ctaHref: routes.rooms,
+    ctaVisible: true,
+    showMist: true,
+    backgroundTop: "#F9F6EF",
+    backgroundBottom: "#E8F0E9",
+    goldColor: "#C5A059",
+    headingColor: "#062C24",
+    bodyColor: "#5A635C",
   },
   experiences: [
     {

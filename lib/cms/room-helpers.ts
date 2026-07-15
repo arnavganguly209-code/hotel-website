@@ -23,6 +23,9 @@ export function enrichRoom(defaults: Room, partial: Partial<Room>): Room {
     ...merged,
     maxGuests: partial.maxGuests ?? defaults.maxGuests ?? parseMaxGuests(merged.guests),
     available: partial.available ?? defaults.available ?? true,
+    visible: partial.visible !== undefined ? partial.visible : defaults.visible !== false,
+    order: typeof partial.order === "number" ? partial.order : (defaults.order ?? 0),
+    exploreText: partial.exploreText ?? defaults.exploreText ?? "Explore Room",
     breakfastPrice: partial.breakfastPrice ?? defaults.breakfastPrice ?? 15,
     longDescription:
       partial.longDescription ?? defaults.longDescription ?? `${merged.description} Thoughtfully appointed with premium linens, refined furnishings, and the attentive service that defines Hotel Thamel Park.`,
