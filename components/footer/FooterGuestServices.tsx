@@ -80,30 +80,31 @@ export function FooterGuestServices({ contact }: FooterGuestServicesProps) {
           ))}
         </ul>
 
-        <div
-          className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 border-t pt-5 md:justify-start"
+        <nav
+          aria-label="Legal"
+          className="mt-6 flex flex-nowrap items-center justify-center gap-2 border-t pt-5 text-center md:justify-start md:text-left max-[340px]:flex-wrap max-[340px]:justify-center"
           style={{ borderColor: `${FOOTER.gold}30` }}
         >
-          {legal.map((item, i) => (
-            <span key={item.href} className="inline-flex items-center gap-x-3">
-              {i > 0 ? (
-                <span
-                  className="select-none font-body text-[13px] font-medium"
-                  style={{ color: `${FOOTER.gold}99` }}
-                  aria-hidden
-                >
-                  |
-                </span>
-              ) : null}
-              <Link
-                href={item.href}
-                className="font-body text-[14px] font-medium tracking-[0.03em] text-[#F8F5EE] transition-colors duration-400 hover:text-[#D4AF37]"
-              >
-                {item.label}
-              </Link>
-            </span>
-          ))}
-        </div>
+          <Link
+            href={legal[0].href}
+            className="shrink-0 font-body text-[13px] font-medium tracking-[0.02em] text-[#F8F5EE] transition-colors duration-400 hover:text-[#D4AF37]"
+          >
+            {legal[0].label}
+          </Link>
+          <span
+            className="shrink-0 select-none font-body text-[13px] font-medium"
+            style={{ color: `${FOOTER.gold}99` }}
+            aria-hidden
+          >
+            |
+          </span>
+          <Link
+            href={legal[1].href}
+            className="shrink-0 font-body text-[13px] font-medium tracking-[0.02em] text-[#F8F5EE] transition-colors duration-400 hover:text-[#D4AF37]"
+          >
+            {legal[1].label}
+          </Link>
+        </nav>
       </FooterAccordion>
     </motion.div>
   );
