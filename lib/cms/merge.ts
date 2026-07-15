@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import type { SiteContent } from "./types";
 import { defaultContent } from "./default-content";
 import { enrichRoom } from "./room-helpers";
@@ -6,6 +7,7 @@ import {
   OFFICIAL_PAYMENT_LOGOS,
   PAYMENT_LOGO_CLEARED,
 } from "./payment-logos";
+import { resolveLocalUploadPath } from "@/lib/uploads";
 
 /** Preserve explicit empty values — never fall back to defaults when the field was set. */
 function definedString(value: string | undefined, fallback: string): string {
@@ -37,9 +39,18 @@ function mergePaymentLogos(
 
     const trimmed = typeof incoming === "string" ? incoming.trim() : "";
 
-    // ALWAYS keep Orbit uploads — never silently remap (that caused empty slots after Save).
+    // Keep Orbit uploads only when the file still exists on disk.
+    // Missing files (failed/orphaned uploads) fall back to official — never a broken placeholder.
     if (trimmed.includes("/uploads/")) {
-      return { id, src: trimmed };
+      const abs = resolveLocalUploadPath(trimmed);
+      if (abs && existsSync(abs)) {
+        return { id, src: trimmed };
+      }
+      console.warn(
+        "[CMS] Payment upload missing on disk — using official logo:",
+        trimmed
+      );
+      return { id, src: slot.src };
     }
 
     // Bundled official logo path
