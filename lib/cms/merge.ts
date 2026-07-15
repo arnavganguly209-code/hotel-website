@@ -26,7 +26,7 @@ function mergePaymentLogos(
 
   if (!partial?.length) return defaults.map((slot) => ({ ...slot }));
 
-  const raw = defaults.map((slot, i) => {
+  return defaults.map((slot, i) => {
     const incoming = partial[i]?.src;
     const id = partial[i]?.id || slot.id;
 
@@ -35,24 +35,25 @@ function mergePaymentLogos(
       return { id, src: PAYMENT_LOGO_CLEARED };
     }
 
-    // Uploaded / configured URL
-    if (typeof incoming === "string" && incoming.trim() && !isPaymentLogoCleared(incoming)) {
-      return { id, src: incoming.trim() };
-    }
+    const trimmed = typeof incoming === "string" ? incoming.trim() : "";
 
-    // Legacy empty slots → official bundled logos (migrate stale CMS empties)
-    if (incoming === "" || incoming === undefined || incoming === null) {
+    // Fresh Orbit uploads carry a numeric cache-bust (?v=171…). Keep those.
+    // Legacy /uploads/payments/* without a numeric bust were broken/stale — use official.
+    if (trimmed.includes("/uploads/")) {
+      if (/[?&]v=\d{12,}/.test(trimmed)) {
+        return { id, src: trimmed };
+      }
       return { id, src: slot.src };
     }
 
+    // Already pointing at bundled official (or another /media path)
+    if (trimmed.includes("/media/payments/")) {
+      return { id, src: trimmed };
+    }
+
+    // Empty / missing / unknown → official bundled logo
     return { id, src: slot.src };
   });
-
-  // If every slot was legacy-empty and we filled with defaults, return those.
-  // Cleared slots stay as CLEARED for the frontend to treat as empty.
-  return raw.map((slot) =>
-    isPaymentLogoCleared(slot.src) ? { id: slot.id, src: PAYMENT_LOGO_CLEARED } : slot
-  );
 }
 
 type LegacyFooterSocial = Partial<SiteContent["footer"]["social"]> & {
