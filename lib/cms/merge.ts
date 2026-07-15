@@ -37,21 +37,17 @@ function mergePaymentLogos(
 
     const trimmed = typeof incoming === "string" ? incoming.trim() : "";
 
-    // Fresh Orbit uploads carry a numeric cache-bust (?v=171…). Keep those.
-    // Legacy /uploads/payments/* without a numeric bust were broken/stale — use official.
+    // ALWAYS keep Orbit uploads — never silently remap (that caused empty slots after Save).
     if (trimmed.includes("/uploads/")) {
-      if (/[?&]v=\d{12,}/.test(trimmed)) {
-        return { id, src: trimmed };
-      }
-      return { id, src: slot.src };
+      return { id, src: trimmed };
     }
 
-    // Already pointing at bundled official (or another /media path)
+    // Bundled official logo path
     if (trimmed.includes("/media/payments/")) {
       return { id, src: trimmed };
     }
 
-    // Empty / missing / unknown → official bundled logo
+    // Empty / missing / unknown → official bundled logo (first-load / migration only)
     return { id, src: slot.src };
   });
 }

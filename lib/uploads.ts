@@ -9,15 +9,17 @@ export const ALLOWED_IMAGE_MIME = new Set([
   "image/jpg",
   "image/png",
   "image/webp",
+  "image/svg+xml",
 ]);
 
-export const ALLOWED_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
+export const ALLOWED_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".svg"]);
 
 const MIME_TO_EXT: Record<string, string> = {
   "image/jpeg": ".jpg",
   "image/jpg": ".jpg",
   "image/png": ".png",
   "image/webp": ".webp",
+  "image/svg+xml": ".svg",
 };
 
 /** Absolute path to public/uploads on the VPS / local machine. */
@@ -64,7 +66,10 @@ export function assertAllowedImage(fileName: string, mimeType: string, size: num
   const mime = (mimeType || "").toLowerCase();
   const ext = extensionForUpload(fileName, mime);
   if (!ext || (!ALLOWED_IMAGE_MIME.has(mime) && !ALLOWED_EXTENSIONS.has(ext))) {
-    throw new UploadError("Only JPG, JPEG, PNG, and WEBP images are allowed.", 400);
+    throw new UploadError(
+      "Invalid image. Only PNG, JPG, JPEG, WEBP, and SVG files are allowed.",
+      400
+    );
   }
 }
 
@@ -170,13 +175,39 @@ export async function saveUploadedFile(options: {
 
   const ext = extensionForUpload(originalName, mimeType);
   if (!ext) {
-    throw new UploadError("Only JPG, JPEG, PNG, and WEBP images are allowed.", 400);
+    throw new UploadError(
+      "Invalid image. Only PNG, JPG, JPEG, WEBP, and SVG files are allowed.",
+      400
+    );
+  }
+
+  const writable = await verifyUploadsWritable();
+  if (!writable.ok) {
+    throw new UploadError(
+      `Storage unavailable. Uploads directory is not writable (${writable.root}): ${writable.message}`,
+      500
+    );
   }
 
   const dir = await ensureUploadsDir(folder);
   const filename = `${randomUUID()}${ext}`;
   const absolutePath = path.join(dir, filename);
-  await writeFile(absolutePath, buffer);
+
+  try {
+    await writeFile(absolutePath, buffer);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown filesystem error";
+    throw new UploadError(`Image write failed: ${message}`, 500);
+  }
+
+  try {
+    await access(absolutePath, constants.R_OK);
+  } catch {
+    throw new UploadError(
+      `Image write failed verification — file not readable after save: ${filename}`,
+      500
+    );
+  }
 
   const url = toPublicUrl(absolutePath);
   return {

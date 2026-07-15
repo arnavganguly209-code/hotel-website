@@ -83,6 +83,10 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(true);
   const [autoSaveError, setAutoSaveError] = useState(false);
+  const [paymentNotice, setPaymentNotice] = useState<{
+    type: "ok" | "err";
+    text: string;
+  } | null>(null);
   const isFirstRender = useRef(true);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const contentRef = useRef(content);
@@ -97,58 +101,132 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
     setAutoSaveError(false);
   };
 
-  const persistContent = useCallback(async (payload: SiteContent) => {
-    setSaving(true);
-    try {
-      const res = await fetch("/api/content", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        cache: "no-store",
-      });
-      if (res.ok) {
-        setSaved(true);
-        setAutoSaveError(false);
-        router.refresh();
-      } else {
+  const persistContent = useCallback(
+    async (
+      payload: SiteContent,
+      opts?: { silentPaymentNotice?: boolean }
+    ): Promise<{ ok: true } | { ok: false; error: string }> => {
+      setSaving(true);
+      try {
+        console.info("[Orbit] Database save started");
+        const res = await fetch("/api/content", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          cache: "no-store",
+        });
+        const data = (await res.json().catch(() => ({}))) as {
+          success?: boolean;
+          error?: string;
+          details?: string[];
+          paymentLogos?: SiteContent["footer"]["paymentLogos"];
+          message?: string;
+        };
+
+        if (res.ok) {
+          setSaved(true);
+          setAutoSaveError(false);
+          if (data.paymentLogos) {
+            setContent((prev) => {
+              const next = {
+                ...prev,
+                footer: { ...prev.footer, paymentLogos: data.paymentLogos! },
+              };
+              contentRef.current = next;
+              return next;
+            });
+          }
+          console.info("[Orbit] Database updated");
+          router.refresh();
+          console.info("[Orbit] Frontend refreshed");
+          return { ok: true };
+        }
+
+        const detail =
+          Array.isArray(data.details) && data.details.length
+            ? `\n${data.details.join("\n")}`
+            : "";
+        const error = `${data.error || "Database save failed."}${detail}`;
+        console.error("[Orbit] Database save failed:", error);
         setAutoSaveError(true);
+        if (!opts?.silentPaymentNotice) {
+          setPaymentNotice({ type: "err", text: error });
+        }
+        return { ok: false, error };
+      } catch (err) {
+        const error = err instanceof Error ? err.message : "Database save failed.";
+        console.error("[Orbit] Database save exception:", err);
+        if (err instanceof Error && err.stack) console.error(err.stack);
+        setAutoSaveError(true);
+        if (!opts?.silentPaymentNotice) {
+          setPaymentNotice({ type: "err", text: error });
+        }
+        return { ok: false, error };
+      } finally {
+        setSaving(false);
       }
-    } catch {
-      setAutoSaveError(true);
-    } finally {
-      setSaving(false);
-    }
-  }, [router]);
-
-  /** Persist ASAP after media changes so “View Website” never races the 1.8s debounce. */
-  const flushSaveSoon = useCallback(() => {
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      void persistContent(contentRef.current);
-    }, 350);
-  }, [persistContent]);
-
-  const setPaymentLogoSrc = useCallback(
-    (index: number, src: string) => {
-      setContent((prev) => {
-        const logos = Array.from({ length: 6 }, (_, i) => ({
-          id: prev.footer.paymentLogos?.[i]?.id || `pay${i + 1}`,
-          src: prev.footer.paymentLogos?.[i]?.src ?? "",
-        }));
-        logos[index] = {
-          id: logos[index].id || `pay${index + 1}`,
-          src,
-        };
-        return {
-          ...prev,
-          footer: { ...prev.footer, paymentLogos: logos },
-        };
-      });
-      setSaved(false);
-      setAutoSaveError(false);
-      flushSaveSoon();
     },
-    [flushSaveSoon]
+    [router]
+  );
+
+  /** Commit payment logo only after upload succeeded — rollback previous src if DB save fails. */
+  const commitPaymentLogo = useCallback(
+    async (index: number, src: string) => {
+      const previous =
+        contentRef.current.footer.paymentLogos?.[index]?.src ||
+        OFFICIAL_PAYMENT_LOGOS[index].src;
+
+      const logos = Array.from({ length: 6 }, (_, i) => ({
+        id: contentRef.current.footer.paymentLogos?.[i]?.id || `pay${i + 1}`,
+        src: contentRef.current.footer.paymentLogos?.[i]?.src ?? "",
+      }));
+      logos[index] = { id: logos[index].id || `pay${index + 1}`, src };
+
+      const nextPayload: SiteContent = {
+        ...contentRef.current,
+        footer: { ...contentRef.current.footer, paymentLogos: logos },
+      };
+
+      contentRef.current = nextPayload;
+      setContent(nextPayload);
+      setSaved(false);
+      setPaymentNotice(null);
+
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+
+      console.info("[Orbit] Payment logo Image URL", { slot: index + 1, src });
+
+      const result = await persistContent(nextPayload);
+      if (!result.ok) {
+        console.error(
+          "[Orbit] Payment logo save failed — restoring previous image",
+          previous
+        );
+        const rolledLogos = logos.map((slot, i) =>
+          i === index ? { ...slot, src: previous } : slot
+        );
+        const rolled: SiteContent = {
+          ...contentRef.current,
+          footer: { ...contentRef.current.footer, paymentLogos: rolledLogos },
+        };
+        contentRef.current = rolled;
+        setContent(rolled);
+        setPaymentNotice({
+          type: "err",
+          text: result.error || "Payment logo save failed. Previous logo restored.",
+        });
+        return;
+      }
+
+      setPaymentNotice({
+        type: "ok",
+        text:
+          src === PAYMENT_LOGO_CLEARED
+            ? "✓ Payment logo deleted successfully."
+            : "✓ Payment logo saved successfully.",
+      });
+    },
+    [persistContent]
   );
 
   useEffect(() => {
@@ -158,7 +236,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
     }
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      void persistContent(contentRef.current);
+      void persistContent(contentRef.current, { silentPaymentNotice: true });
     }, 1800);
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -167,7 +245,13 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
   const handleSave = async () => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    await persistContent(contentRef.current);
+    const result = await persistContent(contentRef.current);
+    if (result.ok) {
+      setPaymentNotice({
+        type: "ok",
+        text: "✓ All changes saved successfully.",
+      });
+    }
   };
 
   const handleLogout = async () => {
@@ -1082,9 +1166,20 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   </label>
                   <AdminInput label="Payment Section Label" value={content.footer.paymentLabel} onChange={(e) => update("footer", { ...content.footer, paymentLabel: e.target.value })} />
                   <p className="text-xs text-white/40">
-                    Payment Logo 1–6 (Visa, Mastercard, UnionPay, Alipay, UPI, eSewa). Upload / replace saves within
-                    ~0.5s. Delete removes the logo from the live footer (premium placeholder — never a broken icon).
+                    Payment Logo 1–6 (Visa, Mastercard, UnionPay, Alipay, UPI, eSewa). Upload verifies the file on disk
+                    before saving. If upload or save fails, the previous logo is kept and an error is shown.
                   </p>
+                  {paymentNotice ? (
+                    <p
+                      className={
+                        paymentNotice.type === "ok"
+                          ? "rounded-md border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200 whitespace-pre-wrap"
+                          : "rounded-md border border-red-400/40 bg-red-500/10 px-3 py-2 text-sm text-red-300 whitespace-pre-wrap"
+                      }
+                    >
+                      {paymentNotice.text}
+                    </p>
+                  ) : null}
                   {OFFICIAL_PAYMENT_LOGOS.map((official, i) => {
                     const raw = content.footer.paymentLogos?.[i]?.src ?? official.src;
                     const displaySrc = isPaymentLogoCleared(raw)
@@ -1101,10 +1196,25 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                           category="General"
                           value={displaySrc}
                           library={content.mediaLibrary}
+                          keepValueOnFailedUpload
                           onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                          onUploadError={(message) =>
+                            setPaymentNotice({ type: "err", text: message })
+                          }
+                          onUploadSuccess={(url) => {
+                            console.info("[Orbit] Upload completed — Image URL", url);
+                            setPaymentNotice({
+                              type: "ok",
+                              text: "Upload completed. Saving to database…",
+                            });
+                          }}
                           onChange={(url) => {
-                            // Empty clear → sentinel so merge does not re-inject bundled defaults
-                            setPaymentLogoSrc(i, url?.trim() ? url.trim() : PAYMENT_LOGO_CLEARED);
+                            // Upload / library / clear all flow through here AFTER ImagePicker validates
+                            if (!url?.trim()) {
+                              void commitPaymentLogo(i, PAYMENT_LOGO_CLEARED);
+                              return;
+                            }
+                            void commitPaymentLogo(i, url.trim());
                           }}
                         />
                         {displaySrc ? (
@@ -1113,7 +1223,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                             variant="outline"
                             size="sm"
                             className="border-red-400/30 text-red-400"
-                            onClick={() => setPaymentLogoSrc(i, PAYMENT_LOGO_CLEARED)}
+                            onClick={() => void commitPaymentLogo(i, PAYMENT_LOGO_CLEARED)}
                           >
                             Delete Logo
                           </Button>

@@ -20,3 +20,19 @@ export function normalizePaymentLogoSrc(src: string | undefined | null): string 
   if (!value || isPaymentLogoCleared(value)) return "";
   return value;
 }
+
+/** Strip query/hash — safe for client + server. */
+export function stripUrlQuery(url: string): string {
+  return (url || "").trim().split("?")[0].split("#")[0];
+}
+
+/** True for git-bundled official payment art. */
+export function isBundledPaymentUrl(url: string): boolean {
+  return stripUrlQuery(url).startsWith("/media/payments/");
+}
+
+/** True for local Orbit upload paths under /uploads/… */
+export function isUploadsPaymentUrl(url: string): boolean {
+  const clean = stripUrlQuery(url);
+  return clean.startsWith("/uploads/");
+}

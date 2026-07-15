@@ -9,6 +9,7 @@ import {
   categoryFromFolder,
   folderFromCategory,
 } from "@/lib/cms/media-categories";
+import { isBundledPaymentUrl } from "@/lib/cms/payment-logos";
 import type { MediaAsset } from "@/lib/cms/types";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +22,13 @@ interface ImagePickerProps {
   folder?: string;
   category?: string;
   className?: string;
+  /** When true, never call onChange("") unless user confirms clear — used by payment slots. */
+  keepValueOnFailedUpload?: boolean;
+  onUploadError?: (message: string) => void;
+  onUploadSuccess?: (url: string) => void;
 }
+
+const ACCEPT = "image/jpeg,image/jpg,image/png,image/webp,image/svg+xml,.svg";
 
 export function ImagePicker({
   value,
@@ -32,6 +39,9 @@ export function ImagePicker({
   folder,
   category = "General",
   className,
+  keepValueOnFailedUpload = true,
+  onUploadError,
+  onUploadSuccess,
 }: ImagePickerProps) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"library" | "upload">("library");
@@ -41,6 +51,8 @@ export function ImagePicker({
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const previousValueRef = useRef(value);
+  previousValueRef.current = value;
 
   const uploadFolder = folder || folderFromCategory(category);
 
@@ -63,27 +75,84 @@ export function ImagePicker({
     );
   }, [library, filter, query]);
 
+  const fail = (message: string) => {
+    console.error("[ImagePicker] Upload failed:", message);
+    setError(message);
+    onUploadError?.(message);
+    // Keep previous image — never blank the slot on failure
+    if (keepValueOnFailedUpload && previousValueRef.current) {
+      console.info("[ImagePicker] Keeping previous image:", previousValueRef.current);
+    }
+  };
+
   const handleUpload = async (file: File) => {
+    console.info("[ImagePicker] Upload started", {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      folder: uploadFolder,
+      previous: value || null,
+    });
+
     setUploading(true);
     setError(null);
-    setPreview(URL.createObjectURL(file));
+    const blobPreview = URL.createObjectURL(file);
+    setPreview(blobPreview);
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("folder", uploadFolder);
-    if (value) formData.append("oldUrl", value);
+    // Never instruct server to delete bundled /media assets
+    if (value && !isBundledPaymentUrl(value)) {
+      formData.append("oldUrl", value);
+    }
 
     try {
       const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok || !data.url) {
-        setError(data.error || "Upload failed");
+      let data: {
+        url?: string;
+        urlWithBust?: string;
+        error?: string;
+        code?: string;
+        verified?: boolean;
+      } = {};
+      try {
+        data = await res.json();
+      } catch {
+        fail("Upload failed — server returned an invalid response.");
         return;
       }
+
+      if (!res.ok || !data.url) {
+        fail(data.error || `Upload failed (HTTP ${res.status}).`);
+        return;
+      }
+
+      const nextUrl = data.urlWithBust || `${data.url}?v=${Date.now()}`;
+
+      // Client-side existence check — must be HTTP 200 before we replace the slot
+      try {
+        const probe = await fetch(nextUrl.split("?")[0], {
+          method: "GET",
+          cache: "no-store",
+        });
+        if (!probe.ok) {
+          fail(
+            `Image not found after upload (HTTP ${probe.status}). Path: ${data.url}. Storage may be unavailable.`
+          );
+          return;
+        }
+      } catch (probeError) {
+        console.error("[ImagePicker] Probe failed:", probeError);
+        fail("Image retrieval failed after upload. Check filesystem / uploads permissions.");
+        return;
+      }
+
       const asset: MediaAsset = {
         id: `m-${Date.now()}`,
         filename: data.url.split("/").pop() ?? file.name,
-        url: data.url,
-        publicId: data.public_id,
+        url: nextUrl,
+        publicId: data.url.replace(/^\/+/, ""),
         folder: uploadFolder,
         mimeType: file.type || "image/jpeg",
         size: file.size,
@@ -92,20 +161,29 @@ export function ImagePicker({
         alt: file.name.replace(/\.[^.]+$/, ""),
         category,
       };
-      // Cache-bust so preview + frontend never keep a replaced file
-      const nextUrl = `${data.url}${data.url.includes("?") ? "&" : "?"}v=${Date.now()}`;
+
+      console.info("[ImagePicker] Upload completed", { url: nextUrl });
+
       onLibraryChange([
-        { ...asset, url: nextUrl },
-        ...library.filter((a) => a.url !== value && a.url.split("?")[0] !== data.url),
+        asset,
+        ...library.filter(
+          (a) => a.url !== value && a.url.split("?")[0] !== data.url?.split("?")[0]
+        ),
       ]);
-      onChange(nextUrl, { ...asset, url: nextUrl });
+
+      // ONLY replace previous logo after upload + probe succeed
+      onChange(nextUrl, asset);
+      onUploadSuccess?.(nextUrl);
       setOpen(false);
       setPreview(null);
-    } catch {
-      setError("Upload failed");
+      setError(null);
+    } catch (err) {
+      console.error("[ImagePicker] Stack:", err);
+      fail(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
+      URL.revokeObjectURL(blobPreview);
     }
   };
 
@@ -147,13 +225,14 @@ export function ImagePicker({
             type="button"
             size="sm"
             variant="gold"
+            disabled={uploading}
             onClick={() => {
               setTab("upload");
               setOpen(true);
             }}
           >
             <Upload className="h-4 w-4" />
-            Upload New
+            {uploading ? "Uploading…" : "Upload New"}
           </Button>
           {value ? (
             <button
@@ -167,6 +246,11 @@ export function ImagePicker({
         </div>
       </div>
       {value ? <p className="truncate text-[11px] text-white/40">{value}</p> : null}
+      {error ? (
+        <p className="rounded-md border border-red-400/40 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+          {error}
+        </p>
+      ) : null}
 
       {open ? (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
@@ -192,7 +276,11 @@ export function ImagePicker({
                   Upload New
                 </Button>
               </div>
-              <button type="button" onClick={() => setOpen(false)} className="text-white/60 hover:text-white">
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="text-white/60 hover:text-white"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -230,11 +318,14 @@ export function ImagePicker({
                         type="button"
                         onClick={() => {
                           onChange(item.url, item);
+                          onUploadSuccess?.(item.url);
                           setOpen(false);
                         }}
                         className={cn(
                           "overflow-hidden rounded-xl border text-left transition",
-                          value === item.url ? "border-luxury-gold" : "border-white/10 hover:border-luxury-gold/50"
+                          value === item.url
+                            ? "border-luxury-gold"
+                            : "border-white/10 hover:border-luxury-gold/50"
                         )}
                       >
                         <div className="relative flex aspect-square items-center justify-center bg-black/40 p-2">
@@ -246,7 +337,9 @@ export function ImagePicker({
                             className="object-contain p-1"
                           />
                         </div>
-                        <p className="truncate p-2 text-[11px] text-white/70">{item.title || item.filename}</p>
+                        <p className="truncate p-2 text-[11px] text-white/70">
+                          {item.title || item.filename}
+                        </p>
                       </button>
                     ))}
                   </div>
@@ -260,22 +353,35 @@ export function ImagePicker({
                 <div className="space-y-4 text-center">
                   {preview ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={preview} alt="Preview" className="mx-auto max-h-56 rounded-xl object-contain" />
+                    <img
+                      src={preview}
+                      alt="Preview"
+                      className="mx-auto max-h-56 rounded-xl object-contain"
+                    />
+                  ) : value ? (
+                    <div className="relative mx-auto h-40 w-40">
+                      <SafeImage src={value} alt="" fill objectFit="contain" />
+                      <p className="mt-2 text-xs text-white/50">Current logo (kept until new upload succeeds)</p>
+                    </div>
                   ) : null}
-                  <p className="text-sm text-white/60">JPG, PNG or WEBP · max 10MB</p>
+                  <p className="text-sm text-white/60">PNG, JPG, JPEG, WEBP, SVG · max 10MB</p>
                   <Button
                     type="button"
                     variant="gold"
                     disabled={uploading}
                     onClick={() => fileRef.current?.click()}
                   >
-                    {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                    {uploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
                     {uploading ? "Uploading…" : "Choose Image"}
                   </Button>
                   <input
                     ref={fileRef}
                     type="file"
-                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    accept={ACCEPT}
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
