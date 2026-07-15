@@ -42,9 +42,15 @@ if [ ! -f .env ]; then
   exit 1
 fi
 echo "Protected: .env (untouched)"
-mkdir -p public/uploads
-echo "Protected: public/uploads (untouched)"
+mkdir -p public/uploads/{culture,gallery,rooms,dining,spa,logo,payments,hero,seo,general}
+chmod -R ug+rwX public/uploads || true
+echo "Protected: public/uploads (untouched; writable for Orbit)"
 echo "Protected: database (untouched)"
+# Ensure Next can serve runtime uploads via app/uploads/[...path]
+if [ -z "${UPLOADS_ROOT:-}" ]; then
+  export UPLOADS_ROOT="$ROOT/public/uploads"
+fi
+echo "UPLOADS_ROOT=$UPLOADS_ROOT"
 
 echo "Installing packages (npm ci)"
 if [ -f package-lock.json ]; then
@@ -114,6 +120,33 @@ if [ -n "$EXPECTED_SHA" ] && [ "$DEPLOYED_SHA" != "$EXPECTED_SHA" ]; then
   echo "ERROR: Deployed commit $DEPLOYED_SHA != GitHub SHA $EXPECTED_SHA"
   exit 1
 fi
+
+echo "========== UPLOADS RUNTIME PROBE =========="
+PROBE_DIR="$ROOT/public/uploads/general"
+mkdir -p "$PROBE_DIR"
+PROBE_NAME="deploy-probe-${DEPLOYED_SHA:0:8}.bin"
+PROBE_PATH="$PROBE_DIR/$PROBE_NAME"
+printf 'HTP-UPLOAD-OK' > "$PROBE_PATH"
+chmod ug+rw "$PROBE_PATH" || true
+PROBE_URL="$SITE_URL/uploads/general/$PROBE_NAME"
+set +e
+PROBE_CODE="$(curl -sS -o /tmp/hotel-upload-probe-body.bin -w "%{http_code}" \
+  --max-time 20 \
+  -H "Cache-Control: no-cache" \
+  "$PROBE_URL" || echo "000")"
+PROBE_BODY="$(cat /tmp/hotel-upload-probe-body.bin 2>/dev/null || true)"
+set -e
+echo "Probe URL: $PROBE_URL"
+echo "Probe HTTP: $PROBE_CODE"
+echo "Probe body: $PROBE_BODY"
+if [ "$PROBE_CODE" != "200" ] || [ "$PROBE_BODY" != "HTP-UPLOAD-OK" ]; then
+  echo "ERROR: Runtime /uploads route failed — Orbit uploads will 404"
+  rm -f "$PROBE_PATH" || true
+  exit 1
+fi
+rm -f "$PROBE_PATH" || true
+echo "Uploads runtime probe OK"
+echo "=========================================="
 
 rm -rf .next.prev
 

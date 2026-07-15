@@ -1,8 +1,29 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, unlink, writeFile, access, constants } from "node:fs/promises";
+import {
+  mkdir,
+  unlink,
+  writeFile,
+  access,
+  readFile,
+  stat,
+  constants,
+} from "node:fs/promises";
 import path from "node:path";
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
+
+/**
+ * Absolute uploads root.
+ * Prefer UPLOADS_ROOT (Hostinger VPS) so cwd mistakes never write under /tmp or .next.
+ * Default: <project>/public/uploads (served by app/uploads/[...path] at runtime).
+ */
+export function uploadsRoot(): string {
+  const fromEnv = (process.env.UPLOADS_ROOT || "").trim();
+  if (fromEnv) {
+    return path.resolve(fromEnv);
+  }
+  return path.join(process.cwd(), "public", "uploads");
+}
 
 export const ALLOWED_IMAGE_MIME = new Set([
   "image/jpeg",
@@ -21,11 +42,6 @@ const MIME_TO_EXT: Record<string, string> = {
   "image/webp": ".webp",
   "image/svg+xml": ".svg",
 };
-
-/** Absolute path to public/uploads on the VPS / local machine. */
-export function uploadsRoot(): string {
-  return path.join(process.cwd(), "public", "uploads");
-}
 
 export function sanitizeFolder(folder: string): string {
   return (
@@ -118,7 +134,9 @@ export function resolveLocalUploadPath(input: string): string | null {
     return null;
   }
 
-  const absolute = path.resolve(process.cwd(), "public", relative);
+  // Map /uploads/... → <uploadsRoot>/...
+  const underUploads = relative.replace(/^uploads\/?/, "");
+  const absolute = path.resolve(uploadsRoot(), underUploads);
   const root = path.resolve(uploadsRoot());
   if (!absolute.startsWith(root + path.sep) && absolute !== root) {
     return null;
@@ -128,9 +146,12 @@ export function resolveLocalUploadPath(input: string): string | null {
 
 /** Public URL path returned to the admin UI and stored in CMS. */
 export function toPublicUrl(absoluteFilePath: string): string {
-  const root = path.resolve(process.cwd(), "public");
+  const root = path.resolve(uploadsRoot());
   const relative = path.relative(root, absoluteFilePath).replace(/\\/g, "/");
-  return `/${relative}`;
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
+    throw new UploadError("Upload path escaped storage root", 500);
+  }
+  return `/uploads/${relative}`;
 }
 
 /** Stable id used by CMS (same as public path without leading slash). */
@@ -149,19 +170,106 @@ export async function verifyUploadsWritable(): Promise<{
   ok: boolean;
   root: string;
   message: string;
+  cwd: string;
 }> {
   const root = uploadsRoot();
   try {
     await mkdir(root, { recursive: true });
-    await access(root, constants.W_OK);
-    return { ok: true, root, message: "Local uploads directory is writable" };
+    await access(root, constants.R_OK | constants.W_OK);
+    // Prove write + read round-trip
+    const probe = path.join(root, `.write-probe-${Date.now()}`);
+    await writeFile(probe, Buffer.from("ok"));
+    const check = await readFile(probe);
+    await unlink(probe);
+    if (check.toString() !== "ok") {
+      return {
+        ok: false,
+        root,
+        cwd: process.cwd(),
+        message: "Write probe failed — bytes read back did not match",
+      };
+    }
+    return {
+      ok: true,
+      root,
+      cwd: process.cwd(),
+      message: "Local uploads directory is writable and readable",
+    };
   } catch (error) {
     return {
       ok: false,
       root,
+      cwd: process.cwd(),
       message: error instanceof Error ? error.message : "Uploads directory is not writable",
     };
   }
+}
+
+/** Confirm a public /uploads URL is HTTP 200 (via SITE_URL or loopback). */
+export async function verifyUploadHttpReachable(publicUrl: string): Promise<{
+  ok: boolean;
+  status: number;
+  detail: string;
+  probedUrl: string;
+}> {
+  const pathname = publicUrl.split("?")[0];
+  if (!pathname.startsWith("/uploads/")) {
+    return {
+      ok: false,
+      status: 0,
+      detail: `Refusing to probe non-upload path: ${pathname}`,
+      probedUrl: pathname,
+    };
+  }
+
+  const bases = [
+    (process.env.SITE_URL || "").replace(/\/$/, ""),
+    (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, ""),
+    "http://127.0.0.1:3000",
+  ].filter(Boolean);
+
+  let lastStatus = 0;
+  let lastDetail = "No base URL available for HTTP probe";
+  let lastProbed = pathname;
+
+  for (const base of Array.from(new Set(bases))) {
+    const probedUrl = `${base}${pathname}?v=${Date.now()}`;
+    lastProbed = probedUrl;
+    try {
+      const res = await fetch(probedUrl, {
+        method: "GET",
+        cache: "no-store",
+        redirect: "follow",
+        headers: { Accept: "image/*,*/*" },
+      });
+      lastStatus = res.status;
+      const ctype = res.headers.get("content-type") || "";
+      // Drain / cancel body
+      try {
+        await res.arrayBuffer();
+      } catch {
+        /* ignore */
+      }
+
+      if (res.ok && (ctype.startsWith("image/") || ctype.includes("octet-stream") || ctype.includes("svg"))) {
+        return {
+          ok: true,
+          status: res.status,
+          detail: `HTTP ${res.status} (${ctype || "unknown type"})`,
+          probedUrl,
+        };
+      }
+
+      lastDetail = `HTTP ${res.status} content-type=${ctype || "n/a"} via ${base}`;
+    } catch (error) {
+      lastDetail =
+        error instanceof Error
+          ? `Fetch failed via ${base}: ${error.message}`
+          : `Fetch failed via ${base}`;
+    }
+  }
+
+  return { ok: false, status: lastStatus, detail: lastDetail, probedUrl: lastProbed };
 }
 
 export async function saveUploadedFile(options: {
@@ -169,8 +277,14 @@ export async function saveUploadedFile(options: {
   originalName: string;
   mimeType: string;
   folder?: string;
-}): Promise<{ url: string; publicId: string; absolutePath: string; bytes: number }> {
-  const { buffer, originalName, mimeType, folder = "uploads" } = options;
+}): Promise<{
+  url: string;
+  publicId: string;
+  absolutePath: string;
+  bytes: number;
+  diskVerified: true;
+}> {
+  const { buffer, originalName, mimeType, folder = "general" } = options;
   assertAllowedImage(originalName, mimeType, buffer.length);
 
   const ext = extensionForUpload(originalName, mimeType);
@@ -184,7 +298,7 @@ export async function saveUploadedFile(options: {
   const writable = await verifyUploadsWritable();
   if (!writable.ok) {
     throw new UploadError(
-      `Storage unavailable. Uploads directory is not writable (${writable.root}): ${writable.message}`,
+      `Storage unavailable. Uploads directory is not writable (${writable.root}). cwd=${writable.cwd}. ${writable.message}`,
       500
     );
   }
@@ -197,14 +311,41 @@ export async function saveUploadedFile(options: {
     await writeFile(absolutePath, buffer);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown filesystem error";
-    throw new UploadError(`Image write failed: ${message}`, 500);
+    const code = (error as NodeJS.ErrnoException)?.code;
+    throw new UploadError(
+      `Image write failed${code ? ` (${code})` : ""}: ${message}. Path: ${absolutePath}`,
+      500
+    );
   }
 
+  // Disk verification — must exist, be readable, and match byte length
   try {
     await access(absolutePath, constants.R_OK);
-  } catch {
+    const info = await stat(absolutePath);
+    if (!info.isFile()) {
+      throw new UploadError(`Image write verification failed — not a file: ${absolutePath}`, 500);
+    }
+    if (info.size !== buffer.length) {
+      await unlink(absolutePath).catch(() => undefined);
+      throw new UploadError(
+        `Image write verification failed — size mismatch (wrote ${buffer.length}, on disk ${info.size}): ${absolutePath}`,
+        500
+      );
+    }
+    const head = await readFile(absolutePath);
+    if (head.length !== buffer.length) {
+      await unlink(absolutePath).catch(() => undefined);
+      throw new UploadError(
+        `Image write verification failed — could not re-read full file: ${absolutePath}`,
+        500
+      );
+    }
+  } catch (error) {
+    if (error instanceof UploadError) throw error;
+    await unlink(absolutePath).catch(() => undefined);
+    const message = error instanceof Error ? error.message : "Unknown verification error";
     throw new UploadError(
-      `Image write failed verification — file not readable after save: ${filename}`,
+      `Image write failed verification — file not readable after save (${absolutePath}): ${message}`,
       500
     );
   }
@@ -215,15 +356,26 @@ export async function saveUploadedFile(options: {
     publicId: toPublicId(url),
     absolutePath,
     bytes: buffer.length,
+    diskVerified: true,
   };
 }
 
-/** Delete a local upload by public URL or public_id. Idempotent for missing / external files. */
+/** Delete a local upload by public URL, public_id, or absolute path under uploadsRoot. */
 export async function deleteLocalUpload(input: string): Promise<{
   deleted: boolean;
   publicId: string | null;
 }> {
-  const absolute = resolveLocalUploadPath(input);
+  let absolute = resolveLocalUploadPath(input);
+
+  // Allow absolute filesystem paths (rollback after failed HTTP probe)
+  if (!absolute && input) {
+    const resolved = path.resolve(input);
+    const root = path.resolve(uploadsRoot());
+    if (resolved === root || resolved.startsWith(root + path.sep)) {
+      absolute = resolved;
+    }
+  }
+
   if (!absolute) {
     return { deleted: false, publicId: null };
   }

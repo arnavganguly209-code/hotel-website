@@ -115,6 +115,11 @@ export function ImagePicker({
         error?: string;
         code?: string;
         verified?: boolean;
+        diskVerified?: boolean;
+        httpVerified?: boolean;
+        httpStatus?: number;
+        absolutePath?: string;
+        root?: string;
       } = {};
       try {
         data = await res.json();
@@ -123,28 +128,45 @@ export function ImagePicker({
         return;
       }
 
-      if (!res.ok || !data.url) {
-        fail(data.error || `Upload failed (HTTP ${res.status}).`);
+      // Server never returns success unless disk + HTTP 200 verified.
+      // On failure: keep previous image — do NOT call onChange / do NOT save CMS.
+      if (!res.ok || !data.url || !data.diskVerified || !data.httpVerified) {
+        const detail = data.error || `Upload failed (HTTP ${res.status}).`;
+        fail(
+          data.root
+            ? `${detail} (storage: ${data.root})`
+            : detail
+        );
         return;
       }
 
       const nextUrl = data.urlWithBust || `${data.url}?v=${Date.now()}`;
+      const cleanPath = data.url.split("?")[0];
 
-      // Client-side existence check — must be HTTP 200 before we replace the slot
+      // Client-side confirmation — must be HTTP 200 before we replace the slot
       try {
-        const probe = await fetch(nextUrl.split("?")[0], {
+        const probe = await fetch(`${cleanPath}?v=${Date.now()}`, {
           method: "GET",
           cache: "no-store",
         });
         if (!probe.ok) {
           fail(
-            `Image not found after upload (HTTP ${probe.status}). Path: ${data.url}. Storage may be unavailable.`
+            `Image not found after upload (HTTP ${probe.status}). Path: ${data.url}. Server claimed success but browser cannot load the file. Storage may be misconfigured.`
+          );
+          return;
+        }
+        const ctype = probe.headers.get("content-type") || "";
+        if (ctype.includes("text/html")) {
+          fail(
+            `Upload URL returned HTML instead of an image (HTTP ${probe.status}). Path: ${data.url}. Not replacing previous image.`
           );
           return;
         }
       } catch (probeError) {
         console.error("[ImagePicker] Probe failed:", probeError);
-        fail("Image retrieval failed after upload. Check filesystem / uploads permissions.");
+        fail(
+          "Image retrieval failed after upload. Previous image kept. Check filesystem / uploads permissions / Nginx."
+        );
         return;
       }
 
@@ -171,7 +193,7 @@ export function ImagePicker({
         ),
       ]);
 
-      // ONLY replace previous logo after upload + probe succeed
+      // ONLY replace previous image after upload + disk + HTTP probes succeed
       onChange(nextUrl, asset);
       onUploadSuccess?.(nextUrl);
       setOpen(false);

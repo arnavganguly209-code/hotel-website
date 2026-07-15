@@ -19,6 +19,8 @@ module.exports = {
         NODE_ENV: "production",
         PORT: 3000,
         HOSTNAME: "0.0.0.0",
+        // Absolute path — never depend on accidental cwd under /tmp or .next
+        UPLOADS_ROOT: `${__dirname}/public/uploads`,
       },
     },
   ],

@@ -8,6 +8,7 @@ import {
   resolveLocalUploadPath,
   saveUploadedFile,
   sanitizeFolder,
+  verifyUploadHttpReachable,
   verifyUploadsWritable,
 } from "@/lib/uploads";
 
@@ -26,7 +27,10 @@ export async function GET() {
       ok: status.ok,
       storage: "local",
       root: status.root,
+      cwd: status.cwd,
       message: status.message,
+      note:
+        "Runtime uploads are served by app/uploads/[...path] because Next.js production does not hot-serve new public/ files.",
     },
     { status: status.ok ? 200 : 500 }
   );
@@ -37,7 +41,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let folder = "uploads";
+  let folder = "general";
+  let writtenPath: string | null = null;
 
   try {
     console.info("[Upload] Upload started");
@@ -47,8 +52,10 @@ export async function POST(request: Request) {
       console.error("[Upload] Storage unavailable:", writable);
       return NextResponse.json(
         {
-          error: `Storage unavailable. ${writable.message}`,
+          error: `Storage unavailable. ${writable.message}. root=${writable.root} cwd=${writable.cwd}`,
           code: "STORAGE_UNAVAILABLE",
+          root: writable.root,
+          cwd: writable.cwd,
         },
         { status: 500 }
       );
@@ -56,7 +63,7 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
-    folder = sanitizeFolder((formData.get("folder") as string) || "uploads");
+    folder = sanitizeFolder((formData.get("folder") as string) || "general");
     const oldPublicId = ((formData.get("oldPublicId") as string) || "").trim();
     const oldUrl = ((formData.get("oldUrl") as string) || "").trim();
 
@@ -72,6 +79,8 @@ export async function POST(request: Request) {
       type: file.type,
       size: file.size,
       folder,
+      root: writable.root,
+      cwd: writable.cwd,
       oldUrl: oldUrl || null,
     });
 
@@ -85,8 +94,34 @@ export async function POST(request: Request) {
       mimeType,
       folder,
     });
+    writtenPath = result.absolutePath;
+
+    // HTTP reachability — must be 200 before we call this a success.
+    // Next.js production 404s files written into public/ after boot; we serve via /uploads route.
+    const httpProbe = await verifyUploadHttpReachable(result.url);
+    if (!httpProbe.ok) {
+      console.error("[Upload] HTTP probe failed after disk write", {
+        url: result.url,
+        absolutePath: result.absolutePath,
+        probe: httpProbe,
+      });
+      await deleteLocalUpload(result.url).catch(() => undefined);
+      writtenPath = null;
+      return NextResponse.json(
+        {
+          error: `Upload saved to disk but is not publicly reachable (HTTP ${httpProbe.status || "n/a"}). ${httpProbe.detail}. File was rolled back. Path: ${result.url}. Storage root: ${writable.root}`,
+          code: "HTTP_PROBE_FAILED",
+          status: httpProbe.status,
+          probedUrl: httpProbe.probedUrl,
+          absolutePath: result.absolutePath,
+          root: writable.root,
+        },
+        { status: 500 }
+      );
+    }
 
     // Only delete replaced LOCAL uploads — never touch bundled /media assets
+    // and never delete until the new file is verified HTTP 200.
     const replaceTarget = oldPublicId || oldUrl;
     let deletedOld = false;
     if (replaceTarget && !isBundledPaymentUrl(replaceTarget)) {
@@ -117,6 +152,9 @@ export async function POST(request: Request) {
       urlWithBust,
       bytes: result.bytes,
       absolutePath: result.absolutePath,
+      diskVerified: true,
+      httpVerified: true,
+      httpDetail: httpProbe.detail,
       deletedOld,
     });
 
@@ -126,10 +164,18 @@ export async function POST(request: Request) {
       public_id: result.publicId,
       resource_type: "image",
       bytes: result.bytes,
+      absolutePath: result.absolutePath,
       verified: true,
+      diskVerified: true,
+      httpVerified: true,
+      httpStatus: httpProbe.status,
       deletedOld,
     });
   } catch (error) {
+    if (writtenPath) {
+      await deleteLocalUpload(writtenPath).catch(() => undefined);
+    }
+
     if (error instanceof UploadError) {
       console.error("[Upload] Failed (UploadError):", error.message);
       return NextResponse.json(

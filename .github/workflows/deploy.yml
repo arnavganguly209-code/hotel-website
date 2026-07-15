@@ -79,7 +79,7 @@ jobs:
               echo "ERROR: .env missing in $APP_DIR"
               exit 1
             fi
-            mkdir -p public/uploads
+            mkdir -p public/uploads/{culture,gallery,rooms,dining,spa,logo,payments,hero,seo,general}
 
             echo "git remote -v"
             git remote -v
@@ -88,8 +88,11 @@ jobs:
             git fetch origin
             git reset --hard origin/main
 
-            mkdir -p public/uploads
+            mkdir -p public/uploads/{culture,gallery,rooms,dining,spa,logo,payments,hero,seo,general}
             touch public/uploads/.gitkeep
+            chmod -R ug+rwX public/uploads || true
+            export UPLOADS_ROOT="$APP_DIR/public/uploads"
+            echo "UPLOADS_ROOT=$UPLOADS_ROOT"
 
             echo "After sync HEAD=$(git rev-parse HEAD)"
             echo "git branch=$(git branch --show-current)"
