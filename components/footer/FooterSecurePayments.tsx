@@ -14,7 +14,8 @@ interface FooterSecurePaymentsProps {
 export function FooterSecurePayments({ label, paymentLogos }: FooterSecurePaymentsProps) {
   return (
     <motion.div variants={fadeUp} className="w-full">
-      <FooterAccordion title={label || "Secure Payments"} centerMobile>
+      {/* Always show logos on desktop; accordion for mobile heading only */}
+      <FooterAccordion title={label || "Secure Payments"} centerMobile defaultOpen>
         <div className="flex justify-center md:justify-start">
           <PaymentBrandLogos logos={paymentLogos} />
         </div>

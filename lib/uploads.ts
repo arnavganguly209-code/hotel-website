@@ -95,7 +95,7 @@ export function resolveLocalUploadPath(input: string): string | null {
     return null;
   }
 
-  pathname = pathname.replace(/\\/g, "/");
+  pathname = pathname.replace(/\\/g, "/").split("?")[0].split("#")[0];
   const marker = "/uploads/";
   const idx = pathname.indexOf(marker);
   if (idx === -1) {

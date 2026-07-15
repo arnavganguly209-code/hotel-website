@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { FOOTER } from "@/components/footer/footer-theme";
-import { hasMediaSrc, mediaUrl } from "@/lib/cms/media-url";
+import { normalizePaymentLogoSrc } from "@/lib/cms/payment-logos";
+import { mediaUrl } from "@/lib/cms/media-url";
 
 interface PaymentBrandLogosProps {
   logos: Array<{ id: string; src: string }>;
@@ -11,30 +12,39 @@ interface PaymentBrandLogosProps {
 }
 
 function PaymentSlot({ id, src, index }: { id: string; src: string; index: number }) {
-  const resolved = hasMediaSrc(src) ? mediaUrl(src, src) : "";
+  const clean = normalizePaymentLogoSrc(src);
+  const resolved = clean ? mediaUrl(clean, clean) : "";
   const [broken, setBroken] = useState(false);
+
+  useEffect(() => {
+    setBroken(false);
+  }, [resolved]);
+
   const showImage = Boolean(resolved) && !broken;
 
   return (
-    <li key={`${id}-${resolved || "empty"}-${index}`}>
+    <li>
       <div
         className={cn(
-          "flex h-[68px] w-full items-center justify-center overflow-hidden rounded-md",
+          "flex w-full items-center justify-center overflow-hidden rounded-md",
           "shadow-[0_2px_10px_rgba(0,0,0,0.18)]",
           "transition-all duration-500 ease-[0.22,1,0.36,1]",
           "hover:-translate-y-0.5"
         )}
         style={{
+          height: 74,
           borderWidth: 1,
           borderStyle: "solid",
           borderColor: `${FOOTER.gold}66`,
           backgroundColor: FOOTER.cream,
-          padding: 12,
+          /* ~12–13% inset → logo fills ~74–76% of card */
+          padding: "10px 12px",
         }}
       >
         {showImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
+            key={`${id}-${resolved}-${index}`}
             src={resolved}
             alt=""
             style={{
@@ -82,7 +92,12 @@ export function PaymentBrandLogos({ logos, className }: PaymentBrandLogosProps) 
       )}
     >
       {slots.map((slot, index) => (
-        <PaymentSlot key={`${slot.id}-${slot.src || "empty"}-${index}`} id={slot.id} src={slot.src} index={index} />
+        <PaymentSlot
+          key={`${slot.id}-${normalizePaymentLogoSrc(slot.src) || "empty"}-${index}`}
+          id={slot.id}
+          src={slot.src}
+          index={index}
+        />
       ))}
     </ul>
   );

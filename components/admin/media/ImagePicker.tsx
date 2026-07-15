@@ -92,8 +92,13 @@ export function ImagePicker({
         alt: file.name.replace(/\.[^.]+$/, ""),
         category,
       };
-      onLibraryChange([asset, ...library.filter((a) => a.url !== value)]);
-      onChange(data.url, asset);
+      // Cache-bust so preview + frontend never keep a replaced file
+      const nextUrl = `${data.url}${data.url.includes("?") ? "&" : "?"}v=${Date.now()}`;
+      onLibraryChange([
+        { ...asset, url: nextUrl },
+        ...library.filter((a) => a.url !== value && a.url.split("?")[0] !== data.url),
+      ]);
+      onChange(nextUrl, { ...asset, url: nextUrl });
       setOpen(false);
       setPreview(null);
     } catch {

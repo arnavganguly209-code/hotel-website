@@ -12,6 +12,7 @@ interface FooterAccordionProps {
   children: ReactNode;
   className?: string;
   centerMobile?: boolean;
+  defaultOpen?: boolean;
 }
 
 export function FooterAccordion({
@@ -19,8 +20,9 @@ export function FooterAccordion({
   children,
   className,
   centerMobile = false,
+  defaultOpen = false,
 }: FooterAccordionProps) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
 
   return (
     <div

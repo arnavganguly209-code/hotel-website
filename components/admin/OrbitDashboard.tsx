@@ -36,6 +36,12 @@ import { MediaLibrary } from "@/components/admin/media/MediaLibrary";
 import { GalleryManager } from "@/components/admin/media/GalleryManager";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
 import type { SiteContent } from "@/lib/cms/types";
+import {
+  isPaymentLogoCleared,
+  normalizePaymentLogoSrc,
+  OFFICIAL_PAYMENT_LOGOS,
+  PAYMENT_LOGO_CLEARED,
+} from "@/lib/cms/payment-logos";
 import { cn } from "@/lib/utils";
 
 const SECTIONS = [
@@ -79,6 +85,8 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
   const [autoSaveError, setAutoSaveError] = useState(false);
   const isFirstRender = useRef(true);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const contentRef = useRef(content);
+  contentRef.current = content;
 
   const update = <K extends keyof SiteContent>(
     key: K,
@@ -112,6 +120,37 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
     }
   }, [router]);
 
+  /** Persist ASAP after media changes so “View Website” never races the 1.8s debounce. */
+  const flushSaveSoon = useCallback(() => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      void persistContent(contentRef.current);
+    }, 350);
+  }, [persistContent]);
+
+  const setPaymentLogoSrc = useCallback(
+    (index: number, src: string) => {
+      setContent((prev) => {
+        const logos = Array.from({ length: 6 }, (_, i) => ({
+          id: prev.footer.paymentLogos?.[i]?.id || `pay${i + 1}`,
+          src: prev.footer.paymentLogos?.[i]?.src ?? "",
+        }));
+        logos[index] = {
+          id: logos[index].id || `pay${index + 1}`,
+          src,
+        };
+        return {
+          ...prev,
+          footer: { ...prev.footer, paymentLogos: logos },
+        };
+      });
+      setSaved(false);
+      setAutoSaveError(false);
+      flushSaveSoon();
+    },
+    [flushSaveSoon]
+  );
+
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -119,7 +158,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
     }
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      void persistContent(content);
+      void persistContent(contentRef.current);
     }, 1800);
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -128,7 +167,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
   const handleSave = async () => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    await persistContent(content);
+    await persistContent(contentRef.current);
   };
 
   const handleLogout = async () => {
@@ -1043,45 +1082,38 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   </label>
                   <AdminInput label="Payment Section Label" value={content.footer.paymentLabel} onChange={(e) => update("footer", { ...content.footer, paymentLabel: e.target.value })} />
                   <p className="text-xs text-white/40">
-                    Payment Logo 1–6 — image only. Logos use object-fit: contain (never crop/stretch). Clear removes the
-                    image instantly; empty slots show a premium placeholder (never a broken icon).
+                    Payment Logo 1–6 (Visa, Mastercard, UnionPay, Alipay, UPI, eSewa). Upload / replace saves within
+                    ~0.5s. Delete removes the logo from the live footer (premium placeholder — never a broken icon).
                   </p>
-                  {Array.from({ length: 6 }, (_, i) => {
-                    const paymentLogos = [
-                      ...(content.footer.paymentLogos?.length
-                        ? content.footer.paymentLogos
-                        : Array.from({ length: 6 }, (_, n) => ({ id: `pay${n + 1}`, src: "" }))),
-                    ];
-                    while (paymentLogos.length < 6) paymentLogos.push({ id: `pay${paymentLogos.length + 1}`, src: "" });
-                    const label = `Payment Logo ${i + 1}`;
+                  {OFFICIAL_PAYMENT_LOGOS.map((official, i) => {
+                    const raw = content.footer.paymentLogos?.[i]?.src ?? official.src;
+                    const displaySrc = isPaymentLogoCleared(raw)
+                      ? ""
+                      : normalizePaymentLogoSrc(raw) || official.src;
+                    const label = `Payment Logo ${i + 1} — ${official.label}`;
                     return (
                       <div key={`pay-slot-${i}`} className="space-y-2 border border-luxury-gold/10 p-4">
                         <p className="text-sm text-luxury-gold/80">{label}</p>
                         <ImagePicker
-                          key={paymentLogos[i]?.src || `empty-${i}`}
+                          key={displaySrc || `empty-${i}`}
                           label={label}
                           folder="payments"
                           category="General"
-                          value={paymentLogos[i]?.src || ""}
+                          value={displaySrc}
                           library={content.mediaLibrary}
                           onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
                           onChange={(url) => {
-                            const next = [...paymentLogos];
-                            next[i] = { id: next[i]?.id || `pay${i + 1}`, src: url || "" };
-                            update("footer", { ...content.footer, paymentLogos: next.slice(0, 6) });
+                            // Empty clear → sentinel so merge does not re-inject bundled defaults
+                            setPaymentLogoSrc(i, url?.trim() ? url.trim() : PAYMENT_LOGO_CLEARED);
                           }}
                         />
-                        {paymentLogos[i]?.src ? (
+                        {displaySrc ? (
                           <Button
                             type="button"
                             variant="outline"
                             size="sm"
                             className="border-red-400/30 text-red-400"
-                            onClick={() => {
-                              const next = [...paymentLogos];
-                              next[i] = { id: next[i]?.id || `pay${i + 1}`, src: "" };
-                              update("footer", { ...content.footer, paymentLogos: next.slice(0, 6) });
-                            }}
+                            onClick={() => setPaymentLogoSrc(i, PAYMENT_LOGO_CLEARED)}
                           >
                             Delete Logo
                           </Button>

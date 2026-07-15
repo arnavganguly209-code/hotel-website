@@ -1,6 +1,11 @@
 import type { SiteContent } from "./types";
 import { defaultContent } from "./default-content";
 import { enrichRoom } from "./room-helpers";
+import {
+  isPaymentLogoCleared,
+  OFFICIAL_PAYMENT_LOGOS,
+  PAYMENT_LOGO_CLEARED,
+} from "./payment-logos";
 
 /** Preserve explicit empty values — never fall back to defaults when the field was set. */
 function definedString(value: string | undefined, fallback: string): string {
@@ -14,13 +19,40 @@ function definedArray<T>(value: T[] | undefined, fallback: T[]): T[] {
 function mergePaymentLogos(
   partial?: SiteContent["footer"]["paymentLogos"]
 ): SiteContent["footer"]["paymentLogos"] {
-  const defaults = defaultContent.footer.paymentLogos;
-  if (!partial?.length) return defaults.map((slot) => ({ ...slot }));
-  return defaults.map((slot, i) => ({
-    id: partial[i]?.id || slot.id,
-    // Explicit empty string must clear the slot (never keep a stale src)
-    src: typeof partial[i]?.src === "string" ? partial[i].src.trim() : "",
+  const defaults = defaultContent.footer.paymentLogos.map((slot, i) => ({
+    id: slot.id || OFFICIAL_PAYMENT_LOGOS[i].id,
+    src: slot.src || OFFICIAL_PAYMENT_LOGOS[i].src,
   }));
+
+  if (!partial?.length) return defaults.map((slot) => ({ ...slot }));
+
+  const raw = defaults.map((slot, i) => {
+    const incoming = partial[i]?.src;
+    const id = partial[i]?.id || slot.id;
+
+    // Explicit Orbit delete — keep cleared sentinel so UI can show placeholder
+    if (typeof incoming === "string" && isPaymentLogoCleared(incoming)) {
+      return { id, src: PAYMENT_LOGO_CLEARED };
+    }
+
+    // Uploaded / configured URL
+    if (typeof incoming === "string" && incoming.trim() && !isPaymentLogoCleared(incoming)) {
+      return { id, src: incoming.trim() };
+    }
+
+    // Legacy empty slots → official bundled logos (migrate stale CMS empties)
+    if (incoming === "" || incoming === undefined || incoming === null) {
+      return { id, src: slot.src };
+    }
+
+    return { id, src: slot.src };
+  });
+
+  // If every slot was legacy-empty and we filled with defaults, return those.
+  // Cleared slots stay as CLEARED for the frontend to treat as empty.
+  return raw.map((slot) =>
+    isPaymentLogoCleared(slot.src) ? { id: slot.id, src: PAYMENT_LOGO_CLEARED } : slot
+  );
 }
 
 type LegacyFooterSocial = Partial<SiteContent["footer"]["social"]> & {
