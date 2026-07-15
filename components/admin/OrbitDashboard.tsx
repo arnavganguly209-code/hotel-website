@@ -991,25 +991,22 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                     Show Secure Payments
                   </label>
                   <AdminInput label="Payment Section Label" value={content.footer.paymentLabel} onChange={(e) => update("footer", { ...content.footer, paymentLabel: e.target.value })} />
-                  <p className="text-xs text-white/40">Upload a logo image for each frame. Image only — no text labels. Empty slots show a clean placeholder.</p>
-                  {(content.footer.paymentLogos?.length
-                    ? content.footer.paymentLogos
-                    : [
-                        { id: "pay1", src: "" },
-                        { id: "pay2", src: "" },
-                        { id: "pay3", src: "" },
-                        { id: "pay4", src: "" },
-                        { id: "pay5", src: "" },
-                        { id: "pay6", src: "" },
-                      ]
-                  ).slice(0, 6).map((slot, i) => {
-                    const paymentLogos = [...(content.footer.paymentLogos?.length ? content.footer.paymentLogos : Array.from({ length: 6 }, (_, n) => ({ id: `pay${n + 1}`, src: "" })))];
+                  <p className="text-xs text-white/40">
+                    Upload logo images only (Visa, Mastercard, UnionPay, Alipay, UPI, eSewa). No text on the public
+                    footer — logos fit with object-fit: contain inside cream frames.
+                  </p>
+                  {(["Visa", "Mastercard", "UnionPay", "Alipay", "UPI", "eSewa"] as const).map((brand, i) => {
+                    const paymentLogos = [
+                      ...(content.footer.paymentLogos?.length
+                        ? content.footer.paymentLogos
+                        : Array.from({ length: 6 }, (_, n) => ({ id: `pay${n + 1}`, src: "" }))),
+                    ];
                     while (paymentLogos.length < 6) paymentLogos.push({ id: `pay${paymentLogos.length + 1}`, src: "" });
                     return (
-                      <div key={slot.id || `pay${i + 1}`} className="space-y-2 border border-luxury-gold/10 p-4">
-                        <p className="text-sm text-luxury-gold/80">Payment Logo {i + 1}</p>
+                      <div key={brand} className="space-y-2 border border-luxury-gold/10 p-4">
+                        <p className="text-sm text-luxury-gold/80">{brand}</p>
                         <ImagePicker
-                          label={`Payment Logo ${i + 1}`}
+                          label={`${brand} logo`}
                           folder="payments"
                           category="General"
                           value={paymentLogos[i]?.src || ""}

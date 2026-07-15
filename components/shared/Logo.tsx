@@ -30,7 +30,11 @@ export function Logo({
   showStars = false,
   centered = false,
 }: LogoProps) {
-  const displayText = (headerText || name).toUpperCase();
+  const brandLabel = (headerText || name)
+    .replace(/\s*&\s*SPA/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const displayText = brandLabel.toUpperCase();
   const showName = showText && !hideText && !useLogo;
   const showLogoImage = useLogo && logoSrc;
 
@@ -42,16 +46,17 @@ export function Logo({
         !centered && "sm:flex-row sm:gap-3",
         className
       )}
-      aria-label={`${name} — Home`}
+      aria-label={`${brandLabel} — Home`}
+      style={showLogoImage ? { background: "transparent" } : undefined}
     >
       {showLogoImage ? (
         <SafeImage
           src={logoSrc}
-          alt={name}
+          alt={brandLabel}
           width={logoSize * 2}
           height={logoSize}
-          className="h-auto object-contain"
-          style={{ maxHeight: logoSize }}
+          className="h-auto bg-transparent object-contain"
+          style={{ maxHeight: logoSize, background: "transparent" }}
           priority
         />
       ) : showName ? (

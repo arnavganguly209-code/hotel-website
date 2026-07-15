@@ -11,6 +11,13 @@ interface SiteShellProps {
   content: SiteContent;
 }
 
+function stripSpaBrand(value: string) {
+  return value
+    .replace(/\s*&\s*SPA/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function SiteShell({ children, content }: SiteShellProps) {
   const pathname = usePathname();
   const isOrbit = pathname.startsWith("/orbit");
@@ -19,9 +26,15 @@ export function SiteShell({ children, content }: SiteShellProps) {
     return <>{children}</>;
   }
 
+  const hotelName = stripSpaBrand(content.hotel.name || "Hotel Thamel Park");
+  const header = {
+    ...content.header,
+    headerText: stripSpaBrand(content.header.headerText || "HOTEL THAMEL PARK"),
+  };
+
   return (
     <ThemeProvider theme={content.theme}>
-      <Header header={content.header} hotelName={content.hotel.name} />
+      <Header header={header} hotelName={hotelName} />
       <main className="pb-safe">{children}</main>
       <Footer content={content} />
     </ThemeProvider>

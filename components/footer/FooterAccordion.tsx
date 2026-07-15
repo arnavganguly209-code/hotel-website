@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { FooterSectionHeading } from "@/components/footer/FooterSectionHeading";
+import { FOOTER } from "@/components/footer/footer-theme";
 import { cn } from "@/lib/utils";
 
 interface FooterAccordionProps {
@@ -23,10 +24,8 @@ export function FooterAccordion({
 
   return (
     <div
-      className={cn(
-        "border-b border-[#C8A145]/15 last:border-b-0 md:border-none",
-        className
-      )}
+      className={cn("border-b last:border-b-0 md:border-none md:!border-0", className)}
+      style={{ borderColor: `${FOOTER.gold}33` }}
     >
       <button
         type="button"
@@ -44,9 +43,10 @@ export function FooterAccordion({
         />
         <ChevronDown
           className={cn(
-            "mt-0.5 h-4 w-4 shrink-0 text-[#C8A145]/80 transition-transform duration-500",
+            "mt-0.5 h-4 w-4 shrink-0 transition-transform duration-500",
             open && "rotate-180"
           )}
+          style={{ color: FOOTER.gold }}
           strokeWidth={1.2}
           aria-hidden
         />

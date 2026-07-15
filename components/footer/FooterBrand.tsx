@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FooterLuxuryDivider } from "@/components/footer/FooterLuxuryDivider";
+import { FOOTER } from "@/components/footer/footer-theme";
 import { fadeUp } from "@/lib/animations";
 import { routes } from "@/lib/navigation";
 
@@ -21,16 +22,25 @@ export function FooterBrand({ logoSrc, brandName, description }: FooterBrandProp
       {logoSrc ? (
         <Link
           href={routes.home}
-          className="mb-6 inline-block bg-transparent transition-opacity duration-500 hover:opacity-90"
+          className="mb-7 inline-block transition-opacity duration-500 hover:opacity-90"
           aria-label={`${brandName} — Home`}
+          style={{ background: "none", backgroundColor: "transparent" }}
         >
+          {/* Transparent PNG only — never wrap in a filled box */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={logoSrc}
             alt={brandName}
             width={240}
             height={96}
-            className="block h-auto w-[170px] bg-transparent object-contain md:w-[200px] lg:w-[240px]"
+            className="block h-auto w-[170px] object-contain md:w-[200px] lg:w-[240px]"
+            style={{
+              background: "none",
+              backgroundColor: "transparent",
+              boxShadow: "none",
+              border: "none",
+              padding: 0,
+            }}
             decoding="async"
             loading="eager"
           />
@@ -39,11 +49,12 @@ export function FooterBrand({ logoSrc, brandName, description }: FooterBrandProp
 
       <FooterLuxuryDivider variant="brand" className="mx-auto mb-6 md:mx-0" />
 
-      <p className="max-w-[280px] font-body text-[13.5px] font-normal leading-[1.9] tracking-[0.02em] text-[#F3EBD8]/88 md:max-w-[260px]">
+      <p
+        className="max-w-[300px] font-body text-[14px] font-normal leading-[1.9] tracking-[0.02em] md:max-w-[280px]"
+        style={{ color: FOOTER.description }}
+      >
         {description}
       </p>
-
-      <FooterLuxuryDivider variant="brand" className="mx-auto mt-7 md:mx-0" />
     </motion.div>
   );
 }
