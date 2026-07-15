@@ -1,0 +1,134 @@
+﻿/**
+ * PM2 â€” Hostinger VPS only (https://hotel.theglobalorbit.com)
+ * Nginx should proxy_pass to http://127.0.0.1:3000
+ */
+module.exports = {
+  apps: [
+    {
+      name: "hotel-thamel-park",
+      cwd: __dirname,
+      script: "node_modules/next/dist/bin/next",
+      args: "start -H 0.0.0.0 -p 3000",
+      instances: 1,
+      exec_mode: "fork",
+      autorestart: true,
+      watch: false,
+      max_memory_restart: "768M",
+      time: true,
+      env: {
+        NODE_ENV: "production",
+        PORT: 3000,
+        HOSTNAME: "0.0.0.0",
+      },
+    },
+  ],
+};
+# Name
+### hotel-thamel-park-spa
+
+# Synopsis
+
+
+# Description
+
+# Example
+
+# Install:
+`npm install hotel-thamel-park-spa`
+
+# Test:
+`npm test`
+
+#License:
+
+# Orbit CMS (server-side only)
+ORBIT_ADMIN_PASSWORD=your-secure-key-here
+
+# PostgreSQL on the VPS (localhost)
+DATABASE_URL=postgresql://USER:PASSWORD@127.0.0.1:5432/hotel_thamel_park?schema=public
+
+# Public site URL â€” use http:// during testing; switch to https:// after SSL
+NEXT_PUBLIC_SITE_URL=http://YOUR_VPS_IP_OR_DOMAIN
+SITE_URL=http://YOUR_VPS_IP_OR_DOMAIN
+
+# Cookie security:
+# - HTTP testing: COOKIE_SECURE=false (or leave unset with http:// SITE_URL)
+# - After HTTPS (Nginx TLS): COOKIE_SECURE=true  OR  set SITE_URL to https://...
+# COOKIE_SECURE=false
+# TRUST_PROXY_HTTPS=true
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  reactStrictMode: true,
+  poweredByHeader: false,
+  images: {
+    // Hostinger VPS: serve local /public files directly (no optimizer).
+    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
+    ],
+    minimumCacheTTL: 60,
+  },
+  experimental: {
+    // Orbit image uploads up to 10MB (App Router / Server Actions).
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
+  },
+};
+
+export default nextConfig;
+{
+  "name": "hotel-thamel-park-spa",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3002",
+    "build": "prisma generate && next build",
+    "start": "next start -H 0.0.0.0 -p 3000",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:reload": "pm2 reload ecosystem.config.js --update-env",
+    "pm2:stop": "pm2 stop hotel-thamel-park",
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "seed:media": "node scripts/seed-media.mjs",
+    "sync:content": "npx tsx scripts/sync-content-run.ts"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "@radix-ui/react-accordion": "^1.2.2",
+    "@radix-ui/react-select": "^2.1.4",
+    "@radix-ui/react-slot": "^1.1.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.15.0",
+    "lucide-react": "^0.469.0",
+    "next": "15.5.19",
+    "pg": "^8.22.0",
+    "prisma": "^7.8.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-icons": "^5.4.0",
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "^15.1.3",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
+  }
+}

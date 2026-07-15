@@ -1,0 +1,45 @@
+﻿
+
+    Directory: C:\Users\Admin\Desktop\ARNAB\hotel-thamel-park-spa
+
+
+Mode                 LastWriteTime         Length Name                                                                 
+----                 -------------         ------ ----                                                                 
+d-----         7/15/2026   2:07 AM                .github                                                              
+d-----         7/15/2026   2:03 AM                .next                                                                
+d-----         6/26/2026   2:00 AM                .node                                                                
+d-----         6/26/2026   2:26 AM                .npm-cache                                                           
+d-----         6/26/2026   2:46 AM                .vscode                                                              
+d-----         7/13/2026  11:18 PM                app                                                                  
+d-----         7/15/2026  11:35 PM                components                                                           
+d-----         7/13/2026   9:53 PM                content                                                              
+d-----          7/4/2026  10:07 PM                data                                                                 
+d-----         6/26/2026   1:53 AM                hooks                                                                
+d-----         7/15/2026  12:03 AM                lib                                                                  
+d-----         7/15/2026  12:30 AM                node_modules                                                         
+d-----         6/30/2026  12:13 AM                prisma                                                               
+d-----         7/15/2026  12:29 AM                public                                                               
+d-----         7/15/2026  10:46 PM                scripts                                                              
+d-----         6/29/2026   1:02 AM                sections                                                             
+d-----         6/26/2026   1:57 AM                styles                                                               
+d-----         6/26/2026   1:56 AM                types                                                                
+-a----          7/6/2026   8:56 PM             23 .dev.vars                                                            
+-a----          7/6/2026  10:38 PM            170 .env                                                                 
+-a----         7/15/2026  12:30 AM            590 .env.example                                                         
+-a----         6/28/2026  11:45 PM             40 .eslintrc.json                                                       
+-a----         7/15/2026   8:43 PM           1110 .gitignore                                                           
+-a----         6/28/2026  11:45 PM            417 components.json                                                      
+-a----         7/15/2026   2:36 AM            564 ecosystem.config.js                                                  
+-a----         6/28/2026  11:45 PM            262 next-env.d.ts                                                        
+-a----         7/15/2026   1:00 AM            582 next.config.ts                                                       
+-a----         7/15/2026   1:09 AM         289917 package-lock.json                                                    
+-a----         7/15/2026   2:07 AM           1450 package.json                                                         
+-a----         6/28/2026  11:45 PM            135 postcss.config.mjs                                                   
+-a----         6/30/2026  12:08 AM            374 prisma.config.ts                                                     
+-a----         7/15/2026   1:54 AM            152 README.md                                                            
+-a----          7/6/2026   8:56 PM           4483 tailwind.config.ts                                                   
+-a----         6/28/2026  11:45 PM            572 tsconfig.json                                                        
+-a----         7/16/2026  12:21 AM         140652 tsconfig.tsbuildinfo                                                 
+-a----         7/16/2026  12:34 AM           2619 _diag_list.txt                                                       
+
+

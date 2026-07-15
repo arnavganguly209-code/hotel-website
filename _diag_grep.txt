@@ -1,0 +1,47 @@
+﻿.env.example:13: # - After HTTPS (Nginx TLS): COOKIE_SECURE=true  OR  set SITE_URL to https://...
+ecosystem.config.js:2: * PM2 — Hostinger VPS only (https://hotel.theglobalorbit.com)
+ecosystem.config.js:3: * Nginx should proxy_pass to http://127.0.0.1:3000
+next.config.ts:7: // Hostinger VPS: serve local /public files directly (no optimizer).
+deploy.yml:1: # Production deploy — Hostinger VPS ONLY
+deploy.yml:4: # Required secrets: VPS_HOST, VPS_USER, VPS_PORT, VPS_SSH_KEY
+deploy.yml:6: name: Deploy to Hostinger VPS
+deploy.yml:30: VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+deploy.yml:34: for name in VPS_HOST VPS_USER VPS_PORT VPS_SSH_KEY; do
+deploy.yml:47: - name: Deploy over SSH (Hostinger VPS)
+deploy.yml:48: uses: appleboy/ssh-action@v1.2.2
+deploy.yml:54: key: ${{ secrets.VPS_SSH_KEY }}
+deploy.yml:63: echo "SSH user=$(id -un) HOME=$HOME"
+deploy.yml:82: mkdir -p public/uploads
+deploy.yml:91: mkdir -p public/uploads
+deploy.yml:92: touch public/uploads/.gitkeep
+route.ts:4: import { deleteLocalUpload, toPublicId } from "@/lib/uploads";
+route.ts:12: } from "@/lib/uploads";
+SafeImage.tsx:23: * Local-first image for Hostinger VPS.
+SafeImage.tsx:24: * Uses a native <img> so /uploads and /media never hit the Next.js image optimizer
+uploads.ts:25: /** Absolute path to public/uploads on the VPS / local machine. */
+uploads.ts:27: return path.join(process.cwd(), "public", "uploads");
+uploads.ts:87: * Resolve a public URL or stored public_id to an absolute file path under public/uploads.
+uploads.ts:88: * Returns null for external / non-local URLs (anything outside /uploads).
+uploads.ts:104: const marker = "/uploads/";
+uploads.ts:121: const absolute = path.resolve(process.cwd(), "public", relative);
+uploads.ts:131: const root = path.resolve(process.cwd(), "public");
+auth.ts:8: * After TLS (Nginx): use https://... or set COOKIE_SECURE=true / TRUST_PROXY_HTTPS=true.
+media-utils.ts:7: return new URL(url).pathname.includes("/uploads/");
+media-utils.ts:12: return url.includes("/uploads/") || url.startsWith("uploads/");
+media-utils.ts:23: const marker = "/uploads/";
+merge.ts:10: import { resolveLocalUploadPath } from "@/lib/uploads";
+merge.ts:44: if (trimmed.includes("/uploads/")) {
+payment-logo-pipeline.ts:11: import { resolveLocalUploadPath } from "@/lib/uploads";
+payment-logo-pipeline.ts:31: return path.resolve(process.cwd(), "public", clean.replace(/^\/+/, ""));
+payment-logo-pipeline.ts:64: error: `Invalid upload path (must be under /uploads): ${stripUrlQuery(raw)}`,
+payment-logos.ts:34: /** True for local Orbit upload paths under /uploads/… */
+payment-logos.ts:37: return clean.startsWith("/uploads/");
+store.ts:11: * CMS content is sourced exclusively from PostgreSQL (Hostinger VPS localhost).
+sync-content-run.ts:5: const contentPath = path.join(process.cwd(), "data", "site-content.json");
+vps-bootstrap-once.sh:2: # ONE-TIME Hostinger bootstrap. After this, only GitHub Actions deploys.
+vps-bootstrap-once.sh:34: mkdir -p public/uploads logs
+vps-deploy.sh:2: # Hostinger VPS production deploy (GitHub Actions → /var/www/hotel-website)
+vps-deploy.sh:3: # Protects: .env | public/uploads | PostgreSQL
+vps-deploy.sh:45: mkdir -p public/uploads
+vps-deploy.sh:46: echo "Protected: public/uploads (untouched)"
+vps-env.sh:2: # Load Node/npm/pm2/git/curl for non-interactive Hostinger SSH.
