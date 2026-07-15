@@ -128,11 +128,20 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       defaultContent.culturalExperiencePage,
       partial.culturalExperiencePage
     ),
-    facilities: definedArray(partial.facilities, defaultContent.facilities).map((f, i) => ({
-      ...(defaultContent.facilities[i] ?? defaultContent.facilities[0]),
-      ...f,
-      description: f.description ?? defaultContent.facilities[i]?.description ?? "",
-    })),
+    facilities: definedArray(partial.facilities, defaultContent.facilities).map((f, i) => {
+      const base = defaultContent.facilities[i] ?? defaultContent.facilities[0];
+      return {
+        ...base,
+        ...f,
+        id: f.id || base.id,
+        name: f.name || base.name,
+        description: f.description ?? base.description ?? "",
+        icon: f.icon || base.icon,
+        iconSrc: f.iconSrc ?? base.iconSrc ?? "",
+        enabled: f.enabled !== false,
+        order: typeof f.order === "number" ? f.order : (base.order ?? i),
+      };
+    }),
     rooms: definedArray(partial.rooms, defaultContent.rooms).map((room, i) =>
       enrichRoom(defaultContent.rooms[i] ?? defaultContent.rooms[0], room)
     ),
@@ -367,7 +376,15 @@ function mergeFacilitiesSection(
   return {
     ...defaults,
     ...partial,
-    media: { ...defaults.media, ...(partial.media ?? {}) },
+    ctaVisible: partial.ctaVisible !== false,
+    showMist: partial.showMist !== false,
+    media: {
+      ...defaults.media,
+      ...(partial.media ?? {}),
+      imageSrc:
+        partial.media?.imageSrc?.trim() ||
+        defaults.media.imageSrc,
+    },
   };
 }
 

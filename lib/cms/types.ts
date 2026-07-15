@@ -259,6 +259,15 @@ export interface SiteContent {
     description: string;
     caption: string;
     media: CmsMedia;
+    ctaText: string;
+    ctaHref: string;
+    ctaVisible: boolean;
+    showMist: boolean;
+    backgroundTop: string;
+    backgroundBottom: string;
+    goldColor: string;
+    headingColor: string;
+    bodyColor: string;
   };
   culturalExperiencePage: {
     hero: PageHero & { media: CmsMedia };
@@ -274,6 +283,10 @@ export interface SiteContent {
     name: string;
     description: string;
     icon: string;
+    /** Optional custom uploaded icon image — overrides Lucide icon when set */
+    iconSrc?: string;
+    enabled?: boolean;
+    order?: number;
   }>;
   rooms: Array<{
     id: string;

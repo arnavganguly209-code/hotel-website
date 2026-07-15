@@ -54,7 +54,7 @@ const SECTIONS = [
   { id: "overview", label: "Luxury Showcase", icon: Home },
   { id: "experiences", label: "Home Experiences", icon: Sparkles },
   { id: "culture", label: "Cultural Experience", icon: Globe },
-  { id: "facilities", label: "Facilities", icon: Grid3X3 },
+  { id: "facilities", label: "Amenities Section", icon: Grid3X3 },
   { id: "rooms", label: "Rooms Section", icon: Bed },
   { id: "dining", label: "Dining Page", icon: Utensils },
   { id: "spa", label: "Spa Page", icon: Waves },
@@ -977,33 +977,136 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
             {activeSection === "facilities" && (
               <>
-                <AdminInput label="Section Eyebrow" value={content.facilitiesSection.eyebrow} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, eyebrow: e.target.value })} />
-                <AdminInput label="Section Title" value={content.facilitiesSection.title} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, title: e.target.value })} />
-                <AdminTextarea label="Section Description" rows={2} value={content.facilitiesSection.description} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, description: e.target.value })} />
-                <AdminTextarea label="Caption (below media)" rows={2} value={content.facilitiesSection.caption} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, caption: e.target.value })} />
-                <AdminMediaField
-                  label="Amenities Media (Image / Video)"
-                  folder="facilities"
-                  value={content.facilitiesSection.media}
-                  onChange={(media) => update("facilitiesSection", { ...content.facilitiesSection, media })}
-                  library={content.mediaLibrary}
-                  onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
-                />
-                <p className="text-xs uppercase tracking-widest text-white/40">Amenity Cards</p>
-                {content.facilities.map((facility, i) => (
-                  <div key={facility.id} className="space-y-3 border border-luxury-gold/10 p-4">
-                    <AdminInput label="Name" value={facility.name} onChange={(e) => {
-                      const facilities = [...content.facilities];
-                      facilities[i] = { ...facility, name: e.target.value };
-                      update("facilities", facilities);
-                    }} />
-                    <AdminTextarea label="Description" rows={2} value={facility.description} onChange={(e) => {
-                      const facilities = [...content.facilities];
-                      facilities[i] = { ...facility, description: e.target.value };
-                      update("facilities", facilities);
-                    }} />
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Amenities Section</p>
+                  <p className="text-xs text-white/40">
+                    Homepage World-Class Amenities section (below The Rooms). Exactly 10 amenity cards.
+                  </p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.homeSections.facilities.enabled}
+                      onChange={(e) =>
+                        update("homeSections", {
+                          ...content.homeSections,
+                          facilities: { ...content.homeSections.facilities, enabled: e.target.checked },
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Show Section
+                  </label>
+                  <AdminInput label="Small Label (eyebrow)" value={content.facilitiesSection.eyebrow} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, eyebrow: e.target.value })} />
+                  <AdminInput label="Main Heading" value={content.facilitiesSection.title} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, title: e.target.value })} />
+                  <AdminTextarea label="Description" rows={4} value={content.facilitiesSection.description} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, description: e.target.value })} />
+                  <AdminTextarea label="Second Paragraph (optional)" rows={2} value={content.facilitiesSection.caption} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, caption: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Button</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.facilitiesSection.ctaVisible !== false}
+                      onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, ctaVisible: e.target.checked })}
+                      className="accent-luxury-gold"
+                    />
+                    Show Button
+                  </label>
+                  <AdminInput label="Button Text" value={content.facilitiesSection.ctaText} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, ctaText: e.target.value })} />
+                  <AdminInput label="Button URL" value={content.facilitiesSection.ctaHref} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, ctaHref: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Background &amp; Atmosphere</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput label="Background Top" value={content.facilitiesSection.backgroundTop} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, backgroundTop: e.target.value })} />
+                    <AdminInput label="Background Bottom" value={content.facilitiesSection.backgroundBottom} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, backgroundBottom: e.target.value })} />
+                    <AdminInput label="Heading Color" value={content.facilitiesSection.headingColor} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, headingColor: e.target.value })} />
+                    <AdminInput label="Body Color" value={content.facilitiesSection.bodyColor} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, bodyColor: e.target.value })} />
+                    <AdminInput label="Gold Accent" value={content.facilitiesSection.goldColor} onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, goldColor: e.target.value })} />
                   </div>
-                ))}
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.facilitiesSection.showMist !== false}
+                      onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, showMist: e.target.checked })}
+                      className="accent-luxury-gold"
+                    />
+                    Show Mist / Mountain Silhouettes
+                  </label>
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Main Image</p>
+                  <AdminMediaField
+                    label="Amenities Image"
+                    folder="facilities"
+                    value={content.facilitiesSection.media}
+                    onChange={(media) => update("facilitiesSection", { ...content.facilitiesSection, media })}
+                    library={content.mediaLibrary}
+                    onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                  />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Amenity Cards (10)</p>
+                  {content.facilities.map((facility, i) => (
+                    <div key={facility.id} className="space-y-3 border border-luxury-gold/10 p-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-luxury-gold/80">Card {i + 1}</p>
+                        <label className="flex items-center gap-2 text-xs text-white/60">
+                          <input
+                            type="checkbox"
+                            checked={facility.enabled !== false}
+                            onChange={(e) => {
+                              const facilities = [...content.facilities];
+                              facilities[i] = { ...facility, enabled: e.target.checked };
+                              update("facilities", facilities);
+                            }}
+                            className="accent-luxury-gold"
+                          />
+                          Visible
+                        </label>
+                      </div>
+                      <AdminInput label="Title" value={facility.name} onChange={(e) => {
+                        const facilities = [...content.facilities];
+                        facilities[i] = { ...facility, name: e.target.value };
+                        update("facilities", facilities);
+                      }} />
+                      <AdminTextarea label="Description" rows={2} value={facility.description} onChange={(e) => {
+                        const facilities = [...content.facilities];
+                        facilities[i] = { ...facility, description: e.target.value };
+                        update("facilities", facilities);
+                      }} />
+                      <div className="grid grid-cols-2 gap-3">
+                        <AdminInput label="Icon (Lucide name)" value={facility.icon} onChange={(e) => {
+                          const facilities = [...content.facilities];
+                          facilities[i] = { ...facility, icon: e.target.value };
+                          update("facilities", facilities);
+                        }} />
+                        <AdminInput label="Order" type="number" value={facility.order ?? i} onChange={(e) => {
+                          const facilities = [...content.facilities];
+                          facilities[i] = { ...facility, order: Number(e.target.value) };
+                          update("facilities", facilities);
+                        }} />
+                      </div>
+                      <ImagePicker
+                        label="Custom Icon Image (optional — overrides Lucide)"
+                        folder="facilities"
+                        category="General"
+                        value={facility.iconSrc || ""}
+                        library={content.mediaLibrary}
+                        onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                        onChange={(url) => {
+                          const facilities = [...content.facilities];
+                          facilities[i] = { ...facility, iconSrc: url };
+                          update("facilities", facilities);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
               </>
             )}
 
