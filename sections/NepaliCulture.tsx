@@ -2,142 +2,266 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Quote } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { HeritageImageStack } from "@/components/home/HeritageImageStack";
+import { HeritageMistBackdrop } from "@/components/home/HeritageMistBackdrop";
 import { DynamicIcon } from "@/components/shared/DynamicIcon";
-import { LuxuryMediaFrame } from "@/components/shared/LuxuryMediaFrame";
-import { MotionSection } from "@/components/shared/MotionSection";
-import { Button } from "@/components/ui/button";
-import { fadeUp } from "@/lib/animations";
-import type { CmsMedia, SiteContent } from "@/lib/cms/types";
+import { luxuryEase, luxuryFadeUp, luxuryStagger } from "@/lib/animations";
+import type { SiteContent } from "@/lib/cms/types";
 
 interface NepaliCultureProps {
   content: SiteContent["culture"];
 }
 
-function resolveCultureMedia(content: SiteContent["culture"]): CmsMedia {
-  return {
-    ...content.media,
-    imageSrc: content.media?.imageSrc || content.imageSrc || "",
-    alt: content.media?.alt || content.title,
-  };
-}
-
+/**
+ * Premium Heritage / Cultural Experience — second homepage content section
+ * (below Welcome / Luxury Showcase). Not a hero/banner.
+ */
 export function NepaliCulture({ content }: NepaliCultureProps) {
-  const media = resolveCultureMedia(content);
-  const paragraphs = content.content.split(/\n\n+/).filter(Boolean);
-  const homeCopy = paragraphs.slice(0, 3);
-  const highlights = content.highlights.slice(0, 4);
-  const stats = content.stats.slice(0, 3);
+  const gold = content.goldColor || "#C5A059";
+  const heading = content.headingColor || "#062C24";
+  const body = content.bodyColor || "#5A635C";
+  const topBg = content.backgroundTop || "#F9F6EF";
+  const bottomBg = content.backgroundBottom || "#E8F0E9";
+
+  const mainSrc = content.media?.imageSrc || content.imageSrc || "";
+  const mainAlt = content.media?.alt || content.title;
+  const description =
+    content.description?.trim() ||
+    content.content.split(/\n\n+/).filter(Boolean)[0] ||
+    "";
+
+  const stats = [...(content.stats || [])]
+    .filter((s) => s.enabled !== false)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .slice(0, 3);
+
+  const highlights = [...(content.highlights || [])]
+    .filter((h) => h.enabled !== false)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .slice(0, 4);
 
   return (
-    <MotionSection
+    <section
       id="culture"
-      className="section-padding relative overflow-hidden bg-gradient-to-b from-white via-luxury-cream-light to-luxury-sage/30"
+      aria-label="Cultural experience"
+      className="relative overflow-x-clip"
+      style={{
+        background: `linear-gradient(180deg, ${topBg} 0%, ${topBg} 55%, ${bottomBg} 100%)`,
+      }}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_100%_50%,rgba(201,164,76,0.06)_0%,transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+        <HeritageMistBackdrop goldColor={gold} visible={content.showMist !== false} />
+      </div>
 
-      <div className="relative mx-auto max-w-7xl">
-        <div className="grid gap-12 lg:grid-cols-2 lg:items-stretch lg:gap-16 xl:gap-20">
-          {/* Left — premium image, fixed proportional height */}
-          <motion.div variants={fadeUp} className="relative min-h-[420px] w-full lg:min-h-[640px]">
-            <LuxuryMediaFrame
-              media={media}
-              label={media.caption || content.title}
-              href={content.ctaHref}
-              priority
-              className="h-full w-full"
-              aspectClass="h-full min-h-[420px] lg:min-h-[640px]"
-              roundedClass="rounded-[28px]"
+      <div className="relative mx-auto max-w-[1200px] px-4 pb-16 pt-16 sm:px-6 md:pb-20 md:pt-20 lg:px-8 lg:pb-24 lg:pt-24">
+        <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-14 xl:gap-16">
+          {/* Left — overlapping image composition */}
+          <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.9, ease: luxuryEase }}
+            className="relative overflow-visible pt-2 lg:pt-10 lg:pl-4"
+          >
+            <HeritageImageStack
+              mainSrc={mainSrc}
+              mainAlt={mainAlt}
+              circularSrc={content.circularImage}
+              circularAlt={content.circularImageAlt}
+              badge={content.badge}
+              goldColor={gold}
             />
           </motion.div>
 
-          {/* Right — compact hierarchy matching image height */}
+          {/* Right — copy, quote, stats */}
           <motion.div
-            variants={fadeUp}
-            className="flex min-w-0 flex-col justify-between lg:min-h-[640px]"
+            variants={luxuryStagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            className="flex min-w-0 flex-col lg:pt-4"
           >
-            <div>
-              <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-luxury-gold-label">
+            <motion.div variants={luxuryFadeUp} className="mb-5 flex items-center justify-center gap-3 lg:justify-start">
+              <span className="hidden h-px w-10 sm:block" style={{ backgroundColor: `${gold}88` }} />
+              <span className="h-1 w-1 rotate-45" style={{ backgroundColor: gold }} aria-hidden />
+              <p
+                className="font-display text-[11px] font-semibold uppercase"
+                style={{ color: gold, letterSpacing: "0.32em" }}
+              >
                 {content.eyebrow}
               </p>
-              <h2 className="font-display text-3xl font-medium leading-tight text-luxury-forest md:text-4xl lg:text-[2.65rem]">
-                {content.title}
-              </h2>
-              <div className="my-5 h-px w-16 bg-gradient-to-r from-luxury-gold via-luxury-gold/50 to-transparent" />
+              <span className="h-1 w-1 rotate-45" style={{ backgroundColor: gold }} aria-hidden />
+              <span className="hidden h-px w-10 sm:block" style={{ backgroundColor: `${gold}88` }} />
+            </motion.div>
 
-              <div className="space-y-5 text-[15px] leading-[1.85] text-luxury-muted md:text-base">
-                {homeCopy.map((para, i) => (
-                  <p key={i}>{para}</p>
-                ))}
-              </div>
-
-              {content.quote ? (
-                <blockquote className="relative mt-6 rounded-[20px] border border-white/60 bg-white/45 px-5 py-5 backdrop-blur-[18px]">
-                  <Quote className="absolute right-4 top-4 h-6 w-6 text-luxury-gold/20" strokeWidth={1} />
-                  <p className="font-accent text-base italic leading-relaxed text-luxury-forest/90 md:text-lg">
-                    &ldquo;{content.quote}&rdquo;
-                  </p>
-                  {content.quoteAuthor ? (
-                    <footer className="mt-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-luxury-gold">
-                      — {content.quoteAuthor}
-                    </footer>
-                  ) : null}
-                </blockquote>
-              ) : null}
-
-              {stats.length > 0 ? (
-                <div className="mt-6 grid grid-cols-3 gap-3 border-t border-luxury-gold/12 pt-6">
-                  {stats.map((stat) => (
-                    <div key={stat.label} className="text-center">
-                      <DynamicIcon name={stat.icon} className="mx-auto mb-1.5 h-4 w-4 text-luxury-gold" />
-                      <p className="font-display text-xl text-luxury-forest md:text-2xl">{stat.value}</p>
-                      <p className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.16em] text-luxury-muted">
-                        {stat.label}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-
-              {highlights.length > 0 ? (
-                <div className="mt-6">
-                  <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-luxury-gold">
-                    Experience Highlights
-                  </p>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {highlights.map((item) => (
-                      <div
-                        key={item.id}
-                        className="rounded-[16px] border border-white/55 bg-white/40 p-3.5 backdrop-blur-[16px] transition-all duration-500 hover:-translate-y-0.5 hover:shadow-glass-luxury"
-                      >
-                        <DynamicIcon name={item.icon} className="mb-1.5 h-3.5 w-3.5 text-luxury-gold" />
-                        <h4 className="line-clamp-1 font-display text-xs text-luxury-forest md:text-sm">
-                          {item.title}
-                        </h4>
-                        <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-luxury-muted">
-                          {item.description}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-
-            <Button
-              variant="gold"
-              size="lg"
-              className="mt-8 gap-2 self-start uppercase tracking-[0.18em] lg:mt-6"
-              asChild
+            <motion.h2
+              variants={luxuryFadeUp}
+              className="text-center font-display text-[1.85rem] font-semibold uppercase leading-[1.2] tracking-[0.04em] sm:text-3xl md:text-[2.35rem] lg:text-left lg:text-[2.55rem]"
+              style={{ color: heading }}
             >
-              <Link href={content.ctaHref} prefetch>
-                {content.ctaText}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+              {content.title}
+            </motion.h2>
+
+            <motion.p
+              variants={luxuryFadeUp}
+              className="mx-auto mt-5 max-w-xl text-center font-body text-[15px] leading-[1.85] md:text-base lg:mx-0 lg:text-left"
+              style={{ color: body }}
+            >
+              {description}
+            </motion.p>
+
+            {content.quote ? (
+              <motion.blockquote
+                variants={luxuryFadeUp}
+                className="relative mx-auto mt-8 w-full max-w-xl rounded-2xl px-6 py-6 shadow-[0_14px_36px_rgba(15,42,34,0.08)] lg:mx-0"
+                style={{ backgroundColor: "#FBF8F1" }}
+              >
+                <span
+                  className="font-display absolute left-4 top-2 text-4xl leading-none"
+                  style={{ color: gold }}
+                  aria-hidden
+                >
+                  “
+                </span>
+                <span
+                  className="font-display absolute bottom-1 right-4 text-4xl leading-none"
+                  style={{ color: gold }}
+                  aria-hidden
+                >
+                  ”
+                </span>
+                <p
+                  className="px-2 text-center font-accent text-[15px] italic leading-relaxed md:text-base lg:text-left"
+                  style={{ color: heading }}
+                >
+                  {content.quote}
+                </p>
+                {content.quoteAuthor ? (
+                  <footer
+                    className="mt-4 text-center text-[10px] font-semibold uppercase tracking-[0.22em] lg:text-left"
+                    style={{ color: gold }}
+                  >
+                    — {content.quoteAuthor}
+                  </footer>
+                ) : null}
+              </motion.blockquote>
+            ) : null}
+
+            {stats.length > 0 ? (
+              <motion.div
+                variants={luxuryFadeUp}
+                className="mt-9 grid grid-cols-3 gap-2 sm:gap-3"
+              >
+                {stats.map((stat, i) => (
+                  <div
+                    key={stat.id || stat.label}
+                    className="relative px-1 text-center"
+                  >
+                    {i > 0 ? (
+                      <span
+                        className="absolute left-0 top-2 hidden h-[68%] w-px sm:block"
+                        style={{ backgroundColor: `${gold}55` }}
+                        aria-hidden
+                      />
+                    ) : null}
+                    <div style={{ color: gold }}>
+                      <DynamicIcon
+                        name={stat.icon}
+                        className="mx-auto mb-2 h-5 w-5"
+                      />
+                    </div>
+                    <p
+                      className="font-display text-2xl font-semibold leading-none tracking-wide md:text-[1.85rem]"
+                      style={{ color: heading }}
+                    >
+                      {stat.value}
+                    </p>
+                    <p
+                      className="mt-2 text-[9px] font-medium uppercase leading-snug tracking-[0.14em] md:text-[10px]"
+                      style={{ color: body }}
+                    >
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </motion.div>
+            ) : null}
           </motion.div>
         </div>
+
+        {/* Experience highlights — full width under the two columns */}
+        {highlights.length > 0 ? (
+          <div className="relative mt-16 md:mt-20">
+            <div className="mb-8 flex items-center justify-center gap-3">
+              <span className="h-px w-8 sm:w-16" style={{ backgroundColor: `${gold}77` }} />
+              <span className="h-1 w-1 rotate-45" style={{ backgroundColor: gold }} aria-hidden />
+              <p
+                className="font-display text-[11px] font-semibold uppercase"
+                style={{ color: gold, letterSpacing: "0.28em" }}
+              >
+                {content.highlightsLabel || "Experience Highlights"}
+              </p>
+              <span className="h-1 w-1 rotate-45" style={{ backgroundColor: gold }} aria-hidden />
+              <span className="h-px w-8 sm:w-16" style={{ backgroundColor: `${gold}77` }} />
+            </div>
+
+            <motion.div
+              variants={luxuryStagger}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-40px" }}
+              className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5"
+            >
+              {highlights.map((item) => (
+                <motion.div
+                  key={item.id}
+                  variants={luxuryFadeUp}
+                  className="group rounded-[22px] px-5 py-6 text-center shadow-[0_12px_32px_rgba(15,42,34,0.08)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,42,34,0.12)]"
+                  style={{ backgroundColor: "#FBF8F1" }}
+                >
+                  <div
+                    className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-500 group-hover:scale-105"
+                    style={{ color: gold, border: `1px solid ${gold}66` }}
+                  >
+                    <DynamicIcon name={item.icon} className="h-5 w-5" />
+                  </div>
+                  <h4
+                    className="font-display text-sm font-semibold uppercase tracking-[0.12em] md:text-[15px]"
+                    style={{ color: heading }}
+                  >
+                    {item.title}
+                  </h4>
+                  <p
+                    className="mt-2.5 font-body text-[13px] leading-relaxed md:text-sm"
+                    style={{ color: body }}
+                  >
+                    {item.description}
+                  </p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        ) : null}
+
+        {content.ctaVisible !== false && content.ctaText ? (
+          <div className="relative mt-12 flex justify-center md:mt-14">
+            <Link
+              href={content.ctaHref || "/cultural-experience"}
+              prefetch
+              className="inline-flex items-center gap-2.5 rounded-full px-8 py-3.5 font-body text-[12px] font-semibold uppercase tracking-[0.2em] transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(6,44,36,0.28)] sm:px-10 sm:text-[13px]"
+              style={{
+                backgroundColor: heading,
+                color: gold,
+                boxShadow: "0 10px 28px rgba(6, 44, 36, 0.22)",
+              }}
+            >
+              {content.ctaText}
+              <ArrowRight className="h-4 w-4" strokeWidth={1.6} />
+            </Link>
+          </div>
+        ) : null}
       </div>
-    </MotionSection>
+    </section>
   );
 }

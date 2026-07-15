@@ -229,9 +229,35 @@ function mergeCulture(
   partial?: Partial<SiteContent["culture"]>
 ): SiteContent["culture"] {
   if (!partial) return defaults;
+
+  const stats = definedArray(partial.stats, defaults.stats).map((stat, i) => {
+    const base = defaults.stats[i] ?? defaults.stats[0];
+    return {
+      id: stat.id || base?.id || `cs${i + 1}`,
+      value: definedString(stat.value, base.value),
+      label: definedString(stat.label, base.label),
+      icon: definedString(stat.icon, base.icon),
+      enabled: stat.enabled !== false,
+      order: typeof stat.order === "number" ? stat.order : i,
+    };
+  });
+
+  const highlights = definedArray(partial.highlights, defaults.highlights).map((item, i) => {
+    const base = defaults.highlights[i] ?? defaults.highlights[0];
+    return {
+      id: item.id || base?.id || `h${i + 1}`,
+      title: definedString(item.title, base.title),
+      description: definedString(item.description, base.description),
+      icon: definedString(item.icon, base.icon),
+      enabled: item.enabled !== false,
+      order: typeof item.order === "number" ? item.order : i,
+    };
+  });
+
   return {
     ...defaults,
     ...partial,
+    description: definedString(partial.description, defaults.description),
     media: {
       ...defaults.media,
       ...(partial.media ?? {}),
@@ -252,8 +278,22 @@ function mergeCulture(
         defaults.media.posterPublicId ?? ""
       ),
     },
-    stats: definedArray(partial.stats, defaults.stats),
-    highlights: definedArray(partial.highlights, defaults.highlights),
+    circularImage: definedString(partial.circularImage, defaults.circularImage),
+    circularImageAlt: definedString(partial.circularImageAlt, defaults.circularImageAlt),
+    badge: {
+      ...defaults.badge,
+      ...(partial.badge ?? {}),
+    },
+    highlightsLabel: definedString(partial.highlightsLabel, defaults.highlightsLabel),
+    ctaVisible: partial.ctaVisible !== false,
+    showMist: partial.showMist !== false,
+    backgroundTop: definedString(partial.backgroundTop, defaults.backgroundTop),
+    backgroundBottom: definedString(partial.backgroundBottom, defaults.backgroundBottom),
+    goldColor: definedString(partial.goldColor, defaults.goldColor),
+    headingColor: definedString(partial.headingColor, defaults.headingColor),
+    bodyColor: definedString(partial.bodyColor, defaults.bodyColor),
+    stats,
+    highlights,
     timeline: definedArray(partial.timeline, defaults.timeline),
     content: definedString(partial.content, defaults.content),
     imageSrc: definedString(

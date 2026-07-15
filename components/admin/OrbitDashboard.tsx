@@ -53,7 +53,7 @@ const SECTIONS = [
   { id: "homepage", label: "Homepage Sections", icon: Grid3X3 },
   { id: "overview", label: "Luxury Showcase", icon: Home },
   { id: "experiences", label: "Home Experiences", icon: Sparkles },
-  { id: "culture", label: "Culture Section", icon: Globe },
+  { id: "culture", label: "Cultural Experience", icon: Globe },
   { id: "facilities", label: "Facilities", icon: Grid3X3 },
   { id: "rooms", label: "Rooms", icon: Bed },
   { id: "dining", label: "Dining Page", icon: Utensils },
@@ -763,60 +763,215 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
             {activeSection === "culture" && (
               <>
-                <AdminInput label="Eyebrow" value={content.culture.eyebrow} onChange={(e) => update("culture", { ...content.culture, eyebrow: e.target.value })} />
-                <AdminInput label="Title" value={content.culture.title} onChange={(e) => update("culture", { ...content.culture, title: e.target.value })} />
-                <AdminTextarea label="Homepage Content" rows={12} value={content.culture.content} onChange={(e) => update("culture", { ...content.culture, content: e.target.value })} />
-                <AdminMediaField
-                  label="Culture Media (Image / Video)"
-                  folder="culture"
-                  value={content.culture.media}
-                  onChange={(media) =>
-                    update("culture", {
-                      ...content.culture,
-                      media,
-                      imageSrc: media.imageSrc || content.culture.imageSrc,
-                    })
-                  }
-                  library={content.mediaLibrary}
-                  onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
-                />
-                <AdminInput label="Quote" value={content.culture.quote} onChange={(e) => update("culture", { ...content.culture, quote: e.target.value })} />
-                <AdminInput label="Quote Author" value={content.culture.quoteAuthor} onChange={(e) => update("culture", { ...content.culture, quoteAuthor: e.target.value })} />
-                <AdminInput label="CTA Text" value={content.culture.ctaText} onChange={(e) => update("culture", { ...content.culture, ctaText: e.target.value })} />
-                <AdminInput label="CTA Link" value={content.culture.ctaHref} onChange={(e) => update("culture", { ...content.culture, ctaHref: e.target.value })} />
-                {content.culture.stats.map((stat, i) => (
-                  <div key={stat.label} className="grid grid-cols-3 gap-4 border border-luxury-gold/10 p-4">
-                    <AdminInput label="Value" value={stat.value} onChange={(e) => {
-                      const stats = [...content.culture.stats];
-                      stats[i] = { ...stat, value: e.target.value };
-                      update("culture", { ...content.culture, stats });
-                    }} />
-                    <AdminInput label="Label" value={stat.label} onChange={(e) => {
-                      const stats = [...content.culture.stats];
-                      stats[i] = { ...stat, label: e.target.value };
-                      update("culture", { ...content.culture, stats });
-                    }} />
-                    <AdminInput label="Icon" value={stat.icon} onChange={(e) => {
-                      const stats = [...content.culture.stats];
-                      stats[i] = { ...stat, icon: e.target.value };
-                      update("culture", { ...content.culture, stats });
-                    }} />
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Cultural Experience Section</p>
+                  <p className="text-xs text-white/40">
+                    Second homepage content section (below Welcome). Not a hero/banner.
+                  </p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.homeSections.aboutPreview.enabled}
+                      onChange={(e) =>
+                        update("homeSections", {
+                          ...content.homeSections,
+                          aboutPreview: { ...content.homeSections.aboutPreview, enabled: e.target.checked },
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Show Section
+                  </label>
+                  <AdminInput label="Small Label (eyebrow)" value={content.culture.eyebrow} onChange={(e) => update("culture", { ...content.culture, eyebrow: e.target.value })} />
+                  <AdminInput label="Main Heading" value={content.culture.title} onChange={(e) => update("culture", { ...content.culture, title: e.target.value })} />
+                  <AdminTextarea label="Description" rows={3} value={content.culture.description} onChange={(e) => update("culture", { ...content.culture, description: e.target.value })} />
+                  <AdminTextarea label="Long Content (archive / page use)" rows={6} value={content.culture.content} onChange={(e) => update("culture", { ...content.culture, content: e.target.value })} />
+                  <AdminInput label="Quote" value={content.culture.quote} onChange={(e) => update("culture", { ...content.culture, quote: e.target.value })} />
+                  <AdminInput label="Quote Author" value={content.culture.quoteAuthor} onChange={(e) => update("culture", { ...content.culture, quoteAuthor: e.target.value })} />
+                  <AdminInput label="Highlights Label" value={content.culture.highlightsLabel} onChange={(e) => update("culture", { ...content.culture, highlightsLabel: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Colors &amp; Atmosphere</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput label="Background Top" value={content.culture.backgroundTop} onChange={(e) => update("culture", { ...content.culture, backgroundTop: e.target.value })} />
+                    <AdminInput label="Background Bottom" value={content.culture.backgroundBottom} onChange={(e) => update("culture", { ...content.culture, backgroundBottom: e.target.value })} />
+                    <AdminInput label="Heading Color" value={content.culture.headingColor} onChange={(e) => update("culture", { ...content.culture, headingColor: e.target.value })} />
+                    <AdminInput label="Body Color" value={content.culture.bodyColor} onChange={(e) => update("culture", { ...content.culture, bodyColor: e.target.value })} />
+                    <AdminInput label="Gold Accent" value={content.culture.goldColor} onChange={(e) => update("culture", { ...content.culture, goldColor: e.target.value })} />
                   </div>
-                ))}
-                {content.culture.highlights.map((item, i) => (
-                  <div key={item.id} className="space-y-3 border border-luxury-gold/10 p-4">
-                    <AdminInput label="Highlight Title" value={item.title} onChange={(e) => {
-                      const highlights = [...content.culture.highlights];
-                      highlights[i] = { ...item, title: e.target.value };
-                      update("culture", { ...content.culture, highlights });
-                    }} />
-                    <AdminTextarea label="Description" rows={2} value={item.description} onChange={(e) => {
-                      const highlights = [...content.culture.highlights];
-                      highlights[i] = { ...item, description: e.target.value };
-                      update("culture", { ...content.culture, highlights });
-                    }} />
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.culture.showMist !== false}
+                      onChange={(e) => update("culture", { ...content.culture, showMist: e.target.checked })}
+                      className="accent-luxury-gold"
+                    />
+                    Show Mist / Temple Silhouettes
+                  </label>
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Images</p>
+                  <AdminMediaField
+                    label="Main Image"
+                    folder="culture"
+                    value={content.culture.media}
+                    onChange={(media) =>
+                      update("culture", {
+                        ...content.culture,
+                        media,
+                        imageSrc: media.imageSrc || content.culture.imageSrc,
+                      })
+                    }
+                    library={content.mediaLibrary}
+                    onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                  />
+                  <ImagePicker
+                    label="Circular Overlap Image"
+                    folder="culture"
+                    category="Culture"
+                    value={content.culture.circularImage}
+                    library={content.mediaLibrary}
+                    onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                    onChange={(url) => update("culture", { ...content.culture, circularImage: url })}
+                  />
+                  <AdminInput label="Circular Image Alt" value={content.culture.circularImageAlt} onChange={(e) => update("culture", { ...content.culture, circularImageAlt: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Floating Badge</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.culture.badge.enabled !== false}
+                      onChange={(e) => update("culture", { ...content.culture, badge: { ...content.culture.badge, enabled: e.target.checked } })}
+                      className="accent-luxury-gold"
+                    />
+                    Show Badge
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput label="Badge Number" value={content.culture.badge.number} onChange={(e) => update("culture", { ...content.culture, badge: { ...content.culture.badge, number: e.target.value } })} />
+                    <AdminInput label="Emphasis Phrase" value={content.culture.badge.emphasis} onChange={(e) => update("culture", { ...content.culture, badge: { ...content.culture.badge, emphasis: e.target.value } })} />
                   </div>
-                ))}
+                  <AdminTextarea label="Badge Description" rows={2} value={content.culture.badge.description} onChange={(e) => update("culture", { ...content.culture, badge: { ...content.culture.badge, description: e.target.value } })} />
+                  <ImagePicker
+                    label="Badge Icon (optional — leave empty for gold seal)"
+                    folder="culture"
+                    category="Culture"
+                    value={content.culture.badge.iconSrc}
+                    library={content.mediaLibrary}
+                    onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                    onChange={(url) => update("culture", { ...content.culture, badge: { ...content.culture.badge, iconSrc: url } })}
+                  />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Button</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.culture.ctaVisible !== false}
+                      onChange={(e) => update("culture", { ...content.culture, ctaVisible: e.target.checked })}
+                      className="accent-luxury-gold"
+                    />
+                    Show Button
+                  </label>
+                  <AdminInput label="Button Text" value={content.culture.ctaText} onChange={(e) => update("culture", { ...content.culture, ctaText: e.target.value })} />
+                  <AdminInput label="Button Link" value={content.culture.ctaHref} onChange={(e) => update("culture", { ...content.culture, ctaHref: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Statistics</p>
+                  {content.culture.stats.map((stat, i) => (
+                    <div key={stat.id || i} className="space-y-3 border border-luxury-gold/10 p-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-luxury-gold/80">Stat {i + 1}</p>
+                        <label className="flex items-center gap-2 text-xs text-white/60">
+                          <input
+                            type="checkbox"
+                            checked={stat.enabled !== false}
+                            onChange={(e) => {
+                              const stats = [...content.culture.stats];
+                              stats[i] = { ...stat, enabled: e.target.checked };
+                              update("culture", { ...content.culture, stats });
+                            }}
+                            className="accent-luxury-gold"
+                          />
+                          Visible
+                        </label>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <AdminInput label="Value" value={stat.value} onChange={(e) => {
+                          const stats = [...content.culture.stats];
+                          stats[i] = { ...stat, value: e.target.value };
+                          update("culture", { ...content.culture, stats });
+                        }} />
+                        <AdminInput label="Icon" value={stat.icon} onChange={(e) => {
+                          const stats = [...content.culture.stats];
+                          stats[i] = { ...stat, icon: e.target.value };
+                          update("culture", { ...content.culture, stats });
+                        }} />
+                        <AdminInput label="Order" type="number" value={stat.order ?? i} onChange={(e) => {
+                          const stats = [...content.culture.stats];
+                          stats[i] = { ...stat, order: Number(e.target.value) };
+                          update("culture", { ...content.culture, stats });
+                        }} />
+                      </div>
+                      <AdminInput label="Label" value={stat.label} onChange={(e) => {
+                        const stats = [...content.culture.stats];
+                        stats[i] = { ...stat, label: e.target.value };
+                        update("culture", { ...content.culture, stats });
+                      }} />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Feature Cards</p>
+                  {content.culture.highlights.map((item, i) => (
+                    <div key={item.id} className="space-y-3 border border-luxury-gold/10 p-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-luxury-gold/80">Card {i + 1}</p>
+                        <label className="flex items-center gap-2 text-xs text-white/60">
+                          <input
+                            type="checkbox"
+                            checked={item.enabled !== false}
+                            onChange={(e) => {
+                              const highlights = [...content.culture.highlights];
+                              highlights[i] = { ...item, enabled: e.target.checked };
+                              update("culture", { ...content.culture, highlights });
+                            }}
+                            className="accent-luxury-gold"
+                          />
+                          Visible
+                        </label>
+                      </div>
+                      <AdminInput label="Title" value={item.title} onChange={(e) => {
+                        const highlights = [...content.culture.highlights];
+                        highlights[i] = { ...item, title: e.target.value };
+                        update("culture", { ...content.culture, highlights });
+                      }} />
+                      <AdminTextarea label="Description" rows={2} value={item.description} onChange={(e) => {
+                        const highlights = [...content.culture.highlights];
+                        highlights[i] = { ...item, description: e.target.value };
+                        update("culture", { ...content.culture, highlights });
+                      }} />
+                      <div className="grid grid-cols-2 gap-3">
+                        <AdminInput label="Icon" value={item.icon} onChange={(e) => {
+                          const highlights = [...content.culture.highlights];
+                          highlights[i] = { ...item, icon: e.target.value };
+                          update("culture", { ...content.culture, highlights });
+                        }} />
+                        <AdminInput label="Order" type="number" value={item.order ?? i} onChange={(e) => {
+                          const highlights = [...content.culture.highlights];
+                          highlights[i] = { ...item, order: Number(e.target.value) };
+                          update("culture", { ...content.culture, highlights });
+                        }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </>
             )}
 

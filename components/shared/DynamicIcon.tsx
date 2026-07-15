@@ -26,6 +26,9 @@ import {
   History,
   Footprints,
   Palette,
+  Star,
+  Calendar,
+  Award,
   type LucideIcon,
 } from "lucide-react";
 
@@ -55,6 +58,9 @@ const iconMap: Record<string, LucideIcon> = {
   History,
   Footprints,
   Palette,
+  Star,
+  Calendar,
+  Award,
 };
 
 interface DynamicIconProps {

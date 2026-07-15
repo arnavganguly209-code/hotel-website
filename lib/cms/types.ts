@@ -87,12 +87,25 @@ export interface CultureHighlight {
   title: string;
   description: string;
   icon: string;
+  enabled?: boolean;
+  order?: number;
 }
 
 export interface CultureStat {
+  id?: string;
   value: string;
   label: string;
   icon: string;
+  enabled?: boolean;
+  order?: number;
+}
+
+export interface CultureBadge {
+  enabled: boolean;
+  number: string;
+  emphasis: string;
+  description: string;
+  iconSrc: string;
 }
 
 export interface CultureTimelineItem {
@@ -216,16 +229,29 @@ export interface SiteContent {
   culture: {
     eyebrow: string;
     title: string;
+    /** Short homepage description (premium heritage section) */
+    description: string;
     content: string;
     imageSrc: string;
     media: CmsMedia;
+    circularImage: string;
+    circularImageAlt: string;
+    badge: CultureBadge;
     quote: string;
     quoteAuthor: string;
+    highlightsLabel: string;
+    ctaText: string;
+    ctaHref: string;
+    ctaVisible: boolean;
+    backgroundTop: string;
+    backgroundBottom: string;
+    goldColor: string;
+    headingColor: string;
+    bodyColor: string;
+    showMist: boolean;
     stats: CultureStat[];
     highlights: CultureHighlight[];
     timeline: CultureTimelineItem[];
-    ctaText: string;
-    ctaHref: string;
   };
   facilitiesSection: {
     eyebrow: string;
