@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
-import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
-import { FaXTwitter } from "react-icons/fa6";
+import { Facebook, Instagram } from "lucide-react";
+import { FaTripadvisor, FaGoogle } from "react-icons/fa";
 import { FooterAccordion } from "@/components/footer/FooterAccordion";
 import { FOOTER } from "@/components/footer/footer-theme";
+import { hasMediaSrc, mediaUrl } from "@/lib/cms/media-url";
 import { fadeUp } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 import type { SiteContent } from "@/lib/cms/types";
@@ -15,16 +16,47 @@ interface FooterNewsletterProps {
   social: SiteContent["footer"]["social"];
 }
 
+type SocialItem = {
+  key: string;
+  label: string;
+  href: string;
+  iconSrc: string;
+  fallback: ReactNode;
+};
+
 export function FooterNewsletter({ newsletter, social }: FooterNewsletterProps) {
   const [email, setEmail] = useState("");
 
-  const socialLinks = [
-    { href: social.facebook, icon: Facebook, label: "Facebook" },
-    { href: social.instagram, icon: Instagram, label: "Instagram" },
-    { href: social.youtube, icon: Youtube, label: "YouTube" },
-    { href: social.twitter, icon: FaXTwitter, label: "X", reactIcon: true as const },
-    { href: social.linkedin, icon: Linkedin, label: "LinkedIn" },
-  ].filter((s) => Boolean(s.href));
+  const socialLinks: SocialItem[] = [
+    {
+      key: "facebook",
+      label: "Facebook",
+      href: social.facebook,
+      iconSrc: social.facebookIcon,
+      fallback: <Facebook className="h-4 w-4" strokeWidth={1.25} />,
+    },
+    {
+      key: "instagram",
+      label: "Instagram",
+      href: social.instagram,
+      iconSrc: social.instagramIcon,
+      fallback: <Instagram className="h-4 w-4" strokeWidth={1.25} />,
+    },
+    {
+      key: "tripadvisor",
+      label: "Tripadvisor",
+      href: social.tripadvisor,
+      iconSrc: social.tripadvisorIcon,
+      fallback: <FaTripadvisor className="h-4 w-4" />,
+    },
+    {
+      key: "googleReviews",
+      label: "Google Reviews",
+      href: social.googleReviews,
+      iconSrc: social.googleReviewsIcon,
+      fallback: <FaGoogle className="h-3.5 w-3.5" />,
+    },
+  ].filter((s) => Boolean(s.href?.trim()));
 
   return (
     <motion.div variants={fadeUp} className="w-full">
@@ -95,44 +127,70 @@ export function FooterNewsletter({ newsletter, social }: FooterNewsletterProps) 
         </form>
 
         {socialLinks.length > 0 ? (
-          <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
-            {socialLinks.map((s) => (
-              <a
-                key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={s.label}
-                className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-full",
-                  "transition-all duration-500 ease-[0.22,1,0.36,1]",
-                  "hover:-translate-y-0.5"
-                )}
-                style={{
-                  borderWidth: 1,
-                  borderStyle: "solid",
-                  borderColor: `${FOOTER.gold}70`,
-                  color: FOOTER.body,
-                  backgroundColor: "transparent",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = FOOTER.gold;
-                  e.currentTarget.style.color = "#0A1F19";
-                  e.currentTarget.style.borderColor = FOOTER.gold;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                  e.currentTarget.style.color = FOOTER.body;
-                  e.currentTarget.style.borderColor = `${FOOTER.gold}70`;
-                }}
-              >
-                {"reactIcon" in s ? (
-                  <s.icon className="h-3.5 w-3.5" />
-                ) : (
-                  <s.icon className="h-3.5 w-3.5" strokeWidth={1.2} />
-                )}
-              </a>
-            ))}
+          <div
+            className={cn(
+              "grid grid-cols-2 gap-3 sm:flex sm:flex-nowrap sm:items-center",
+              "justify-items-center sm:justify-start"
+            )}
+          >
+            {socialLinks.map((s) => {
+              const customIcon = hasMediaSrc(s.iconSrc)
+                ? mediaUrl(s.iconSrc, s.iconSrc)
+                : "";
+              return (
+                <a
+                  key={`${s.key}-${customIcon || "default"}`}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className={cn(
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+                    "transition-all duration-500 ease-[0.22,1,0.36,1]",
+                    "hover:-translate-y-0.5"
+                  )}
+                  style={{
+                    borderWidth: 1,
+                    borderStyle: "solid",
+                    borderColor: `${FOOTER.gold}70`,
+                    color: FOOTER.gold,
+                    backgroundColor: "transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = FOOTER.gold;
+                    e.currentTarget.style.color = "#0A1F19";
+                    e.currentTarget.style.borderColor = FOOTER.gold;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = FOOTER.gold;
+                    e.currentTarget.style.borderColor = `${FOOTER.gold}70`;
+                  }}
+                >
+                  {customIcon ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={customIcon}
+                      alt=""
+                      className="block"
+                      style={{
+                        maxWidth: "60%",
+                        maxHeight: "60%",
+                        width: "auto",
+                        height: "auto",
+                        objectFit: "contain",
+                        objectPosition: "center",
+                      }}
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    s.fallback
+                  )}
+                </a>
+              );
+            })}
           </div>
         ) : null}
       </FooterAccordion>

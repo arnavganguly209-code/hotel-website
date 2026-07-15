@@ -80,25 +80,30 @@ export function FooterGuestServices({ contact }: FooterGuestServicesProps) {
           ))}
         </ul>
 
-        <ul
-          className="mt-6 space-y-3 border-t pt-5"
+        <div
+          className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 border-t pt-5 md:justify-start"
           style={{ borderColor: `${FOOTER.gold}30` }}
         >
-          {legal.map((item) => (
-            <li key={item.href}>
+          {legal.map((item, i) => (
+            <span key={item.href} className="inline-flex items-center gap-x-3">
+              {i > 0 ? (
+                <span
+                  className="select-none font-body text-[13px] font-medium"
+                  style={{ color: `${FOOTER.gold}99` }}
+                  aria-hidden
+                >
+                  |
+                </span>
+              ) : null}
               <Link
                 href={item.href}
-                className="group relative inline-block font-body text-[14px] font-medium tracking-[0.03em] text-[#F8F5EE] transition-colors duration-400 hover:text-[#D4AF37]"
+                className="font-body text-[14px] font-medium tracking-[0.03em] text-[#F8F5EE] transition-colors duration-400 hover:text-[#D4AF37]"
               >
                 {item.label}
-                <span
-                  className="absolute -bottom-0.5 left-0 h-px w-0 transition-all duration-500 group-hover:w-full"
-                  style={{ backgroundColor: FOOTER.gold }}
-                />
               </Link>
-            </li>
+            </span>
           ))}
-        </ul>
+        </div>
       </FooterAccordion>
     </motion.div>
   );

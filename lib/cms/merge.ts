@@ -18,8 +18,35 @@ function mergePaymentLogos(
   if (!partial?.length) return defaults.map((slot) => ({ ...slot }));
   return defaults.map((slot, i) => ({
     id: partial[i]?.id || slot.id,
-    src: partial[i]?.src ?? "",
+    // Explicit empty string must clear the slot (never keep a stale src)
+    src: typeof partial[i]?.src === "string" ? partial[i].src.trim() : "",
   }));
+}
+
+type LegacyFooterSocial = Partial<SiteContent["footer"]["social"]> & {
+  youtube?: string;
+  twitter?: string;
+  linkedin?: string;
+};
+
+function mergeFooterSocial(
+  partial?: LegacyFooterSocial,
+  hotelSocial?: SiteContent["hotel"]["social"]
+): SiteContent["footer"]["social"] {
+  const defaults = defaultContent.footer.social;
+  return {
+    facebook: definedString(partial?.facebook, defaults.facebook),
+    instagram: definedString(partial?.instagram, defaults.instagram),
+    tripadvisor: definedString(
+      partial?.tripadvisor,
+      hotelSocial?.tripadvisor || defaults.tripadvisor
+    ),
+    googleReviews: definedString(partial?.googleReviews, defaults.googleReviews),
+    facebookIcon: definedString(partial?.facebookIcon, defaults.facebookIcon),
+    instagramIcon: definedString(partial?.instagramIcon, defaults.instagramIcon),
+    tripadvisorIcon: definedString(partial?.tripadvisorIcon, defaults.tripadvisorIcon),
+    googleReviewsIcon: definedString(partial?.googleReviewsIcon, defaults.googleReviewsIcon),
+  };
 }
 
 export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
@@ -98,7 +125,7 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       ...(partial.footer ?? {}),
       contact: { ...defaultContent.footer.contact, ...(partial.footer?.contact ?? {}) },
       newsletter: { ...defaultContent.footer.newsletter, ...(partial.footer?.newsletter ?? {}) },
-      social: { ...defaultContent.footer.social, ...(partial.footer?.social ?? {}) },
+      social: mergeFooterSocial(partial.footer?.social, partial.hotel?.social),
       colors: { ...defaultContent.footer.colors, ...(partial.footer?.colors ?? {}) },
       spacing: { ...defaultContent.footer.spacing, ...(partial.footer?.spacing ?? {}) },
       quickLinks: definedArray(partial.footer?.quickLinks, defaultContent.footer.quickLinks),

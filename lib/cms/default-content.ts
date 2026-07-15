@@ -654,9 +654,12 @@ export const defaultContent: SiteContent = {
     social: {
       facebook: "https://facebook.com/hotelthamelpark",
       instagram: "https://instagram.com/hotelthamelpark",
-      youtube: "https://youtube.com/hotelthamelpark",
-      twitter: "https://twitter.com/hotelthamelpark",
-      linkedin: "https://linkedin.com/company/hotelthamelpark",
+      tripadvisor: "https://www.tripadvisor.com/",
+      googleReviews: "https://www.google.com/maps",
+      facebookIcon: "",
+      instagramIcon: "",
+      tripadvisorIcon: "",
+      googleReviewsIcon: "",
     },
     colors: {
       topBackground: "#0F2A22",

@@ -108,9 +108,16 @@ export function ImagePicker({
     <div className={cn("space-y-2", className)}>
       <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-luxury-gold/70">{label}</p>
       <div className="flex flex-wrap items-start gap-3">
-        <div className="relative h-24 w-24 overflow-hidden rounded-xl border border-white/10 bg-black/30">
+        <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black/30 p-2">
           {value ? (
-            <SafeImage src={value} alt="" fill className="object-cover" />
+            <SafeImage
+              key={value}
+              src={value}
+              alt=""
+              fill
+              objectFit="contain"
+              className="object-contain p-2"
+            />
           ) : (
             <div className="flex h-full items-center justify-center text-white/30">
               <ImagePlus className="h-6 w-6" />
@@ -225,8 +232,14 @@ export function ImagePicker({
                           value === item.url ? "border-luxury-gold" : "border-white/10 hover:border-luxury-gold/50"
                         )}
                       >
-                        <div className="relative aspect-square bg-black/40">
-                          <SafeImage src={item.url} alt={item.alt || item.title || ""} fill className="object-cover" />
+                        <div className="relative flex aspect-square items-center justify-center bg-black/40 p-2">
+                          <SafeImage
+                            src={item.url}
+                            alt={item.alt || item.title || ""}
+                            fill
+                            objectFit="contain"
+                            className="object-contain p-1"
+                          />
                         </div>
                         <p className="truncate p-2 text-[11px] text-white/70">{item.title || item.filename}</p>
                       </button>

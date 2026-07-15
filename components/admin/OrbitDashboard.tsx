@@ -976,12 +976,63 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
-                  <p className="font-display text-lg text-luxury-gold">Social Links</p>
-                  <AdminInput label="Facebook" value={content.footer.social.facebook} onChange={(e) => update("footer", { ...content.footer, social: { ...content.footer.social, facebook: e.target.value } })} />
-                  <AdminInput label="Instagram" value={content.footer.social.instagram} onChange={(e) => update("footer", { ...content.footer, social: { ...content.footer.social, instagram: e.target.value } })} />
-                  <AdminInput label="YouTube" value={content.footer.social.youtube} onChange={(e) => update("footer", { ...content.footer, social: { ...content.footer.social, youtube: e.target.value } })} />
-                  <AdminInput label="X (Twitter)" value={content.footer.social.twitter} onChange={(e) => update("footer", { ...content.footer, social: { ...content.footer.social, twitter: e.target.value } })} />
-                  <AdminInput label="LinkedIn" value={content.footer.social.linkedin} onChange={(e) => update("footer", { ...content.footer, social: { ...content.footer.social, linkedin: e.target.value } })} />
+                  <p className="font-display text-lg text-luxury-gold">Social Icons &amp; URLs</p>
+                  <p className="text-xs text-white/40">
+                    Four icons only (Facebook, Instagram, Tripadvisor, Google Reviews). Upload a custom icon or leave
+                    empty for the default gold glyph. Save to update the live footer immediately.
+                  </p>
+                  {(
+                    [
+                      {
+                        label: "Facebook",
+                        urlKey: "facebook" as const,
+                        iconKey: "facebookIcon" as const,
+                      },
+                      {
+                        label: "Instagram",
+                        urlKey: "instagram" as const,
+                        iconKey: "instagramIcon" as const,
+                      },
+                      {
+                        label: "Tripadvisor",
+                        urlKey: "tripadvisor" as const,
+                        iconKey: "tripadvisorIcon" as const,
+                      },
+                      {
+                        label: "Google Reviews",
+                        urlKey: "googleReviews" as const,
+                        iconKey: "googleReviewsIcon" as const,
+                      },
+                    ] as const
+                  ).map((item) => (
+                    <div key={item.urlKey} className="space-y-3 border border-luxury-gold/10 p-4">
+                      <p className="text-sm text-luxury-gold/80">{item.label}</p>
+                      <ImagePicker
+                        label={`${item.label} Icon Upload`}
+                        folder="social"
+                        category="General"
+                        value={content.footer.social[item.iconKey] || ""}
+                        library={content.mediaLibrary}
+                        onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                        onChange={(url) =>
+                          update("footer", {
+                            ...content.footer,
+                            social: { ...content.footer.social, [item.iconKey]: url },
+                          })
+                        }
+                      />
+                      <AdminInput
+                        label={`${item.label} URL`}
+                        value={content.footer.social[item.urlKey] || ""}
+                        onChange={(e) =>
+                          update("footer", {
+                            ...content.footer,
+                            social: { ...content.footer.social, [item.urlKey]: e.target.value },
+                          })
+                        }
+                      />
+                    </div>
+                  ))}
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
@@ -992,21 +1043,23 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   </label>
                   <AdminInput label="Payment Section Label" value={content.footer.paymentLabel} onChange={(e) => update("footer", { ...content.footer, paymentLabel: e.target.value })} />
                   <p className="text-xs text-white/40">
-                    Upload logo images only (Visa, Mastercard, UnionPay, Alipay, UPI, eSewa). No text on the public
-                    footer — logos fit with object-fit: contain inside cream frames.
+                    Payment Logo 1–6 — image only. Logos use object-fit: contain (never crop/stretch). Clear removes the
+                    image instantly; empty slots show a premium placeholder (never a broken icon).
                   </p>
-                  {(["Visa", "Mastercard", "UnionPay", "Alipay", "UPI", "eSewa"] as const).map((brand, i) => {
+                  {Array.from({ length: 6 }, (_, i) => {
                     const paymentLogos = [
                       ...(content.footer.paymentLogos?.length
                         ? content.footer.paymentLogos
                         : Array.from({ length: 6 }, (_, n) => ({ id: `pay${n + 1}`, src: "" }))),
                     ];
                     while (paymentLogos.length < 6) paymentLogos.push({ id: `pay${paymentLogos.length + 1}`, src: "" });
+                    const label = `Payment Logo ${i + 1}`;
                     return (
-                      <div key={brand} className="space-y-2 border border-luxury-gold/10 p-4">
-                        <p className="text-sm text-luxury-gold/80">{brand}</p>
+                      <div key={`pay-slot-${i}`} className="space-y-2 border border-luxury-gold/10 p-4">
+                        <p className="text-sm text-luxury-gold/80">{label}</p>
                         <ImagePicker
-                          label={`${brand} logo`}
+                          key={paymentLogos[i]?.src || `empty-${i}`}
+                          label={label}
                           folder="payments"
                           category="General"
                           value={paymentLogos[i]?.src || ""}
@@ -1014,7 +1067,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                           onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
                           onChange={(url) => {
                             const next = [...paymentLogos];
-                            next[i] = { id: next[i]?.id || `pay${i + 1}`, src: url };
+                            next[i] = { id: next[i]?.id || `pay${i + 1}`, src: url || "" };
                             update("footer", { ...content.footer, paymentLogos: next.slice(0, 6) });
                           }}
                         />
@@ -1030,7 +1083,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                               update("footer", { ...content.footer, paymentLogos: next.slice(0, 6) });
                             }}
                           >
-                            Remove Logo
+                            Delete Logo
                           </Button>
                         ) : null}
                       </div>

@@ -367,9 +367,12 @@ export interface SiteContent {
     social: {
       facebook: string;
       instagram: string;
-      youtube: string;
-      twitter: string;
-      linkedin: string;
+      tripadvisor: string;
+      googleReviews: string;
+      facebookIcon: string;
+      instagramIcon: string;
+      tripadvisorIcon: string;
+      googleReviewsIcon: string;
     };
     colors: {
       topBackground: string;
