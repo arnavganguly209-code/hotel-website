@@ -159,8 +159,45 @@ export interface SiteContent {
     eyebrow: string;
     title: string;
     content: string;
-    stats: Array<{ value: number; suffix: string; label: string }>;
+    backgroundTop: string;
+    backgroundBottom: string;
+    headingColor: string;
+    bodyColor: string;
+    goldColor: string;
+    spacing: {
+      sectionPaddingY: number;
+      sliderMaxHeight: number;
+    };
+    slider: {
+      autoPlay: boolean;
+      loop: boolean;
+      slideDurationMs: number;
+      transitionSpeedMs: number;
+      showArrows: boolean;
+      showDots: boolean;
+      maxImages: number;
+      slides: Array<{
+        id: string;
+        src: string;
+        alt: string;
+        enabled: boolean;
+        order: number;
+      }>;
+    };
+    /** Legacy gallery URLs — migrated into slider.slides when slides empty */
     galleryImages: string[];
+    stats: Array<{
+      id: string;
+      value: number;
+      suffix: string;
+      label: string;
+      icon: string;
+      enabled: boolean;
+      order: number;
+      backgroundColor: string;
+      textColor: string;
+      borderColor: string;
+    }>;
   };
   experiences: Array<{
     id: string;

@@ -113,15 +113,7 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       testimonials: { ...defaultContent.homeSections.testimonials, ...partial.homeSections?.testimonials },
       cta: { ...defaultContent.homeSections.cta, ...partial.homeSections?.cta },
     },
-    overview: {
-      ...defaultContent.overview,
-      ...partial.overview,
-      stats: definedArray(partial.overview?.stats, defaultContent.overview.stats),
-      galleryImages: definedArray(
-        partial.overview?.galleryImages,
-        defaultContent.overview.galleryImages
-      ),
-    },
+    overview: mergeOverview(defaultContent.overview, partial.overview),
     roomsSection: { ...defaultContent.roomsSection, ...(partial.roomsSection ?? {}) },
     experiences: definedArray(partial.experiences, defaultContent.experiences),
     locationAdvantages: definedArray(partial.locationAdvantages, defaultContent.locationAdvantages),
@@ -268,6 +260,57 @@ function mergeCulture(
       partial.imageSrc,
       definedString(partial.media?.imageSrc, defaults.imageSrc)
     ),
+  };
+}
+
+function mergeOverview(
+  defaults: SiteContent["overview"],
+  partial?: Partial<SiteContent["overview"]>
+): SiteContent["overview"] {
+  if (!partial) return defaults;
+
+  const galleryImages = definedArray(partial.galleryImages, defaults.galleryImages);
+  let slides = definedArray(partial.slider?.slides, defaults.slider.slides);
+
+  // Migrate legacy galleryImages → slides when CMS has no slides yet
+  if ((!partial.slider?.slides || partial.slider.slides.length === 0) && galleryImages.length) {
+    slides = galleryImages.map((src, i) => ({
+      id: `slide-${i + 1}`,
+      src,
+      alt: `Showcase image ${i + 1}`,
+      enabled: true,
+      order: i,
+    }));
+  }
+
+  const defaultStat = defaults.stats[0];
+  const stats = definedArray(partial.stats, defaults.stats).map((stat, i) => {
+    const base = defaults.stats[i] ?? defaultStat;
+    return {
+      id: stat.id || base.id || `stat${i + 1}`,
+      value: typeof stat.value === "number" ? stat.value : base.value,
+      suffix: stat.suffix ?? base.suffix,
+      label: stat.label || base.label,
+      icon: stat.icon || base.icon || "crown",
+      enabled: stat.enabled !== false,
+      order: typeof stat.order === "number" ? stat.order : i,
+      backgroundColor: stat.backgroundColor || base.backgroundColor,
+      textColor: stat.textColor || base.textColor,
+      borderColor: stat.borderColor || base.borderColor,
+    };
+  });
+
+  return {
+    ...defaults,
+    ...partial,
+    spacing: { ...defaults.spacing, ...(partial.spacing ?? {}) },
+    slider: {
+      ...defaults.slider,
+      ...(partial.slider ?? {}),
+      slides,
+    },
+    galleryImages,
+    stats,
   };
 }
 

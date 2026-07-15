@@ -51,7 +51,7 @@ const SECTIONS = [
   { id: "header", label: "Header", icon: PanelTop },
   { id: "hero", label: "Hero", icon: Home },
   { id: "homepage", label: "Homepage Sections", icon: Grid3X3 },
-  { id: "overview", label: "Welcome", icon: Home },
+  { id: "overview", label: "Luxury Showcase", icon: Home },
   { id: "experiences", label: "Home Experiences", icon: Sparkles },
   { id: "culture", label: "Culture Section", icon: Globe },
   { id: "facilities", label: "Facilities", icon: Grid3X3 },
@@ -465,28 +465,266 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
             {activeSection === "overview" && (
               <>
-                <AdminInput label="Eyebrow" value={content.overview.eyebrow} onChange={(e) => update("overview", { ...content.overview, eyebrow: e.target.value })} />
-                <AdminInput label="Title" value={content.overview.title} onChange={(e) => update("overview", { ...content.overview, title: e.target.value })} />
-                <AdminTextarea label="Content" rows={4} value={content.overview.content} onChange={(e) => update("overview", { ...content.overview, content: e.target.value })} />
-                {content.overview.stats.map((stat, i) => (
-                  <div key={i} className="grid grid-cols-3 gap-4 border border-luxury-gold/10 p-4">
-                    <AdminInput label={`Stat ${i + 1} Value`} type="number" value={stat.value} onChange={(e) => {
-                      const stats = [...content.overview.stats];
-                      stats[i] = { ...stat, value: Number(e.target.value) };
-                      update("overview", { ...content.overview, stats });
-                    }} />
-                    <AdminInput label="Suffix" value={stat.suffix} onChange={(e) => {
-                      const stats = [...content.overview.stats];
-                      stats[i] = { ...stat, suffix: e.target.value };
-                      update("overview", { ...content.overview, stats });
-                    }} />
-                    <AdminInput label="Label" value={stat.label} onChange={(e) => {
-                      const stats = [...content.overview.stats];
-                      stats[i] = { ...stat, label: e.target.value };
-                      update("overview", { ...content.overview, stats });
-                    }} />
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Luxury Showcase Section</p>
+                  <p className="text-xs text-white/40">
+                    First content section below the Hero. Not a hero/banner. Edits update the live welcome showcase.
+                  </p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.homeSections.welcome.enabled}
+                      onChange={(e) =>
+                        update("homeSections", {
+                          ...content.homeSections,
+                          welcome: { ...content.homeSections.welcome, enabled: e.target.checked },
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Show Showcase Section
+                  </label>
+                  <AdminInput label="Welcome Text (eyebrow)" value={content.overview.eyebrow} onChange={(e) => update("overview", { ...content.overview, eyebrow: e.target.value })} />
+                  <AdminInput label="Main Heading" value={content.overview.title} onChange={(e) => update("overview", { ...content.overview, title: e.target.value })} />
+                  <AdminTextarea label="Description" rows={3} value={content.overview.content} onChange={(e) => update("overview", { ...content.overview, content: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Colors &amp; Spacing</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput label="Top Background" value={content.overview.backgroundTop} onChange={(e) => update("overview", { ...content.overview, backgroundTop: e.target.value })} />
+                    <AdminInput label="Stats Band Background" value={content.overview.backgroundBottom} onChange={(e) => update("overview", { ...content.overview, backgroundBottom: e.target.value })} />
+                    <AdminInput label="Heading Color" value={content.overview.headingColor} onChange={(e) => update("overview", { ...content.overview, headingColor: e.target.value })} />
+                    <AdminInput label="Body Color" value={content.overview.bodyColor} onChange={(e) => update("overview", { ...content.overview, bodyColor: e.target.value })} />
+                    <AdminInput label="Gold Accent" value={content.overview.goldColor} onChange={(e) => update("overview", { ...content.overview, goldColor: e.target.value })} />
+                    <AdminInput label="Section Padding Y (px)" type="number" value={content.overview.spacing.sectionPaddingY} onChange={(e) => update("overview", { ...content.overview, spacing: { ...content.overview.spacing, sectionPaddingY: Number(e.target.value) } })} />
+                    <AdminInput label="Slider Max Height (px)" type="number" value={content.overview.spacing.sliderMaxHeight} onChange={(e) => update("overview", { ...content.overview, spacing: { ...content.overview.spacing, sliderMaxHeight: Number(e.target.value) } })} />
                   </div>
-                ))}
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Slider Settings</p>
+                  <div className="grid grid-cols-2 gap-4 text-sm text-white/70">
+                    {(
+                      [
+                        ["autoPlay", "Auto Play"],
+                        ["loop", "Loop"],
+                        ["showArrows", "Show Arrows"],
+                        ["showDots", "Show Dots"],
+                      ] as const
+                    ).map(([key, label]) => (
+                      <label key={key} className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(content.overview.slider[key])}
+                          onChange={(e) =>
+                            update("overview", {
+                              ...content.overview,
+                              slider: { ...content.overview.slider, [key]: e.target.checked },
+                            })
+                          }
+                          className="accent-luxury-gold"
+                        />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <AdminInput label="Slide Duration (ms)" type="number" value={content.overview.slider.slideDurationMs} onChange={(e) => update("overview", { ...content.overview, slider: { ...content.overview.slider, slideDurationMs: Number(e.target.value) } })} />
+                    <AdminInput label="Transition Speed (ms)" type="number" value={content.overview.slider.transitionSpeedMs} onChange={(e) => update("overview", { ...content.overview, slider: { ...content.overview.slider, transitionSpeedMs: Number(e.target.value) } })} />
+                    <AdminInput label="Max Images" type="number" value={content.overview.slider.maxImages} onChange={(e) => update("overview", { ...content.overview, slider: { ...content.overview.slider, maxImages: Number(e.target.value) } })} />
+                  </div>
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-display text-lg text-luxury-gold">Slider Images</p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="border-luxury-gold/30 text-luxury-gold"
+                      onClick={() => {
+                        const slides = [...content.overview.slider.slides];
+                        if (slides.length >= (content.overview.slider.maxImages || 12)) return;
+                        slides.push({
+                          id: `slide-${Date.now()}`,
+                          src: "",
+                          alt: `Showcase image ${slides.length + 1}`,
+                          enabled: true,
+                          order: slides.length,
+                        });
+                        update("overview", {
+                          ...content.overview,
+                          slider: { ...content.overview.slider, slides },
+                          galleryImages: slides.map((s) => s.src).filter(Boolean),
+                        });
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Image
+                    </Button>
+                  </div>
+                  {[...content.overview.slider.slides]
+                    .sort((a, b) => a.order - b.order)
+                    .map((slide, sortedIndex) => {
+                      const i = content.overview.slider.slides.findIndex((s) => s.id === slide.id);
+                      return (
+                        <div key={slide.id} className="space-y-3 border border-luxury-gold/10 p-4">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm text-luxury-gold/80">Image {sortedIndex + 1}</p>
+                            <div className="flex items-center gap-3">
+                              <label className="flex items-center gap-2 text-xs text-white/60">
+                                <input
+                                  type="checkbox"
+                                  checked={slide.enabled !== false}
+                                  onChange={(e) => {
+                                    const slides = [...content.overview.slider.slides];
+                                    slides[i] = { ...slide, enabled: e.target.checked };
+                                    update("overview", {
+                                      ...content.overview,
+                                      slider: { ...content.overview.slider, slides },
+                                    });
+                                  }}
+                                  className="accent-luxury-gold"
+                                />
+                                Enabled
+                              </label>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="border-red-400/30 text-red-400"
+                                onClick={() => {
+                                  const slides = content.overview.slider.slides
+                                    .filter((_, idx) => idx !== i)
+                                    .map((s, order) => ({ ...s, order }));
+                                  update("overview", {
+                                    ...content.overview,
+                                    slider: { ...content.overview.slider, slides },
+                                    galleryImages: slides.map((s) => s.src).filter(Boolean),
+                                  });
+                                }}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                          <ImagePicker
+                            label={`Showcase Image ${sortedIndex + 1}`}
+                            folder="gallery"
+                            category="Gallery"
+                            value={slide.src}
+                            library={content.mediaLibrary}
+                            onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                            onChange={(url) => {
+                              const slides = [...content.overview.slider.slides];
+                              slides[i] = { ...slide, src: url };
+                              update("overview", {
+                                ...content.overview,
+                                slider: { ...content.overview.slider, slides },
+                                galleryImages: slides.map((s) => s.src).filter(Boolean),
+                              });
+                            }}
+                          />
+                          <AdminInput
+                            label="Alt Text"
+                            value={slide.alt}
+                            onChange={(e) => {
+                              const slides = [...content.overview.slider.slides];
+                              slides[i] = { ...slide, alt: e.target.value };
+                              update("overview", {
+                                ...content.overview,
+                                slider: { ...content.overview.slider, slides },
+                              });
+                            }}
+                          />
+                          <AdminInput
+                            label="Order"
+                            type="number"
+                            value={slide.order}
+                            onChange={(e) => {
+                              const slides = [...content.overview.slider.slides];
+                              slides[i] = { ...slide, order: Number(e.target.value) };
+                              update("overview", {
+                                ...content.overview,
+                                slider: { ...content.overview.slider, slides },
+                              });
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Statistics Cards</p>
+                  {content.overview.stats.map((stat, i) => (
+                    <div key={stat.id || i} className="space-y-3 border border-luxury-gold/10 p-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-luxury-gold/80">Card {i + 1}</p>
+                        <label className="flex items-center gap-2 text-xs text-white/60">
+                          <input
+                            type="checkbox"
+                            checked={stat.enabled !== false}
+                            onChange={(e) => {
+                              const stats = [...content.overview.stats];
+                              stats[i] = { ...stat, enabled: e.target.checked };
+                              update("overview", { ...content.overview, stats });
+                            }}
+                            className="accent-luxury-gold"
+                          />
+                          Visible
+                        </label>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <AdminInput label="Number" type="number" value={stat.value} onChange={(e) => {
+                          const stats = [...content.overview.stats];
+                          stats[i] = { ...stat, value: Number(e.target.value) };
+                          update("overview", { ...content.overview, stats });
+                        }} />
+                        <AdminInput label="Suffix" value={stat.suffix} onChange={(e) => {
+                          const stats = [...content.overview.stats];
+                          stats[i] = { ...stat, suffix: e.target.value };
+                          update("overview", { ...content.overview, stats });
+                        }} />
+                        <AdminInput label="Order" type="number" value={stat.order} onChange={(e) => {
+                          const stats = [...content.overview.stats];
+                          stats[i] = { ...stat, order: Number(e.target.value) };
+                          update("overview", { ...content.overview, stats });
+                        }} />
+                      </div>
+                      <AdminInput label="Label" value={stat.label} onChange={(e) => {
+                        const stats = [...content.overview.stats];
+                        stats[i] = { ...stat, label: e.target.value };
+                        update("overview", { ...content.overview, stats });
+                      }} />
+                      <AdminInput label="Icon (crown / bed / users / star / sparkles)" value={stat.icon} onChange={(e) => {
+                        const stats = [...content.overview.stats];
+                        stats[i] = { ...stat, icon: e.target.value };
+                        update("overview", { ...content.overview, stats });
+                      }} />
+                      <div className="grid grid-cols-3 gap-3">
+                        <AdminInput label="Card Background" value={stat.backgroundColor} onChange={(e) => {
+                          const stats = [...content.overview.stats];
+                          stats[i] = { ...stat, backgroundColor: e.target.value };
+                          update("overview", { ...content.overview, stats });
+                        }} />
+                        <AdminInput label="Text Color" value={stat.textColor} onChange={(e) => {
+                          const stats = [...content.overview.stats];
+                          stats[i] = { ...stat, textColor: e.target.value };
+                          update("overview", { ...content.overview, stats });
+                        }} />
+                        <AdminInput label="Border Color" value={stat.borderColor} onChange={(e) => {
+                          const stats = [...content.overview.stats];
+                          stats[i] = { ...stat, borderColor: e.target.value };
+                          update("overview", { ...content.overview, stats });
+                        }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </>
             )}
 
