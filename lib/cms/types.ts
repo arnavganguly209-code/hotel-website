@@ -357,7 +357,10 @@ export interface SiteContent {
     galleryPreview: Array<{ id: string; src: string; alt: string }>;
     showPayments: boolean;
     paymentLabel: string;
+    /** Legacy toggle keys — kept for merge compatibility */
     enabledPayments: string[];
+    /** Six Orbit-uploadable payment badge images (image only, no labels) */
+    paymentLogos: Array<{ id: string; src: string }>;
     copyrightText: string;
     developerLabel: string;
     developerUrl: string;

@@ -1391,47 +1391,26 @@
   "footer": {
     "logoSrc": "/media/logo/hotel-logo.png",
     "brandName": "HOTEL THAMEL PARK",
-    "description": "Experience timeless elegance, exceptional comfort, refined hospitality, and unforgettable stays in the heart of Kathmandu.",
+    "description": "Experience timeless elegance, refined hospitality and exceptional comfort in the heart of Kathmandu.",
     "tagline": "Where Nepalese warmth meets international luxury.",
     "quickLinks": [
-      {
-        "label": "Overview",
-        "href": "/"
-      },
-      {
-        "label": "Rooms",
-        "href": "/rooms"
-      },
-      {
-        "label": "Dining",
-        "href": "/dining"
-      },
-      {
-        "label": "Spa & Wellness",
-        "href": "/spa"
-      },
-      {
-        "label": "Gallery",
-        "href": "/gallery"
-      },
-      {
-        "label": "About",
-        "href": "/about"
-      },
-      {
-        "label": "Contact",
-        "href": "/contact"
-      }
+      { "label": "Overview", "href": "/" },
+      { "label": "Rooms", "href": "/rooms" },
+      { "label": "Dining", "href": "/dining" },
+      { "label": "Spa & Wellness", "href": "/spa" },
+      { "label": "Gallery", "href": "/gallery" },
+      { "label": "About Us", "href": "/about" },
+      { "label": "Contact Us", "href": "/contact" }
     ],
     "contact": {
       "phone": "+977 1-4412345",
       "email": "info@hotelthamelpark.com",
       "location": "Thamel, Kathmandu, Nepal",
-      "frontDesk": "Always available for our guests"
+      "frontDesk": "24/7 Front Desk Assistance"
     },
     "newsletter": {
       "heading": "Stay Connected",
-      "description": "Receive exclusive offers, seasonal experiences, and curated updates from Hotel Thamel Park.",
+      "description": "Subscribe to get special offers, exclusive deals and updates.",
       "buttonText": "Subscribe",
       "placeholder": "Your email address"
     },
@@ -1439,14 +1418,7 @@
     "galleryPreview": [],
     "showPayments": true,
     "paymentLabel": "Secure Payments",
-    "enabledPayments": [
-      "visa",
-      "mastercard",
-      "unionpay",
-      "alipay",
-      "upi",
-      "esewa"
-    ],
+    "enabledPayments": [],
     "copyrightText": "Hotel Thamel Park. All Rights Reserved.",
     "developerLabel": "Developed By The Global Orbit",
     "developerUrl": "https://theglobalorbit.com/",
@@ -1458,14 +1430,40 @@
       "linkedin": "https://linkedin.com/company/hotelthamelpark"
     },
     "colors": {
-      "topBackground": "#F8F5EE",
-      "bottomBackground": "#183426",
-      "gold": "#C99A4A",
-      "text": "#244736"
+      "topBackground": "#0F2A22",
+      "bottomBackground": "#0A1F19",
+      "gold": "#C8A145",
+      "text": "#F3EBD8"
     },
     "spacing": {
       "sectionPaddingY": 80
-    }
+    },
+    "paymentLogos": [
+      {
+        "id": "pay1",
+        "src": ""
+      },
+      {
+        "id": "pay2",
+        "src": ""
+      },
+      {
+        "id": "pay3",
+        "src": ""
+      },
+      {
+        "id": "pay4",
+        "src": ""
+      },
+      {
+        "id": "pay5",
+        "src": ""
+      },
+      {
+        "id": "pay6",
+        "src": ""
+      }
+    ]
   },
   "mediaLibrary": []
 }

@@ -2,63 +2,19 @@
 
 import { cn } from "@/lib/utils";
 
-const PAYMENT_BRANDS = {
-  visa: {
-    label: "Visa",
-    content: (
-      <svg viewBox="0 0 48 16" className="h-3.5 w-10" aria-hidden>
-        <text
-          x="0"
-          y="13"
-          fill="#1A1F71"
-          fontSize="14"
-          fontWeight="700"
-          fontStyle="italic"
-          fontFamily="Arial, sans-serif"
-        >
-          VISA
-        </text>
-      </svg>
-    ),
-  },
-  mastercard: {
-    label: "Mastercard",
-    content: (
-      <svg viewBox="0 0 32 20" className="h-4 w-7" aria-hidden>
-        <circle cx="12" cy="10" r="8" fill="#EB001B" opacity="0.92" />
-        <circle cx="20" cy="10" r="8" fill="#F79E1B" opacity="0.92" />
-      </svg>
-    ),
-  },
-  unionpay: {
-    label: "UnionPay",
-    content: (
-      <span className="text-[9px] font-semibold tracking-tight text-[#E21836]">UnionPay</span>
-    ),
-  },
-  alipay: {
-    label: "Alipay",
-    content: <span className="text-[9px] font-semibold text-[#1677FF]">Alipay</span>,
-  },
-  upi: {
-    label: "UPI",
-    content: <span className="text-[10px] font-bold tracking-wide text-[#097939]">UPI</span>,
-  },
-  esewa: {
-    label: "eSewa",
-    content: <span className="text-[9px] font-bold text-[#60BB46]">eSewa</span>,
-  },
-} as const;
-
-export type PaymentBrandId = keyof typeof PAYMENT_BRANDS;
-
 interface PaymentBrandLogosProps {
-  enabled: string[];
+  logos: Array<{ id: string; src: string }>;
   className?: string;
 }
 
-export function PaymentBrandLogos({ enabled, className }: PaymentBrandLogosProps) {
-  const brands = enabled.filter((id): id is PaymentBrandId => id in PAYMENT_BRANDS);
+export function PaymentBrandLogos({ logos, className }: PaymentBrandLogosProps) {
+  const slots = logos.length >= 6 ? logos.slice(0, 6) : [
+    ...logos,
+    ...Array.from({ length: Math.max(0, 6 - logos.length) }, (_, i) => ({
+      id: `empty-${i}`,
+      src: "",
+    })),
+  ];
 
   return (
     <ul
@@ -67,21 +23,30 @@ export function PaymentBrandLogos({ enabled, className }: PaymentBrandLogosProps
         className
       )}
     >
-      {brands.map((id) => (
-        <li key={id}>
+      {slots.map((slot) => (
+        <li key={slot.id}>
           <div
-            title={PAYMENT_BRANDS[id].label}
             className={cn(
               "flex h-12 items-center justify-center rounded-md px-2.5",
-              "border border-luxury-gold/35 bg-[#FFF9F2]",
-              "shadow-[0_2px_8px_rgba(24,56,47,0.04)]",
+              "border border-[#C8A145]/40 bg-[#FAF6EE]",
+              "shadow-[0_2px_10px_rgba(0,0,0,0.18)]",
               "transition-all duration-500 ease-[0.22,1,0.36,1]",
-              "hover:-translate-y-0.5 hover:border-luxury-gold/60",
-              "hover:shadow-[0_8px_18px_rgba(200,161,69,0.14)]"
+              "hover:-translate-y-0.5 hover:border-[#C8A145]/70",
+              "hover:shadow-[0_8px_18px_rgba(200,161,69,0.18)]"
             )}
           >
-            <span className="sr-only">{PAYMENT_BRANDS[id].label}</span>
-            {PAYMENT_BRANDS[id].content}
+            {slot.src ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={slot.src}
+                alt=""
+                className="max-h-7 w-auto max-w-[72px] object-contain"
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <span className="h-1.5 w-8 rounded-full bg-[#C8A145]/25" aria-hidden />
+            )}
           </div>
         </li>
       ))}

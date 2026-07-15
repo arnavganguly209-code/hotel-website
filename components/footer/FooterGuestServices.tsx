@@ -50,23 +50,23 @@ export function FooterGuestServices({ contact }: FooterGuestServicesProps) {
           {rows.map((item) => (
             <li key={item.label} className="flex items-start gap-3">
               <item.Icon
-                className="mt-0.5 h-3.5 w-3.5 shrink-0 text-luxury-gold/80"
+                className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#C8A145]/85"
                 strokeWidth={1.15}
                 aria-hidden
               />
               <div className="min-w-0">
-                <p className="mb-0.5 font-display text-[9.5px] uppercase tracking-[0.24em] text-luxury-gold/70">
+                <p className="mb-1 font-display text-[9.5px] font-semibold uppercase tracking-[0.26em] text-[#C8A145]/75">
                   {item.label}
                 </p>
                 {"href" in item && item.href ? (
                   <a
                     href={item.href}
-                    className="font-body text-[13px] font-light leading-relaxed tracking-[0.02em] text-luxury-forest/80 transition-colors duration-400 hover:text-luxury-gold"
+                    className="font-body text-[13px] font-normal leading-relaxed tracking-[0.02em] text-[#F3EBD8]/80 transition-colors duration-400 hover:text-[#C8A145]"
                   >
                     {item.value}
                   </a>
                 ) : (
-                  <span className="font-body text-[13px] font-light leading-relaxed tracking-[0.02em] text-luxury-forest/80">
+                  <span className="font-body text-[13px] font-normal leading-relaxed tracking-[0.02em] text-[#F3EBD8]/80">
                     {item.value}
                   </span>
                 )}
@@ -75,15 +75,15 @@ export function FooterGuestServices({ contact }: FooterGuestServicesProps) {
           ))}
         </ul>
 
-        <ul className="mt-6 space-y-3 border-t border-luxury-gold/15 pt-5">
+        <ul className="mt-6 space-y-3 border-t border-[#C8A145]/18 pt-5">
           {legal.map((item) => (
             <li key={item.href}>
               <Link
                 href={item.href}
-                className="group relative inline-block font-body text-[13px] font-light tracking-[0.03em] text-luxury-forest/80 transition-colors duration-400 hover:text-luxury-gold"
+                className="group relative inline-block font-body text-[13px] font-normal tracking-[0.03em] text-[#F3EBD8]/75 transition-colors duration-400 hover:text-[#C8A145]"
               >
                 {item.label}
-                <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-luxury-gold/70 transition-all duration-500 group-hover:w-full" />
+                <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-[#C8A145]/70 transition-all duration-500 group-hover:w-full" />
               </Link>
             </li>
           ))}

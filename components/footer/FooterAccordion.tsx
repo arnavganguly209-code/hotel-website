@@ -24,7 +24,7 @@ export function FooterAccordion({
   return (
     <div
       className={cn(
-        "border-b border-luxury-gold/12 last:border-b-0 md:border-none",
+        "border-b border-[#C8A145]/15 last:border-b-0 md:border-none",
         className
       )}
     >
@@ -44,8 +44,7 @@ export function FooterAccordion({
         />
         <ChevronDown
           className={cn(
-            "mt-0.5 h-4 w-4 shrink-0 text-luxury-gold/75 transition-transform duration-500",
-            centerMobile && "mt-0",
+            "mt-0.5 h-4 w-4 shrink-0 text-[#C8A145]/80 transition-transform duration-500",
             open && "rotate-180"
           )}
           strokeWidth={1.2}

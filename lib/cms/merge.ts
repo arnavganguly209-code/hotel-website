@@ -11,6 +11,17 @@ function definedArray<T>(value: T[] | undefined, fallback: T[]): T[] {
   return value !== undefined ? value : fallback;
 }
 
+function mergePaymentLogos(
+  partial?: SiteContent["footer"]["paymentLogos"]
+): SiteContent["footer"]["paymentLogos"] {
+  const defaults = defaultContent.footer.paymentLogos;
+  if (!partial?.length) return defaults.map((slot) => ({ ...slot }));
+  return defaults.map((slot, i) => ({
+    id: partial[i]?.id || slot.id,
+    src: partial[i]?.src ?? "",
+  }));
+}
+
 export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
   return {
     hotel: { ...defaultContent.hotel, ...partial.hotel },
@@ -99,6 +110,7 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
         partial.footer?.enabledPayments,
         defaultContent.footer.enabledPayments
       ),
+      paymentLogos: mergePaymentLogos(partial.footer?.paymentLogos),
     },
     mediaLibrary: definedArray(partial.mediaLibrary, defaultContent.mediaLibrary),
   };

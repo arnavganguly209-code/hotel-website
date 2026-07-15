@@ -6,9 +6,9 @@ interface FooterSectionHeadingProps {
   title: string;
   className?: string;
   align?: "left" | "center";
+  light?: boolean;
 }
 
-/** Serif heading with a tiny gold ornament — used on every footer column. */
 export function FooterSectionHeading({
   title,
   className,
@@ -17,23 +17,18 @@ export function FooterSectionHeading({
   return (
     <div
       className={cn(
-        "mb-6",
+        "mb-7",
         align === "center" && "flex flex-col items-center text-center",
         className
       )}
     >
-      <h3
-        className={cn(
-          "font-display text-[12px] font-medium uppercase leading-none",
-          "tracking-[0.34em] text-luxury-gold"
-        )}
-      >
+      <h3 className="font-display text-[12px] font-semibold uppercase tracking-[0.36em] text-[#C8A145]">
         {title}
       </h3>
-      <span className="mt-3.5 flex items-center gap-2" aria-hidden>
-        <span className="h-px w-5 bg-gradient-to-r from-transparent to-luxury-gold/55" />
-        <span className="h-[3px] w-[3px] rotate-45 border border-luxury-gold/70 bg-luxury-gold/25" />
-        <span className="h-px w-5 bg-gradient-to-l from-transparent to-luxury-gold/55" />
+      <span className="mt-3.5 flex items-center gap-2.5" aria-hidden>
+        <span className="h-px w-7 bg-gradient-to-r from-transparent to-[#C8A145]/65" />
+        <span className="h-[4px] w-[4px] rotate-45 border border-[#C8A145]/80 bg-[#C8A145]/30" />
+        <span className="h-px w-7 bg-gradient-to-l from-transparent to-[#C8A145]/65" />
       </span>
     </div>
   );

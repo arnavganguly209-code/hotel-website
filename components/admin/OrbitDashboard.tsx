@@ -922,10 +922,10 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
             {activeSection === "footer" && (
               <>
-                <p className="text-sm text-white/50">Edit footer brand, links, guest services, newsletter, payments, colors, and legal. Logo displays at 240px — no text beside it.</p>
+                <p className="text-sm text-white/50">Footer Settings — logo (240px, transparent), description, links, guest services, newsletter, payment logos, legal. Brand name: Hotel Thamel Park (no &amp; SPA).</p>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
-                  <p className="font-display text-lg text-luxury-gold">Brand</p>
+                  <p className="font-display text-lg text-luxury-gold">Footer Brand</p>
                   <AdminInput label="Brand Name (aria / accessibility)" value={content.footer.brandName} onChange={(e) => update("footer", { ...content.footer, brandName: e.target.value })} />
                   <AdminTextarea label="Luxury Description" rows={3} value={content.footer.description} onChange={(e) => update("footer", { ...content.footer, description: e.target.value })} />
                   <AdminInput label="Tagline (optional)" value={content.footer.tagline} onChange={(e) => update("footer", { ...content.footer, tagline: e.target.value })} />
@@ -985,29 +985,60 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
-                  <p className="font-display text-lg text-luxury-gold">Secure Payments</p>
+                  <p className="font-display text-lg text-luxury-gold">Footer Payment Logos</p>
                   <label className="flex items-center gap-3 text-sm text-white/70">
                     <input type="checkbox" checked={content.footer.showPayments} onChange={(e) => update("footer", { ...content.footer, showPayments: e.target.checked })} className="accent-luxury-gold" />
                     Show Secure Payments
                   </label>
-                  <AdminInput label="Payment Label" value={content.footer.paymentLabel} onChange={(e) => update("footer", { ...content.footer, paymentLabel: e.target.value })} />
-                  <p className="text-xs text-white/40">Toggle payment logos (Visa, Mastercard, UnionPay, Alipay, UPI, eSewa)</p>
-                  {(["visa", "mastercard", "unionpay", "alipay", "upi", "esewa"] as const).map((id) => (
-                    <label key={id} className="flex items-center gap-3 text-sm capitalize text-white/70">
-                      <input
-                        type="checkbox"
-                        checked={content.footer.enabledPayments.includes(id)}
-                        onChange={(e) => {
-                          const enabled = e.target.checked
-                            ? [...content.footer.enabledPayments, id]
-                            : content.footer.enabledPayments.filter((p) => p !== id);
-                          update("footer", { ...content.footer, enabledPayments: enabled });
-                        }}
-                        className="accent-luxury-gold"
-                      />
-                      {id}
-                    </label>
-                  ))}
+                  <AdminInput label="Payment Section Label" value={content.footer.paymentLabel} onChange={(e) => update("footer", { ...content.footer, paymentLabel: e.target.value })} />
+                  <p className="text-xs text-white/40">Upload a logo image for each frame. Image only — no text labels. Empty slots show a clean placeholder.</p>
+                  {(content.footer.paymentLogos?.length
+                    ? content.footer.paymentLogos
+                    : [
+                        { id: "pay1", src: "" },
+                        { id: "pay2", src: "" },
+                        { id: "pay3", src: "" },
+                        { id: "pay4", src: "" },
+                        { id: "pay5", src: "" },
+                        { id: "pay6", src: "" },
+                      ]
+                  ).slice(0, 6).map((slot, i) => {
+                    const paymentLogos = [...(content.footer.paymentLogos?.length ? content.footer.paymentLogos : Array.from({ length: 6 }, (_, n) => ({ id: `pay${n + 1}`, src: "" })))];
+                    while (paymentLogos.length < 6) paymentLogos.push({ id: `pay${paymentLogos.length + 1}`, src: "" });
+                    return (
+                      <div key={slot.id || `pay${i + 1}`} className="space-y-2 border border-luxury-gold/10 p-4">
+                        <p className="text-sm text-luxury-gold/80">Payment Logo {i + 1}</p>
+                        <ImagePicker
+                          label={`Payment Logo ${i + 1}`}
+                          folder="payments"
+                          category="General"
+                          value={paymentLogos[i]?.src || ""}
+                          library={content.mediaLibrary}
+                          onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                          onChange={(url) => {
+                            const next = [...paymentLogos];
+                            next[i] = { id: next[i]?.id || `pay${i + 1}`, src: url };
+                            update("footer", { ...content.footer, paymentLogos: next.slice(0, 6) });
+                          }}
+                        />
+                        {paymentLogos[i]?.src ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="border-red-400/30 text-red-400"
+                            onClick={() => {
+                              const next = [...paymentLogos];
+                              next[i] = { id: next[i]?.id || `pay${i + 1}`, src: "" };
+                              update("footer", { ...content.footer, paymentLogos: next.slice(0, 6) });
+                            }}
+                          >
+                            Remove Logo
+                          </Button>
+                        ) : null}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
