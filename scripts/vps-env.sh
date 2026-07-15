@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Load git/node/npm/pm2/curl for non-interactive Hostinger SSH (GitHub Actions).
-# Safe under set -euo pipefail when sourced as: source scripts/vps-env.sh
+# Load Node/npm/pm2/git/curl for non-interactive Hostinger SSH.
+# Source: . scripts/vps-env.sh
 
 _htp_prepend_path() {
   case ":$PATH:" in
@@ -15,65 +15,57 @@ _htp_prepend_path /usr/sbin
 _htp_prepend_path /usr/bin
 _htp_prepend_path /sbin
 _htp_prepend_path /bin
-_htp_prepend_path "$HOME/.local/bin"
+_htp_prepend_path "${HOME:-/root}/.local/bin"
 
-# Hostinger / cPanel-style Node locations (if present)
 for _d in /opt/nodejs/bin /opt/alt/*/root/usr/bin /usr/local/node/bin; do
   for _p in $_d; do
     [ -d "$_p" ] && _htp_prepend_path "$_p"
   done
 done
 
-# nvm: disable nounset while sourcing (nvm is not nounset-safe)
-_nvm_dir="${NVM_DIR:-$HOME/.nvm}"
-if [ -s "$_nvm_dir/nvm.sh" ]; then
+# --- NVM: /home/*/.nvm and /root/.nvm ---
+_htp_load_nvm() {
+  local dir="$1"
+  [ -s "$dir/nvm.sh" ] || return 0
+  echo "Loading NVM from $dir"
   set +u
   set +e
+  export NVM_DIR="$dir"
   # shellcheck disable=SC1090
-  . "$_nvm_dir/nvm.sh"
+  . "$dir/nvm.sh"
   set -e
   set -u
-fi
-
-# Also add every installed nvm node bin (works even if nvm use fails)
-if [ -d "$_nvm_dir/versions/node" ]; then
-  _latest="$(ls -1 "$_nvm_dir/versions/node" 2>/dev/null | sort -V | tail -1 || true)"
-  if [ -n "${_latest:-}" ] && [ -d "$_nvm_dir/versions/node/$_latest/bin" ]; then
-    _htp_prepend_path "$_nvm_dir/versions/node/$_latest/bin"
+  if [ -d "$dir/versions/node" ]; then
+    local latest
+    latest="$(ls -1 "$dir/versions/node" 2>/dev/null | sort -V | tail -1 || true)"
+    if [ -n "${latest:-}" ] && [ -d "$dir/versions/node/$latest/bin" ]; then
+      _htp_prepend_path "$dir/versions/node/$latest/bin"
+    fi
   fi
-fi
+}
 
-# Root nvm when Actions user is not root but app was installed as root
-if [ -s /root/.nvm/nvm.sh ] && [ ! -s "$_nvm_dir/nvm.sh" ]; then
-  set +u
-  set +e
-  # shellcheck disable=SC1090
-  . /root/.nvm/nvm.sh
-  set -e
-  set -u
-fi
-if [ -d /root/.nvm/versions/node ]; then
-  _latest="$(ls -1 /root/.nvm/versions/node 2>/dev/null | sort -V | tail -1 || true)"
-  if [ -n "${_latest:-}" ] && [ -d "/root/.nvm/versions/node/$_latest/bin" ]; then
-    _htp_prepend_path "/root/.nvm/versions/node/$_latest/bin"
-  fi
-fi
+_htp_load_nvm "${NVM_DIR:-$HOME/.nvm}"
+_htp_load_nvm "$HOME/.nvm"
+_htp_load_nvm /root/.nvm
 
-# fnm / asdf common paths
+# Any other user nvm installs
+for _nvm in /home/*/.nvm; do
+  [ -d "$_nvm" ] && _htp_load_nvm "$_nvm"
+done
+
 [ -d "$HOME/.fnm" ] && _htp_prepend_path "$HOME/.fnm/current/bin"
 [ -d "$HOME/.asdf/shims" ] && _htp_prepend_path "$HOME/.asdf/shims"
 
 export PATH
-
 echo "PATH=$PATH"
 
 _htp_require() {
   local name="$1"
   if ! command -v "$name" >/dev/null 2>&1; then
-    echo "ERROR: required command '$name' not found (exit would be 127)."
-    echo "Searched PATH=$PATH"
-    echo "User=$(id -un 2>/dev/null || true) HOME=$HOME"
-    echo "Fix on VPS once: install Node 20+, npm, pm2, git, curl for this SSH user."
+    echo "ERROR: '$name' not found — this is exit code 127 (command not found)"
+    echo "PATH=$PATH"
+    echo "whoami=$(whoami) HOME=$HOME"
+    type "$name" 2>&1 || true
     return 127
   fi
   echo "OK: $name -> $(command -v "$name")"
@@ -84,5 +76,6 @@ _htp_require node
 _htp_require npm
 _htp_require pm2
 _htp_require curl
+_htp_require npx
 
-echo "Runtime: Node $(node -v) | npm $(npm -v) | PM2 $(pm2 -v)"
+echo "Runtime: Node $(node -v) | npm $(npm -v) | PM2 $(pm2 -v) | npx $(npx -v 2>/dev/null || echo n/a)"

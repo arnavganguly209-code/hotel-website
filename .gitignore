@@ -57,3 +57,20 @@ next-env.d.ts
 wrangler.toml
 wrangler.jsonc
 vercel.json
+
+# local deploy / CI debug artifacts (never commit)
+job-*.zip
+job-*-logs*
+gha-*.txt
+gha-*.html
+ssh-probe*
+*probe*.txt
+env-token-names.txt
+shell-test-out.txt
+winget-*.txt
+.agent-*.txt
+.agent-*.json
+*-logs.zip
+*-logs-new.zip
+*-logs.txt
+

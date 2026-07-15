@@ -29,7 +29,7 @@ jobs:
           VPS_PORT: ${{ secrets.VPS_PORT }}
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
-          set -euo pipefail
+          set -euxo pipefail
           missing=0
           for name in VPS_HOST VPS_USER VPS_PORT VPS_SSH_KEY; do
             if [ -z "${!name}" ]; then
@@ -46,6 +46,8 @@ jobs:
 
       - name: Deploy over SSH (Hostinger VPS)
         uses: appleboy/ssh-action@v1.2.2
+        env:
+          GITHUB_SHA: ${{ github.sha }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -53,44 +55,49 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           command_timeout: 40m
           request_pty: true
+          envs: GITHUB_SHA
           script: |
-            set -e
+            set -euxo pipefail
 
             echo "Deployment Started"
-            echo "SSH user=$(id -un) home=$HOME pwd=$(pwd)"
+            echo "SSH user=$(id -un) HOME=$HOME"
+            echo "GITHUB_SHA=${GITHUB_SHA}"
 
             APP_DIR="/var/www/hotel-website"
             if [ ! -d "$APP_DIR/.git" ]; then
-              echo "ERROR: $APP_DIR is not a git repo. Run one-time bootstrap on the VPS."
+              echo "ERROR: $APP_DIR is not a git repo"
               exit 1
             fi
 
-            # Load git first from system paths (Ubuntu always has /usr/bin/git)
-            export PATH="/usr/local/bin:/usr/bin:/bin:$HOME/.local/bin:$PATH"
-            if ! command -v git >/dev/null 2>&1; then
-              echo "ERROR: git not found"
-              exit 127
-            fi
-            echo "OK: git -> $(command -v git)"
+            export PATH="/usr/local/bin:/usr/bin:/bin:${HOME}/.local/bin:${PATH:-}"
+            command -v git
+            git --version
 
             cd "$APP_DIR"
+            echo "pwd=$(pwd)"
             if [ ! -f .env ]; then
               echo "ERROR: .env missing in $APP_DIR"
               exit 1
             fi
             mkdir -p public/uploads
 
-            echo "Latest Git Commit (before sync): $(git log -1 --pretty=format:'%h %s' 2>/dev/null || echo n/a)"
-            echo "Syncing origin/main (fetch + reset — NOT pull)"
+            echo "git remote -v"
+            git remote -v
+            echo "Before sync HEAD=$(git rev-parse HEAD 2>/dev/null || echo n/a)"
+
             git fetch origin
             git reset --hard origin/main
+
             mkdir -p public/uploads
             touch public/uploads/.gitkeep
-            echo "Latest Git Commit (deploying): $(git log -1 --pretty=format:'%h %s')"
 
-            # After sync, load Node/npm/pm2 for THIS SSH user (fixes exit 127)
+            echo "After sync HEAD=$(git rev-parse HEAD)"
+            echo "git branch=$(git branch --show-current)"
+            test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+
             chmod +x scripts/vps-env.sh scripts/vps-deploy.sh
             # shellcheck disable=SC1091
             . "$APP_DIR/scripts/vps-env.sh"
 
+            export GITHUB_SHA
             bash "$APP_DIR/scripts/vps-deploy.sh"
