@@ -61,16 +61,25 @@ vercel.json
 # local deploy / CI debug artifacts (never commit)
 job-*.zip
 job-*-logs*
+job-logs-*/
+job-logs-*
 gha-*.txt
 gha-*.html
+gha-*
 ssh-probe*
 *probe*.txt
+*probe*.html
 env-token-names.txt
 shell-test-out.txt
 winget-*.txt
+.agent-*
 .agent-*.txt
 .agent-*.json
 *-logs.zip
 *-logs-new.zip
 *-logs.txt
+*-logs/
+drone-ssh*
+github_actions_vps*
+*.log.zip
 
