@@ -130,6 +130,10 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       defaultContent.rooftopExperienceSection,
       partial.rooftopExperienceSection
     ),
+    spaWellnessSection: mergeSpaWellnessSection(
+      defaultContent.spaWellnessSection,
+      partial.spaWellnessSection
+    ),
     culturalExperiencePage: mergeCulturalExperiencePage(
       defaultContent.culturalExperiencePage,
       partial.culturalExperiencePage
@@ -446,6 +450,43 @@ function mergeRooftopExperienceSection(
     enabled: partial.enabled !== false,
     ctaVisible: partial.ctaVisible !== false,
     showMist: partial.showMist !== false,
+    media: {
+      ...defaults.media,
+      ...(partial.media ?? {}),
+      imageSrc:
+        partial.media?.imageSrc?.trim() ||
+        defaults.media.imageSrc,
+    },
+  };
+}
+
+function mergeSpaWellnessSection(
+  defaults: SiteContent["spaWellnessSection"],
+  partial?: Partial<SiteContent["spaWellnessSection"]>
+): SiteContent["spaWellnessSection"] {
+  if (!partial) return defaults;
+  return {
+    ...defaults,
+    ...partial,
+    enabled: partial.enabled !== false,
+    ctaVisible: partial.ctaVisible !== false,
+    showMist: partial.showMist !== false,
+    treatments: (partial.treatments ?? defaults.treatments).map((t, i) => ({
+      id: t.id || defaults.treatments[i]?.id || `t${i + 1}`,
+      enabled: t.enabled !== false,
+      order: typeof t.order === "number" ? t.order : i,
+      title: t.title || defaults.treatments[i]?.title || "",
+      description: t.description ?? defaults.treatments[i]?.description ?? "",
+      icon: t.icon || defaults.treatments[i]?.icon || "leaf",
+    })),
+    cardsGapPx:
+      typeof partial.cardsGapPx === "number" ? partial.cardsGapPx : defaults.cardsGapPx,
+    cardPaddingPx:
+      typeof partial.cardPaddingPx === "number" ? partial.cardPaddingPx : defaults.cardPaddingPx,
+    cardRadiusPx:
+      typeof partial.cardRadiusPx === "number" ? partial.cardRadiusPx : defaults.cardRadiusPx,
+    cardHoverLiftPx:
+      typeof partial.cardHoverLiftPx === "number" ? partial.cardHoverLiftPx : defaults.cardHoverLiftPx,
     media: {
       ...defaults.media,
       ...(partial.media ?? {}),

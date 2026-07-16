@@ -58,6 +58,7 @@ const SECTIONS = [
   { id: "fineDining", label: "Fine Dining Section", icon: Utensils },
   { id: "lobbyCafe", label: "Lobby Café Section", icon: Utensils },
   { id: "rooftopExperience", label: "Rooftop Experience Section", icon: Utensils },
+  { id: "spaWellness", label: "Spa & Wellness Section", icon: Waves },
   { id: "rooms", label: "Rooms Section", icon: Bed },
   { id: "dining", label: "Dining Page", icon: Utensils },
   { id: "spa", label: "Spa Page", icon: Waves },
@@ -1041,6 +1042,56 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Cards Layout &amp; Animation</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput
+                      label="Cards Gap (px)"
+                      type="number"
+                      value={content.spaWellnessSection.cardsGapPx}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          cardsGapPx: Number(e.target.value),
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Card Padding (px)"
+                      type="number"
+                      value={content.spaWellnessSection.cardPaddingPx}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          cardPaddingPx: Number(e.target.value),
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Card Radius (px)"
+                      type="number"
+                      value={content.spaWellnessSection.cardRadiusPx}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          cardRadiusPx: Number(e.target.value),
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Hover Lift (px)"
+                      type="number"
+                      value={content.spaWellnessSection.cardHoverLiftPx}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          cardHoverLiftPx: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
                   <p className="font-display text-lg text-luxury-gold">Main Image</p>
                   <AdminMediaField
                     label="Amenities Image"
@@ -1334,6 +1385,257 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                     library={content.mediaLibrary}
                     onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
                   />
+                </div>
+              </>
+            )}
+
+            {activeSection === "spaWellness" && (
+              <>
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Spa &amp; Wellness Section</p>
+                  <p className="text-xs text-white/40">
+                    Homepage Spa &amp; Wellness section — treatment cards and main image.
+                  </p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.spaWellnessSection.enabled !== false}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          enabled: e.target.checked,
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Show Section
+                  </label>
+
+                  <AdminInput
+                    label="Small Label (eyebrow)"
+                    value={content.spaWellnessSection.eyebrow}
+                    onChange={(e) =>
+                      update("spaWellnessSection", {
+                        ...content.spaWellnessSection,
+                        eyebrow: e.target.value,
+                      })
+                    }
+                  />
+
+                  <AdminInput
+                    label="Main Heading"
+                    value={content.spaWellnessSection.title}
+                    onChange={(e) =>
+                      update("spaWellnessSection", {
+                        ...content.spaWellnessSection,
+                        title: e.target.value,
+                      })
+                    }
+                  />
+
+                  <AdminTextarea
+                    label="Description"
+                    rows={4}
+                    value={content.spaWellnessSection.description}
+                    onChange={(e) =>
+                      update("spaWellnessSection", {
+                        ...content.spaWellnessSection,
+                        description: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Button</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.spaWellnessSection.ctaVisible !== false}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          ctaVisible: e.target.checked,
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Show Button
+                  </label>
+                  <AdminInput
+                    label="Button Text"
+                    value={content.spaWellnessSection.ctaText}
+                    onChange={(e) =>
+                      update("spaWellnessSection", {
+                        ...content.spaWellnessSection,
+                        ctaText: e.target.value,
+                      })
+                    }
+                  />
+                  <AdminInput
+                    label="Button URL"
+                    value={content.spaWellnessSection.ctaHref}
+                    onChange={(e) =>
+                      update("spaWellnessSection", {
+                        ...content.spaWellnessSection,
+                        ctaHref: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Background &amp; Atmosphere</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput
+                      label="Background Top"
+                      value={content.spaWellnessSection.backgroundTop}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          backgroundTop: e.target.value,
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Background Bottom"
+                      value={content.spaWellnessSection.backgroundBottom}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          backgroundBottom: e.target.value,
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Heading Color"
+                      value={content.spaWellnessSection.headingColor}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          headingColor: e.target.value,
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Body Color"
+                      value={content.spaWellnessSection.bodyColor}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          bodyColor: e.target.value,
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Gold Accent"
+                      value={content.spaWellnessSection.goldColor}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          goldColor: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.spaWellnessSection.showMist !== false}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          showMist: e.target.checked,
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Show Mist / Mountain Silhouettes
+                  </label>
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Main Image</p>
+                  <AdminMediaField
+                    label="Spa &amp; Wellness Image"
+                    folder="spa"
+                    value={content.spaWellnessSection.media}
+                    onChange={(media) =>
+                      update("spaWellnessSection", { ...content.spaWellnessSection, media })
+                    }
+                    library={content.mediaLibrary}
+                    onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                  />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Treatment Cards</p>
+                  <p className="text-xs text-white/40">
+                    11 cards: title, description, icon key, visibility and order.
+                  </p>
+                  {content.spaWellnessSection.treatments.map((treatment, i) => (
+                    <div key={treatment.id || i} className="space-y-3 border border-luxury-gold/10 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm text-luxury-gold/80">Card {i + 1}</p>
+                        <label className="flex items-center gap-2 text-xs text-white/60">
+                          <input
+                            type="checkbox"
+                            checked={treatment.enabled !== false}
+                            onChange={(e) => {
+                              const treatments = [...content.spaWellnessSection.treatments];
+                              treatments[i] = { ...treatment, enabled: e.target.checked };
+                              update("spaWellnessSection", { ...content.spaWellnessSection, treatments });
+                            }}
+                            className="accent-luxury-gold"
+                          />
+                          Visible
+                        </label>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3">
+                        <AdminInput
+                          label="Order"
+                          type="number"
+                          value={treatment.order}
+                          onChange={(e) => {
+                            const treatments = [...content.spaWellnessSection.treatments];
+                            treatments[i] = { ...treatment, order: Number(e.target.value) };
+                            update("spaWellnessSection", { ...content.spaWellnessSection, treatments });
+                          }}
+                        />
+                        <AdminInput
+                          label="Icon Key"
+                          value={treatment.icon}
+                          onChange={(e) => {
+                            const treatments = [...content.spaWellnessSection.treatments];
+                            treatments[i] = { ...treatment, icon: e.target.value };
+                            update("spaWellnessSection", { ...content.spaWellnessSection, treatments });
+                          }}
+                        />
+                        <div />
+                      </div>
+
+                      <AdminInput
+                        label="Title"
+                        value={treatment.title}
+                        onChange={(e) => {
+                          const treatments = [...content.spaWellnessSection.treatments];
+                          treatments[i] = { ...treatment, title: e.target.value };
+                          update("spaWellnessSection", { ...content.spaWellnessSection, treatments });
+                        }}
+                      />
+                      <AdminTextarea
+                        label="Description"
+                        rows={2}
+                        value={treatment.description}
+                        onChange={(e) => {
+                          const treatments = [...content.spaWellnessSection.treatments];
+                          treatments[i] = { ...treatment, description: e.target.value };
+                          update("spaWellnessSection", { ...content.spaWellnessSection, treatments });
+                        }}
+                      />
+                    </div>
+                  ))}
                 </div>
               </>
             )}

@@ -316,6 +316,35 @@ export interface SiteContent {
     headingColor: string;
     bodyColor: string;
   };
+  spaWellnessSection: {
+    enabled: boolean;
+    eyebrow: string;
+    title: string;
+    description: string;
+    media: CmsMedia;
+    treatments: Array<{
+      id: string;
+      enabled: boolean;
+      order: number;
+      title: string;
+      description: string;
+      /** Lucide-react icon name key */
+      icon: string;
+    }>;
+    ctaText: string;
+    ctaHref: string;
+    ctaVisible: boolean;
+    showMist: boolean;
+    backgroundTop: string;
+    backgroundBottom: string;
+    goldColor: string;
+    headingColor: string;
+    bodyColor: string;
+    cardsGapPx: number;
+    cardPaddingPx: number;
+    cardRadiusPx: number;
+    cardHoverLiftPx: number;
+  };
   culturalExperiencePage: {
     hero: PageHero & { media: CmsMedia };
     seo: PageSeo;

@@ -8,6 +8,7 @@ import { FacilitiesSection } from "@/sections/FacilitiesSection";
 import { FineDiningSection } from "@/sections/FineDiningSection";
 import { LobbyCafeSection } from "@/sections/LobbyCafeSection";
 import { RooftopExperienceSection } from "@/sections/RooftopExperienceSection";
+import { SpaWellnessHomeSection } from "@/sections/SpaWellnessHomeSection";
 import { GalleryHomeSection } from "@/sections/GalleryHomeSection";
 import { ReviewsSection } from "@/sections/ReviewsSection";
 import { ContactHomeSection } from "@/sections/ContactHomeSection";
@@ -73,7 +74,10 @@ export default async function HomePage() {
     sections.push({
       key: "spa",
       order: hs.spa.order,
-      node: <ExperienceSections experiences={content.experiences.filter((e) => e.variant === "spa")} />,
+      node:
+        content.spaWellnessSection.enabled !== false ? (
+          <SpaWellnessHomeSection section={content.spaWellnessSection} />
+        ) : null,
     });
   }
   if (isEnabled(hs.facilities)) {
