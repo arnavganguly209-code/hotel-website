@@ -13,6 +13,11 @@ interface GalleryHomeSectionProps {
   section: SiteContent["gallerySection"];
 }
 
+/**
+ * Homepage Gallery — VISUAL JOURNEY / MOMENTS OF ELEGANCE
+ * Positioned immediately below Meetings & Events.
+ * Matches the approved luxury reference (header hierarchy + premium grid).
+ */
 export function GalleryHomeSection({ gallery, section }: GalleryHomeSectionProps) {
   if (section.enabled === false) return null;
 
@@ -23,9 +28,9 @@ export function GalleryHomeSection({ gallery, section }: GalleryHomeSectionProps
   const bottomBg = section.backgroundBottom || "#E8F0E9";
   const border = section.borderColor || `${gold}88`;
   const radius = section.cardRadiusPx ?? 18;
-  const gap = section.gridGapPx ?? 20;
+  const gap = section.gridGapPx ?? 22;
   const limit = section.homeImageLimit ?? 6;
-  const overlay = section.overlayOpacity ?? 0.55;
+  const overlay = section.overlayOpacity ?? 0.58;
 
   const items = gallery
     .filter((item) => item.active !== false && Boolean(item.src) && item.showOnHome !== false)
@@ -35,7 +40,7 @@ export function GalleryHomeSection({ gallery, section }: GalleryHomeSectionProps
   return (
     <section
       id="gallery"
-      aria-label="Gallery"
+      aria-label="Visual Journey — Moments of Elegance"
       className="relative overflow-x-clip"
       style={{
         background: `linear-gradient(180deg, ${topBg} 0%, ${topBg} 48%, ${bottomBg} 100%)`,
@@ -46,6 +51,7 @@ export function GalleryHomeSection({ gallery, section }: GalleryHomeSectionProps
       </div>
 
       <div className="relative mx-auto max-w-[1200px] px-4 py-16 sm:px-6 md:py-20 lg:px-8 lg:py-24">
+        {/* Header — Label → Heading → Divider → Description (matches reference) */}
         <motion.div
           variants={luxuryStagger}
           initial="hidden"
@@ -69,25 +75,26 @@ export function GalleryHomeSection({ gallery, section }: GalleryHomeSectionProps
             {section.title}
           </motion.h2>
 
-          <motion.p
-            variants={luxuryFadeUp}
-            className="mx-auto mt-5 max-w-xl font-body text-[15px] leading-[1.85] md:text-base"
-            style={{ color: body }}
-          >
-            {section.description}
-          </motion.p>
-
           <motion.div
             variants={luxuryFadeUp}
-            className="mx-auto mt-6 flex items-center justify-center gap-3"
+            className="mx-auto mt-5 flex items-center justify-center gap-3"
             aria-hidden
           >
             <span className="h-px w-12" style={{ backgroundColor: `${gold}77` }} />
             <span className="h-1.5 w-1.5 rotate-45" style={{ backgroundColor: gold }} />
             <span className="h-px w-12" style={{ backgroundColor: `${gold}77` }} />
           </motion.div>
+
+          <motion.p
+            variants={luxuryFadeUp}
+            className="mx-auto mt-6 max-w-xl font-body text-[15px] leading-[1.85] md:text-base"
+            style={{ color: body }}
+          >
+            {section.description}
+          </motion.p>
         </motion.div>
 
+        {/* Premium 3-column gallery grid */}
         <motion.div
           variants={luxuryStagger}
           initial="hidden"
@@ -104,7 +111,7 @@ export function GalleryHomeSection({ gallery, section }: GalleryHomeSectionProps
               style={{
                 borderRadius: radius,
                 border: `1px solid ${border}`,
-                boxShadow: "0 22px 48px rgba(15, 42, 34, 0.12)",
+                boxShadow: "0 24px 52px rgba(15, 42, 34, 0.14)",
               }}
             >
               <div className="relative aspect-[4/3] overflow-hidden">
@@ -128,11 +135,19 @@ export function GalleryHomeSection({ gallery, section }: GalleryHomeSectionProps
                 )}
 
                 <div
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent transition-opacity duration-500"
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent"
                   style={{ opacity: overlay }}
                 />
 
                 <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+                  {item.category ? (
+                    <p
+                      className="mb-1.5 font-body text-[10px] font-semibold uppercase tracking-[0.28em]"
+                      style={{ color: gold }}
+                    >
+                      {item.category}
+                    </p>
+                  ) : null}
                   <h3 className="font-display text-lg font-semibold uppercase tracking-[0.04em] text-white sm:text-xl">
                     {item.title}
                   </h3>
@@ -147,19 +162,24 @@ export function GalleryHomeSection({ gallery, section }: GalleryHomeSectionProps
           ))}
         </motion.div>
 
+        {/* VIEW FULL GALLERY — emerald pill, gold text (matches luxury CTA language) */}
         {section.ctaVisible !== false && section.ctaText ? (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: luxuryEase }}
-            className="mt-12 text-center md:mt-14"
+            className="mt-12 flex justify-center md:mt-14"
           >
             <Link
               href={section.ctaHref || "/gallery"}
               prefetch
-              className="group inline-flex items-center gap-2.5 font-body text-[12px] font-semibold uppercase tracking-[0.2em] transition-all duration-500 hover:-translate-y-0.5"
-              style={{ color: heading }}
+              className="group inline-flex items-center gap-2.5 rounded-full px-9 py-3.5 font-body text-[11px] font-semibold uppercase tracking-[0.18em] transition-all duration-500 hover:-translate-y-0.5"
+              style={{
+                backgroundColor: heading,
+                color: gold,
+                boxShadow: "0 12px 32px rgba(6, 44, 36, 0.22)",
+              }}
             >
               {section.ctaText}
               <ArrowRight
