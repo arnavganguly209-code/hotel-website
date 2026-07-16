@@ -53,6 +53,8 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
+          # Dial timeout — default 30s caused flaky Hostinger connect failures
+          timeout: 90s
           command_timeout: 40m
           request_pty: true
           envs: GITHUB_SHA
