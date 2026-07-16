@@ -42,6 +42,10 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     .slice(0, 4);
 
+  const imageCards = [...(content.imageCards || [])]
+    .filter((c) => c.enabled !== false)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
   return (
     <section
       id="culture"
@@ -56,14 +60,14 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
       </div>
 
       <div className="relative mx-auto max-w-[1200px] px-4 pb-16 pt-16 sm:px-6 md:pb-20 md:pt-20 lg:px-8 lg:pb-24 lg:pt-24">
-        <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-14 xl:gap-16">
+        <div className="grid items-stretch gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-14 xl:gap-16">
           {/* Left — overlapping image composition */}
           <motion.div
             initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.9, ease: luxuryEase }}
-            className="relative overflow-visible pt-2 lg:pt-10 lg:pl-4"
+            className="relative h-full overflow-visible pt-2 lg:pt-10 lg:pl-4"
           >
             <HeritageImageStack
               mainSrc={mainSrc}
@@ -75,13 +79,13 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
             />
           </motion.div>
 
-          {/* Right — copy, quote, stats */}
+          {/* Right — copy, quote, stats, then image cards (fills empty space) */}
           <motion.div
             variants={luxuryStagger}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
-            className="flex min-w-0 flex-col lg:pt-4"
+            className="flex h-full min-w-0 flex-col lg:pt-4"
           >
             <motion.div variants={luxuryFadeUp} className="mb-5 flex items-center justify-center gap-3 lg:justify-start">
               <span className="hidden h-px w-10 sm:block" style={{ backgroundColor: `${gold}88` }} />
@@ -188,101 +192,91 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
                 ))}
               </motion.div>
             ) : null}
+
+            {/* 3 premium cards — RIGHT COLUMN ONLY, below statistics */}
+            {imageCards.length > 0 ? (
+              <motion.div
+                variants={luxuryFadeUp}
+                className="mt-8 grid flex-1 grid-cols-1 content-end gap-3 sm:grid-cols-3 sm:gap-3 lg:mt-auto lg:pt-8"
+              >
+                {imageCards.map((card) => {
+                  const src = card.media?.imageSrc || "";
+                  return (
+                    <article
+                      key={card.id}
+                      className="group flex h-full flex-col overflow-hidden rounded-[16px] transition-all duration-500 hover:-translate-y-1"
+                      style={{
+                        backgroundColor: "#FBF8F1",
+                        border: `1px solid ${gold}66`,
+                        boxShadow: "0 14px 32px rgba(15, 42, 34, 0.10)",
+                      }}
+                    >
+                      <div className="relative aspect-[16/10] overflow-hidden">
+                        {src ? (
+                          <SafeImage
+                            src={src}
+                            alt={card.media?.alt || card.title}
+                            fill
+                            objectFit="cover"
+                            className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 180px"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-[#EFE8DA]">
+                            <p
+                              className="px-2 text-center font-display text-[9px] uppercase tracking-[0.16em]"
+                              style={{ color: gold }}
+                            >
+                              {card.title}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-1 flex-col px-3 pb-3.5 pt-3">
+                        <p
+                          className="font-body text-[9px] font-semibold uppercase tracking-[0.18em]"
+                          style={{ color: gold }}
+                        >
+                          {card.label}
+                        </p>
+                        <h3
+                          className="mt-1.5 font-display text-[13px] font-semibold leading-snug sm:text-sm"
+                          style={{ color: heading }}
+                        >
+                          {card.title}
+                        </h3>
+                        <p
+                          className="mt-1.5 line-clamp-3 flex-1 font-body text-[11px] leading-[1.55]"
+                          style={{ color: body }}
+                        >
+                          {card.description}
+                        </p>
+                        <div className="mt-3 flex items-center gap-2">
+                          <span
+                            className="h-px w-6"
+                            style={{ backgroundColor: `${gold}77` }}
+                            aria-hidden
+                          />
+                          {card.href ? (
+                            <Link
+                              href={card.href}
+                              prefetch
+                              className="inline-flex transition-transform duration-500 group-hover:translate-x-0.5"
+                              style={{ color: gold }}
+                              aria-label={card.title}
+                            >
+                              <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.8} />
+                            </Link>
+                          ) : null}
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </motion.div>
+            ) : null}
           </motion.div>
         </div>
-
-        {/* Premium image cards — fills space below statistics, full-width aligned */}
-        {(() => {
-          const imageCards = [...(content.imageCards || [])]
-            .filter((c) => c.enabled !== false)
-            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-          if (imageCards.length === 0) return null;
-          return (
-            <motion.div
-              variants={luxuryStagger}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-40px" }}
-              className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3 lg:gap-6"
-            >
-              {imageCards.map((card) => {
-                const src = card.media?.imageSrc || "";
-                return (
-                  <motion.article
-                    key={card.id}
-                    variants={luxuryFadeUp}
-                    className="group flex h-full flex-col overflow-hidden rounded-[20px] transition-all duration-500 hover:-translate-y-1.5"
-                    style={{
-                      backgroundColor: "#FBF8F1",
-                      border: `1px solid ${gold}66`,
-                      boxShadow: "0 18px 40px rgba(15, 42, 34, 0.10)",
-                    }}
-                  >
-                    <div className="relative aspect-[16/10] overflow-hidden">
-                      {src ? (
-                        <SafeImage
-                          src={src}
-                          alt={card.media?.alt || card.title}
-                          fill
-                          objectFit="cover"
-                          className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-[#EFE8DA]">
-                          <p
-                            className="font-display text-[10px] uppercase tracking-[0.2em]"
-                            style={{ color: gold }}
-                          >
-                            {card.title}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-1 flex-col px-5 pb-5 pt-5">
-                      <p
-                        className="font-body text-[10px] font-semibold uppercase tracking-[0.24em]"
-                        style={{ color: gold }}
-                      >
-                        {card.label}
-                      </p>
-                      <h3
-                        className="mt-2 font-display text-lg font-semibold leading-snug md:text-xl"
-                        style={{ color: heading }}
-                      >
-                        {card.title}
-                      </h3>
-                      <p
-                        className="mt-2.5 flex-1 font-body text-[13px] leading-[1.7] md:text-sm"
-                        style={{ color: body }}
-                      >
-                        {card.description}
-                      </p>
-                      <div className="mt-5 flex items-center gap-3">
-                        <span
-                          className="h-px flex-1 max-w-[2.5rem]"
-                          style={{ backgroundColor: `${gold}77` }}
-                          aria-hidden
-                        />
-                        {card.href ? (
-                          <Link
-                            href={card.href}
-                            prefetch
-                            className="inline-flex items-center gap-1.5 font-body text-[11px] font-semibold uppercase tracking-[0.16em] transition-transform duration-500 group-hover:translate-x-0.5"
-                            style={{ color: gold }}
-                            aria-label={card.title}
-                          >
-                            <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.8} />
-                          </Link>
-                        ) : null}
-                      </div>
-                    </div>
-                  </motion.article>
-                );
-              })}
-            </motion.div>
-          );
-        })()}
 
         {/* Experience highlights — full width under the two columns */}
         {highlights.length > 0 ? (
