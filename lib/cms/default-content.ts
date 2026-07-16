@@ -355,6 +355,30 @@ export const defaultContent: SiteContent = {
       caption: "Lobby Café",
     },
   },
+  rooftopExperienceSection: {
+    enabled: true,
+    eyebrow: "Rooftop Experience",
+    title: "Sky Lounge Restaurant & Bar",
+    description:
+      "Experience rooftop dining, refreshing drinks, and a beautiful atmosphere at Sky Lounge Restaurant & Bar.",
+    ctaText: "Explore Sky Lounge",
+    ctaHref: routes.dining,
+    ctaVisible: true,
+    showMist: true,
+    backgroundTop: "#F9F6EF",
+    backgroundBottom: "#E8F0E9",
+    goldColor: "#C5A059",
+    headingColor: "#062C24",
+    bodyColor: "#5A635C",
+    media: {
+      type: "image",
+      imageSrc: "/media/dining/skyz-lounge.jpg",
+      videoSrc: "",
+      poster: "",
+      alt: "Sky Lounge Restaurant & Bar rooftop dining",
+      caption: "Rooftop Experience",
+    },
+  },
   culturalExperiencePage: {
     hero: {
       title: "Cultural Experience",

@@ -7,6 +7,7 @@ import { NepaliCulture } from "@/sections/NepaliCulture";
 import { FacilitiesSection } from "@/sections/FacilitiesSection";
 import { FineDiningSection } from "@/sections/FineDiningSection";
 import { LobbyCafeSection } from "@/sections/LobbyCafeSection";
+import { RooftopExperienceSection } from "@/sections/RooftopExperienceSection";
 import { GalleryHomeSection } from "@/sections/GalleryHomeSection";
 import { ReviewsSection } from "@/sections/ReviewsSection";
 import { ContactHomeSection } from "@/sections/ContactHomeSection";
@@ -41,7 +42,11 @@ export default async function HomePage() {
   }
   if (isEnabled(hs.dining)) {
     const remainingExperiences = content.experiences.filter(
-      (e) => e.variant !== "spa" && e.variant !== "dining" && e.variant !== "cafe"
+      (e) =>
+        e.variant !== "spa" &&
+        e.variant !== "dining" &&
+        e.variant !== "cafe" &&
+        e.variant !== "lounge"
     );
     sections.push({
       key: "dining",
@@ -51,6 +56,11 @@ export default async function HomePage() {
           <FineDiningSection section={content.fineDiningSection} />
           {content.lobbyCafeSection.enabled !== false ? (
             <LobbyCafeSection section={content.lobbyCafeSection} />
+          ) : null}
+          {content.rooftopExperienceSection.enabled !== false ? (
+            <RooftopExperienceSection
+              section={content.rooftopExperienceSection}
+            />
           ) : null}
           {remainingExperiences.length > 0 ? (
             <ExperienceSections experiences={remainingExperiences} />

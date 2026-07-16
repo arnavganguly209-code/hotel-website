@@ -57,6 +57,7 @@ const SECTIONS = [
   { id: "facilities", label: "Amenities Section", icon: Grid3X3 },
   { id: "fineDining", label: "Fine Dining Section", icon: Utensils },
   { id: "lobbyCafe", label: "Lobby Café Section", icon: Utensils },
+  { id: "rooftopExperience", label: "Rooftop Experience Section", icon: Utensils },
   { id: "rooms", label: "Rooms Section", icon: Bed },
   { id: "dining", label: "Dining Page", icon: Utensils },
   { id: "spa", label: "Spa Page", icon: Waves },
@@ -1255,6 +1256,81 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                     folder="dining"
                     value={content.lobbyCafeSection.media}
                     onChange={(media) => update("lobbyCafeSection", { ...content.lobbyCafeSection, media })}
+                    library={content.mediaLibrary}
+                    onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                  />
+                </div>
+              </>
+            )}
+
+            {activeSection === "rooftopExperience" && (
+              <>
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Rooftop Experience Section</p>
+                  <p className="text-xs text-white/40">
+                    Homepage Rooftop Experience section — Sky Lounge Restaurant &amp; Bar (below Lobby Café).
+                  </p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.rooftopExperienceSection.enabled !== false}
+                      onChange={(e) =>
+                        update("rooftopExperienceSection", {
+                          ...content.rooftopExperienceSection,
+                          enabled: e.target.checked,
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Show Section
+                  </label>
+                  <AdminInput label="Small Label (eyebrow)" value={content.rooftopExperienceSection.eyebrow} onChange={(e) => update("rooftopExperienceSection", { ...content.rooftopExperienceSection, eyebrow: e.target.value })} />
+                  <AdminInput label="Main Heading" value={content.rooftopExperienceSection.title} onChange={(e) => update("rooftopExperienceSection", { ...content.rooftopExperienceSection, title: e.target.value })} />
+                  <AdminTextarea label="Description" rows={4} value={content.rooftopExperienceSection.description} onChange={(e) => update("rooftopExperienceSection", { ...content.rooftopExperienceSection, description: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Button</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.rooftopExperienceSection.ctaVisible !== false}
+                      onChange={(e) => update("rooftopExperienceSection", { ...content.rooftopExperienceSection, ctaVisible: e.target.checked })}
+                      className="accent-luxury-gold"
+                    />
+                    Show Button
+                  </label>
+                  <AdminInput label="Button Text" value={content.rooftopExperienceSection.ctaText} onChange={(e) => update("rooftopExperienceSection", { ...content.rooftopExperienceSection, ctaText: e.target.value })} />
+                  <AdminInput label="Button URL" value={content.rooftopExperienceSection.ctaHref} onChange={(e) => update("rooftopExperienceSection", { ...content.rooftopExperienceSection, ctaHref: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Background &amp; Atmosphere</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput label="Background Top" value={content.rooftopExperienceSection.backgroundTop} onChange={(e) => update("rooftopExperienceSection", { ...content.rooftopExperienceSection, backgroundTop: e.target.value })} />
+                    <AdminInput label="Background Bottom" value={content.rooftopExperienceSection.backgroundBottom} onChange={(e) => update("rooftopExperienceSection", { ...content.rooftopExperienceSection, backgroundBottom: e.target.value })} />
+                    <AdminInput label="Heading Color" value={content.rooftopExperienceSection.headingColor} onChange={(e) => update("rooftopExperienceSection", { ...content.rooftopExperienceSection, headingColor: e.target.value })} />
+                    <AdminInput label="Body Color" value={content.rooftopExperienceSection.bodyColor} onChange={(e) => update("rooftopExperienceSection", { ...content.rooftopExperienceSection, bodyColor: e.target.value })} />
+                    <AdminInput label="Gold Accent" value={content.rooftopExperienceSection.goldColor} onChange={(e) => update("rooftopExperienceSection", { ...content.rooftopExperienceSection, goldColor: e.target.value })} />
+                  </div>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.rooftopExperienceSection.showMist !== false}
+                      onChange={(e) => update("rooftopExperienceSection", { ...content.rooftopExperienceSection, showMist: e.target.checked })}
+                      className="accent-luxury-gold"
+                    />
+                    Show Mist / Mountain Silhouettes
+                  </label>
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Main Image</p>
+                  <AdminMediaField
+                    label="Rooftop Experience Image"
+                    folder="dining"
+                    value={content.rooftopExperienceSection.media}
+                    onChange={(media) => update("rooftopExperienceSection", { ...content.rooftopExperienceSection, media })}
                     library={content.mediaLibrary}
                     onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
                   />
