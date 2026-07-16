@@ -56,6 +56,7 @@ const SECTIONS = [
   { id: "culture", label: "Cultural Experience", icon: Globe },
   { id: "facilities", label: "Amenities Section", icon: Grid3X3 },
   { id: "fineDining", label: "Fine Dining Section", icon: Utensils },
+  { id: "lobbyCafe", label: "Lobby Café Section", icon: Utensils },
   { id: "rooms", label: "Rooms Section", icon: Bed },
   { id: "dining", label: "Dining Page", icon: Utensils },
   { id: "spa", label: "Spa Page", icon: Waves },
@@ -1179,6 +1180,81 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                     folder="dining"
                     value={content.fineDiningSection.media}
                     onChange={(media) => update("fineDiningSection", { ...content.fineDiningSection, media })}
+                    library={content.mediaLibrary}
+                    onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                  />
+                </div>
+              </>
+            )}
+
+            {activeSection === "lobbyCafe" && (
+              <>
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Lobby Café Section</p>
+                  <p className="text-xs text-white/40">
+                    Homepage Lobby Café section — Cafe in Lobby Area (below Fine Dining).
+                  </p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.lobbyCafeSection.enabled !== false}
+                      onChange={(e) =>
+                        update("lobbyCafeSection", {
+                          ...content.lobbyCafeSection,
+                          enabled: e.target.checked,
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Show Section
+                  </label>
+                  <AdminInput label="Small Label (eyebrow)" value={content.lobbyCafeSection.eyebrow} onChange={(e) => update("lobbyCafeSection", { ...content.lobbyCafeSection, eyebrow: e.target.value })} />
+                  <AdminInput label="Main Heading" value={content.lobbyCafeSection.title} onChange={(e) => update("lobbyCafeSection", { ...content.lobbyCafeSection, title: e.target.value })} />
+                  <AdminTextarea label="Description" rows={4} value={content.lobbyCafeSection.description} onChange={(e) => update("lobbyCafeSection", { ...content.lobbyCafeSection, description: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Button</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.lobbyCafeSection.ctaVisible !== false}
+                      onChange={(e) => update("lobbyCafeSection", { ...content.lobbyCafeSection, ctaVisible: e.target.checked })}
+                      className="accent-luxury-gold"
+                    />
+                    Show Button
+                  </label>
+                  <AdminInput label="Button Text" value={content.lobbyCafeSection.ctaText} onChange={(e) => update("lobbyCafeSection", { ...content.lobbyCafeSection, ctaText: e.target.value })} />
+                  <AdminInput label="Button URL" value={content.lobbyCafeSection.ctaHref} onChange={(e) => update("lobbyCafeSection", { ...content.lobbyCafeSection, ctaHref: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Background &amp; Atmosphere</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput label="Background Top" value={content.lobbyCafeSection.backgroundTop} onChange={(e) => update("lobbyCafeSection", { ...content.lobbyCafeSection, backgroundTop: e.target.value })} />
+                    <AdminInput label="Background Bottom" value={content.lobbyCafeSection.backgroundBottom} onChange={(e) => update("lobbyCafeSection", { ...content.lobbyCafeSection, backgroundBottom: e.target.value })} />
+                    <AdminInput label="Heading Color" value={content.lobbyCafeSection.headingColor} onChange={(e) => update("lobbyCafeSection", { ...content.lobbyCafeSection, headingColor: e.target.value })} />
+                    <AdminInput label="Body Color" value={content.lobbyCafeSection.bodyColor} onChange={(e) => update("lobbyCafeSection", { ...content.lobbyCafeSection, bodyColor: e.target.value })} />
+                    <AdminInput label="Gold Accent" value={content.lobbyCafeSection.goldColor} onChange={(e) => update("lobbyCafeSection", { ...content.lobbyCafeSection, goldColor: e.target.value })} />
+                  </div>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.lobbyCafeSection.showMist !== false}
+                      onChange={(e) => update("lobbyCafeSection", { ...content.lobbyCafeSection, showMist: e.target.checked })}
+                      className="accent-luxury-gold"
+                    />
+                    Show Mist / Mountain Silhouettes
+                  </label>
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Main Image</p>
+                  <AdminMediaField
+                    label="Lobby Café Image"
+                    folder="dining"
+                    value={content.lobbyCafeSection.media}
+                    onChange={(media) => update("lobbyCafeSection", { ...content.lobbyCafeSection, media })}
                     library={content.mediaLibrary}
                     onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
                   />

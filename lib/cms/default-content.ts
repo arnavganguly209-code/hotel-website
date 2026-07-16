@@ -331,6 +331,30 @@ export const defaultContent: SiteContent = {
       caption: "Fine Dining",
     },
   },
+  lobbyCafeSection: {
+    enabled: true,
+    eyebrow: "Lobby Café",
+    title: "Cafe in Lobby Area",
+    description:
+      "Enjoy premium coffee and relaxing moments at our lobby café, perfect for meetings and casual conversations.",
+    ctaText: "View Café Experience",
+    ctaHref: routes.dining,
+    ctaVisible: true,
+    showMist: true,
+    backgroundTop: "#F9F6EF",
+    backgroundBottom: "#E8F0E9",
+    goldColor: "#C5A059",
+    headingColor: "#062C24",
+    bodyColor: "#5A635C",
+    media: {
+      type: "image",
+      imageSrc: "/media/dining/lobby-cafe.jpg",
+      videoSrc: "",
+      poster: "",
+      alt: "Premium coffee at the lobby café",
+      caption: "Lobby Café",
+    },
+  },
   culturalExperiencePage: {
     hero: {
       title: "Cultural Experience",

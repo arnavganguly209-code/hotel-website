@@ -6,6 +6,7 @@ import { ExperienceSections } from "@/sections/ExperienceSections";
 import { NepaliCulture } from "@/sections/NepaliCulture";
 import { FacilitiesSection } from "@/sections/FacilitiesSection";
 import { FineDiningSection } from "@/sections/FineDiningSection";
+import { LobbyCafeSection } from "@/sections/LobbyCafeSection";
 import { GalleryHomeSection } from "@/sections/GalleryHomeSection";
 import { ReviewsSection } from "@/sections/ReviewsSection";
 import { ContactHomeSection } from "@/sections/ContactHomeSection";
@@ -39,8 +40,8 @@ export default async function HomePage() {
     sections.push({ key: "rooms", order: hs.rooms.order, node: <RoomsSection rooms={content.rooms} section={content.roomsSection} /> });
   }
   if (isEnabled(hs.dining)) {
-    const otherExperiences = content.experiences.filter(
-      (e) => e.variant !== "spa" && e.variant !== "dining"
+    const remainingExperiences = content.experiences.filter(
+      (e) => e.variant !== "spa" && e.variant !== "dining" && e.variant !== "cafe"
     );
     sections.push({
       key: "dining",
@@ -48,8 +49,11 @@ export default async function HomePage() {
       node: (
         <>
           <FineDiningSection section={content.fineDiningSection} />
-          {otherExperiences.length > 0 ? (
-            <ExperienceSections experiences={otherExperiences} />
+          {content.lobbyCafeSection.enabled !== false ? (
+            <LobbyCafeSection section={content.lobbyCafeSection} />
+          ) : null}
+          {remainingExperiences.length > 0 ? (
+            <ExperienceSections experiences={remainingExperiences} />
           ) : null}
         </>
       ),
