@@ -165,6 +165,7 @@ export interface SiteContent {
     dining: HomeSectionMeta;
     spa: HomeSectionMeta;
     meetingsEvents: HomeSectionMeta;
+    exploreKathmandu: HomeSectionMeta;
     gallery: HomeSectionMeta;
     testimonials: HomeSectionMeta;
     cta: HomeSectionMeta;
@@ -407,6 +408,38 @@ export interface SiteContent {
     headingColor: string;
     bodyColor: string;
     sectionPaddingY: number;
+  };
+  exploreKathmanduSection: {
+    enabled: boolean;
+    eyebrow: string;
+    titlePrimary: string;
+    titleAccent: string;
+    description: string;
+    destinations: Array<{
+      id: string;
+      enabled: boolean;
+      order: number;
+      category: string;
+      title: string;
+      description: string;
+      distance: string;
+      href: string;
+      /** Lucide / preset icon key */
+      icon: string;
+      /** Optional uploaded icon image (SVG/PNG) — overrides Lucide when set */
+      iconSrc: string;
+      media: CmsMedia;
+    }>;
+    showMist: boolean;
+    backgroundTop: string;
+    backgroundBottom: string;
+    goldColor: string;
+    headingColor: string;
+    bodyColor: string;
+    cardBackgroundColor: string;
+    cardBorderColor: string;
+    sectionPaddingY: number;
+    cardsGapPx: number;
   };
   culturalExperiencePage: {
     hero: PageHero & { media: CmsMedia };

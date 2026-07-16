@@ -61,6 +61,7 @@ const SECTIONS = [
   { id: "rooftopExperience", label: "Rooftop Experience Section", icon: Utensils },
   { id: "spaWellness", label: "Spa & Wellness Section", icon: Waves },
   { id: "meetingsEvents", label: "Meetings & Events Section", icon: MessageSquare },
+  { id: "exploreKathmandu", label: "Explore Kathmandu Section", icon: Globe },
   { id: "rooms", label: "Rooms Section", icon: Bed },
   { id: "dining", label: "Dining Page", icon: Utensils },
   { id: "spa", label: "Spa Page", icon: Waves },
@@ -1946,6 +1947,437 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                     }} />
                   ))}
                 </div>
+              </>
+            )}
+
+            {activeSection === "exploreKathmandu" && (
+              <>
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Explore Kathmandu — Homepage</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.exploreKathmanduSection.enabled !== false}
+                      onChange={(e) =>
+                        update("exploreKathmanduSection", {
+                          ...content.exploreKathmanduSection,
+                          enabled: e.target.checked,
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Enable Section
+                  </label>
+                  <AdminInput
+                    label="Small Label"
+                    value={content.exploreKathmanduSection.eyebrow}
+                    onChange={(e) =>
+                      update("exploreKathmanduSection", {
+                        ...content.exploreKathmanduSection,
+                        eyebrow: e.target.value,
+                      })
+                    }
+                  />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <AdminInput
+                      label="Heading Primary (emerald)"
+                      value={content.exploreKathmanduSection.titlePrimary}
+                      onChange={(e) =>
+                        update("exploreKathmanduSection", {
+                          ...content.exploreKathmanduSection,
+                          titlePrimary: e.target.value,
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Heading Accent (gold italic)"
+                      value={content.exploreKathmanduSection.titleAccent}
+                      onChange={(e) =>
+                        update("exploreKathmanduSection", {
+                          ...content.exploreKathmanduSection,
+                          titleAccent: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <AdminTextarea
+                    label="Description"
+                    rows={3}
+                    value={content.exploreKathmanduSection.description}
+                    onChange={(e) =>
+                      update("exploreKathmanduSection", {
+                        ...content.exploreKathmanduSection,
+                        description: e.target.value,
+                      })
+                    }
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput
+                      label="Background Top"
+                      value={content.exploreKathmanduSection.backgroundTop}
+                      onChange={(e) =>
+                        update("exploreKathmanduSection", {
+                          ...content.exploreKathmanduSection,
+                          backgroundTop: e.target.value,
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Background Bottom"
+                      value={content.exploreKathmanduSection.backgroundBottom}
+                      onChange={(e) =>
+                        update("exploreKathmanduSection", {
+                          ...content.exploreKathmanduSection,
+                          backgroundBottom: e.target.value,
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Heading Color"
+                      value={content.exploreKathmanduSection.headingColor}
+                      onChange={(e) =>
+                        update("exploreKathmanduSection", {
+                          ...content.exploreKathmanduSection,
+                          headingColor: e.target.value,
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Gold Accent"
+                      value={content.exploreKathmanduSection.goldColor}
+                      onChange={(e) =>
+                        update("exploreKathmanduSection", {
+                          ...content.exploreKathmanduSection,
+                          goldColor: e.target.value,
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Card Background"
+                      value={content.exploreKathmanduSection.cardBackgroundColor}
+                      onChange={(e) =>
+                        update("exploreKathmanduSection", {
+                          ...content.exploreKathmanduSection,
+                          cardBackgroundColor: e.target.value,
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Card Border"
+                      value={content.exploreKathmanduSection.cardBorderColor}
+                      onChange={(e) =>
+                        update("exploreKathmanduSection", {
+                          ...content.exploreKathmanduSection,
+                          cardBorderColor: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.exploreKathmanduSection.showMist !== false}
+                      onChange={(e) =>
+                        update("exploreKathmanduSection", {
+                          ...content.exploreKathmanduSection,
+                          showMist: e.target.checked,
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Show Mist / Mountain Silhouettes
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-display text-lg text-luxury-gold">
+                    Destinations ({content.exploreKathmanduSection.destinations.length})
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="gold"
+                      size="sm"
+                      onClick={() => {
+                        const destinations = content.exploreKathmanduSection.destinations;
+                        const order = destinations.length
+                          ? Math.max(...destinations.map((d) => d.order ?? 0)) + 1
+                          : 0;
+                        update("exploreKathmanduSection", {
+                          ...content.exploreKathmanduSection,
+                          destinations: [
+                            ...destinations,
+                            {
+                              id: `dest-${Date.now()}`,
+                              enabled: true,
+                              order,
+                              category: "HERITAGE",
+                              title: "New Destination",
+                              description: "Short description of this destination.",
+                              distance: "0 km",
+                              href: "/cultural-experience",
+                              icon: "landmark",
+                              iconSrc: "",
+                              media: {
+                                type: "image",
+                                imageSrc: "",
+                                videoSrc: "",
+                                poster: "",
+                                alt: "",
+                                caption: "",
+                              },
+                            },
+                          ],
+                        });
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Card
+                    </Button>
+                  </div>
+                </div>
+
+                {[...content.exploreKathmanduSection.destinations]
+                  .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                  .map((dest, sortedIndex) => {
+                    const i = content.exploreKathmanduSection.destinations.findIndex(
+                      (d) => d.id === dest.id
+                    );
+                    const move = (direction: -1 | 1) => {
+                      const sorted = [...content.exploreKathmanduSection.destinations].sort(
+                        (a, b) => (a.order ?? 0) - (b.order ?? 0)
+                      );
+                      const from = sortedIndex;
+                      const to = from + direction;
+                      if (to < 0 || to >= sorted.length) return;
+                      const next = [...sorted];
+                      const [moved] = next.splice(from, 1);
+                      next.splice(to, 0, moved);
+                      update("exploreKathmanduSection", {
+                        ...content.exploreKathmanduSection,
+                        destinations: next.map((d, idx) => ({ ...d, order: idx })),
+                      });
+                    };
+                    return (
+                      <div key={dest.id} className="space-y-3 border border-luxury-gold/10 p-5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-xs uppercase tracking-wider text-white/40">
+                            #{sortedIndex + 1} · {dest.title}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="border-luxury-gold/30 text-luxury-gold"
+                              disabled={sortedIndex === 0}
+                              onClick={() => move(-1)}
+                            >
+                              Up
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="border-luxury-gold/30 text-luxury-gold"
+                              disabled={
+                                sortedIndex ===
+                                content.exploreKathmanduSection.destinations.length - 1
+                              }
+                              onClick={() => move(1)}
+                            >
+                              Down
+                            </Button>
+                            <label className="flex items-center gap-2 text-xs text-white/60">
+                              <input
+                                type="checkbox"
+                                checked={dest.enabled !== false}
+                                onChange={(e) => {
+                                  const destinations = [
+                                    ...content.exploreKathmanduSection.destinations,
+                                  ];
+                                  destinations[i] = { ...dest, enabled: e.target.checked };
+                                  update("exploreKathmanduSection", {
+                                    ...content.exploreKathmanduSection,
+                                    destinations,
+                                  });
+                                }}
+                                className="accent-luxury-gold"
+                              />
+                              Enabled
+                            </label>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="border-luxury-gold/30 text-luxury-gold"
+                              onClick={() => {
+                                const copy = {
+                                  ...dest,
+                                  id: `dest-${Date.now()}`,
+                                  title: `${dest.title} (Copy)`,
+                                  order:
+                                    Math.max(
+                                      ...content.exploreKathmanduSection.destinations.map(
+                                        (d) => d.order ?? 0
+                                      )
+                                    ) + 1,
+                                };
+                                update("exploreKathmanduSection", {
+                                  ...content.exploreKathmanduSection,
+                                  destinations: [
+                                    ...content.exploreKathmanduSection.destinations,
+                                    copy,
+                                  ],
+                                });
+                              }}
+                            >
+                              Duplicate
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="text-red-400"
+                              onClick={() =>
+                                update("exploreKathmanduSection", {
+                                  ...content.exploreKathmanduSection,
+                                  destinations:
+                                    content.exploreKathmanduSection.destinations.filter(
+                                      (d) => d.id !== dest.id
+                                    ),
+                                })
+                              }
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <AdminInput
+                            label="Title"
+                            value={dest.title}
+                            onChange={(e) => {
+                              const destinations = [
+                                ...content.exploreKathmanduSection.destinations,
+                              ];
+                              destinations[i] = { ...dest, title: e.target.value };
+                              update("exploreKathmanduSection", {
+                                ...content.exploreKathmanduSection,
+                                destinations,
+                              });
+                            }}
+                          />
+                          <AdminInput
+                            label="Category"
+                            value={dest.category}
+                            onChange={(e) => {
+                              const destinations = [
+                                ...content.exploreKathmanduSection.destinations,
+                              ];
+                              destinations[i] = { ...dest, category: e.target.value };
+                              update("exploreKathmanduSection", {
+                                ...content.exploreKathmanduSection,
+                                destinations,
+                              });
+                            }}
+                          />
+                          <AdminInput
+                            label="Distance Badge"
+                            value={dest.distance}
+                            onChange={(e) => {
+                              const destinations = [
+                                ...content.exploreKathmanduSection.destinations,
+                              ];
+                              destinations[i] = { ...dest, distance: e.target.value };
+                              update("exploreKathmanduSection", {
+                                ...content.exploreKathmanduSection,
+                                destinations,
+                              });
+                            }}
+                          />
+                          <AdminInput
+                            label="Link URL"
+                            value={dest.href}
+                            onChange={(e) => {
+                              const destinations = [
+                                ...content.exploreKathmanduSection.destinations,
+                              ];
+                              destinations[i] = { ...dest, href: e.target.value };
+                              update("exploreKathmanduSection", {
+                                ...content.exploreKathmanduSection,
+                                destinations,
+                              });
+                            }}
+                          />
+                          <AdminInput
+                            label="Icon Key (stupa/pagoda/mountain/lotus/palace/cablecar)"
+                            value={dest.icon}
+                            onChange={(e) => {
+                              const destinations = [
+                                ...content.exploreKathmanduSection.destinations,
+                              ];
+                              destinations[i] = { ...dest, icon: e.target.value };
+                              update("exploreKathmanduSection", {
+                                ...content.exploreKathmanduSection,
+                                destinations,
+                              });
+                            }}
+                          />
+                        </div>
+                        <AdminTextarea
+                          label="Description"
+                          rows={2}
+                          value={dest.description}
+                          onChange={(e) => {
+                            const destinations = [
+                              ...content.exploreKathmanduSection.destinations,
+                            ];
+                            destinations[i] = { ...dest, description: e.target.value };
+                            update("exploreKathmanduSection", {
+                              ...content.exploreKathmanduSection,
+                              destinations,
+                            });
+                          }}
+                        />
+                        <AdminMediaField
+                          label="Destination Image"
+                          folder="culture"
+                          value={dest.media}
+                          onChange={(media) => {
+                            const destinations = [
+                              ...content.exploreKathmanduSection.destinations,
+                            ];
+                            destinations[i] = { ...dest, media };
+                            update("exploreKathmanduSection", {
+                              ...content.exploreKathmanduSection,
+                              destinations,
+                            });
+                          }}
+                          library={content.mediaLibrary}
+                          onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                        />
+                        <ImagePicker
+                          label="Custom Icon (optional SVG/PNG)"
+                          value={dest.iconSrc || ""}
+                          category="General"
+                          folder="icons"
+                          library={content.mediaLibrary}
+                          onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                          onChange={(url) => {
+                            const destinations = [
+                              ...content.exploreKathmanduSection.destinations,
+                            ];
+                            destinations[i] = { ...dest, iconSrc: url };
+                            update("exploreKathmanduSection", {
+                              ...content.exploreKathmanduSection,
+                              destinations,
+                            });
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
               </>
             )}
 

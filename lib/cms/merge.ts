@@ -135,6 +135,10 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       dining: { ...defaultContent.homeSections.dining, ...partial.homeSections?.dining },
       spa: { ...defaultContent.homeSections.spa, ...partial.homeSections?.spa },
       meetingsEvents: { ...defaultContent.homeSections.meetingsEvents, ...partial.homeSections?.meetingsEvents },
+      exploreKathmandu: {
+        ...defaultContent.homeSections.exploreKathmandu,
+        ...partial.homeSections?.exploreKathmandu,
+      },
       gallery: { ...defaultContent.homeSections.gallery, ...partial.homeSections?.gallery },
       testimonials: { ...defaultContent.homeSections.testimonials, ...partial.homeSections?.testimonials },
       cta: { ...defaultContent.homeSections.cta, ...partial.homeSections?.cta },
@@ -163,6 +167,10 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     meetingsEventsSection: mergeMeetingsEventsSection(
       defaultContent.meetingsEventsSection,
       partial.meetingsEventsSection
+    ),
+    exploreKathmanduSection: mergeExploreKathmanduSection(
+      defaultContent.exploreKathmanduSection,
+      partial.exploreKathmanduSection
     ),
     culturalExperiencePage: mergeCulturalExperiencePage(
       defaultContent.culturalExperiencePage,
@@ -618,6 +626,35 @@ function mergeMeetingsEventsSection(
           ...base.media,
           ...(card.media ?? {}),
           imageSrc: card.media?.imageSrc?.trim() || base.media.imageSrc,
+        },
+      };
+    }),
+  };
+}
+
+function mergeExploreKathmanduSection(
+  defaults: SiteContent["exploreKathmanduSection"],
+  partial?: Partial<SiteContent["exploreKathmanduSection"]>
+): SiteContent["exploreKathmanduSection"] {
+  if (!partial) return defaults;
+  return {
+    ...defaults,
+    ...partial,
+    enabled: partial.enabled !== false,
+    showMist: partial.showMist !== false,
+    destinations: (partial.destinations ?? defaults.destinations).map((dest, i) => {
+      const base = defaults.destinations[i] ?? defaults.destinations[0];
+      return {
+        ...base,
+        ...dest,
+        id: dest.id || base.id || `dest-${i}`,
+        enabled: dest.enabled !== false,
+        order: typeof dest.order === "number" ? dest.order : i,
+        iconSrc: dest.iconSrc ?? base.iconSrc ?? "",
+        media: {
+          ...base.media,
+          ...(dest.media ?? {}),
+          imageSrc: dest.media?.imageSrc?.trim() || base.media.imageSrc,
         },
       };
     }),

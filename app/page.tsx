@@ -10,6 +10,7 @@ import { LobbyCafeSection } from "@/sections/LobbyCafeSection";
 import { RooftopExperienceSection } from "@/sections/RooftopExperienceSection";
 import { SpaWellnessHomeSection } from "@/sections/SpaWellnessHomeSection";
 import { MeetingsEventsSection } from "@/sections/MeetingsEventsSection";
+import { ExploreKathmanduSection } from "@/sections/ExploreKathmanduSection";
 import { GalleryHomeSection } from "@/sections/GalleryHomeSection";
 import { ReviewsSection } from "@/sections/ReviewsSection";
 import { ContactHomeSection } from "@/sections/ContactHomeSection";
@@ -88,6 +89,16 @@ export default async function HomePage() {
       node:
         content.meetingsEventsSection.enabled !== false ? (
           <MeetingsEventsSection section={content.meetingsEventsSection} />
+        ) : null,
+    });
+  }
+  if (isEnabled(hs.exploreKathmandu)) {
+    sections.push({
+      key: "exploreKathmandu",
+      order: hs.exploreKathmandu.order,
+      node:
+        content.exploreKathmanduSection.enabled !== false ? (
+          <ExploreKathmanduSection section={content.exploreKathmanduSection} />
         ) : null,
     });
   }
