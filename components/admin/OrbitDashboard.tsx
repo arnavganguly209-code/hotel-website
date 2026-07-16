@@ -1864,7 +1864,58 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                     <AdminInput label="Gold Accent" value={content.meetingsEventsSection.goldColor} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, goldColor: e.target.value })} />
                     <AdminInput label="Section Padding Y" type="number" value={content.meetingsEventsSection.sectionPaddingY} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, sectionPaddingY: Number(e.target.value) })} />
                   </div>
-                  <AdminMediaField label="Main Image" folder="events" value={content.meetingsEventsSection.media} onChange={(media) => update("meetingsEventsSection", { ...content.meetingsEventsSection, media })} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} />
+                  <AdminMediaField label="Large Event Image" folder="events" value={content.meetingsEventsSection.media} onChange={(media) => update("meetingsEventsSection", { ...content.meetingsEventsSection, media })} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} />
+                  <AdminInput label="Large Image Title" value={content.meetingsEventsSection.featuredTitle} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, featuredTitle: e.target.value })} />
+                  <AdminInput label="Large Image Description" value={content.meetingsEventsSection.featuredDescription} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, featuredDescription: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Feature Cards (Left Column)</p>
+                  {content.meetingsEventsSection.featureCards.map((card, i) => (
+                    <div key={card.id} className="space-y-3 border border-luxury-gold/5 p-4">
+                      <p className="text-xs uppercase tracking-wider text-white/40">Card {i + 1}</p>
+                      <AdminInput
+                        label="Title"
+                        value={card.title}
+                        onChange={(e) => {
+                          const featureCards = [...content.meetingsEventsSection.featureCards];
+                          featureCards[i] = { ...card, title: e.target.value };
+                          update("meetingsEventsSection", { ...content.meetingsEventsSection, featureCards });
+                        }}
+                      />
+                      <AdminTextarea
+                        label="Description"
+                        rows={2}
+                        value={card.description}
+                        onChange={(e) => {
+                          const featureCards = [...content.meetingsEventsSection.featureCards];
+                          featureCards[i] = { ...card, description: e.target.value };
+                          update("meetingsEventsSection", { ...content.meetingsEventsSection, featureCards });
+                        }}
+                      />
+                      <AdminInput
+                        label="Icon Key (users / rings / cloche)"
+                        value={card.icon}
+                        onChange={(e) => {
+                          const featureCards = [...content.meetingsEventsSection.featureCards];
+                          featureCards[i] = { ...card, icon: e.target.value };
+                          update("meetingsEventsSection", { ...content.meetingsEventsSection, featureCards });
+                        }}
+                      />
+                      <AdminMediaField
+                        label={`${card.title || `Card ${i + 1}`} Image`}
+                        folder="events"
+                        value={card.media}
+                        onChange={(media) => {
+                          const featureCards = [...content.meetingsEventsSection.featureCards];
+                          featureCards[i] = { ...card, media };
+                          update("meetingsEventsSection", { ...content.meetingsEventsSection, featureCards });
+                        }}
+                        library={content.mediaLibrary}
+                        onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                      />
+                    </div>
+                  ))}
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">

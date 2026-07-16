@@ -366,7 +366,21 @@ export interface SiteContent {
     eyebrow: string;
     title: string;
     description: string;
+    /** Large hero image on the left column */
     media: CmsMedia;
+    featuredTitle: string;
+    featuredDescription: string;
+    /** Three small cards under the large image */
+    featureCards: Array<{
+      id: string;
+      enabled: boolean;
+      order: number;
+      title: string;
+      description: string;
+      /** Lucide icon key: users | rings | cloche */
+      icon: string;
+      media: CmsMedia;
+    }>;
     statsEyebrow: string;
     stats: Array<{
       id: string;

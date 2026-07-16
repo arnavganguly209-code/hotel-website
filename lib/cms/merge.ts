@@ -601,6 +601,26 @@ function mergeMeetingsEventsSection(
       ...(partial.media ?? {}),
       imageSrc: partial.media?.imageSrc?.trim() || defaults.media.imageSrc,
     },
+    featuredTitle: definedString(partial.featuredTitle, defaults.featuredTitle),
+    featuredDescription: definedString(
+      partial.featuredDescription,
+      defaults.featuredDescription
+    ),
+    featureCards: (partial.featureCards ?? defaults.featureCards).map((card, i) => {
+      const base = defaults.featureCards[i] ?? defaults.featureCards[0];
+      return {
+        ...base,
+        ...card,
+        id: card.id || base.id,
+        enabled: card.enabled !== false,
+        order: typeof card.order === "number" ? card.order : i,
+        media: {
+          ...base.media,
+          ...(card.media ?? {}),
+          imageSrc: card.media?.imageSrc?.trim() || base.media.imageSrc,
+        },
+      };
+    }),
   };
 }
 
