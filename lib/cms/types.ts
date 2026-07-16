@@ -344,6 +344,21 @@ export interface SiteContent {
     cardPaddingPx: number;
     cardRadiusPx: number;
     cardHoverLiftPx: number;
+    imageTopOffsetPx: number;
+    treatmentRoomsCard: {
+      enabled: boolean;
+      number: string;
+      label: string;
+      backgroundColor: string;
+      textColor: string;
+      borderColor: string;
+      shadow: string;
+      accentColor: string;
+      widthPx: number;
+      heightPx: number;
+      leftPx: number;
+      bottomPx: number;
+    };
   };
   culturalExperiencePage: {
     hero: PageHero & { media: CmsMedia };

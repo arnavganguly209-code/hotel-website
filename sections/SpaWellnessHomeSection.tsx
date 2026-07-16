@@ -42,6 +42,7 @@ export function SpaWellnessHomeSection({
 
   const imageSrc = section.media?.imageSrc || "";
   const imageAlt = section.media?.alt || section.title;
+  const roomsCard = section.treatmentRoomsCard;
 
   return (
     <section
@@ -177,6 +178,7 @@ export function SpaWellnessHomeSection({
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.9, ease: luxuryEase }}
             className="relative"
+            style={{ marginTop: section.imageTopOffsetPx }}
           >
             <div
               className="relative aspect-[4/3] overflow-hidden rounded-[24px]"
@@ -205,6 +207,45 @@ export function SpaWellnessHomeSection({
                 </div>
               )}
             </div>
+
+            {roomsCard?.enabled !== false ? (
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.75, ease: luxuryEase, delay: 0.12 }}
+                className="absolute z-10 hidden lg:block"
+                style={{
+                  left: roomsCard.leftPx,
+                  bottom: roomsCard.bottomPx,
+                  width: roomsCard.widthPx,
+                  minHeight: roomsCard.heightPx,
+                  backgroundColor: roomsCard.backgroundColor,
+                  color: roomsCard.textColor,
+                  border: `1px solid ${roomsCard.borderColor}`,
+                  boxShadow: roomsCard.shadow,
+                  borderRadius: 22,
+                }}
+              >
+                <div className="grid min-h-full grid-cols-[16px_1fr] overflow-hidden rounded-[22px]">
+                  <div style={{ backgroundColor: roomsCard.accentColor }} />
+                  <div className="flex min-h-full flex-col justify-center px-6 py-5">
+                    <p
+                      className="font-display text-[2rem] font-semibold leading-none"
+                      style={{ color: heading }}
+                    >
+                      {roomsCard.number}
+                    </p>
+                    <p
+                      className="mt-2 font-body text-[11px] font-semibold uppercase tracking-[0.22em]"
+                      style={{ color: roomsCard.textColor }}
+                    >
+                      {roomsCard.label}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            ) : null}
           </motion.div>
         </div>
       </div>

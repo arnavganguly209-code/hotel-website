@@ -1088,6 +1088,17 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                         })
                       }
                     />
+                    <AdminInput
+                      label="Image Top Offset (px)"
+                      type="number"
+                      value={content.spaWellnessSection.imageTopOffsetPx}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          imageTopOffsetPx: Number(e.target.value),
+                        })
+                      }
+                    />
                   </div>
                 </div>
 
@@ -1566,6 +1577,178 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                     library={content.mediaLibrary}
                     onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
                   />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Treatment Rooms Card</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.spaWellnessSection.treatmentRoomsCard.enabled !== false}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          treatmentRoomsCard: {
+                            ...content.spaWellnessSection.treatmentRoomsCard,
+                            enabled: e.target.checked,
+                          },
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Show Treatment Rooms Card
+                  </label>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput
+                      label="Number"
+                      value={content.spaWellnessSection.treatmentRoomsCard.number}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          treatmentRoomsCard: {
+                            ...content.spaWellnessSection.treatmentRoomsCard,
+                            number: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Label"
+                      value={content.spaWellnessSection.treatmentRoomsCard.label}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          treatmentRoomsCard: {
+                            ...content.spaWellnessSection.treatmentRoomsCard,
+                            label: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Background Color"
+                      value={content.spaWellnessSection.treatmentRoomsCard.backgroundColor}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          treatmentRoomsCard: {
+                            ...content.spaWellnessSection.treatmentRoomsCard,
+                            backgroundColor: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Text Color"
+                      value={content.spaWellnessSection.treatmentRoomsCard.textColor}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          treatmentRoomsCard: {
+                            ...content.spaWellnessSection.treatmentRoomsCard,
+                            textColor: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Border Color"
+                      value={content.spaWellnessSection.treatmentRoomsCard.borderColor}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          treatmentRoomsCard: {
+                            ...content.spaWellnessSection.treatmentRoomsCard,
+                            borderColor: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Accent Color"
+                      value={content.spaWellnessSection.treatmentRoomsCard.accentColor}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          treatmentRoomsCard: {
+                            ...content.spaWellnessSection.treatmentRoomsCard,
+                            accentColor: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Shadow"
+                      value={content.spaWellnessSection.treatmentRoomsCard.shadow}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          treatmentRoomsCard: {
+                            ...content.spaWellnessSection.treatmentRoomsCard,
+                            shadow: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                    <div />
+                    <AdminInput
+                      label="Card Width (px)"
+                      type="number"
+                      value={content.spaWellnessSection.treatmentRoomsCard.widthPx}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          treatmentRoomsCard: {
+                            ...content.spaWellnessSection.treatmentRoomsCard,
+                            widthPx: Number(e.target.value),
+                          },
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Card Height (px)"
+                      type="number"
+                      value={content.spaWellnessSection.treatmentRoomsCard.heightPx}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          treatmentRoomsCard: {
+                            ...content.spaWellnessSection.treatmentRoomsCard,
+                            heightPx: Number(e.target.value),
+                          },
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Position Left (px)"
+                      type="number"
+                      value={content.spaWellnessSection.treatmentRoomsCard.leftPx}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          treatmentRoomsCard: {
+                            ...content.spaWellnessSection.treatmentRoomsCard,
+                            leftPx: Number(e.target.value),
+                          },
+                        })
+                      }
+                    />
+                    <AdminInput
+                      label="Position Bottom (px)"
+                      type="number"
+                      value={content.spaWellnessSection.treatmentRoomsCard.bottomPx}
+                      onChange={(e) =>
+                        update("spaWellnessSection", {
+                          ...content.spaWellnessSection,
+                          treatmentRoomsCard: {
+                            ...content.spaWellnessSection.treatmentRoomsCard,
+                            bottomPx: Number(e.target.value),
+                          },
+                        })
+                      }
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">

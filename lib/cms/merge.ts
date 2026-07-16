@@ -487,6 +487,29 @@ function mergeSpaWellnessSection(
       typeof partial.cardRadiusPx === "number" ? partial.cardRadiusPx : defaults.cardRadiusPx,
     cardHoverLiftPx:
       typeof partial.cardHoverLiftPx === "number" ? partial.cardHoverLiftPx : defaults.cardHoverLiftPx,
+    imageTopOffsetPx:
+      typeof partial.imageTopOffsetPx === "number" ? partial.imageTopOffsetPx : defaults.imageTopOffsetPx,
+    treatmentRoomsCard: {
+      ...defaults.treatmentRoomsCard,
+      ...(partial.treatmentRoomsCard ?? {}),
+      enabled: partial.treatmentRoomsCard?.enabled !== false,
+      widthPx:
+        typeof partial.treatmentRoomsCard?.widthPx === "number"
+          ? partial.treatmentRoomsCard.widthPx
+          : defaults.treatmentRoomsCard.widthPx,
+      heightPx:
+        typeof partial.treatmentRoomsCard?.heightPx === "number"
+          ? partial.treatmentRoomsCard.heightPx
+          : defaults.treatmentRoomsCard.heightPx,
+      leftPx:
+        typeof partial.treatmentRoomsCard?.leftPx === "number"
+          ? partial.treatmentRoomsCard.leftPx
+          : defaults.treatmentRoomsCard.leftPx,
+      bottomPx:
+        typeof partial.treatmentRoomsCard?.bottomPx === "number"
+          ? partial.treatmentRoomsCard.bottomPx
+          : defaults.treatmentRoomsCard.bottomPx,
+    },
     media: {
       ...defaults.media,
       ...(partial.media ?? {}),
