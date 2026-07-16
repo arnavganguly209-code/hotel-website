@@ -124,6 +124,7 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     locationAdvantages: definedArray(partial.locationAdvantages, defaultContent.locationAdvantages),
     culture: mergeCulture(defaultContent.culture, partial.culture),
     facilitiesSection: mergeFacilitiesSection(defaultContent.facilitiesSection, partial.facilitiesSection),
+    fineDiningSection: mergeFineDiningSection(defaultContent.fineDiningSection, partial.fineDiningSection),
     culturalExperiencePage: mergeCulturalExperiencePage(
       defaultContent.culturalExperiencePage,
       partial.culturalExperiencePage
@@ -372,6 +373,26 @@ function mergeFacilitiesSection(
   defaults: SiteContent["facilitiesSection"],
   partial?: Partial<SiteContent["facilitiesSection"]>
 ): SiteContent["facilitiesSection"] {
+  if (!partial) return defaults;
+  return {
+    ...defaults,
+    ...partial,
+    ctaVisible: partial.ctaVisible !== false,
+    showMist: partial.showMist !== false,
+    media: {
+      ...defaults.media,
+      ...(partial.media ?? {}),
+      imageSrc:
+        partial.media?.imageSrc?.trim() ||
+        defaults.media.imageSrc,
+    },
+  };
+}
+
+function mergeFineDiningSection(
+  defaults: SiteContent["fineDiningSection"],
+  partial?: Partial<SiteContent["fineDiningSection"]>
+): SiteContent["fineDiningSection"] {
   if (!partial) return defaults;
   return {
     ...defaults,

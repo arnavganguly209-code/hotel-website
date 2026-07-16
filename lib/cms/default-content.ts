@@ -308,6 +308,29 @@ export const defaultContent: SiteContent = {
       caption: "Premium Amenities",
     },
   },
+  fineDiningSection: {
+    eyebrow: "Fine Dining",
+    title: "Garden View & Korean Restaurant",
+    description:
+      "Garden View & Korean Restaurant offers a relaxing dining experience with beautiful ambiance, delicious cuisine, and memorable hospitality.",
+    ctaText: "Explore Dining",
+    ctaHref: routes.dining,
+    ctaVisible: true,
+    showMist: true,
+    backgroundTop: "#F9F6EF",
+    backgroundBottom: "#E8F0E9",
+    goldColor: "#C5A059",
+    headingColor: "#062C24",
+    bodyColor: "#5A635C",
+    media: {
+      type: "image",
+      imageSrc: "/media/dining/korean-restaurant.jpg",
+      videoSrc: "",
+      poster: "",
+      alt: "Garden View and Korean Restaurant terrace",
+      caption: "Fine Dining",
+    },
+  },
   culturalExperiencePage: {
     hero: {
       title: "Cultural Experience",

@@ -55,6 +55,7 @@ const SECTIONS = [
   { id: "experiences", label: "Home Experiences", icon: Sparkles },
   { id: "culture", label: "Cultural Experience", icon: Globe },
   { id: "facilities", label: "Amenities Section", icon: Grid3X3 },
+  { id: "fineDining", label: "Fine Dining Section", icon: Utensils },
   { id: "rooms", label: "Rooms Section", icon: Bed },
   { id: "dining", label: "Dining Page", icon: Utensils },
   { id: "spa", label: "Spa Page", icon: Waves },
@@ -1106,6 +1107,81 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       />
                     </div>
                   ))}
+                </div>
+              </>
+            )}
+
+            {activeSection === "fineDining" && (
+              <>
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Fine Dining Section</p>
+                  <p className="text-xs text-white/40">
+                    Homepage Fine Dining section — Garden View &amp; Korean Restaurant (below World-Class Amenities).
+                  </p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.homeSections.dining.enabled}
+                      onChange={(e) =>
+                        update("homeSections", {
+                          ...content.homeSections,
+                          dining: { ...content.homeSections.dining, enabled: e.target.checked },
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Show Section
+                  </label>
+                  <AdminInput label="Small Label (eyebrow)" value={content.fineDiningSection.eyebrow} onChange={(e) => update("fineDiningSection", { ...content.fineDiningSection, eyebrow: e.target.value })} />
+                  <AdminInput label="Main Heading" value={content.fineDiningSection.title} onChange={(e) => update("fineDiningSection", { ...content.fineDiningSection, title: e.target.value })} />
+                  <AdminTextarea label="Description" rows={4} value={content.fineDiningSection.description} onChange={(e) => update("fineDiningSection", { ...content.fineDiningSection, description: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Button</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.fineDiningSection.ctaVisible !== false}
+                      onChange={(e) => update("fineDiningSection", { ...content.fineDiningSection, ctaVisible: e.target.checked })}
+                      className="accent-luxury-gold"
+                    />
+                    Show Button
+                  </label>
+                  <AdminInput label="Button Text" value={content.fineDiningSection.ctaText} onChange={(e) => update("fineDiningSection", { ...content.fineDiningSection, ctaText: e.target.value })} />
+                  <AdminInput label="Button URL" value={content.fineDiningSection.ctaHref} onChange={(e) => update("fineDiningSection", { ...content.fineDiningSection, ctaHref: e.target.value })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Background &amp; Atmosphere</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput label="Background Top" value={content.fineDiningSection.backgroundTop} onChange={(e) => update("fineDiningSection", { ...content.fineDiningSection, backgroundTop: e.target.value })} />
+                    <AdminInput label="Background Bottom" value={content.fineDiningSection.backgroundBottom} onChange={(e) => update("fineDiningSection", { ...content.fineDiningSection, backgroundBottom: e.target.value })} />
+                    <AdminInput label="Heading Color" value={content.fineDiningSection.headingColor} onChange={(e) => update("fineDiningSection", { ...content.fineDiningSection, headingColor: e.target.value })} />
+                    <AdminInput label="Body Color" value={content.fineDiningSection.bodyColor} onChange={(e) => update("fineDiningSection", { ...content.fineDiningSection, bodyColor: e.target.value })} />
+                    <AdminInput label="Gold Accent" value={content.fineDiningSection.goldColor} onChange={(e) => update("fineDiningSection", { ...content.fineDiningSection, goldColor: e.target.value })} />
+                  </div>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.fineDiningSection.showMist !== false}
+                      onChange={(e) => update("fineDiningSection", { ...content.fineDiningSection, showMist: e.target.checked })}
+                      className="accent-luxury-gold"
+                    />
+                    Show Mist / Mountain Silhouettes
+                  </label>
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Main Image</p>
+                  <AdminMediaField
+                    label="Fine Dining Image"
+                    folder="dining"
+                    value={content.fineDiningSection.media}
+                    onChange={(media) => update("fineDiningSection", { ...content.fineDiningSection, media })}
+                    library={content.mediaLibrary}
+                    onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                  />
                 </div>
               </>
             )}

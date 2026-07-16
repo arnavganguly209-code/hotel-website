@@ -5,6 +5,7 @@ import { RoomsSection } from "@/sections/RoomsSection";
 import { ExperienceSections } from "@/sections/ExperienceSections";
 import { NepaliCulture } from "@/sections/NepaliCulture";
 import { FacilitiesSection } from "@/sections/FacilitiesSection";
+import { FineDiningSection } from "@/sections/FineDiningSection";
 import { GalleryHomeSection } from "@/sections/GalleryHomeSection";
 import { ReviewsSection } from "@/sections/ReviewsSection";
 import { ContactHomeSection } from "@/sections/ContactHomeSection";
@@ -38,10 +39,20 @@ export default async function HomePage() {
     sections.push({ key: "rooms", order: hs.rooms.order, node: <RoomsSection rooms={content.rooms} section={content.roomsSection} /> });
   }
   if (isEnabled(hs.dining)) {
+    const otherExperiences = content.experiences.filter(
+      (e) => e.variant !== "spa" && e.variant !== "dining"
+    );
     sections.push({
       key: "dining",
       order: hs.dining.order,
-      node: <ExperienceSections experiences={content.experiences.filter((e) => e.variant !== "spa")} />,
+      node: (
+        <>
+          <FineDiningSection section={content.fineDiningSection} />
+          {otherExperiences.length > 0 ? (
+            <ExperienceSections experiences={otherExperiences} />
+          ) : null}
+        </>
+      ),
     });
   }
   if (isEnabled(hs.spa)) {

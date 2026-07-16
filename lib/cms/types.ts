@@ -269,6 +269,21 @@ export interface SiteContent {
     headingColor: string;
     bodyColor: string;
   };
+  fineDiningSection: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    media: CmsMedia;
+    ctaText: string;
+    ctaHref: string;
+    ctaVisible: boolean;
+    showMist: boolean;
+    backgroundTop: string;
+    backgroundBottom: string;
+    goldColor: string;
+    headingColor: string;
+    bodyColor: string;
+  };
   culturalExperiencePage: {
     hero: PageHero & { media: CmsMedia };
     seo: PageSeo;
