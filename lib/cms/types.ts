@@ -164,6 +164,7 @@ export interface SiteContent {
     facilities: HomeSectionMeta;
     dining: HomeSectionMeta;
     spa: HomeSectionMeta;
+    meetingsEvents: HomeSectionMeta;
     gallery: HomeSectionMeta;
     testimonials: HomeSectionMeta;
     cta: HomeSectionMeta;
@@ -360,6 +361,39 @@ export interface SiteContent {
       bottomPx: number;
     };
   };
+  meetingsEventsSection: {
+    enabled: boolean;
+    eyebrow: string;
+    title: string;
+    description: string;
+    media: CmsMedia;
+    statsEyebrow: string;
+    stats: Array<{
+      id: string;
+      value: string;
+      label: string;
+      enabled: boolean;
+      order: number;
+    }>;
+    checklist: Array<{
+      id: string;
+      text: string;
+      enabled: boolean;
+      order: number;
+    }>;
+    cardBackgroundColor: string;
+    cardBorderColor: string;
+    ctaText: string;
+    ctaHref: string;
+    ctaVisible: boolean;
+    showMist: boolean;
+    backgroundTop: string;
+    backgroundBottom: string;
+    goldColor: string;
+    headingColor: string;
+    bodyColor: string;
+    sectionPaddingY: number;
+  };
   culturalExperiencePage: {
     hero: PageHero & { media: CmsMedia };
     seo: PageSeo;
@@ -450,6 +484,70 @@ export interface SiteContent {
     services: Array<{ id: string; name: string; description: string }>;
     gallery: Array<{ id: string; src: string; title: string }>;
     cta: { title: string; description: string; buttonText: string };
+  };
+  meetingsEventsPage: {
+    hero: PageHero & { ctaText: string; ctaHref: string; media: CmsMedia };
+    seo: PageSeo & { keywords: string };
+    about: {
+      eyebrow: string;
+      title: string;
+      content: string;
+      media: CmsMedia;
+    };
+    spaces: Array<{
+      id: string;
+      enabled: boolean;
+      order: number;
+      title: string;
+      subtitle: string;
+      description: string;
+      capacity: string;
+      features: string[];
+      media: CmsMedia;
+    }>;
+    facilities: Array<{
+      id: string;
+      enabled: boolean;
+      order: number;
+      title: string;
+      description: string;
+      icon: string;
+    }>;
+    gallery: Array<{
+      id: string;
+      enabled: boolean;
+      order: number;
+      src: string;
+      title: string;
+      alt: string;
+    }>;
+    whyChooseUs: Array<{
+      id: string;
+      enabled: boolean;
+      order: number;
+      title: string;
+      description: string;
+    }>;
+    faq: Array<{
+      id: string;
+      enabled: boolean;
+      order: number;
+      question: string;
+      answer: string;
+    }>;
+    form: {
+      title: string;
+      description: string;
+      submitLabel: string;
+      successTitle: string;
+      successMessage: string;
+      eventTypes: string[];
+    };
+    backgroundTop: string;
+    backgroundBottom: string;
+    goldColor: string;
+    headingColor: string;
+    bodyColor: string;
   };
   aboutPage: {
     hero: PageHero;

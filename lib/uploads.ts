@@ -360,6 +360,76 @@ export async function saveUploadedFile(options: {
   };
 }
 
+const ALLOWED_EVENT_ATTACHMENT_MIME = new Set([
+  "application/pdf",
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+]);
+
+function extensionForEventAttachment(fileName: string, mimeType: string): string | null {
+  const mime = mimeType.toLowerCase();
+  if (mime === "application/pdf") return ".pdf";
+  return extensionForUpload(fileName, mime);
+}
+
+export async function saveEventAttachmentFile(options: {
+  buffer: Buffer;
+  originalName: string;
+  mimeType: string;
+  folder?: string;
+}): Promise<{
+  url: string;
+  publicId: string;
+  absolutePath: string;
+  bytes: number;
+  diskVerified: true;
+}> {
+  const { buffer, originalName, mimeType, folder = "events" } = options;
+  const mime = (mimeType || "").toLowerCase();
+
+  if (buffer.length <= 0) {
+    throw new UploadError("Empty file", 400);
+  }
+  if (buffer.length > MAX_UPLOAD_BYTES) {
+    throw new UploadError("File too large. Maximum upload size is 10MB.", 400);
+  }
+  if (!ALLOWED_EVENT_ATTACHMENT_MIME.has(mime)) {
+    throw new UploadError(
+      "Invalid attachment. Only PDF and image files (PNG, JPG, WEBP) are allowed.",
+      400
+    );
+  }
+
+  const ext = extensionForEventAttachment(originalName, mime);
+  if (!ext) {
+    throw new UploadError("Unsupported attachment type.", 400);
+  }
+
+  const writable = await verifyUploadsWritable();
+  if (!writable.ok) {
+    throw new UploadError(
+      `Storage unavailable. Uploads directory is not writable (${writable.root}). cwd=${writable.cwd}. ${writable.message}`,
+      500
+    );
+  }
+
+  const dir = await ensureUploadsDir(folder);
+  const filename = `${randomUUID()}${ext}`;
+  const absolutePath = path.join(dir, filename);
+
+  await writeFile(absolutePath, buffer);
+  const url = toPublicUrl(absolutePath);
+  return {
+    url,
+    publicId: toPublicId(url),
+    absolutePath,
+    bytes: buffer.length,
+    diskVerified: true,
+  };
+}
+
 /** Delete a local upload by public URL, public_id, or absolute path under uploadsRoot. */
 export async function deleteLocalUpload(input: string): Promise<{
   deleted: boolean;

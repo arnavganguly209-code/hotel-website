@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 import { useRef } from "react";
 import { MediaBackground } from "@/components/shared/MediaBackground";
 import { cn } from "@/lib/utils";
@@ -14,6 +16,8 @@ interface InnerPageHeroProps {
   mediaType?: "video" | "image";
   overlay?: "dark" | "light" | "gold";
   height?: "medium" | "large";
+  ctaText?: string;
+  ctaHref?: string;
 }
 
 export function InnerPageHero({
@@ -25,6 +29,8 @@ export function InnerPageHero({
   mediaType = "image",
   overlay = "dark",
   height = "large",
+  ctaText,
+  ctaHref,
 }: InnerPageHeroProps) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
@@ -85,6 +91,22 @@ export function InnerPageHero({
               {description}
             </motion.p>
           )}
+          {ctaText && ctaHref ? (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.35 }}
+              className="mt-8"
+            >
+              <Link
+                href={ctaHref}
+                className="inline-flex items-center gap-2.5 rounded-full bg-luxury-gold px-8 py-3.5 font-body text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition hover:-translate-y-0.5"
+              >
+                {ctaText}
+                <ArrowRight className="h-4 w-4" strokeWidth={1.6} />
+              </Link>
+            </motion.div>
+          ) : null}
           <motion.div
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}

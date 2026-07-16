@@ -35,6 +35,7 @@ import { HeroBuilder } from "@/components/admin/HeroBuilder";
 import { MediaLibrary } from "@/components/admin/media/MediaLibrary";
 import { GalleryManager } from "@/components/admin/media/GalleryManager";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
+import { EventInquiriesPanel } from "@/components/admin/EventInquiriesPanel";
 import type { SiteContent } from "@/lib/cms/types";
 import {
   isPaymentLogoCleared,
@@ -59,9 +60,12 @@ const SECTIONS = [
   { id: "lobbyCafe", label: "Lobby Café Section", icon: Utensils },
   { id: "rooftopExperience", label: "Rooftop Experience Section", icon: Utensils },
   { id: "spaWellness", label: "Spa & Wellness Section", icon: Waves },
+  { id: "meetingsEvents", label: "Meetings & Events Section", icon: MessageSquare },
   { id: "rooms", label: "Rooms Section", icon: Bed },
   { id: "dining", label: "Dining Page", icon: Utensils },
   { id: "spa", label: "Spa Page", icon: Waves },
+  { id: "meetingsEventsPage", label: "Meetings & Events Page", icon: MessageSquare },
+  { id: "eventInquiries", label: "Event Inquiries", icon: MessageSquare },
   { id: "culturalExperience", label: "Cultural Page", icon: Globe },
   { id: "about", label: "About Page", icon: Globe },
   { id: "gallery", label: "Gallery", icon: Image },
@@ -1823,6 +1827,77 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
               </>
             )}
 
+            {activeSection === "meetingsEvents" && (
+              <>
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Meetings &amp; Events — Homepage</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.meetingsEventsSection.enabled !== false}
+                      onChange={(e) =>
+                        update("meetingsEventsSection", {
+                          ...content.meetingsEventsSection,
+                          enabled: e.target.checked,
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Enable Section
+                  </label>
+                  <AdminInput label="Small Label" value={content.meetingsEventsSection.eyebrow} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, eyebrow: e.target.value })} />
+                  <AdminInput label="Main Heading" value={content.meetingsEventsSection.title} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, title: e.target.value })} />
+                  <AdminTextarea label="Description" rows={3} value={content.meetingsEventsSection.description} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, description: e.target.value })} />
+                  <AdminInput label="Stats Eyebrow" value={content.meetingsEventsSection.statsEyebrow} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, statsEyebrow: e.target.value })} />
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input type="checkbox" checked={content.meetingsEventsSection.ctaVisible !== false} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, ctaVisible: e.target.checked })} className="accent-luxury-gold" />
+                    Show Button
+                  </label>
+                  <AdminInput label="Button Text" value={content.meetingsEventsSection.ctaText} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, ctaText: e.target.value })} />
+                  <AdminInput label="Button Link" value={content.meetingsEventsSection.ctaHref} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, ctaHref: e.target.value })} />
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput label="Card Background" value={content.meetingsEventsSection.cardBackgroundColor} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, cardBackgroundColor: e.target.value })} />
+                    <AdminInput label="Card Border" value={content.meetingsEventsSection.cardBorderColor} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, cardBorderColor: e.target.value })} />
+                    <AdminInput label="Background Top" value={content.meetingsEventsSection.backgroundTop} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, backgroundTop: e.target.value })} />
+                    <AdminInput label="Background Bottom" value={content.meetingsEventsSection.backgroundBottom} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, backgroundBottom: e.target.value })} />
+                    <AdminInput label="Heading Color" value={content.meetingsEventsSection.headingColor} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, headingColor: e.target.value })} />
+                    <AdminInput label="Gold Accent" value={content.meetingsEventsSection.goldColor} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, goldColor: e.target.value })} />
+                    <AdminInput label="Section Padding Y" type="number" value={content.meetingsEventsSection.sectionPaddingY} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, sectionPaddingY: Number(e.target.value) })} />
+                  </div>
+                  <AdminMediaField label="Main Image" folder="events" value={content.meetingsEventsSection.media} onChange={(media) => update("meetingsEventsSection", { ...content.meetingsEventsSection, media })} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Statistics</p>
+                  {content.meetingsEventsSection.stats.map((stat, i) => (
+                    <div key={stat.id} className="grid grid-cols-2 gap-3 border border-luxury-gold/5 p-4">
+                      <AdminInput label="Value" value={stat.value} onChange={(e) => {
+                        const stats = [...content.meetingsEventsSection.stats];
+                        stats[i] = { ...stat, value: e.target.value };
+                        update("meetingsEventsSection", { ...content.meetingsEventsSection, stats });
+                      }} />
+                      <AdminInput label="Label" value={stat.label} onChange={(e) => {
+                        const stats = [...content.meetingsEventsSection.stats];
+                        stats[i] = { ...stat, label: e.target.value };
+                        update("meetingsEventsSection", { ...content.meetingsEventsSection, stats });
+                      }} />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Checklist</p>
+                  {content.meetingsEventsSection.checklist.map((item, i) => (
+                    <AdminInput key={item.id} label={`Item ${i + 1}`} value={item.text} onChange={(e) => {
+                      const checklist = [...content.meetingsEventsSection.checklist];
+                      checklist[i] = { ...item, text: e.target.value };
+                      update("meetingsEventsSection", { ...content.meetingsEventsSection, checklist });
+                    }} />
+                  ))}
+                </div>
+              </>
+            )}
+
             {activeSection === "rooms" && (
               <>
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
@@ -2193,6 +2268,103 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   </div>
                 ))}
                 <AdminInput label="CTA Title" value={content.spaPage.cta.title} onChange={(e) => update("spaPage", { ...content.spaPage, cta: { ...content.spaPage.cta, title: e.target.value } })} />
+              </>
+            )}
+
+            {activeSection === "meetingsEventsPage" && (
+              <>
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Hero</p>
+                  <AdminInput label="Title" value={content.meetingsEventsPage.hero.title} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, hero: { ...content.meetingsEventsPage.hero, title: e.target.value } })} />
+                  <AdminInput label="Subtitle" value={content.meetingsEventsPage.hero.subtitle} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, hero: { ...content.meetingsEventsPage.hero, subtitle: e.target.value } })} />
+                  <AdminTextarea label="Description" rows={3} value={content.meetingsEventsPage.hero.description} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, hero: { ...content.meetingsEventsPage.hero, description: e.target.value } })} />
+                  <AdminInput label="CTA Text" value={content.meetingsEventsPage.hero.ctaText} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, hero: { ...content.meetingsEventsPage.hero, ctaText: e.target.value } })} />
+                  <AdminInput label="CTA Link" value={content.meetingsEventsPage.hero.ctaHref} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, hero: { ...content.meetingsEventsPage.hero, ctaHref: e.target.value } })} />
+                  <AdminMediaField label="Hero Image" folder="events" value={content.meetingsEventsPage.hero.media} onChange={(media) => update("meetingsEventsPage", { ...content.meetingsEventsPage, hero: { ...content.meetingsEventsPage.hero, media, imageSrc: media.imageSrc || content.meetingsEventsPage.hero.imageSrc } })} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">SEO</p>
+                  <AdminInput label="Meta Title" value={content.meetingsEventsPage.seo.title} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, seo: { ...content.meetingsEventsPage.seo, title: e.target.value } })} />
+                  <AdminTextarea label="Meta Description" rows={2} value={content.meetingsEventsPage.seo.description} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, seo: { ...content.meetingsEventsPage.seo, description: e.target.value } })} />
+                  <AdminInput label="Keywords" value={content.meetingsEventsPage.seo.keywords} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, seo: { ...content.meetingsEventsPage.seo, keywords: e.target.value } })} />
+                  <AdminInput label="OG Image" value={content.meetingsEventsPage.seo.ogImage || ""} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, seo: { ...content.meetingsEventsPage.seo, ogImage: e.target.value } })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">About Event Spaces</p>
+                  <AdminInput label="Eyebrow" value={content.meetingsEventsPage.about.eyebrow} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, about: { ...content.meetingsEventsPage.about, eyebrow: e.target.value } })} />
+                  <AdminInput label="Title" value={content.meetingsEventsPage.about.title} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, about: { ...content.meetingsEventsPage.about, title: e.target.value } })} />
+                  <AdminTextarea label="Content" rows={4} value={content.meetingsEventsPage.about.content} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, about: { ...content.meetingsEventsPage.about, content: e.target.value } })} />
+                  <AdminMediaField label="About Image" folder="events" value={content.meetingsEventsPage.about.media} onChange={(media) => update("meetingsEventsPage", { ...content.meetingsEventsPage, about: { ...content.meetingsEventsPage.about, media } })} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} />
+                </div>
+
+                {content.meetingsEventsPage.spaces.map((space, i) => (
+                  <div key={space.id} className="space-y-4 border border-luxury-gold/10 p-6">
+                    <p className="font-display text-lg text-luxury-gold">{space.title}</p>
+                    <AdminInput label="Subtitle" value={space.subtitle} onChange={(e) => {
+                      const spaces = [...content.meetingsEventsPage.spaces];
+                      spaces[i] = { ...space, subtitle: e.target.value };
+                      update("meetingsEventsPage", { ...content.meetingsEventsPage, spaces });
+                    }} />
+                    <AdminInput label="Title" value={space.title} onChange={(e) => {
+                      const spaces = [...content.meetingsEventsPage.spaces];
+                      spaces[i] = { ...space, title: e.target.value };
+                      update("meetingsEventsPage", { ...content.meetingsEventsPage, spaces });
+                    }} />
+                    <AdminInput label="Capacity" value={space.capacity} onChange={(e) => {
+                      const spaces = [...content.meetingsEventsPage.spaces];
+                      spaces[i] = { ...space, capacity: e.target.value };
+                      update("meetingsEventsPage", { ...content.meetingsEventsPage, spaces });
+                    }} />
+                    <AdminTextarea label="Description" rows={3} value={space.description} onChange={(e) => {
+                      const spaces = [...content.meetingsEventsPage.spaces];
+                      spaces[i] = { ...space, description: e.target.value };
+                      update("meetingsEventsPage", { ...content.meetingsEventsPage, spaces });
+                    }} />
+                    <AdminMediaField label="Space Image" folder="events" value={space.media} onChange={(media) => {
+                      const spaces = [...content.meetingsEventsPage.spaces];
+                      spaces[i] = { ...space, media };
+                      update("meetingsEventsPage", { ...content.meetingsEventsPage, spaces });
+                    }} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} />
+                  </div>
+                ))}
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Booking Form</p>
+                  <AdminInput label="Form Title" value={content.meetingsEventsPage.form.title} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, form: { ...content.meetingsEventsPage.form, title: e.target.value } })} />
+                  <AdminTextarea label="Form Description" rows={2} value={content.meetingsEventsPage.form.description} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, form: { ...content.meetingsEventsPage.form, description: e.target.value } })} />
+                  <AdminInput label="Submit Label" value={content.meetingsEventsPage.form.submitLabel} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, form: { ...content.meetingsEventsPage.form, submitLabel: e.target.value } })} />
+                  <AdminInput label="Success Title" value={content.meetingsEventsPage.form.successTitle} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, form: { ...content.meetingsEventsPage.form, successTitle: e.target.value } })} />
+                  <AdminTextarea label="Success Message" rows={2} value={content.meetingsEventsPage.form.successMessage} onChange={(e) => update("meetingsEventsPage", { ...content.meetingsEventsPage, form: { ...content.meetingsEventsPage.form, successMessage: e.target.value } })} />
+                </div>
+
+                {content.meetingsEventsPage.faq.map((item, i) => (
+                  <div key={item.id} className="space-y-3 border border-luxury-gold/10 p-4">
+                    <AdminInput label="Question" value={item.question} onChange={(e) => {
+                      const faq = [...content.meetingsEventsPage.faq];
+                      faq[i] = { ...item, question: e.target.value };
+                      update("meetingsEventsPage", { ...content.meetingsEventsPage, faq });
+                    }} />
+                    <AdminTextarea label="Answer" rows={2} value={item.answer} onChange={(e) => {
+                      const faq = [...content.meetingsEventsPage.faq];
+                      faq[i] = { ...item, answer: e.target.value };
+                      update("meetingsEventsPage", { ...content.meetingsEventsPage, faq });
+                    }} />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {activeSection === "eventInquiries" && (
+              <>
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Event Inquiry Submissions</p>
+                  <p className="text-xs text-white/40">
+                    Proposals submitted from the Meetings &amp; Events page booking form.
+                  </p>
+                  <EventInquiriesPanel />
+                </div>
               </>
             )}
 

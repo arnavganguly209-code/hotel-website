@@ -63,3 +63,22 @@ model Booking {
   roomId          Int?
   room            Room?     @relation(fields: [roomId], references: [id])
 }
+
+model EventInquiry {
+  id             Int       @id @default(autoincrement())
+  name           String
+  email          String
+  phone          String    @default("")
+  country        String    @default("")
+  company        String    @default("")
+  eventType      String    @default("")
+  guests         Int       @default(0)
+  eventDate      DateTime?
+  eventTime      String    @default("")
+  budget         String    @default("")
+  specialRequest String    @default("")
+  attachmentUrl  String    @default("")
+  status         String    @default("new")
+  adminReply     String    @default("")
+  createdAt      DateTime  @default(now())
+}

@@ -11,6 +11,7 @@ const SITE_PATHS = [
   "/dining",
   "/spa",
   "/cultural-experience",
+  "/meetings-events",
   "/meetings-weddings",
   "/privacy-policy",
   "/terms-and-conditions",

@@ -8,6 +8,29 @@ import {
   PAYMENT_LOGO_CLEARED,
 } from "./payment-logos";
 import { resolveLocalUploadPath } from "@/lib/uploads";
+import { routes } from "@/lib/navigation";
+
+function ensureMeetingsNavItem(items: SiteContent["header"]["menuItems"]) {
+  const hasMeetings = items.some(
+    (item) =>
+      item.href === routes.meetingsEvents || item.href === "/meetings-weddings"
+  );
+  if (hasMeetings) {
+    return items.map((item) =>
+      item.href === "/meetings-weddings"
+        ? { ...item, href: routes.meetingsEvents, label: "Meetings & Events" }
+        : item
+    );
+  }
+  const spaIndex = items.findIndex((item) => item.href === routes.spa);
+  const entry = { label: "Meetings & Events", href: routes.meetingsEvents };
+  if (spaIndex >= 0) {
+    const next = [...items];
+    next.splice(spaIndex + 1, 0, entry);
+    return next;
+  }
+  return [...items, entry];
+}
 
 /** Preserve explicit empty values — never fall back to defaults when the field was set. */
 function definedString(value: string | undefined, fallback: string): string {
@@ -95,7 +118,9 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     header: {
       ...defaultContent.header,
       ...partial.header,
-      menuItems: definedArray(partial.header?.menuItems, defaultContent.header.menuItems),
+      menuItems: ensureMeetingsNavItem(
+        definedArray(partial.header?.menuItems, defaultContent.header.menuItems)
+      ),
       overlayMenuItems: partial.header?.overlayMenuItems ?? defaultContent.header.overlayMenuItems,
     },
     hero: mergeHero(defaultContent.hero, partial.hero),
@@ -109,6 +134,7 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       facilities: { ...defaultContent.homeSections.facilities, ...partial.homeSections?.facilities },
       dining: { ...defaultContent.homeSections.dining, ...partial.homeSections?.dining },
       spa: { ...defaultContent.homeSections.spa, ...partial.homeSections?.spa },
+      meetingsEvents: { ...defaultContent.homeSections.meetingsEvents, ...partial.homeSections?.meetingsEvents },
       gallery: { ...defaultContent.homeSections.gallery, ...partial.homeSections?.gallery },
       testimonials: { ...defaultContent.homeSections.testimonials, ...partial.homeSections?.testimonials },
       cta: { ...defaultContent.homeSections.cta, ...partial.homeSections?.cta },
@@ -134,6 +160,10 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       defaultContent.spaWellnessSection,
       partial.spaWellnessSection
     ),
+    meetingsEventsSection: mergeMeetingsEventsSection(
+      defaultContent.meetingsEventsSection,
+      partial.meetingsEventsSection
+    ),
     culturalExperiencePage: mergeCulturalExperiencePage(
       defaultContent.culturalExperiencePage,
       partial.culturalExperiencePage
@@ -158,6 +188,10 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     roomBooking: { ...defaultContent.roomBooking, ...(partial.roomBooking ?? {}) },
     diningPage: mergePageSection(defaultContent.diningPage, partial.diningPage),
     spaPage: mergePageSection(defaultContent.spaPage, partial.spaPage),
+    meetingsEventsPage: mergeMeetingsEventsPage(
+      defaultContent.meetingsEventsPage,
+      partial.meetingsEventsPage
+    ),
     aboutPage: mergeAboutPage(defaultContent.aboutPage, partial.aboutPage),
     reviews: definedArray(partial.reviews, defaultContent.reviews),
     gallery: definedArray(partial.gallery, defaultContent.gallery).map((item, i) => ({
@@ -517,6 +551,116 @@ function mergeSpaWellnessSection(
         partial.media?.imageSrc?.trim() ||
         defaults.media.imageSrc,
     },
+  };
+}
+
+function mergeMeetingsEventsSection(
+  defaults: SiteContent["meetingsEventsSection"],
+  partial?: Partial<SiteContent["meetingsEventsSection"]>
+): SiteContent["meetingsEventsSection"] {
+  if (!partial) return defaults;
+  return {
+    ...defaults,
+    ...partial,
+    enabled: partial.enabled !== false,
+    ctaVisible: partial.ctaVisible !== false,
+    showMist: partial.showMist !== false,
+    stats: (partial.stats ?? defaults.stats).map((s, i) => ({
+      ...(defaults.stats[i] ?? defaults.stats[0]),
+      ...s,
+      enabled: s.enabled !== false,
+      order: typeof s.order === "number" ? s.order : i,
+    })),
+    checklist: (partial.checklist ?? defaults.checklist).map((c, i) => ({
+      ...(defaults.checklist[i] ?? defaults.checklist[0]),
+      ...c,
+      enabled: c.enabled !== false,
+      order: typeof c.order === "number" ? c.order : i,
+    })),
+    media: {
+      ...defaults.media,
+      ...(partial.media ?? {}),
+      imageSrc: partial.media?.imageSrc?.trim() || defaults.media.imageSrc,
+    },
+  };
+}
+
+function mergeMeetingsEventsPage(
+  defaults: SiteContent["meetingsEventsPage"],
+  partial?: Partial<SiteContent["meetingsEventsPage"]>
+): SiteContent["meetingsEventsPage"] {
+  if (!partial) return defaults;
+  return {
+    ...defaults,
+    ...partial,
+    hero: {
+      ...defaults.hero,
+      ...(partial.hero ?? {}),
+      media: {
+        ...defaults.hero.media,
+        ...(partial.hero?.media ?? {}),
+        imageSrc:
+          partial.hero?.media?.imageSrc?.trim() ||
+          partial.hero?.imageSrc?.trim() ||
+          defaults.hero.media.imageSrc ||
+          defaults.hero.imageSrc,
+      },
+      imageSrc:
+        partial.hero?.imageSrc?.trim() ||
+        partial.hero?.media?.imageSrc?.trim() ||
+        defaults.hero.imageSrc,
+    },
+    seo: { ...defaults.seo, ...(partial.seo ?? {}) },
+    about: {
+      ...defaults.about,
+      ...(partial.about ?? {}),
+      media: {
+        ...defaults.about.media,
+        ...(partial.about?.media ?? {}),
+        imageSrc:
+          partial.about?.media?.imageSrc?.trim() || defaults.about.media.imageSrc,
+      },
+    },
+    spaces: (partial.spaces ?? defaults.spaces).map((space, i) => ({
+      ...(defaults.spaces[i] ?? defaults.spaces[0]),
+      ...space,
+      enabled: space.enabled !== false,
+      order: typeof space.order === "number" ? space.order : i,
+      features: definedArray(space.features, defaults.spaces[i]?.features ?? []),
+      media: {
+        ...(defaults.spaces[i]?.media ?? defaults.spaces[0].media),
+        ...(space.media ?? {}),
+        imageSrc:
+          space.media?.imageSrc?.trim() ||
+          defaults.spaces[i]?.media.imageSrc ||
+          defaults.spaces[0].media.imageSrc,
+      },
+    })),
+    facilities: (partial.facilities ?? defaults.facilities).map((f, i) => ({
+      ...(defaults.facilities[i] ?? defaults.facilities[0]),
+      ...f,
+      enabled: f.enabled !== false,
+      order: typeof f.order === "number" ? f.order : i,
+    })),
+    gallery: (partial.gallery ?? defaults.gallery).map((g, i) => ({
+      ...(defaults.gallery[i] ?? defaults.gallery[0]),
+      ...g,
+      enabled: g.enabled !== false,
+      order: typeof g.order === "number" ? g.order : i,
+    })),
+    whyChooseUs: (partial.whyChooseUs ?? defaults.whyChooseUs).map((w, i) => ({
+      ...(defaults.whyChooseUs[i] ?? defaults.whyChooseUs[0]),
+      ...w,
+      enabled: w.enabled !== false,
+      order: typeof w.order === "number" ? w.order : i,
+    })),
+    faq: (partial.faq ?? defaults.faq).map((item, i) => ({
+      ...(defaults.faq[i] ?? defaults.faq[0]),
+      ...item,
+      enabled: item.enabled !== false,
+      order: typeof item.order === "number" ? item.order : i,
+    })),
+    form: { ...defaults.form, ...(partial.form ?? {}) },
   };
 }
 

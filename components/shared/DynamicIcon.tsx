@@ -29,6 +29,13 @@ import {
   Star,
   Calendar,
   Award,
+  Mic,
+  Projector,
+  Presentation,
+  Lightbulb,
+  Car,
+  Camera,
+  Wind,
   type LucideIcon,
 } from "lucide-react";
 
@@ -61,6 +68,13 @@ const iconMap: Record<string, LucideIcon> = {
   Star,
   Calendar,
   Award,
+  Mic,
+  Projector,
+  Presentation,
+  Lightbulb,
+  Car,
+  Camera,
+  Wind,
 };
 
 interface DynamicIconProps {

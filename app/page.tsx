@@ -9,6 +9,7 @@ import { FineDiningSection } from "@/sections/FineDiningSection";
 import { LobbyCafeSection } from "@/sections/LobbyCafeSection";
 import { RooftopExperienceSection } from "@/sections/RooftopExperienceSection";
 import { SpaWellnessHomeSection } from "@/sections/SpaWellnessHomeSection";
+import { MeetingsEventsSection } from "@/sections/MeetingsEventsSection";
 import { GalleryHomeSection } from "@/sections/GalleryHomeSection";
 import { ReviewsSection } from "@/sections/ReviewsSection";
 import { ContactHomeSection } from "@/sections/ContactHomeSection";
@@ -77,6 +78,16 @@ export default async function HomePage() {
       node:
         content.spaWellnessSection.enabled !== false ? (
           <SpaWellnessHomeSection section={content.spaWellnessSection} />
+        ) : null,
+    });
+  }
+  if (isEnabled(hs.meetingsEvents)) {
+    sections.push({
+      key: "meetingsEvents",
+      order: hs.meetingsEvents.order,
+      node:
+        content.meetingsEventsSection.enabled !== false ? (
+          <MeetingsEventsSection section={content.meetingsEventsSection} />
         ) : null,
     });
   }
