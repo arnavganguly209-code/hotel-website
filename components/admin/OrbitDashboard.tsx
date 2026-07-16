@@ -2202,17 +2202,16 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
               <GalleryManager
                 gallery={content.gallery}
                 onChange={(gallery) => update("gallery", gallery)}
+                categories={content.galleryCategories}
+                onCategoriesChange={(galleryCategories) =>
+                  update("galleryCategories", galleryCategories)
+                }
+                section={content.gallerySection}
+                onSectionChange={(gallerySection) => update("gallerySection", gallerySection)}
+                page={content.galleryPage}
+                onPageChange={(galleryPage) => update("galleryPage", galleryPage)}
                 library={content.mediaLibrary}
                 onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
-                sectionTitle={content.gallerySection.title}
-                sectionDescription={content.gallerySection.description}
-                onSectionMetaChange={(meta) =>
-                  update("gallerySection", {
-                    ...content.gallerySection,
-                    title: meta.title,
-                    description: meta.description,
-                  })
-                }
               />
             )}
 

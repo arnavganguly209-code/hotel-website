@@ -3,76 +3,109 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { MotionSection } from "@/components/shared/MotionSection";
-import { staggerContainer, fadeUp } from "@/lib/animations";
-import { routes } from "@/lib/navigation";
-import { LuxuryImageBox } from "@/components/shared/LuxuryImageBox";
-import { defaultContent } from "@/lib/cms/default-content";
+import { HeritageMistBackdrop } from "@/components/home/HeritageMistBackdrop";
+import { SafeImage } from "@/components/shared/SafeImage";
 import type { SiteContent } from "@/lib/cms/types";
+import { luxuryEase, luxuryFadeUp, luxuryStagger } from "@/lib/animations";
 
 interface GalleryHomeSectionProps {
   gallery: SiteContent["gallery"];
-  section?: SiteContent["gallerySection"];
+  section: SiteContent["gallerySection"];
 }
 
-export function GalleryHomeSection({
-  gallery,
-  section = defaultContent.gallerySection,
-}: GalleryHomeSectionProps) {
+export function GalleryHomeSection({ gallery, section }: GalleryHomeSectionProps) {
+  if (section.enabled === false) return null;
+
+  const gold = section.goldColor || "#C5A059";
+  const heading = section.headingColor || "#062C24";
+  const body = section.bodyColor || "#5A635C";
+  const topBg = section.backgroundTop || "#F9F6EF";
+  const bottomBg = section.backgroundBottom || "#E8F0E9";
+  const border = section.borderColor || `${gold}88`;
+  const radius = section.cardRadiusPx ?? 18;
+  const gap = section.gridGapPx ?? 20;
+  const limit = section.homeImageLimit ?? 6;
+  const overlay = section.overlayOpacity ?? 0.55;
+
   const items = gallery
-    .filter((item) => item.active !== false && Boolean(item.src))
+    .filter((item) => item.active !== false && Boolean(item.src) && item.showOnHome !== false)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    .slice(0, 6);
+    .slice(0, limit);
 
   return (
-    <MotionSection
+    <section
       id="gallery"
-      className="section-padding relative overflow-hidden bg-luxury-cream"
+      aria-label="Gallery"
+      className="relative overflow-x-clip"
+      style={{
+        background: `linear-gradient(180deg, ${topBg} 0%, ${topBg} 48%, ${bottomBg} 100%)`,
+      }}
     >
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-14 text-center">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+        <HeritageMistBackdrop goldColor={gold} visible={section.showMist !== false} />
+      </div>
+
+      <div className="relative mx-auto max-w-[1200px] px-4 py-16 sm:px-6 md:py-20 lg:px-8 lg:py-24">
+        <motion.div
+          variants={luxuryStagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          className="mx-auto mb-12 max-w-3xl text-center md:mb-14"
+        >
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-3 text-[11px] font-medium uppercase tracking-[0.3em] text-luxury-gold"
+            variants={luxuryFadeUp}
+            className="mb-5 font-body text-[12px] font-semibold uppercase sm:text-[13px]"
+            style={{ color: gold, letterSpacing: "0.34em" }}
           >
             {section.eyebrow}
           </motion.p>
+
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="font-display text-3xl font-normal text-luxury-charcoal md:text-4xl lg:text-5xl"
+            variants={luxuryFadeUp}
+            className="font-display text-[1.95rem] font-semibold uppercase leading-[1.18] tracking-[0.03em] sm:text-3xl md:text-[2.35rem] lg:text-[2.5rem]"
+            style={{ color: heading }}
           >
             {section.title}
           </motion.h2>
+
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.15 }}
-            className="mx-auto mt-4 max-w-xl text-luxury-muted"
+            variants={luxuryFadeUp}
+            className="mx-auto mt-5 max-w-xl font-body text-[15px] leading-[1.85] md:text-base"
+            style={{ color: body }}
           >
             {section.description}
           </motion.p>
-        </div>
+
+          <motion.div
+            variants={luxuryFadeUp}
+            className="mx-auto mt-6 flex items-center justify-center gap-3"
+            aria-hidden
+          >
+            <span className="h-px w-12" style={{ backgroundColor: `${gold}77` }} />
+            <span className="h-1.5 w-1.5 rotate-45" style={{ backgroundColor: gold }} />
+            <span className="h-px w-12" style={{ backgroundColor: `${gold}77` }} />
+          </motion.div>
+        </motion.div>
 
         <motion.div
-          variants={staggerContainer}
+          variants={luxuryStagger}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true }}
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          viewport={{ once: true, margin: "-40px" }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+          style={{ gap }}
         >
-          {items.map((item, i) => (
-            <motion.div
+          {items.map((item) => (
+            <motion.article
               key={item.id}
-              variants={fadeUp}
-              className={`group relative overflow-hidden ${
-                i === 0 || i === 3 ? "sm:row-span-1" : ""
-              }`}
+              variants={luxuryFadeUp}
+              className="group relative overflow-hidden"
+              style={{
+                borderRadius: radius,
+                border: `1px solid ${border}`,
+                boxShadow: "0 22px 48px rgba(15, 42, 34, 0.12)",
+              }}
             >
               <div className="relative aspect-[4/3] overflow-hidden">
                 {item.type === "video" ? (
@@ -81,43 +114,62 @@ export function GalleryHomeSection({
                     muted
                     loop
                     playsInline
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   />
                 ) : (
-                  <LuxuryImageBox
+                  <SafeImage
                     src={item.src}
-                    alt={item.title}
-                    label={item.title}
-                    variant="gallery"
-                    className="aspect-[4/3] lg:min-h-0"
+                    alt={item.alt || item.title}
+                    fill
+                    objectFit="cover"
+                    className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-luxury-charcoal/60 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                <div className="absolute bottom-0 left-0 right-0 translate-y-full p-5 transition-transform duration-500 group-hover:translate-y-0">
-                  <p className="text-[10px] uppercase tracking-wider text-luxury-gold-light">{item.category}</p>
-                  <p className="font-display text-lg text-white">{item.title}</p>
+
+                <div
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent transition-opacity duration-500"
+                  style={{ opacity: overlay }}
+                />
+
+                <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+                  <h3 className="font-display text-lg font-semibold uppercase tracking-[0.04em] text-white sm:text-xl">
+                    {item.title}
+                  </h3>
+                  {item.description ? (
+                    <p className="mt-1.5 font-body text-[13px] leading-snug text-white/85 sm:text-sm">
+                      {item.description}
+                    </p>
+                  ) : null}
                 </div>
-                <div className="pointer-events-none absolute inset-2 border border-luxury-gold/0 transition-all duration-500 group-hover:border-luxury-gold/40 group-hover:inset-3" />
               </div>
-            </motion.div>
+            </motion.article>
           ))}
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="mt-12 text-center"
-        >
-          <Link
-            href={routes.gallery}
-            className="group inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.15em] text-luxury-charcoal transition-colors hover:text-luxury-gold"
+        {section.ctaVisible !== false && section.ctaText ? (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: luxuryEase }}
+            className="mt-12 text-center md:mt-14"
           >
-            View Full Gallery
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </motion.div>
+            <Link
+              href={section.ctaHref || "/gallery"}
+              prefetch
+              className="group inline-flex items-center gap-2.5 font-body text-[12px] font-semibold uppercase tracking-[0.2em] transition-all duration-500 hover:-translate-y-0.5"
+              style={{ color: heading }}
+            >
+              {section.ctaText}
+              <ArrowRight
+                className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1"
+                strokeWidth={1.6}
+              />
+            </Link>
+          </motion.div>
+        ) : null}
       </div>
-    </MotionSection>
+    </section>
   );
 }

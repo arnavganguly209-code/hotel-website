@@ -198,12 +198,31 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       ...(defaultContent.gallery[i] ?? defaultContent.gallery[0]),
       ...item,
       type: item.type ?? "image",
+      description: item.description ?? defaultContent.gallery[i]?.description ?? "",
       alt: item.alt ?? item.title ?? "",
       active: item.active !== false,
+      showOnHome: item.showOnHome !== false,
       order: item.order ?? i,
     })),
-    gallerySection: { ...defaultContent.gallerySection, ...(partial.gallerySection ?? {}) },
-    galleryPage: { ...defaultContent.galleryPage, ...(partial.galleryPage ?? {}) },
+    galleryCategories: definedArray(
+      partial.galleryCategories,
+      defaultContent.galleryCategories
+    ).map((cat, i) => ({
+      ...(defaultContent.galleryCategories[i] ?? {
+        id: `cat-${i}`,
+        name: "Category",
+        enabled: true,
+        order: i,
+      }),
+      ...cat,
+      enabled: cat.enabled !== false,
+      order: typeof cat.order === "number" ? cat.order : i,
+    })),
+    gallerySection: mergeGallerySection(
+      defaultContent.gallerySection,
+      partial.gallerySection
+    ),
+    galleryPage: mergeGalleryPage(defaultContent.galleryPage, partial.galleryPage),
     roomsPage: { ...defaultContent.roomsPage, ...(partial.roomsPage ?? {}) },
     contactPage: { ...defaultContent.contactPage, ...(partial.contactPage ?? {}) },
     contact: { ...defaultContent.contact, ...(partial.contact ?? {}) },
@@ -683,6 +702,55 @@ function mergeCulturalExperiencePage(
     timeline: definedArray(partial.timeline, defaults.timeline),
     experienceCards: definedArray(partial.experienceCards, defaults.experienceCards),
     faq: definedArray(partial.faq, defaults.faq),
+  };
+}
+
+function mergeGallerySection(
+  defaults: SiteContent["gallerySection"],
+  partial?: Partial<SiteContent["gallerySection"]>
+): SiteContent["gallerySection"] {
+  if (!partial) return defaults;
+  return {
+    ...defaults,
+    ...partial,
+    enabled: partial.enabled !== false,
+    ctaVisible: partial.ctaVisible !== false,
+    showMist: partial.showMist !== false,
+    homeImageLimit:
+      typeof partial.homeImageLimit === "number"
+        ? partial.homeImageLimit
+        : defaults.homeImageLimit,
+  };
+}
+
+function mergeGalleryPage(
+  defaults: SiteContent["galleryPage"],
+  partial?: Partial<SiteContent["galleryPage"]>
+): SiteContent["galleryPage"] {
+  if (!partial) return defaults;
+  return {
+    ...defaults,
+    ...partial,
+    hero: {
+      ...defaults.hero,
+      ...(partial.hero ?? {}),
+      media: {
+        ...defaults.hero.media,
+        ...(partial.hero?.media ?? {}),
+        imageSrc:
+          partial.hero?.media?.imageSrc?.trim() ||
+          partial.hero?.imageSrc?.trim() ||
+          defaults.hero.media.imageSrc ||
+          defaults.hero.imageSrc,
+      },
+      imageSrc:
+        partial.hero?.imageSrc?.trim() ||
+        partial.hero?.media?.imageSrc?.trim() ||
+        defaults.hero.imageSrc,
+    },
+    seo: { ...defaults.seo, ...(partial.seo ?? {}) },
+    showFilters: partial.showFilters !== false,
+    gridColumns: (partial.gridColumns ?? defaults.gridColumns) as 2 | 3 | 4,
   };
 }
 

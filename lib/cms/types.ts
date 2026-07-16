@@ -569,19 +569,54 @@ export interface SiteContent {
     id: string;
     src: string;
     title: string;
+    description: string;
     category: string;
     type: "image" | "video";
     alt?: string;
     active?: boolean;
+    showOnHome?: boolean;
     order?: number;
   }>;
+  galleryCategories: Array<{
+    id: string;
+    name: string;
+    enabled: boolean;
+    order: number;
+  }>;
   gallerySection: {
+    enabled: boolean;
     eyebrow: string;
     title: string;
     description: string;
+    ctaText: string;
+    ctaHref: string;
+    ctaVisible: boolean;
+    homeImageLimit: number;
+    showMist: boolean;
+    backgroundTop: string;
+    backgroundBottom: string;
+    goldColor: string;
+    headingColor: string;
+    bodyColor: string;
+    borderColor: string;
+    cardRadiusPx: number;
+    gridGapPx: number;
+    overlayOpacity: number;
   };
   galleryPage: {
-    seo: PageSeo;
+    hero: PageHero & { media: CmsMedia };
+    seo: PageSeo & { keywords?: string };
+    eyebrow: string;
+    title: string;
+    description: string;
+    showFilters: boolean;
+    gridColumns: 2 | 3 | 4;
+    goldColor: string;
+    headingColor: string;
+    bodyColor: string;
+    borderColor: string;
+    backgroundTop: string;
+    backgroundBottom: string;
   };
   roomsPage: {
     seo: PageSeo;
