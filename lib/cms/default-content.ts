@@ -233,6 +233,62 @@ export const defaultContent: SiteContent = {
       { id: "cs2", value: "2000+", label: "Years of Heritage", icon: "Clock", enabled: true, order: 1 },
       { id: "cs3", value: "50+", label: "Curated Experiences", icon: "Star", enabled: true, order: 2 },
     ],
+    imageCards: [
+      {
+        id: "ic-dance",
+        enabled: true,
+        order: 0,
+        label: "CULTURE",
+        title: "Traditional Nepali Dance",
+        description:
+          "Witness vibrant folk performances celebrating centuries of Himalayan rhythm and ritual.",
+        href: "/cultural-experience",
+        media: {
+          type: "image",
+          imageSrc: "/media/gallery/05.jpg",
+          videoSrc: "",
+          poster: "",
+          alt: "Traditional Nepali dance performance",
+          caption: "Traditional Dance",
+        },
+      },
+      {
+        id: "ic-cuisine",
+        enabled: true,
+        order: 1,
+        label: "CULINARY",
+        title: "Local Cuisine Experience",
+        description:
+          "Savor authentic Newari and Nepali flavors guided by our cultural concierge.",
+        href: "/cultural-experience",
+        media: {
+          type: "image",
+          imageSrc: "/media/dining/korean-restaurant.jpg",
+          videoSrc: "",
+          poster: "",
+          alt: "Local Nepali cuisine experience",
+          caption: "Local Cuisine",
+        },
+      },
+      {
+        id: "ic-aarti",
+        enabled: true,
+        order: 2,
+        label: "SPIRITUAL",
+        title: "Temple Evening Aarti",
+        description:
+          "Join sacred evening ceremonies along the Bagmati with butter lamps and prayer.",
+        href: "/cultural-experience",
+        media: {
+          type: "image",
+          imageSrc: "/media/culture/nepali-culture.jpg",
+          videoSrc: "",
+          poster: "",
+          alt: "Temple evening aarti ceremony",
+          caption: "Temple Aarti",
+        },
+      },
+    ],
     highlights: [
       {
         id: "h1",

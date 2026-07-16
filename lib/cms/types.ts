@@ -91,6 +91,17 @@ export interface CultureHighlight {
   order?: number;
 }
 
+export interface CultureImageCard {
+  id: string;
+  enabled: boolean;
+  order: number;
+  label: string;
+  title: string;
+  description: string;
+  href: string;
+  media: CmsMedia;
+}
+
 export interface CultureStat {
   id?: string;
   value: string;
@@ -252,6 +263,8 @@ export interface SiteContent {
     bodyColor: string;
     showMist: boolean;
     stats: CultureStat[];
+    /** Premium image cards row below statistics */
+    imageCards: CultureImageCard[];
     highlights: CultureHighlight[];
     timeline: CultureTimelineItem[];
   };

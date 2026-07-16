@@ -937,6 +937,211 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="font-display text-lg text-luxury-gold">
+                      Image Cards (below statistics)
+                    </p>
+                    <Button
+                      type="button"
+                      variant="gold"
+                      size="sm"
+                      onClick={() => {
+                        const cards = content.culture.imageCards ?? [];
+                        const order = cards.length
+                          ? Math.max(...cards.map((c) => c.order ?? 0)) + 1
+                          : 0;
+                        update("culture", {
+                          ...content.culture,
+                          imageCards: [
+                            ...cards,
+                            {
+                              id: `ic-${Date.now()}`,
+                              enabled: true,
+                              order,
+                              label: "CULTURE",
+                              title: "New Experience",
+                              description: "Short description of this cultural experience.",
+                              href: "/cultural-experience",
+                              media: {
+                                type: "image",
+                                imageSrc: "",
+                                videoSrc: "",
+                                poster: "",
+                                alt: "",
+                                caption: "",
+                              },
+                            },
+                          ],
+                        });
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Card
+                    </Button>
+                  </div>
+                  <p className="text-xs text-white/40">
+                    Three premium image cards under UNESCO / Heritage stats. Upload, reorder, hide.
+                  </p>
+                  {[...(content.culture.imageCards ?? [])]
+                    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                    .map((card, sortedIndex) => {
+                      const i = content.culture.imageCards.findIndex((c) => c.id === card.id);
+                      const move = (direction: -1 | 1) => {
+                        const sorted = [...content.culture.imageCards].sort(
+                          (a, b) => (a.order ?? 0) - (b.order ?? 0)
+                        );
+                        const to = sortedIndex + direction;
+                        if (to < 0 || to >= sorted.length) return;
+                        const next = [...sorted];
+                        const [moved] = next.splice(sortedIndex, 1);
+                        next.splice(to, 0, moved);
+                        update("culture", {
+                          ...content.culture,
+                          imageCards: next.map((c, idx) => ({ ...c, order: idx })),
+                        });
+                      };
+                      return (
+                        <div key={card.id} className="space-y-3 border border-luxury-gold/10 p-4">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-sm text-luxury-gold/80">
+                              Card {sortedIndex + 1}: {card.title}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="border-luxury-gold/30 text-luxury-gold"
+                                disabled={sortedIndex === 0}
+                                onClick={() => move(-1)}
+                              >
+                                Up
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="border-luxury-gold/30 text-luxury-gold"
+                                disabled={
+                                  sortedIndex === (content.culture.imageCards?.length ?? 0) - 1
+                                }
+                                onClick={() => move(1)}
+                              >
+                                Down
+                              </Button>
+                              <label className="flex items-center gap-2 text-xs text-white/60">
+                                <input
+                                  type="checkbox"
+                                  checked={card.enabled !== false}
+                                  onChange={(e) => {
+                                    const imageCards = [...content.culture.imageCards];
+                                    imageCards[i] = { ...card, enabled: e.target.checked };
+                                    update("culture", { ...content.culture, imageCards });
+                                  }}
+                                  className="accent-luxury-gold"
+                                />
+                                Visible
+                              </label>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="border-luxury-gold/30 text-luxury-gold"
+                                onClick={() => {
+                                  update("culture", {
+                                    ...content.culture,
+                                    imageCards: [
+                                      ...content.culture.imageCards,
+                                      {
+                                        ...card,
+                                        id: `ic-${Date.now()}`,
+                                        title: `${card.title} (Copy)`,
+                                        order:
+                                          Math.max(
+                                            ...content.culture.imageCards.map((c) => c.order ?? 0)
+                                          ) + 1,
+                                      },
+                                    ],
+                                  });
+                                }}
+                              >
+                                Duplicate
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                className="text-red-400"
+                                onClick={() =>
+                                  update("culture", {
+                                    ...content.culture,
+                                    imageCards: content.culture.imageCards.filter(
+                                      (c) => c.id !== card.id
+                                    ),
+                                  })
+                                }
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <AdminInput
+                              label="Small Label"
+                              value={card.label}
+                              onChange={(e) => {
+                                const imageCards = [...content.culture.imageCards];
+                                imageCards[i] = { ...card, label: e.target.value };
+                                update("culture", { ...content.culture, imageCards });
+                              }}
+                            />
+                            <AdminInput
+                              label="Title"
+                              value={card.title}
+                              onChange={(e) => {
+                                const imageCards = [...content.culture.imageCards];
+                                imageCards[i] = { ...card, title: e.target.value };
+                                update("culture", { ...content.culture, imageCards });
+                              }}
+                            />
+                          </div>
+                          <AdminTextarea
+                            label="Description"
+                            rows={2}
+                            value={card.description}
+                            onChange={(e) => {
+                              const imageCards = [...content.culture.imageCards];
+                              imageCards[i] = { ...card, description: e.target.value };
+                              update("culture", { ...content.culture, imageCards });
+                            }}
+                          />
+                          <AdminInput
+                            label="Link URL"
+                            value={card.href}
+                            onChange={(e) => {
+                              const imageCards = [...content.culture.imageCards];
+                              imageCards[i] = { ...card, href: e.target.value };
+                              update("culture", { ...content.culture, imageCards });
+                            }}
+                          />
+                          <AdminMediaField
+                            label={`${card.title || `Card ${sortedIndex + 1}`} Image`}
+                            folder="culture"
+                            value={card.media}
+                            onChange={(media) => {
+                              const imageCards = [...content.culture.imageCards];
+                              imageCards[i] = { ...card, media };
+                              update("culture", { ...content.culture, imageCards });
+                            }}
+                            library={content.mediaLibrary}
+                            onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                          />
+                        </div>
+                      );
+                    })}
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
                   <p className="font-display text-lg text-luxury-gold">Feature Cards</p>
                   {content.culture.highlights.map((item, i) => (
                     <div key={item.id} className="space-y-3 border border-luxury-gold/10 p-4">

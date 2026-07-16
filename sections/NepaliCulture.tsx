@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { HeritageImageStack } from "@/components/home/HeritageImageStack";
 import { HeritageMistBackdrop } from "@/components/home/HeritageMistBackdrop";
 import { DynamicIcon } from "@/components/shared/DynamicIcon";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { luxuryEase, luxuryFadeUp, luxuryStagger } from "@/lib/animations";
 import type { SiteContent } from "@/lib/cms/types";
 
@@ -189,6 +190,99 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
             ) : null}
           </motion.div>
         </div>
+
+        {/* Premium image cards — fills space below statistics, full-width aligned */}
+        {(() => {
+          const imageCards = [...(content.imageCards || [])]
+            .filter((c) => c.enabled !== false)
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+          if (imageCards.length === 0) return null;
+          return (
+            <motion.div
+              variants={luxuryStagger}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-40px" }}
+              className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3 lg:gap-6"
+            >
+              {imageCards.map((card) => {
+                const src = card.media?.imageSrc || "";
+                return (
+                  <motion.article
+                    key={card.id}
+                    variants={luxuryFadeUp}
+                    className="group flex h-full flex-col overflow-hidden rounded-[20px] transition-all duration-500 hover:-translate-y-1.5"
+                    style={{
+                      backgroundColor: "#FBF8F1",
+                      border: `1px solid ${gold}66`,
+                      boxShadow: "0 18px 40px rgba(15, 42, 34, 0.10)",
+                    }}
+                  >
+                    <div className="relative aspect-[16/10] overflow-hidden">
+                      {src ? (
+                        <SafeImage
+                          src={src}
+                          alt={card.media?.alt || card.title}
+                          fill
+                          objectFit="cover"
+                          className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-[#EFE8DA]">
+                          <p
+                            className="font-display text-[10px] uppercase tracking-[0.2em]"
+                            style={{ color: gold }}
+                          >
+                            {card.title}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-1 flex-col px-5 pb-5 pt-5">
+                      <p
+                        className="font-body text-[10px] font-semibold uppercase tracking-[0.24em]"
+                        style={{ color: gold }}
+                      >
+                        {card.label}
+                      </p>
+                      <h3
+                        className="mt-2 font-display text-lg font-semibold leading-snug md:text-xl"
+                        style={{ color: heading }}
+                      >
+                        {card.title}
+                      </h3>
+                      <p
+                        className="mt-2.5 flex-1 font-body text-[13px] leading-[1.7] md:text-sm"
+                        style={{ color: body }}
+                      >
+                        {card.description}
+                      </p>
+                      <div className="mt-5 flex items-center gap-3">
+                        <span
+                          className="h-px flex-1 max-w-[2.5rem]"
+                          style={{ backgroundColor: `${gold}77` }}
+                          aria-hidden
+                        />
+                        {card.href ? (
+                          <Link
+                            href={card.href}
+                            prefetch
+                            className="inline-flex items-center gap-1.5 font-body text-[11px] font-semibold uppercase tracking-[0.16em] transition-transform duration-500 group-hover:translate-x-0.5"
+                            style={{ color: gold }}
+                            aria-label={card.title}
+                          >
+                            <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.8} />
+                          </Link>
+                        ) : null}
+                      </div>
+                    </div>
+                  </motion.article>
+                );
+              })}
+            </motion.div>
+          );
+        })()}
 
         {/* Experience highlights — full width under the two columns */}
         {highlights.length > 0 ? (

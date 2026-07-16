@@ -378,6 +378,25 @@ function mergeCulture(
     headingColor: definedString(partial.headingColor, defaults.headingColor),
     bodyColor: definedString(partial.bodyColor, defaults.bodyColor),
     stats,
+    imageCards: definedArray(partial.imageCards, defaults.imageCards).map((card, i) => {
+      const base = defaults.imageCards[i] ?? defaults.imageCards[0];
+      return {
+        ...base,
+        ...card,
+        id: card.id || base?.id || `ic${i + 1}`,
+        enabled: card.enabled !== false,
+        order: typeof card.order === "number" ? card.order : i,
+        label: definedString(card.label, base.label),
+        title: definedString(card.title, base.title),
+        description: definedString(card.description, base.description),
+        href: definedString(card.href, base.href),
+        media: {
+          ...base.media,
+          ...(card.media ?? {}),
+          imageSrc: card.media?.imageSrc?.trim() || base.media.imageSrc,
+        },
+      };
+    }),
     highlights,
     timeline: definedArray(partial.timeline, defaults.timeline),
     content: definedString(partial.content, defaults.content),
