@@ -36,6 +36,8 @@ import { MediaLibrary } from "@/components/admin/media/MediaLibrary";
 import { GalleryManager } from "@/components/admin/media/GalleryManager";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
 import { EventInquiriesPanel } from "@/components/admin/EventInquiriesPanel";
+import { ContactEnquiriesPanel } from "@/components/admin/ContactEnquiriesPanel";
+import { ContactPageEditor } from "@/components/admin/ContactPageEditor";
 import type { SiteContent } from "@/lib/cms/types";
 import {
   isPaymentLogoCleared,
@@ -71,7 +73,8 @@ const SECTIONS = [
   { id: "about", label: "About Page", icon: Globe },
   { id: "gallery", label: "Gallery", icon: Image },
   { id: "reviews", label: "Testimonials", icon: Star },
-  { id: "contact", label: "Contact", icon: MessageSquare },
+  { id: "contact", label: "Contact Page", icon: MessageSquare },
+  { id: "contactEnquiries", label: "Contact Enquiries", icon: MessageSquare },
   { id: "footer", label: "Footer", icon: PanelTop },
   { id: "seo", label: "SEO", icon: Search },
   { id: "media", label: "Media Library", icon: Image },
@@ -3161,15 +3164,15 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
             )}
 
             {activeSection === "contact" && (
+              <ContactPageEditor content={content} update={update} />
+            )}
+
+            {activeSection === "contactEnquiries" && (
               <>
-                <AdminInput label="Eyebrow" value={content.contact.eyebrow} onChange={(e) => update("contact", { ...content.contact, eyebrow: e.target.value })} />
-                <AdminInput label="Title" value={content.contact.title} onChange={(e) => update("contact", { ...content.contact, title: e.target.value })} />
-                <AdminTextarea label="Description" rows={3} value={content.contact.description} onChange={(e) => update("contact", { ...content.contact, description: e.target.value })} />
-                <AdminInput label="Working Hours" value={content.contact.workingHours} onChange={(e) => update("contact", { ...content.contact, workingHours: e.target.value })} />
-                <AdminTextarea label="Google Map Embed URL" rows={2} value={content.contact.mapEmbedUrl} onChange={(e) => update("contact", { ...content.contact, mapEmbedUrl: e.target.value })} />
-                <AdminInput label="Phone (Hotel Info)" value={content.hotel.phone} onChange={(e) => update("hotel", { ...content.hotel, phone: e.target.value })} />
-                <AdminInput label="Email (Hotel Info)" value={content.hotel.email} onChange={(e) => update("hotel", { ...content.hotel, email: e.target.value })} />
-                <AdminInput label="Address (Hotel Info)" value={content.hotel.address} onChange={(e) => update("hotel", { ...content.hotel, address: e.target.value })} />
+                <p className="mb-4 text-sm text-white/50">
+                  Contact enquiries from /contact — statuses, filters, export, and details.
+                </p>
+                <ContactEnquiriesPanel />
               </>
             )}
 

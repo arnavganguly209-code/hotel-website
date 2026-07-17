@@ -1588,9 +1588,243 @@ export const defaultContent: SiteContent = {
     },
   },
   contactPage: {
+    hero: {
+      title: "CONTACT US",
+      subtitle: "Luxury Hospitality Begins Here",
+      description:
+        "We're here to help you plan unforgettable stays, events, dining experiences, wellness retreats, and special occasions.",
+      imageSrc:
+        "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2000&q=80",
+      breadcrumbHome: "Home",
+      breadcrumbCurrent: "Contact",
+      overlayOpacity: 0.45,
+    },
+    cards: [
+      {
+        id: "addr",
+        enabled: true,
+        order: 1,
+        icon: "map-pin",
+        title: "Hotel Address",
+        value: "Thamel, Kathmandu 44600, Nepal",
+        description: "In the heart of Kathmandu’s vibrant cultural district.",
+        href: "https://maps.google.com/?q=Thamel+Kathmandu",
+      },
+      {
+        id: "phone",
+        enabled: true,
+        order: 2,
+        icon: "phone",
+        title: "Phone",
+        value: "+977-1-4412345",
+        description: "Speak directly with our reservations team.",
+        href: "tel:+97714412345",
+      },
+      {
+        id: "email",
+        enabled: true,
+        order: 3,
+        icon: "mail",
+        title: "Email",
+        value: "reservations@hotelthamelpark.com",
+        description: "We respond to every enquiry with care.",
+        href: "mailto:reservations@hotelthamelpark.com",
+      },
+      {
+        id: "hours",
+        enabled: true,
+        order: 4,
+        icon: "clock",
+        title: "Reception Hours",
+        value: "24 Hours / 7 Days",
+        description: "Our front desk is always available for you.",
+        href: "",
+      },
+      {
+        id: "whatsapp",
+        enabled: true,
+        order: 5,
+        icon: "message-circle",
+        title: "WhatsApp",
+        value: "+977-9800000000",
+        description: "Message us for instant guest assistance.",
+        href: "https://wa.me/9779800000000",
+      },
+    ],
+    form: {
+      title: "Booking & Enquiry",
+      description:
+        "Share your travel plans and preferences — our concierge team will craft a tailored response.",
+      submitLabel: "SEND ENQUIRY",
+      successTitle: "Enquiry Received",
+      successMessage:
+        "Thank you for contacting Hotel Thamel Park. A confirmation has been sent to your email, and our team will respond shortly.",
+      consentText:
+        "I agree to the processing of my personal data for the purpose of this enquiry.",
+      bookingTypes: [
+        "General Inquiry",
+        "Room Booking",
+        "Restaurant Reservation",
+        "Spa & Wellness",
+        "Wedding",
+        "Conference",
+        "Corporate Meeting",
+        "Private Event",
+        "Airport Transfer",
+        "Travel Desk",
+        "Tour Package",
+        "Sightseeing",
+        "Special Celebration",
+        "Other",
+      ],
+    },
+    whyContact: {
+      eyebrow: "Why Reach Out",
+      title: "Why Contact Us",
+      description: "Discerning guests trust our team for seamless, personalized hospitality.",
+      items: [
+        {
+          id: "w1",
+          enabled: true,
+          order: 1,
+          icon: "headset",
+          title: "24/7 Guest Support",
+          description: "Round-the-clock assistance for reservations, arrivals, and special requests.",
+        },
+        {
+          id: "w2",
+          enabled: true,
+          order: 2,
+          icon: "sparkles",
+          title: "Luxury Hospitality",
+          description: "Refined service standards inspired by the world’s finest hotels.",
+        },
+        {
+          id: "w3",
+          enabled: true,
+          order: 3,
+          icon: "zap",
+          title: "Instant Booking Assistance",
+          description: "Fast confirmation for rooms, dining, spa, and private events.",
+        },
+        {
+          id: "w4",
+          enabled: true,
+          order: 4,
+          icon: "heart",
+          title: "Personalized Experiences",
+          description: "Bespoke itineraries, celebrations, and wellness journeys crafted for you.",
+        },
+      ],
+    },
+    location: {
+      eyebrow: "Find Us",
+      title: "Hotel Location",
+      description: "Ideally situated in Thamel — steps from culture, cuisine, and Kathmandu’s landmarks.",
+      mapEmbedUrl:
+        "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.234567890123!2d85.3105!3d27.7172!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sThamel%2C%20Kathmandu!5e0!3m2!1sen!2snp!4v1234567890",
+      mapsDirectionsUrl: "https://www.google.com/maps/dir/?api=1&destination=Thamel,Kathmandu",
+      nearbyTitle: "Nearby Attractions",
+      nearby: [
+        { id: "n1", title: "Thamel Market", distance: "2 min walk" },
+        { id: "n2", title: "Garden of Dreams", distance: "8 min walk" },
+        { id: "n3", title: "Kathmandu Durbar Square", distance: "15 min" },
+        { id: "n4", title: "Tribhuvan International Airport", distance: "25–35 min" },
+      ],
+    },
+    business: {
+      eyebrow: "Essential Details",
+      title: "Business Information",
+      left: [
+        { label: "Check-in", value: "From 2:00 PM" },
+        { label: "Check-out", value: "Until 12:00 PM" },
+        { label: "Reception", value: "24 Hours / 7 Days" },
+        { label: "Reservations", value: "6:00 AM – 11:00 PM" },
+      ],
+      right: [
+        { label: "Restaurant Hours", value: "7:00 AM – 11:00 PM" },
+        { label: "Spa Hours", value: "9:00 AM – 9:00 PM" },
+        { label: "Airport Distance", value: "Approx. 7 km" },
+        { label: "City Centre Distance", value: "In the heart of Thamel" },
+      ],
+    },
+    faq: {
+      eyebrow: "Helpful Answers",
+      title: "Frequently Asked Questions",
+      items: [
+        {
+          id: "f1",
+          enabled: true,
+          order: 1,
+          question: "How can I reserve a room?",
+          answer:
+            "Submit an enquiry below, call our reservations desk, or use Book Now. Our team will confirm availability and rates promptly.",
+        },
+        {
+          id: "f2",
+          enabled: true,
+          order: 2,
+          question: "Can I organize weddings at the hotel?",
+          answer:
+            "Yes. We host intimate ceremonies and grand celebrations with dedicated event planners, catering, and elegant venues.",
+        },
+        {
+          id: "f3",
+          enabled: true,
+          order: 3,
+          question: "Is airport pickup available?",
+          answer:
+            "Airport transfers can be arranged on request. Select Airport Transfer in the booking type or mention it in your message.",
+        },
+        {
+          id: "f4",
+          enabled: true,
+          order: 4,
+          question: "What is the cancellation policy?",
+          answer:
+            "Standard cancellations made 48 hours or more before arrival typically receive a full refund. Special rates may differ — see our Legal page for details.",
+        },
+        {
+          id: "f5",
+          enabled: true,
+          order: 5,
+          question: "How do I book a restaurant table?",
+          answer:
+            "Choose Restaurant Reservation as the booking type, or contact us by phone/WhatsApp for same-day dining requests.",
+        },
+        {
+          id: "f6",
+          enabled: true,
+          order: 6,
+          question: "How do I book a spa treatment?",
+          answer:
+            "Select Spa & Wellness in the enquiry form or call reception. Advance booking is recommended for peak hours.",
+        },
+      ],
+    },
+    cta: {
+      title: "Ready to Experience Luxury?",
+      description: "Begin your journey with Hotel Thamel Park — refined comfort awaits in Kathmandu.",
+      primaryText: "Book Your Stay",
+      primaryHref: "/book",
+      secondaryText: "Call Us",
+      secondaryHref: "tel:+97714412345",
+      backgroundImage:
+        "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=2000&q=80",
+    },
+    phone: "+977-1-4412345",
+    email: "reservations@hotelthamelpark.com",
+    whatsapp: "+9779800000000",
+    address: "Thamel, Kathmandu 44600, Nepal",
     seo: {
       title: "Contact | Hotel Thamel Park",
-      description: "Contact Hotel Thamel Park for reservations, spa appointments, and inquiries.",
+      description:
+        "Contact Hotel Thamel Park for room bookings, spa, dining, weddings, and concierge assistance in Thamel, Kathmandu.",
+      canonical: "/contact",
+      ogImage:
+        "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80",
+      keywords:
+        "contact hotel thamel park, book hotel kathmandu, spa reservation thamel, wedding venue kathmandu",
     },
   },
   seo: {

@@ -232,7 +232,7 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     ),
     galleryPage: mergeGalleryPage(defaultContent.galleryPage, partial.galleryPage),
     roomsPage: { ...defaultContent.roomsPage, ...(partial.roomsPage ?? {}) },
-    contactPage: { ...defaultContent.contactPage, ...(partial.contactPage ?? {}) },
+    contactPage: mergeContactPage(partial.contactPage),
     contact: { ...defaultContent.contact, ...(partial.contact ?? {}) },
     seo: { ...defaultContent.seo, ...partial.seo },
     theme: { ...defaultContent.theme, ...(partial.theme ?? {}) },
@@ -848,5 +848,46 @@ function mergeAboutPage(
     vision: { ...defaults.vision, ...(partial.vision ?? {}) },
     facilities: definedArray(partial.facilities, defaults.facilities),
     timeline: definedArray(partial.timeline, defaults.timeline),
+  };
+}
+
+function mergeContactPage(
+  partial?: Partial<SiteContent["contactPage"]>
+): SiteContent["contactPage"] {
+  const defaults = defaultContent.contactPage;
+  if (!partial) return defaults;
+  return {
+    ...defaults,
+    ...partial,
+    hero: { ...defaults.hero, ...(partial.hero ?? {}) },
+    cards: definedArray(partial.cards, defaults.cards),
+    form: {
+      ...defaults.form,
+      ...(partial.form ?? {}),
+      bookingTypes: definedArray(partial.form?.bookingTypes, defaults.form.bookingTypes),
+    },
+    whyContact: {
+      ...defaults.whyContact,
+      ...(partial.whyContact ?? {}),
+      items: definedArray(partial.whyContact?.items, defaults.whyContact.items),
+    },
+    location: {
+      ...defaults.location,
+      ...(partial.location ?? {}),
+      nearby: definedArray(partial.location?.nearby, defaults.location.nearby),
+    },
+    business: {
+      ...defaults.business,
+      ...(partial.business ?? {}),
+      left: definedArray(partial.business?.left, defaults.business.left),
+      right: definedArray(partial.business?.right, defaults.business.right),
+    },
+    faq: {
+      ...defaults.faq,
+      ...(partial.faq ?? {}),
+      items: definedArray(partial.faq?.items, defaults.faq.items),
+    },
+    cta: { ...defaults.cta, ...(partial.cta ?? {}) },
+    seo: { ...defaults.seo, ...(partial.seo ?? {}) },
   };
 }

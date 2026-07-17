@@ -682,7 +682,87 @@ export interface SiteContent {
     seo: PageSeo;
   };
   contactPage: {
-    seo: PageSeo;
+    hero: {
+      title: string;
+      subtitle: string;
+      description: string;
+      imageSrc: string;
+      breadcrumbHome: string;
+      breadcrumbCurrent: string;
+      overlayOpacity: number;
+    };
+    cards: Array<{
+      id: string;
+      enabled: boolean;
+      order: number;
+      icon: string;
+      title: string;
+      value: string;
+      description: string;
+      href: string;
+    }>;
+    form: {
+      title: string;
+      description: string;
+      submitLabel: string;
+      successTitle: string;
+      successMessage: string;
+      consentText: string;
+      bookingTypes: string[];
+    };
+    whyContact: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        icon: string;
+        title: string;
+        description: string;
+      }>;
+    };
+    location: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      mapEmbedUrl: string;
+      mapsDirectionsUrl: string;
+      nearbyTitle: string;
+      nearby: Array<{ id: string; title: string; distance: string }>;
+    };
+    business: {
+      eyebrow: string;
+      title: string;
+      left: Array<{ label: string; value: string }>;
+      right: Array<{ label: string; value: string }>;
+    };
+    faq: {
+      eyebrow: string;
+      title: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        question: string;
+        answer: string;
+      }>;
+    };
+    cta: {
+      title: string;
+      description: string;
+      primaryText: string;
+      primaryHref: string;
+      secondaryText: string;
+      secondaryHref: string;
+      backgroundImage: string;
+    };
+    phone: string;
+    email: string;
+    whatsapp: string;
+    address: string;
+    seo: PageSeo & { keywords: string };
   };
   contact: {
     eyebrow: string;
