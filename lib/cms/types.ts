@@ -610,13 +610,140 @@ export interface SiteContent {
     bodyColor: string;
   };
   aboutPage: {
-    hero: PageHero;
-    seo: PageSeo;
-    history: { title: string; content: string };
-    mission: { title: string; content: string };
-    vision: { title: string; content: string };
-    facilities: Array<{ name: string; description: string; icon: string }>;
-    timeline: Array<{ year: string; title: string; description: string }>;
+    hero: {
+      title: string;
+      subtitle: string;
+      description: string;
+      imageSrc: string;
+      breadcrumbHome: string;
+      breadcrumbCurrent: string;
+      overlayOpacity: number;
+    };
+    story: {
+      eyebrow: string;
+      title: string;
+      content: string;
+      imageSrc: string;
+      signature: string;
+      signatureRole: string;
+    };
+    stats: Array<{
+      id: string;
+      enabled: boolean;
+      order: number;
+      value: string;
+      label: string;
+    }>;
+    philosophy: {
+      eyebrow: string;
+      title: string;
+      content: string;
+      mission: { title: string; content: string; icon: string };
+      vision: { title: string; content: string; icon: string };
+      values: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        title: string;
+        description: string;
+        icon: string;
+      }>;
+    };
+    whyChoose: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        title: string;
+        description: string;
+        icon: string;
+      }>;
+    };
+    discover: {
+      eyebrow: string;
+      title: string;
+      content: string;
+      images: Array<{ id: string; src: string; alt: string }>;
+    };
+    services: {
+      eyebrow: string;
+      title: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        title: string;
+        description: string;
+        icon: string;
+      }>;
+    };
+    team: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      members: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        name: string;
+        position: string;
+        bio: string;
+        imageSrc: string;
+      }>;
+    };
+    awards: {
+      eyebrow: string;
+      title: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        year: string;
+        title: string;
+        description: string;
+      }>;
+    };
+    testimonials: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        name: string;
+        country: string;
+        review: string;
+        rating: number;
+        imageSrc: string;
+      }>;
+    };
+    galleryPreview: {
+      eyebrow: string;
+      title: string;
+      ctaText: string;
+      ctaHref: string;
+      images: Array<{ id: string; src: string; alt: string }>;
+    };
+    cta: {
+      title: string;
+      description: string;
+      primaryText: string;
+      primaryHref: string;
+      secondaryText: string;
+      secondaryHref: string;
+      backgroundImage: string;
+    };
+    seo: PageSeo & { keywords: string };
+    /** @deprecated legacy — merged into story/philosophy/services/awards */
+    history?: { title: string; content: string };
+    mission?: { title: string; content: string };
+    vision?: { title: string; content: string };
+    facilities?: Array<{ name: string; description: string; icon: string }>;
+    timeline?: Array<{ year: string; title: string; description: string }>;
   };
   reviews: Array<{
     id: string;

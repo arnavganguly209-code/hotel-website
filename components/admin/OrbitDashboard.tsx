@@ -38,6 +38,7 @@ import { ImagePicker } from "@/components/admin/media/ImagePicker";
 import { EventInquiriesPanel } from "@/components/admin/EventInquiriesPanel";
 import { ContactEnquiriesPanel } from "@/components/admin/ContactEnquiriesPanel";
 import { ContactPageEditor } from "@/components/admin/ContactPageEditor";
+import { AboutPageEditor } from "@/components/admin/AboutPageEditor";
 import type { SiteContent } from "@/lib/cms/types";
 import {
   isPaymentLogoCleared,
@@ -3137,30 +3138,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
             )}
 
             {activeSection === "about" && (
-              <>
-                <AdminTextarea label="History" rows={4} value={content.aboutPage.history.content} onChange={(e) => update("aboutPage", { ...content.aboutPage, history: { ...content.aboutPage.history, content: e.target.value } })} />
-                <AdminTextarea label="Mission" rows={3} value={content.aboutPage.mission.content} onChange={(e) => update("aboutPage", { ...content.aboutPage, mission: { ...content.aboutPage.mission, content: e.target.value } })} />
-                <AdminTextarea label="Vision" rows={3} value={content.aboutPage.vision.content} onChange={(e) => update("aboutPage", { ...content.aboutPage, vision: { ...content.aboutPage.vision, content: e.target.value } })} />
-                {content.aboutPage.timeline.map((item, i) => (
-                  <div key={item.year} className="grid grid-cols-3 gap-4 border border-luxury-gold/10 p-4">
-                    <AdminInput label="Year" value={item.year} onChange={(e) => {
-                      const timeline = [...content.aboutPage.timeline];
-                      timeline[i] = { ...item, year: e.target.value };
-                      update("aboutPage", { ...content.aboutPage, timeline });
-                    }} />
-                    <AdminInput label="Title" value={item.title} onChange={(e) => {
-                      const timeline = [...content.aboutPage.timeline];
-                      timeline[i] = { ...item, title: e.target.value };
-                      update("aboutPage", { ...content.aboutPage, timeline });
-                    }} />
-                    <AdminTextarea label="Description" rows={2} value={item.description} onChange={(e) => {
-                      const timeline = [...content.aboutPage.timeline];
-                      timeline[i] = { ...item, description: e.target.value };
-                      update("aboutPage", { ...content.aboutPage, timeline });
-                    }} />
-                  </div>
-                ))}
-              </>
+              <AboutPageEditor content={content} update={update} />
             )}
 
             {activeSection === "contact" && (

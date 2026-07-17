@@ -1329,42 +1329,364 @@ export const defaultContent: SiteContent = {
   },
   aboutPage: {
     hero: {
+      title: "ABOUT HOTEL THAMEL PARK & SPA",
+      subtitle: "Luxury Hospitality in the Heart of Kathmandu",
+      description:
+        "Experience timeless elegance, authentic Nepali hospitality, exceptional comfort and unforgettable moments.",
+      imageSrc:
+        "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=2000&q=80",
+      breadcrumbHome: "Home",
+      breadcrumbCurrent: "About Us",
+      overlayOpacity: 0.45,
+    },
+    story: {
+      eyebrow: "Our Heritage",
       title: "Our Story",
-      subtitle: "About",
-      description: "A sanctuary of refined luxury where exceptional hospitality meets the soul of Kathmandu.",
-      imageSrc: "/media/gallery/01.jpg",
+      content:
+        "Nestled in the vibrant heart of Thamel, Hotel Thamel Park & Spa has grown into a sanctuary of refined comfort and authentic Nepalese warmth. From our thoughtfully designed rooms to our wellness rituals and culinary journeys, every detail is crafted to welcome discerning travelers with grace. We believe luxury is not only what you see — it is how you feel: cared for, restored, and inspired by Kathmandu’s timeless spirit.",
+      imageSrc:
+        "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80",
+      signature: "The Thamel Park Family",
+      signatureRole: "Hospitality with Heart",
+    },
+    stats: [
+      { id: "s1", enabled: true, order: 1, value: "20+", label: "Years of Hospitality" },
+      { id: "s2", enabled: true, order: 2, value: "84", label: "Luxury Rooms" },
+      { id: "s3", enabled: true, order: 3, value: "25K+", label: "Happy Guests" },
+      { id: "s4", enabled: true, order: 4, value: "4.9★", label: "Guest Satisfaction" },
+    ],
+    philosophy: {
+      eyebrow: "What Guides Us",
+      title: "Our Philosophy",
+      content:
+        "We blend international luxury standards with the soul of Nepali hospitality — creating spaces where elegance meets genuine warmth.",
+      mission: {
+        title: "Mission",
+        content:
+          "To deliver exceptional luxury hospitality that honors Nepalese warmth while exceeding the expectations of discerning global travelers.",
+        icon: "compass",
+      },
+      vision: {
+        title: "Vision",
+        content:
+          "To be recognized as Kathmandu’s premier boutique luxury hotel — where every guest feels welcomed, restored, and inspired.",
+        icon: "eye",
+      },
+      values: [
+        {
+          id: "v1",
+          enabled: true,
+          order: 1,
+          title: "Authenticity",
+          description: "Genuine Nepali warmth in every greeting and gesture.",
+          icon: "heart",
+        },
+        {
+          id: "v2",
+          enabled: true,
+          order: 2,
+          title: "Excellence",
+          description: "Meticulous standards across rooms, dining, and wellness.",
+          icon: "sparkles",
+        },
+        {
+          id: "v3",
+          enabled: true,
+          order: 3,
+          title: "Care",
+          description: "Personalized attention that anticipates every need.",
+          icon: "hand-heart",
+        },
+      ],
+    },
+    whyChoose: {
+      eyebrow: "The Difference",
+      title: "Why Choose Hotel Thamel Park",
+      description: "A curated collection of experiences that define luxury hospitality in Kathmandu.",
+      items: [
+        {
+          id: "w1",
+          enabled: true,
+          order: 1,
+          title: "Luxury Accommodation",
+          description: "Thoughtfully designed rooms with refined comfort and modern amenities.",
+          icon: "bed",
+        },
+        {
+          id: "w2",
+          enabled: true,
+          order: 2,
+          title: "Authentic Hospitality",
+          description: "Warm Nepalese service that makes every guest feel at home.",
+          icon: "smile",
+        },
+        {
+          id: "w3",
+          enabled: true,
+          order: 3,
+          title: "Fine Dining",
+          description: "Korean cuisine, lobby café, and rooftop Sky Lounge experiences.",
+          icon: "utensils",
+        },
+        {
+          id: "w4",
+          enabled: true,
+          order: 4,
+          title: "Spa & Wellness",
+          description: "Restorative treatments, sauna, and steam in a serene sanctuary.",
+          icon: "sparkles",
+        },
+        {
+          id: "w5",
+          enabled: true,
+          order: 5,
+          title: "Meetings & Events",
+          description: "Elegant venues for celebrations, conferences, and private gatherings.",
+          icon: "users",
+        },
+        {
+          id: "w6",
+          enabled: true,
+          order: 6,
+          title: "Prime Thamel Location",
+          description: "Steps from culture, cuisine, and Kathmandu’s iconic landmarks.",
+          icon: "map-pin",
+        },
+        {
+          id: "w7",
+          enabled: true,
+          order: 7,
+          title: "Personalized Service",
+          description: "Concierge care tailored to your journey and celebrations.",
+          icon: "gem",
+        },
+        {
+          id: "w8",
+          enabled: true,
+          order: 8,
+          title: "Safe & Secure Stay",
+          description: "24/7 reception and a secure environment for peace of mind.",
+          icon: "shield",
+        },
+      ],
+    },
+    discover: {
+      eyebrow: "Immersive Luxury",
+      title: "Discover Our Experience",
+      content:
+        "From serene suites to rooftop evenings and spa rituals, every corner of Hotel Thamel Park invites you to slow down and savor Kathmandu in comfort.",
+      images: [
+        {
+          id: "d1",
+          src: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=900&q=80",
+          alt: "Luxury hotel suite",
+        },
+        {
+          id: "d2",
+          src: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80",
+          alt: "Fine dining experience",
+        },
+        {
+          id: "d3",
+          src: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80",
+          alt: "Spa wellness sanctuary",
+        },
+      ],
+    },
+    services: {
+      eyebrow: "Amenities",
+      title: "Our Services",
+      items: [
+        { id: "sv1", enabled: true, order: 1, title: "Luxury Rooms", description: "Refined rest for every traveler.", icon: "bed" },
+        { id: "sv2", enabled: true, order: 2, title: "Restaurant", description: "Garden View & Korean dining.", icon: "utensils" },
+        { id: "sv3", enabled: true, order: 3, title: "Cafe", description: "Lobby café for calm conversations.", icon: "coffee" },
+        { id: "sv4", enabled: true, order: 4, title: "Sky Lounge", description: "Rooftop evenings above the city.", icon: "wine" },
+        { id: "sv5", enabled: true, order: 5, title: "Spa", description: "Wellness rituals and therapies.", icon: "sparkles" },
+        { id: "sv6", enabled: true, order: 6, title: "Meetings", description: "Spaces for business and celebration.", icon: "briefcase" },
+        { id: "sv7", enabled: true, order: 7, title: "Airport Transfer", description: "Seamless arrival assistance.", icon: "plane" },
+        { id: "sv8", enabled: true, order: 8, title: "Travel Assistance", description: "Tours and local concierge help.", icon: "map" },
+        { id: "sv9", enabled: true, order: 9, title: "Room Service", description: "In-room dining around the clock.", icon: "bell" },
+        { id: "sv10", enabled: true, order: 10, title: "Laundry", description: "Professional garment care.", icon: "shirt" },
+        { id: "sv11", enabled: true, order: 11, title: "Free WiFi", description: "High-speed connectivity throughout.", icon: "wifi" },
+        { id: "sv12", enabled: true, order: 12, title: "24/7 Reception", description: "Always available for your needs.", icon: "clock" },
+      ],
+    },
+    team: {
+      eyebrow: "People Behind the Experience",
+      title: "Our Team",
+      description: "Dedicated professionals who bring luxury hospitality to life every day.",
+      members: [
+        {
+          id: "t1",
+          enabled: true,
+          order: 1,
+          name: "Rajesh Sharma",
+          position: "General Manager",
+          bio: "Leading with vision and a passion for world-class Nepali hospitality.",
+          imageSrc:
+            "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80",
+        },
+        {
+          id: "t2",
+          enabled: true,
+          order: 2,
+          name: "Anita Gurung",
+          position: "Front Office Manager",
+          bio: "Ensuring every arrival feels seamless, warm, and memorable.",
+          imageSrc:
+            "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80",
+        },
+        {
+          id: "t3",
+          enabled: true,
+          order: 3,
+          name: "Kim Jae-ho",
+          position: "Executive Chef",
+          bio: "Crafting refined Korean and international cuisine with artistry.",
+          imageSrc:
+            "https://images.unsplash.com/photo-1583394293214-28ded15ee548?auto=format&fit=crop&w=600&q=80",
+        },
+        {
+          id: "t4",
+          enabled: true,
+          order: 4,
+          name: "Priya Thapa",
+          position: "Guest Relations",
+          bio: "Personalizing stays with thoughtful touches and local insight.",
+          imageSrc:
+            "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80",
+        },
+      ],
+    },
+    awards: {
+      eyebrow: "Recognition",
+      title: "Awards & Achievements",
+      items: [
+        {
+          id: "a1",
+          enabled: true,
+          order: 1,
+          year: "2004",
+          title: "Foundation",
+          description: "Hotel Thamel Park opens in the heart of Thamel.",
+        },
+        {
+          id: "a2",
+          enabled: true,
+          order: 2,
+          year: "2012",
+          title: "Spa Excellence",
+          description: "Premium wellness center and spa facilities introduced.",
+        },
+        {
+          id: "a3",
+          enabled: true,
+          order: 3,
+          year: "2018",
+          title: "Sky Lounge Acclaim",
+          description: "Rooftop restaurant and bar opens to international praise.",
+        },
+        {
+          id: "a4",
+          enabled: true,
+          order: 4,
+          year: "2024",
+          title: "Luxury Renovation",
+          description: "Complete refinement across guest rooms and public spaces.",
+        },
+      ],
+    },
+    testimonials: {
+      eyebrow: "Guest Voices",
+      title: "What Our Guests Say",
+      description: "Discerning travelers from around the world share their experiences.",
+      items: [
+        {
+          id: "r1",
+          enabled: true,
+          order: 1,
+          name: "Elena Richardson",
+          country: "United Kingdom",
+          review:
+            "An absolutely exceptional stay. The attention to detail, the spa experience, and the Korean restaurant exceeded every expectation.",
+          rating: 5,
+          imageSrc:
+            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
+        },
+        {
+          id: "r2",
+          enabled: true,
+          order: 2,
+          name: "James Nakamura",
+          country: "Japan",
+          review:
+            "The Sky Lounge at sunset is unforgettable. Impeccable service throughout our stay — truly world-class hospitality.",
+          rating: 5,
+          imageSrc:
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+        },
+        {
+          id: "r3",
+          enabled: true,
+          order: 3,
+          name: "Sophie Laurent",
+          country: "France",
+          review:
+            "From the moment we arrived, every detail was perfect. The family room was spacious and elegant.",
+          rating: 5,
+          imageSrc:
+            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&q=80",
+        },
+      ],
+    },
+    galleryPreview: {
+      eyebrow: "Visual Journey",
+      title: "Moments of Elegance",
+      ctaText: "View Full Gallery",
+      ctaHref: "/gallery",
+      images: [
+        {
+          id: "g1",
+          src: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80",
+          alt: "Hotel exterior elegance",
+        },
+        {
+          id: "g2",
+          src: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=800&q=80",
+          alt: "Luxury bedroom",
+        },
+        {
+          id: "g3",
+          src: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80",
+          alt: "Hotel lounge",
+        },
+        {
+          id: "g4",
+          src: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+          alt: "Spa experience",
+        },
+      ],
+    },
+    cta: {
+      title: "Experience Luxury Hospitality in Kathmandu",
+      description: "Begin your journey with Hotel Thamel Park & Spa — refined comfort awaits.",
+      primaryText: "Book Your Stay",
+      primaryHref: "/book",
+      secondaryText: "Contact Us",
+      secondaryHref: "/contact",
+      backgroundImage:
+        "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=2000&q=80",
     },
     seo: {
-      title: "About | Hotel Thamel Park",
-      description: "Discover the story, mission, and vision of Hotel Thamel Park in Thamel, Kathmandu.",
+      title: "About | Hotel Thamel Park & Spa",
+      description:
+        "Discover the story, philosophy, and luxury hospitality of Hotel Thamel Park & Spa in Thamel, Kathmandu.",
+      canonical: "/about",
+      ogImage:
+        "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      keywords:
+        "about hotel thamel park, luxury hotel kathmandu, boutique hotel thamel, hotel story nepal",
     },
-    history: {
-      title: "A Legacy of Hospitality",
-      content:
-        "Founded in the heart of Thamel, Hotel Thamel Park has grown into a destination beloved by international travelers. Our commitment to warm Nepalese hospitality and world-class standards defines every guest experience.",
-    },
-    mission: {
-      title: "Our Mission",
-      content:
-        "To deliver exceptional luxury hospitality that honors Nepalese warmth while meeting the expectations of discerning global travelers.",
-    },
-    vision: {
-      title: "Our Vision",
-      content:
-        "To be recognized as Kathmandu's premier boutique luxury hotel — a place where every guest feels genuinely welcomed, restored, and inspired.",
-    },
-    facilities: [
-      { name: "Luxury Rooms", description: "Four distinctive room categories designed for comfort.", icon: "Bed" },
-      { name: "Fine Dining", description: "Multiple restaurants and a rooftop lounge.", icon: "UtensilsCrossed" },
-      { name: "Spa & Wellness", description: "Full-service spa with massage, sauna, and steam.", icon: "Sparkles" },
-      { name: "Concierge", description: "24/7 front desk and travel assistance.", icon: "ConciergeBell" },
-    ],
-    timeline: [
-      { year: "2004", title: "Foundation", description: "Hotel Thamel Park opens in the heart of Thamel." },
-      { year: "2012", title: "Spa Launch", description: "Premium wellness center and spa facilities introduced." },
-      { year: "2018", title: "Sky Lounge", description: "Rooftop restaurant and bar opens to international acclaim." },
-      { year: "2024", title: "Renovation", description: "Complete luxury renovation across all guest rooms." },
-    ],
   },
   reviews: [
     {

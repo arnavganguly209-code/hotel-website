@@ -835,19 +835,117 @@ function mergeGalleryPage(
 
 function mergeAboutPage(
   defaults: SiteContent["aboutPage"],
-  partial?: Partial<SiteContent["aboutPage"]>
+  partial?: Partial<SiteContent["aboutPage"]> & {
+    history?: { title: string; content: string };
+    mission?: { title: string; content: string };
+    vision?: { title: string; content: string };
+    facilities?: Array<{ name: string; description: string; icon: string }>;
+    timeline?: Array<{ year: string; title: string; description: string }>;
+  }
 ): SiteContent["aboutPage"] {
   if (!partial) return defaults;
+
+  const legacyHistory = partial.history;
+  const legacyMission = partial.mission;
+  const legacyVision = partial.vision;
+  const legacyTimeline = partial.timeline;
+  const heroPartial = partial.hero as Partial<SiteContent["aboutPage"]["hero"]> | undefined;
+  const isLegacyHero =
+    Boolean(heroPartial) &&
+    !("breadcrumbHome" in (heroPartial || {})) &&
+    (heroPartial?.title === "Our Story" || heroPartial?.subtitle === "About");
+
   return {
     ...defaults,
     ...partial,
-    hero: { ...defaults.hero, ...(partial.hero ?? {}) },
+    hero: isLegacyHero
+      ? defaults.hero
+      : {
+          ...defaults.hero,
+          ...(heroPartial ?? {}),
+          breadcrumbHome: heroPartial?.breadcrumbHome ?? defaults.hero.breadcrumbHome,
+          breadcrumbCurrent:
+            heroPartial?.breadcrumbCurrent ?? defaults.hero.breadcrumbCurrent,
+          overlayOpacity:
+            heroPartial?.overlayOpacity != null
+              ? Number(heroPartial.overlayOpacity) || defaults.hero.overlayOpacity
+              : defaults.hero.overlayOpacity,
+        },
+    story: {
+      ...defaults.story,
+      ...(partial.story ?? {}),
+      ...(legacyHistory && !partial.story
+        ? { title: legacyHistory.title, content: legacyHistory.content }
+        : {}),
+    },
+    stats: definedArray(partial.stats, defaults.stats),
+    philosophy: {
+      ...defaults.philosophy,
+      ...(partial.philosophy ?? {}),
+      mission: {
+        ...defaults.philosophy.mission,
+        ...(partial.philosophy?.mission ?? {}),
+        ...(legacyMission && !partial.philosophy?.mission
+          ? { title: legacyMission.title, content: legacyMission.content }
+          : {}),
+      },
+      vision: {
+        ...defaults.philosophy.vision,
+        ...(partial.philosophy?.vision ?? {}),
+        ...(legacyVision && !partial.philosophy?.vision
+          ? { title: legacyVision.title, content: legacyVision.content }
+          : {}),
+      },
+      values: definedArray(partial.philosophy?.values, defaults.philosophy.values),
+    },
+    whyChoose: {
+      ...defaults.whyChoose,
+      ...(partial.whyChoose ?? {}),
+      items: definedArray(partial.whyChoose?.items, defaults.whyChoose.items),
+    },
+    discover: {
+      ...defaults.discover,
+      ...(partial.discover ?? {}),
+      images: definedArray(partial.discover?.images, defaults.discover.images),
+    },
+    services: {
+      ...defaults.services,
+      ...(partial.services ?? {}),
+      items: definedArray(partial.services?.items, defaults.services.items),
+    },
+    team: {
+      ...defaults.team,
+      ...(partial.team ?? {}),
+      members: definedArray(partial.team?.members, defaults.team.members),
+    },
+    awards: {
+      ...defaults.awards,
+      ...(partial.awards ?? {}),
+      items:
+        partial.awards?.items ??
+        (legacyTimeline?.length
+          ? legacyTimeline.map((t, i) => ({
+              id: `legacy-${i}`,
+              enabled: true,
+              order: i + 1,
+              year: t.year,
+              title: t.title,
+              description: t.description,
+            }))
+          : defaults.awards.items),
+    },
+    testimonials: {
+      ...defaults.testimonials,
+      ...(partial.testimonials ?? {}),
+      items: definedArray(partial.testimonials?.items, defaults.testimonials.items),
+    },
+    galleryPreview: {
+      ...defaults.galleryPreview,
+      ...(partial.galleryPreview ?? {}),
+      images: definedArray(partial.galleryPreview?.images, defaults.galleryPreview.images),
+    },
+    cta: { ...defaults.cta, ...(partial.cta ?? {}) },
     seo: { ...defaults.seo, ...(partial.seo ?? {}) },
-    history: { ...defaults.history, ...(partial.history ?? {}) },
-    mission: { ...defaults.mission, ...(partial.mission ?? {}) },
-    vision: { ...defaults.vision, ...(partial.vision ?? {}) },
-    facilities: definedArray(partial.facilities, defaults.facilities),
-    timeline: definedArray(partial.timeline, defaults.timeline),
   };
 }
 
