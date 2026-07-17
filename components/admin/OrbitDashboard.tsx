@@ -1256,69 +1256,8 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       onChange={(e) => update("facilitiesSection", { ...content.facilitiesSection, showMist: e.target.checked })}
                       className="accent-luxury-gold"
                     />
-                    Show Mist / Mountain Silhouettes
+                    Show Mist / Himalayan Mountain Artwork
                   </label>
-                </div>
-
-                <div className="space-y-4 border border-luxury-gold/10 p-6">
-                  <p className="font-display text-lg text-luxury-gold">Cards Layout &amp; Animation</p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <AdminInput
-                      label="Cards Gap (px)"
-                      type="number"
-                      value={content.spaWellnessSection.cardsGapPx}
-                      onChange={(e) =>
-                        update("spaWellnessSection", {
-                          ...content.spaWellnessSection,
-                          cardsGapPx: Number(e.target.value),
-                        })
-                      }
-                    />
-                    <AdminInput
-                      label="Card Padding (px)"
-                      type="number"
-                      value={content.spaWellnessSection.cardPaddingPx}
-                      onChange={(e) =>
-                        update("spaWellnessSection", {
-                          ...content.spaWellnessSection,
-                          cardPaddingPx: Number(e.target.value),
-                        })
-                      }
-                    />
-                    <AdminInput
-                      label="Card Radius (px)"
-                      type="number"
-                      value={content.spaWellnessSection.cardRadiusPx}
-                      onChange={(e) =>
-                        update("spaWellnessSection", {
-                          ...content.spaWellnessSection,
-                          cardRadiusPx: Number(e.target.value),
-                        })
-                      }
-                    />
-                    <AdminInput
-                      label="Hover Lift (px)"
-                      type="number"
-                      value={content.spaWellnessSection.cardHoverLiftPx}
-                      onChange={(e) =>
-                        update("spaWellnessSection", {
-                          ...content.spaWellnessSection,
-                          cardHoverLiftPx: Number(e.target.value),
-                        })
-                      }
-                    />
-                    <AdminInput
-                      label="Image Top Offset (px)"
-                      type="number"
-                      value={content.spaWellnessSection.imageTopOffsetPx}
-                      onChange={(e) =>
-                        update("spaWellnessSection", {
-                          ...content.spaWellnessSection,
-                          imageTopOffsetPx: Number(e.target.value),
-                        })
-                      }
-                    />
-                  </div>
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
@@ -1376,18 +1315,44 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                         }} />
                       </div>
                       <ImagePicker
-                        label="Custom Icon Image (optional — overrides Lucide)"
+                        label="Custom Icon (SVG / PNG / WEBP — upload, replace, crop)"
                         folder="facilities"
                         category="General"
                         value={facility.iconSrc || ""}
                         library={content.mediaLibrary}
                         onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                        enableCrop
                         onChange={(url) => {
                           const facilities = [...content.facilities];
                           facilities[i] = { ...facility, iconSrc: url };
                           update("facilities", facilities);
                         }}
                       />
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="border-luxury-gold/30 text-luxury-gold"
+                          onClick={() => {
+                            const facilities = [...content.facilities];
+                            facilities[i] = { ...facility, iconSrc: "" };
+                            update("facilities", facilities);
+                          }}
+                          disabled={!facility.iconSrc}
+                        >
+                          Restore Default Icon
+                        </Button>
+                        {facility.iconSrc ? (
+                          <p className="self-center text-[10px] text-white/40">
+                            Custom icon active — clear to use Lucide “{facility.icon}”
+                          </p>
+                        ) : (
+                          <p className="self-center text-[10px] text-white/40">
+                            Using Lucide icon: {facility.icon}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

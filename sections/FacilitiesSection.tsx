@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { HeritageMistBackdrop } from "@/components/home/HeritageMistBackdrop";
+import { AmenitiesMountainBackdrop } from "@/components/home/AmenitiesMountainBackdrop";
 import { AmenityGlassCard } from "@/components/shared/AmenityGlassCard";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { luxuryEase, luxuryFadeUp, luxuryStagger } from "@/lib/animations";
@@ -50,7 +50,7 @@ export function FacilitiesSection({ facilities, section }: FacilitiesSectionProp
       }}
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-        <HeritageMistBackdrop goldColor={gold} visible={section.showMist !== false} />
+        <AmenitiesMountainBackdrop goldColor={gold} visible={section.showMist !== false} />
       </div>
 
       <div className="relative mx-auto max-w-[1200px] px-4 py-16 sm:px-6 md:py-20 lg:px-8 lg:py-24">
