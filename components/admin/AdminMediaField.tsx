@@ -72,6 +72,7 @@ export function AdminMediaField({
           value={value.imageSrc}
           folder={folder}
           category={category}
+          enableCrop
           library={library}
           onLibraryChange={onLibraryChange}
           onChange={(url, asset) =>
@@ -88,14 +89,58 @@ export function AdminMediaField({
             value={value.videoSrc}
             onChange={(e) => set({ videoSrc: e.target.value })}
           />
+          <div>
+            <label className="mb-1 block text-[10px] font-medium uppercase tracking-[0.2em] text-luxury-gold/70">
+              Upload Video File
+            </label>
+            <input
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime"
+              className="block w-full text-xs text-white/60 file:mr-3 file:rounded-lg file:border-0 file:bg-luxury-gold/20 file:px-3 file:py-2 file:text-luxury-gold"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const form = new FormData();
+                form.append("file", file);
+                form.append("folder", folder);
+                if (value.videoSrc) form.append("oldUrl", value.videoSrc);
+                const res = await fetch("/api/upload", { method: "POST", body: form });
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && data.url) {
+                  set({
+                    videoSrc: data.url,
+                    videoPublicId: data.publicId,
+                    type: "video",
+                  });
+                  onLibraryChange([
+                    {
+                      id: data.publicId || data.url,
+                      url: data.url,
+                      publicId: data.publicId,
+                      filename: file.name,
+                      folder,
+                      category,
+                      title: file.name,
+                      mimeType: file.type,
+                      size: file.size,
+                      createdAt: new Date().toISOString(),
+                    },
+                    ...library,
+                  ]);
+                }
+                e.target.value = "";
+              }}
+            />
+          </div>
           <p className="text-xs text-white/40">
-            Paste a video URL. Upload a poster image below for the thumbnail.
+            Upload an MP4/WEBM or paste a video URL. Add a poster image for the thumbnail.
           </p>
           <ImagePicker
             label="Poster Image"
             value={value.poster}
             folder={folder}
             category={category}
+            enableCrop
             library={library}
             onLibraryChange={onLibraryChange}
             onChange={(url, asset) =>

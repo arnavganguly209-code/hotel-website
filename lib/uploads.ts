@@ -10,7 +10,8 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 
-export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
+export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB images
+export const MAX_VIDEO_UPLOAD_BYTES = 80 * 1024 * 1024; // 80MB videos
 
 /**
  * Absolute uploads root.
@@ -33,7 +34,14 @@ export const ALLOWED_IMAGE_MIME = new Set([
   "image/svg+xml",
 ]);
 
+export const ALLOWED_VIDEO_MIME = new Set([
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+]);
+
 export const ALLOWED_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".svg"]);
+export const ALLOWED_VIDEO_EXTENSIONS = new Set([".mp4", ".webm", ".mov"]);
 
 const MIME_TO_EXT: Record<string, string> = {
   "image/jpeg": ".jpg",
@@ -41,6 +49,9 @@ const MIME_TO_EXT: Record<string, string> = {
   "image/png": ".png",
   "image/webp": ".webp",
   "image/svg+xml": ".svg",
+  "video/mp4": ".mp4",
+  "video/webm": ".webm",
+  "video/quicktime": ".mov",
 };
 
 export function sanitizeFolder(folder: string): string {
@@ -65,10 +76,21 @@ export function extensionForUpload(fileName: string, mimeType: string): string |
   if (fromMime) return fromMime;
 
   const ext = normalizeExt(path.extname(fileName || ""));
-  if (ALLOWED_EXTENSIONS.has(ext) || ext === ".jpeg") {
+  if (
+    ALLOWED_EXTENSIONS.has(ext) ||
+    ALLOWED_VIDEO_EXTENSIONS.has(ext) ||
+    ext === ".jpeg"
+  ) {
     return normalizeExt(ext);
   }
   return null;
+}
+
+export function isVideoUpload(fileName: string, mimeType: string): boolean {
+  const mime = (mimeType || "").toLowerCase();
+  if (ALLOWED_VIDEO_MIME.has(mime)) return true;
+  const ext = normalizeExt(path.extname(fileName || ""));
+  return ALLOWED_VIDEO_EXTENSIONS.has(ext);
 }
 
 export function assertAllowedImage(fileName: string, mimeType: string, size: number): void {
@@ -84,6 +106,41 @@ export function assertAllowedImage(fileName: string, mimeType: string, size: num
   if (!ext || (!ALLOWED_IMAGE_MIME.has(mime) && !ALLOWED_EXTENSIONS.has(ext))) {
     throw new UploadError(
       "Invalid image. Only PNG, JPG, JPEG, WEBP, and SVG files are allowed.",
+      400
+    );
+  }
+}
+
+/** Images (10MB) or gallery videos (80MB). */
+export function assertAllowedMedia(fileName: string, mimeType: string, size: number): void {
+  if (size <= 0) {
+    throw new UploadError("Empty file", 400);
+  }
+
+  const mime = (mimeType || "").toLowerCase();
+  const video = isVideoUpload(fileName, mime);
+  const max = video ? MAX_VIDEO_UPLOAD_BYTES : MAX_UPLOAD_BYTES;
+
+  if (size > max) {
+    throw new UploadError(
+      video
+        ? "Video too large. Maximum upload size is 80MB."
+        : "File too large. Maximum upload size is 10MB.",
+      400
+    );
+  }
+
+  const ext = extensionForUpload(fileName, mime);
+  if (video) {
+    if (!ext || (!ALLOWED_VIDEO_MIME.has(mime) && !ALLOWED_VIDEO_EXTENSIONS.has(ext))) {
+      throw new UploadError("Invalid video. Only MP4, WEBM, and MOV files are allowed.", 400);
+    }
+    return;
+  }
+
+  if (!ext || (!ALLOWED_IMAGE_MIME.has(mime) && !ALLOWED_EXTENSIONS.has(ext))) {
+    throw new UploadError(
+      "Invalid file. Images: PNG, JPG, WEBP, SVG. Videos: MP4, WEBM, MOV.",
       400
     );
   }
@@ -240,7 +297,7 @@ export async function verifyUploadHttpReachable(publicUrl: string): Promise<{
         method: "GET",
         cache: "no-store",
         redirect: "follow",
-        headers: { Accept: "image/*,*/*" },
+        headers: { Accept: "image/*,video/*,*/*" },
       });
       lastStatus = res.status;
       const ctype = res.headers.get("content-type") || "";
@@ -251,7 +308,13 @@ export async function verifyUploadHttpReachable(publicUrl: string): Promise<{
         /* ignore */
       }
 
-      if (res.ok && (ctype.startsWith("image/") || ctype.includes("octet-stream") || ctype.includes("svg"))) {
+      if (
+        res.ok &&
+        (ctype.startsWith("image/") ||
+          ctype.startsWith("video/") ||
+          ctype.includes("octet-stream") ||
+          ctype.includes("svg"))
+      ) {
         return {
           ok: true,
           status: res.status,
@@ -285,12 +348,12 @@ export async function saveUploadedFile(options: {
   diskVerified: true;
 }> {
   const { buffer, originalName, mimeType, folder = "general" } = options;
-  assertAllowedImage(originalName, mimeType, buffer.length);
+  assertAllowedMedia(originalName, mimeType, buffer.length);
 
   const ext = extensionForUpload(originalName, mimeType);
   if (!ext) {
     throw new UploadError(
-      "Invalid image. Only PNG, JPG, JPEG, WEBP, and SVG files are allowed.",
+      "Invalid file. Images: PNG, JPG, WEBP, SVG. Videos: MP4, WEBM, MOV.",
       400
     );
   }

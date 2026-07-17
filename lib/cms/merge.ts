@@ -202,30 +202,77 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     ),
     aboutPage: mergeAboutPage(defaultContent.aboutPage, partial.aboutPage),
     reviews: definedArray(partial.reviews, defaultContent.reviews),
-    gallery: definedArray(partial.gallery, defaultContent.gallery).map((item, i) => ({
-      ...(defaultContent.gallery[i] ?? defaultContent.gallery[0]),
-      ...item,
-      type: item.type ?? "image",
-      description: item.description ?? defaultContent.gallery[i]?.description ?? "",
-      alt: item.alt ?? item.title ?? "",
-      active: item.active !== false,
-      showOnHome: item.showOnHome !== false,
-      order: item.order ?? i,
-    })),
-    galleryCategories: definedArray(
-      partial.galleryCategories,
-      defaultContent.galleryCategories
-    ).map((cat, i) => ({
-      ...(defaultContent.galleryCategories[i] ?? {
-        id: `cat-${i}`,
-        name: "Category",
-        enabled: true,
-        order: i,
-      }),
-      ...cat,
-      enabled: cat.enabled !== false,
-      order: typeof cat.order === "number" ? cat.order : i,
-    })),
+    gallery: (() => {
+      const merged = definedArray(partial.gallery, defaultContent.gallery).map((item, i) => ({
+        ...(defaultContent.gallery[i] ?? defaultContent.gallery[0]),
+        ...item,
+        type: item.type ?? "image",
+        description: item.description ?? defaultContent.gallery[i]?.description ?? "",
+        alt: item.alt ?? item.title ?? "",
+        active: item.active !== false,
+        showOnHome: item.showOnHome !== false,
+        featured: item.featured === true,
+        poster: item.poster ?? "",
+        order: item.order ?? i,
+      }));
+
+      const hasFeatured = merged.some((item) => item.featured === true);
+      if (!hasFeatured) {
+        merged.slice(0, 4).forEach((item) => {
+          item.featured = true;
+        });
+      }
+
+      const hasVideo = merged.some((item) => item.type === "video");
+      if (!hasVideo) {
+        const videos = defaultContent.gallery.filter((item) => item.type === "video");
+        const maxOrder = merged.reduce((m, item) => Math.max(m, item.order ?? 0), 0);
+        videos.forEach((video, i) => {
+          if (!merged.some((item) => item.id === video.id)) {
+            merged.push({
+              ...video,
+              alt: video.alt ?? video.title,
+              active: video.active !== false,
+              showOnHome: video.showOnHome !== false,
+              featured: video.featured === true,
+              poster: video.poster ?? "",
+              description: video.description ?? "",
+              type: "video" as const,
+              order: maxOrder + 1 + i,
+            });
+          }
+        });
+      }
+
+      return merged;
+    })(),
+    galleryCategories: (() => {
+      const merged = definedArray(
+        partial.galleryCategories,
+        defaultContent.galleryCategories
+      ).map((cat, i) => ({
+        ...(defaultContent.galleryCategories[i] ?? {
+          id: `cat-${i}`,
+          name: "Category",
+          enabled: true,
+          order: i,
+        }),
+        ...cat,
+        enabled: cat.enabled !== false,
+        order: typeof cat.order === "number" ? cat.order : i,
+        icon: cat.icon ?? "",
+      }));
+
+      const names = new Set(merged.map((c) => c.name.toLowerCase()));
+      let order = merged.reduce((m, c) => Math.max(m, c.order ?? 0), 0);
+      for (const def of defaultContent.galleryCategories) {
+        if (!names.has(def.name.toLowerCase())) {
+          order += 1;
+          merged.push({ ...def, icon: def.icon ?? "", order });
+        }
+      }
+      return merged;
+    })(),
     gallerySection: mergeGallerySection(
       defaultContent.gallerySection,
       partial.gallerySection
@@ -807,29 +854,49 @@ function mergeGalleryPage(
   partial?: Partial<SiteContent["galleryPage"]>
 ): SiteContent["galleryPage"] {
   if (!partial) return defaults;
+  const heroPartial = partial.hero as Partial<SiteContent["galleryPage"]["hero"]> | undefined;
+  const isLegacyHero =
+    Boolean(heroPartial) &&
+    !("breadcrumbHome" in (heroPartial || {})) &&
+    (heroPartial?.title === "Gallery" || heroPartial?.subtitle === "Visual Journey");
+
   return {
     ...defaults,
     ...partial,
-    hero: {
-      ...defaults.hero,
-      ...(partial.hero ?? {}),
-      media: {
-        ...defaults.hero.media,
-        ...(partial.hero?.media ?? {}),
-        imageSrc:
-          partial.hero?.media?.imageSrc?.trim() ||
-          partial.hero?.imageSrc?.trim() ||
-          defaults.hero.media.imageSrc ||
-          defaults.hero.imageSrc,
-      },
-      imageSrc:
-        partial.hero?.imageSrc?.trim() ||
-        partial.hero?.media?.imageSrc?.trim() ||
-        defaults.hero.imageSrc,
-    },
+    hero: isLegacyHero
+      ? defaults.hero
+      : {
+          ...defaults.hero,
+          ...(heroPartial ?? {}),
+          media: {
+            ...defaults.hero.media,
+            ...(heroPartial?.media ?? {}),
+            imageSrc:
+              heroPartial?.media?.imageSrc?.trim() ||
+              heroPartial?.imageSrc?.trim() ||
+              defaults.hero.media.imageSrc ||
+              defaults.hero.imageSrc,
+          },
+          imageSrc:
+            heroPartial?.imageSrc?.trim() ||
+            heroPartial?.media?.imageSrc?.trim() ||
+            defaults.hero.imageSrc,
+          breadcrumbHome: heroPartial?.breadcrumbHome ?? defaults.hero.breadcrumbHome,
+          breadcrumbCurrent: heroPartial?.breadcrumbCurrent ?? defaults.hero.breadcrumbCurrent,
+          overlayOpacity:
+            heroPartial?.overlayOpacity != null
+              ? Number(heroPartial.overlayOpacity) || defaults.hero.overlayOpacity
+              : defaults.hero.overlayOpacity,
+        },
     seo: { ...defaults.seo, ...(partial.seo ?? {}) },
     showFilters: partial.showFilters !== false,
     gridColumns: (partial.gridColumns ?? defaults.gridColumns) as 2 | 3 | 4,
+    initialVisible: partial.initialVisible ?? defaults.initialVisible,
+    loadMoreCount: partial.loadMoreCount ?? defaults.loadMoreCount,
+    featured: { ...defaults.featured, ...(partial.featured ?? {}) },
+    videos: { ...defaults.videos, ...(partial.videos ?? {}) },
+    strip: { ...defaults.strip, ...(partial.strip ?? {}) },
+    cta: { ...defaults.cta, ...(partial.cta ?? {}) },
   };
 }
 

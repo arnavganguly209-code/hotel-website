@@ -7,13 +7,20 @@ interface ImageCropDialogProps {
   file: File;
   onCancel: () => void;
   onConfirm: (cropped: File) => void;
+  title?: string;
 }
 
-/** Lightweight center-crop dialog for payment logos (no extra deps). */
-export function ImageCropDialog({ file, onCancel, onConfirm }: ImageCropDialogProps) {
+/** Lightweight center-crop dialog with zoom + rotate (no extra deps). */
+export function ImageCropDialog({
+  file,
+  onCancel,
+  onConfirm,
+  title = "Crop Image",
+}: ImageCropDialogProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
   const [ready, setReady] = useState(false);
 
   const draw = useCallback(() => {
@@ -27,23 +34,38 @@ export function ImageCropDialog({ file, onCancel, onConfirm }: ImageCropDialogPr
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const rad = (rotation * Math.PI) / 180;
+    const swapped = rotation % 180 !== 0;
+    const srcW = swapped ? img.naturalHeight : img.naturalWidth;
+    const srcH = swapped ? img.naturalWidth : img.naturalHeight;
+
     let sw: number;
     let sh: number;
-    const aspect = img.naturalWidth / img.naturalHeight;
+    const aspect = srcW / srcH;
     if (aspect >= 1) {
-      sh = img.naturalHeight / zoom;
+      sh = srcH / zoom;
       sw = sh;
     } else {
-      sw = img.naturalWidth / zoom;
+      sw = srcW / zoom;
       sh = sw;
     }
-    const sx = (img.naturalWidth - sw) / 2;
-    const sy = (img.naturalHeight - sh) / 2;
 
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, size, size);
-    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
-  }, [zoom]);
+
+    ctx.save();
+    ctx.translate(size / 2, size / 2);
+    ctx.rotate(rad);
+
+    const drawW = swapped ? size : size;
+    const drawH = swapped ? size : size;
+    // Map crop square in rotated space
+    const crop = Math.min(img.naturalWidth, img.naturalHeight) / zoom;
+    const sx = (img.naturalWidth - crop) / 2;
+    const sy = (img.naturalHeight - crop) / 2;
+    ctx.drawImage(img, sx, sy, crop, crop, -drawW / 2, -drawH / 2, drawW, drawH);
+    ctx.restore();
+  }, [zoom, rotation]);
 
   useEffect(() => {
     const url = URL.createObjectURL(file);
@@ -80,9 +102,9 @@ export function ImageCropDialog({ file, onCancel, onConfirm }: ImageCropDialogPr
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4">
       <div className="w-full max-w-md space-y-4 border border-luxury-gold/20 bg-[#0F1C18] p-6 shadow-xl">
-        <p className="font-display text-lg text-luxury-gold">Crop Payment Logo</p>
+        <p className="font-display text-lg text-luxury-gold">{title}</p>
         <p className="text-xs text-white/50">
-          Adjust zoom, then confirm. The cropped square is saved as PNG.
+          Adjust zoom or rotate, then confirm. The cropped square is saved as PNG.
         </p>
         <div className="flex justify-center bg-white/5 p-3">
           <canvas
@@ -102,13 +124,24 @@ export function ImageCropDialog({ file, onCancel, onConfirm }: ImageCropDialogPr
             className="mt-2 w-full accent-luxury-gold"
           />
         </label>
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="ghost" onClick={onCancel}>
-            Cancel
+        <div className="flex items-center justify-between gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="border-luxury-gold/30 text-luxury-gold"
+            onClick={() => setRotation((r) => (r + 90) % 360)}
+          >
+            Rotate 90°
           </Button>
-          <Button type="button" variant="gold" onClick={handleConfirm} disabled={!ready}>
-            Apply Crop
-          </Button>
+          <div className="flex gap-2">
+            <Button type="button" variant="ghost" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button type="button" variant="gold" onClick={handleConfirm} disabled={!ready}>
+              Apply Crop
+            </Button>
+          </div>
         </div>
       </div>
     </div>

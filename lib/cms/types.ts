@@ -762,6 +762,9 @@ export interface SiteContent {
     alt?: string;
     active?: boolean;
     showOnHome?: boolean;
+    featured?: boolean;
+    /** Poster/thumbnail for video items */
+    poster?: string;
     order?: number;
   }>;
   galleryCategories: Array<{
@@ -769,6 +772,7 @@ export interface SiteContent {
     name: string;
     enabled: boolean;
     order: number;
+    icon?: string;
   }>;
   gallerySection: {
     enabled: boolean;
@@ -791,13 +795,45 @@ export interface SiteContent {
     overlayOpacity: number;
   };
   galleryPage: {
-    hero: PageHero & { media: CmsMedia };
+    hero: PageHero & {
+      media: CmsMedia;
+      breadcrumbHome: string;
+      breadcrumbCurrent: string;
+      overlayOpacity: number;
+    };
     seo: PageSeo & { keywords?: string };
     eyebrow: string;
     title: string;
     description: string;
     showFilters: boolean;
     gridColumns: 2 | 3 | 4;
+    initialVisible: number;
+    loadMoreCount: number;
+    featured: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      enabled: boolean;
+    };
+    videos: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      enabled: boolean;
+    };
+    strip: {
+      enabled: boolean;
+      title: string;
+    };
+    cta: {
+      title: string;
+      description: string;
+      primaryText: string;
+      primaryHref: string;
+      secondaryText: string;
+      secondaryHref: string;
+      backgroundImage: string;
+    };
     goldColor: string;
     headingColor: string;
     bodyColor: string;
