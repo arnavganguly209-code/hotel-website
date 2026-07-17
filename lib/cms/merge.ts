@@ -255,6 +255,9 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
         defaultContent.footer.enabledPayments
       ),
       paymentLogos: mergePaymentLogos(partial.footer?.paymentLogos),
+      legalLinks: definedArray(partial.footer?.legalLinks, defaultContent.footer.legalLinks),
+      showMountains:
+        partial.footer?.showMountains ?? defaultContent.footer.showMountains,
     },
     mediaLibrary: definedArray(partial.mediaLibrary, defaultContent.mediaLibrary),
   };

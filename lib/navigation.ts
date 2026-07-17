@@ -12,6 +12,7 @@ export const routes = {
   contact: "/contact",
   privacy: "/privacy-policy",
   terms: "/terms-and-conditions",
+  legal: "/legal",
   orbit: "/orbit",
 } as const;
 
@@ -51,8 +52,11 @@ export const FOOTER_NAV = {
     { label: "Wellness", href: routes.spa },
   ],
   policies: [
-    { label: "Privacy Policy", href: routes.privacy },
-    { label: "Terms & Conditions", href: routes.terms },
+    { label: "Privacy Policy", href: `${routes.legal}#privacy` },
+    { label: "Terms & Conditions", href: `${routes.legal}#terms` },
+    { label: "Cancellation Policy", href: `${routes.legal}#cancellation` },
+    { label: "Cookie Settings", href: `${routes.legal}#cookies` },
+    { label: "Sitemap", href: `${routes.legal}#sitemap` },
   ],
 } as const;
 

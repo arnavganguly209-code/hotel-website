@@ -32,13 +32,13 @@ function PaymentSlot({ id, src, index }: { id: string; src: string; index: numbe
           "hover:-translate-y-0.5"
         )}
         style={{
-          height: 74,
+          height: 58,
           borderWidth: 1,
           borderStyle: "solid",
           borderColor: `${FOOTER.gold}66`,
           backgroundColor: FOOTER.cream,
-          /* ~12–13% inset → logo fills ~74–76% of card */
-          padding: "10px 12px",
+          /* ~10% inset → logo fills ~80% of card */
+          padding: "5px 6px",
         }}
       >
         {showImage ? (
@@ -55,6 +55,7 @@ function PaymentSlot({ id, src, index }: { id: string; src: string; index: numbe
               maxHeight: "100%",
               objectFit: "contain",
               objectPosition: "center",
+              transform: "scale(1.05)",
             }}
             loading="lazy"
             decoding="async"
@@ -87,7 +88,7 @@ export function PaymentBrandLogos({ logos, className }: PaymentBrandLogosProps) 
   return (
     <ul
       className={cn(
-        "mx-auto grid w-full max-w-[280px] grid-cols-2 gap-3 sm:max-w-none sm:grid-cols-3 lg:grid-cols-2",
+        "mx-auto grid w-full max-w-[280px] grid-cols-2 gap-2.5 sm:max-w-none sm:grid-cols-3 lg:grid-cols-2",
         className
       )}
     >

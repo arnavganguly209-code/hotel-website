@@ -96,6 +96,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
     type: "ok" | "err";
     text: string;
   } | null>(null);
+  const [paymentDragIndex, setPaymentDragIndex] = useState<number | null>(null);
   const isFirstRender = useRef(true);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const contentRef = useRef(content);
@@ -3320,8 +3321,8 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   </label>
                   <AdminInput label="Payment Section Label" value={content.footer.paymentLabel} onChange={(e) => update("footer", { ...content.footer, paymentLabel: e.target.value })} />
                   <p className="text-xs text-white/40">
-                    Payment Logo 1–6 (Visa, Mastercard, UnionPay, Alipay, UPI, eSewa). Upload verifies the file on disk
-                    before saving. If upload or save fails, the previous logo is kept and an error is shown.
+                    Payment Logo 1–6 (Visa, Mastercard, UnionPay, Alipay, UPI, eSewa). Drag to reorder.
+                    Upload verifies the file on disk before saving. Supported: PNG, SVG, WEBP, JPEG, JPG.
                   </p>
                   {paymentNotice ? (
                     <p
@@ -3334,15 +3335,39 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       {paymentNotice.text}
                     </p>
                   ) : null}
-                  {OFFICIAL_PAYMENT_LOGOS.map((official, i) => {
-                    const raw = content.footer.paymentLogos?.[i]?.src ?? official.src;
+                  {(content.footer.paymentLogos?.length
+                    ? content.footer.paymentLogos
+                    : OFFICIAL_PAYMENT_LOGOS.map((o, i) => ({ id: `pay${i + 1}`, src: o.src }))
+                  ).map((logo, i) => {
+                    const official = OFFICIAL_PAYMENT_LOGOS[i] || OFFICIAL_PAYMENT_LOGOS[0];
+                    const raw = logo.src ?? official.src;
                     const displaySrc = isPaymentLogoCleared(raw)
                       ? ""
                       : normalizePaymentLogoSrc(raw) || official.src;
-                    const label = `Payment Logo ${i + 1} — ${official.label}`;
+                    const label = `Payment Logo ${i + 1}${official?.label ? ` — ${official.label}` : ""}`;
                     return (
-                      <div key={`pay-slot-${i}`} className="space-y-2 border border-luxury-gold/10 p-4">
-                        <p className="text-sm text-luxury-gold/80">{label}</p>
+                      <div
+                        key={`pay-slot-${logo.id}-${i}`}
+                        className="space-y-2 border border-luxury-gold/10 p-4"
+                        draggable
+                        onDragStart={() => setPaymentDragIndex(i)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => {
+                          if (paymentDragIndex === null || paymentDragIndex === i) return;
+                          const logos = [...(content.footer.paymentLogos || [])];
+                          while (logos.length < 6) {
+                            logos.push({ id: `pay${logos.length + 1}`, src: "" });
+                          }
+                          const [moved] = logos.splice(paymentDragIndex, 1);
+                          logos.splice(i, 0, moved);
+                          update("footer", { ...content.footer, paymentLogos: logos.slice(0, 6) });
+                          setPaymentDragIndex(null);
+                        }}
+                        onDragEnd={() => setPaymentDragIndex(null)}
+                      >
+                        <p className="cursor-grab text-sm text-luxury-gold/80 active:cursor-grabbing">
+                          ⠿ {label}
+                        </p>
                         <ImagePicker
                           key={displaySrc || `empty-${i}`}
                           label={label}
@@ -3351,6 +3376,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                           value={displaySrc}
                           library={content.mediaLibrary}
                           keepValueOnFailedUpload
+                          enableCrop
                           onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
                           onUploadError={(message) =>
                             setPaymentNotice({ type: "err", text: message })
@@ -3363,7 +3389,6 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                             });
                           }}
                           onChange={(url) => {
-                            // Upload / library / clear all flow through here AFTER ImagePicker validates
                             if (!url?.trim()) {
                               void commitPaymentLogo(i, PAYMENT_LOGO_CLEARED);
                               return;
@@ -3388,6 +3413,68 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <div className="flex items-center justify-between">
+                    <p className="font-display text-lg text-luxury-gold">Legal Links</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="border-luxury-gold/30 text-luxury-gold"
+                      onClick={() =>
+                        update("footer", {
+                          ...content.footer,
+                          legalLinks: [
+                            ...(content.footer.legalLinks || []),
+                            { label: "New Link", href: "/legal#" },
+                          ],
+                        })
+                      }
+                    >
+                      <Plus className="h-4 w-4" /> Add Link
+                    </Button>
+                  </div>
+                  <p className="text-xs text-white/40">
+                    Each link should point to /legal#section (privacy, terms, cancellation, cookies, sitemap).
+                  </p>
+                  {(content.footer.legalLinks || []).map((link, i) => (
+                    <div key={`legal-${i}`} className="grid grid-cols-[1fr_1fr_auto] gap-3">
+                      <AdminInput
+                        label="Label"
+                        value={link.label}
+                        onChange={(e) => {
+                          const legalLinks = [...(content.footer.legalLinks || [])];
+                          legalLinks[i] = { ...link, label: e.target.value };
+                          update("footer", { ...content.footer, legalLinks });
+                        }}
+                      />
+                      <AdminInput
+                        label="URL"
+                        value={link.href}
+                        onChange={(e) => {
+                          const legalLinks = [...(content.footer.legalLinks || [])];
+                          legalLinks[i] = { ...link, href: e.target.value };
+                          update("footer", { ...content.footer, legalLinks });
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="mt-6 text-red-400"
+                        onClick={() =>
+                          update("footer", {
+                            ...content.footer,
+                            legalLinks: (content.footer.legalLinks || []).filter((_, idx) => idx !== i),
+                          })
+                        }
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
                   <p className="font-display text-lg text-luxury-gold">Legal & Developer</p>
                   <AdminInput label="Copyright Text (after year)" value={content.footer.copyrightText} onChange={(e) => update("footer", { ...content.footer, copyrightText: e.target.value })} />
                   <AdminInput label="Developer Label" value={content.footer.developerLabel} onChange={(e) => update("footer", { ...content.footer, developerLabel: e.target.value })} />
@@ -3395,7 +3482,18 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
-                  <p className="font-display text-lg text-luxury-gold">Colors & Spacing</p>
+                  <p className="font-display text-lg text-luxury-gold">Colors, Atmosphere & Spacing</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={content.footer.showMountains !== false}
+                      onChange={(e) =>
+                        update("footer", { ...content.footer, showMountains: e.target.checked })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    Show mountain / pine background artwork
+                  </label>
                   <div className="grid grid-cols-2 gap-4">
                     <AdminInput label="Top Background" value={content.footer.colors.topBackground} onChange={(e) => update("footer", { ...content.footer, colors: { ...content.footer.colors, topBackground: e.target.value } })} />
                     <AdminInput label="Bottom Background" value={content.footer.colors.bottomBackground} onChange={(e) => update("footer", { ...content.footer, colors: { ...content.footer.colors, bottomBackground: e.target.value } })} />

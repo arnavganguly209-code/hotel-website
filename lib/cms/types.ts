@@ -732,6 +732,10 @@ export interface SiteContent {
     enabledPayments: string[];
     /** Six Orbit-uploadable payment badge images (image only, no labels) */
     paymentLogos: Array<{ id: string; src: string }>;
+    /** Centered legal row links (Privacy, Terms, Cancellation, Cookies, Sitemap) */
+    legalLinks: NavItem[];
+    /** Mountain / pine silhouette artwork behind footer content */
+    showMountains: boolean;
     copyrightText: string;
     developerLabel: string;
     developerUrl: string;

@@ -35,10 +35,14 @@ export function PremiumFooter({ content }: PremiumFooterProps) {
       ? `${rawLogo.split("?")[0]}?v=transparent`
       : rawLogo;
   const legacyCream = /f8f5ee|faf6ee|fdfbf7|fff9f2/i.test(footer.colors.topBackground || "");
-  const topBg = legacyCream ? FOOTER.topBg : footer.colors.topBackground || FOOTER.topBg;
-  const bottomBg = legacyCream
-    ? FOOTER.bottomBg
-    : footer.colors.bottomBackground || FOOTER.bottomBg;
+  const legacyTooDark = /^#0[Ff]2[Aa]22$/i.test(footer.colors.topBackground || "");
+  const topBg = legacyCream || legacyTooDark
+    ? FOOTER.topBg
+    : footer.colors.topBackground || FOOTER.topBg;
+  const bottomBg =
+    legacyCream || /^#0[Aa]1[Ff]19$/i.test(footer.colors.bottomBackground || "")
+      ? FOOTER.bottomBg
+      : footer.colors.bottomBackground || FOOTER.bottomBg;
   const description = /haven of warmth|&\s*Spa|refined comfort, elevated/i.test(
     footer.description || ""
   )
@@ -77,7 +81,7 @@ export function PremiumFooter({ content }: PremiumFooterProps) {
         className="relative border-t"
         style={{ backgroundColor: topBg, borderColor: `${FOOTER.gold}40` }}
       >
-        <FooterAtmosphere />
+        <FooterAtmosphere showMountains={footer.showMountains !== false} />
 
         <div
           className="relative z-10 mx-auto max-w-7xl px-6 lg:px-12"

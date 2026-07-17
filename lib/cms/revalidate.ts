@@ -15,6 +15,7 @@ const SITE_PATHS = [
   "/meetings-weddings",
   "/privacy-policy",
   "/terms-and-conditions",
+  "/legal",
   "/orbit/dashboard",
 ] as const;
 

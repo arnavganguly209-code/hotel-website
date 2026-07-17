@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { ImagePlus, Library, Loader2, Search, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SafeImage } from "@/components/shared/SafeImage";
+import { ImageCropDialog } from "@/components/admin/media/ImageCropDialog";
 import {
   MEDIA_CATEGORIES,
   categoryFromFolder,
@@ -26,6 +27,8 @@ interface ImagePickerProps {
   keepValueOnFailedUpload?: boolean;
   onUploadError?: (message: string) => void;
   onUploadSuccess?: (url: string) => void;
+  /** Show crop dialog before upload (payment logos). */
+  enableCrop?: boolean;
 }
 
 const ACCEPT = "image/jpeg,image/jpg,image/png,image/webp,image/svg+xml,.svg";
@@ -42,6 +45,7 @@ export function ImagePicker({
   keepValueOnFailedUpload = true,
   onUploadError,
   onUploadSuccess,
+  enableCrop = false,
 }: ImagePickerProps) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"library" | "upload">("library");
@@ -50,6 +54,7 @@ export function ImagePicker({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const previousValueRef = useRef(value);
   previousValueRef.current = value;
@@ -407,7 +412,13 @@ export function ImagePicker({
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      if (file) void handleUpload(file);
+                      if (!file) return;
+                      // SVG skip crop; otherwise optional crop step
+                      if (enableCrop && file.type !== "image/svg+xml") {
+                        setCropFile(file);
+                        return;
+                      }
+                      void handleUpload(file);
                     }}
                   />
                   {error ? <p className="text-sm text-red-400">{error}</p> : null}
@@ -416,6 +427,20 @@ export function ImagePicker({
             </div>
           </div>
         </div>
+      ) : null}
+
+      {cropFile ? (
+        <ImageCropDialog
+          file={cropFile}
+          onCancel={() => {
+            setCropFile(null);
+            if (fileRef.current) fileRef.current.value = "";
+          }}
+          onConfirm={(cropped) => {
+            setCropFile(null);
+            void handleUpload(cropped);
+          }}
+        />
       ) : null}
     </div>
   );
