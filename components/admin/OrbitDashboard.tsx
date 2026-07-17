@@ -1273,11 +1273,14 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 </div>
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
-                  <p className="font-display text-lg text-luxury-gold">Amenity Cards (10)</p>
+                  <p className="font-display text-lg text-luxury-gold">Amenities (10)</p>
+                  <p className="text-xs text-white/40">
+                    Box-less icon items. Upload SVG/PNG/WEBP/JPG icons — preview, replace, delete, restore default. Saves permanently with CMS.
+                  </p>
                   {content.facilities.map((facility, i) => (
                     <div key={facility.id} className="space-y-3 border border-luxury-gold/10 p-4">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm text-luxury-gold/80">Card {i + 1}</p>
+                        <p className="text-sm text-luxury-gold/80">Amenity {i + 1}</p>
                         <label className="flex items-center gap-2 text-xs text-white/60">
                           <input
                             type="checkbox"

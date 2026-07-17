@@ -14,6 +14,157 @@ interface FacilitiesSectionProps {
   section: SiteContent["facilitiesSection"];
 }
 
+type FacilityItem = SiteContent["facilities"][number];
+
+function RowDivider({ gold }: { gold: string }) {
+  return (
+    <div className="flex items-center justify-center gap-3 py-2" aria-hidden>
+      <span
+        className="h-px max-w-[min(100%,28rem)] flex-1"
+        style={{ backgroundColor: `${gold}55` }}
+      />
+      <span
+        className="h-1.5 w-1.5 shrink-0 rotate-45"
+        style={{ backgroundColor: `${gold}BB` }}
+      />
+      <span
+        className="h-px max-w-[min(100%,28rem)] flex-1"
+        style={{ backgroundColor: `${gold}55` }}
+      />
+    </div>
+  );
+}
+
+function AmenityRow({
+  items,
+  startIndex,
+  gold,
+  heading,
+  body,
+  columnsClass,
+}: {
+  items: FacilityItem[];
+  startIndex: number;
+  gold: string;
+  heading: string;
+  body: string;
+  columnsClass: string;
+}) {
+  return (
+    <div className={`grid gap-x-4 gap-y-10 sm:gap-x-6 ${columnsClass}`}>
+      {items.map((facility, i) => (
+        <AmenityGlassCard
+          key={facility.id}
+          facility={facility}
+          index={startIndex + i}
+          goldColor={gold}
+          headingColor={heading}
+          bodyColor={body}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** Responsive amenity grid: 5×2 desktop, 3-3-2-2 tablet, 2-col mobile */
+function AmenitiesIconGrid({
+  cards,
+  gold,
+  heading,
+  body,
+}: {
+  cards: FacilityItem[];
+  gold: string;
+  heading: string;
+  body: string;
+}) {
+  const row1 = cards.slice(0, 5);
+  const row2 = cards.slice(5, 10);
+
+  return (
+    <motion.div
+      variants={luxuryStagger}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-40px" }}
+      className="mt-14 md:mt-16"
+    >
+      {/* Desktop — 5 × 2 with mid-row gold divider */}
+      <div className="hidden space-y-2 xl:block">
+        <AmenityRow
+          items={row1}
+          startIndex={0}
+          gold={gold}
+          heading={heading}
+          body={body}
+          columnsClass="grid-cols-5"
+        />
+        <RowDivider gold={gold} />
+        <AmenityRow
+          items={row2}
+          startIndex={5}
+          gold={gold}
+          heading={heading}
+          body={body}
+          columnsClass="grid-cols-5"
+        />
+      </div>
+
+      {/* Tablet — 3 → 3 → 2 → 2 */}
+      <div className="hidden space-y-10 md:block xl:hidden">
+        <AmenityRow
+          items={cards.slice(0, 3)}
+          startIndex={0}
+          gold={gold}
+          heading={heading}
+          body={body}
+          columnsClass="grid-cols-3"
+        />
+        <AmenityRow
+          items={cards.slice(3, 6)}
+          startIndex={3}
+          gold={gold}
+          heading={heading}
+          body={body}
+          columnsClass="grid-cols-3"
+        />
+        <AmenityRow
+          items={cards.slice(6, 8)}
+          startIndex={6}
+          gold={gold}
+          heading={heading}
+          body={body}
+          columnsClass="mx-auto max-w-md grid-cols-2"
+        />
+        <AmenityRow
+          items={cards.slice(8, 10)}
+          startIndex={8}
+          gold={gold}
+          heading={heading}
+          body={body}
+          columnsClass="mx-auto max-w-md grid-cols-2"
+        />
+      </div>
+
+      {/* Mobile — 2 columns */}
+      <div className="space-y-10 md:hidden">
+        <AmenityRow
+          items={cards}
+          startIndex={0}
+          gold={gold}
+          heading={heading}
+          body={body}
+          columnsClass="grid-cols-2"
+        />
+      </div>
+
+      <div className="mt-12 flex justify-center" aria-hidden>
+        <span className="h-1.5 w-1.5 rotate-45" style={{ backgroundColor: `${gold}AA` }} />
+      </div>
+    </motion.div>
+  );
+}
+
 /**
  * World-Class Amenities — homepage section immediately below The Rooms.
  * Cream → soft emerald mist atmosphere continues from Accommodations.
@@ -110,8 +261,15 @@ export function FacilitiesSection({ facilities, section }: FacilitiesSectionProp
               >
                 {section.eyebrow}
               </p>
-              <span className="h-px flex-1 max-w-[5rem]" style={{ backgroundColor: `${gold}88` }} />
-              <span className="h-1 w-1 rotate-45" style={{ backgroundColor: gold }} aria-hidden />
+              <span
+                className="h-px max-w-[5rem] flex-1"
+                style={{ backgroundColor: `${gold}88` }}
+              />
+              <span
+                className="h-1 w-1 rotate-45"
+                style={{ backgroundColor: gold }}
+                aria-hidden
+              />
             </motion.div>
 
             <motion.h2
@@ -162,29 +320,12 @@ export function FacilitiesSection({ facilities, section }: FacilitiesSectionProp
           </motion.div>
         </div>
 
-        {/* 10 amenity cards — 5×2 on desktop */}
-        <motion.div
-          variants={luxuryStagger}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-40px" }}
-          className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 md:mt-16 xl:grid-cols-5"
-        >
-          {cards.map((facility, index) => (
-            <AmenityGlassCard
-              key={facility.id}
-              facility={facility}
-              index={index}
-              goldColor={gold}
-              headingColor={heading}
-              bodyColor={body}
-            />
-          ))}
-        </motion.div>
-
-        <div className="mt-10 flex justify-center" aria-hidden>
-          <span className="h-1.5 w-1.5 rotate-45" style={{ backgroundColor: `${gold}AA` }} />
-        </div>
+        <AmenitiesIconGrid
+          cards={cards}
+          gold={gold}
+          heading={heading}
+          body={body}
+        />
       </div>
     </section>
   );

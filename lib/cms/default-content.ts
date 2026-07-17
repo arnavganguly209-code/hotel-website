@@ -941,7 +941,7 @@ export const defaultContent: SiteContent = {
     { id: "family", name: "Family Rooms", description: "Spacious accommodations for families.", icon: "Users", enabled: true, order: 6 },
     { id: "housekeeping", name: "Daily Housekeeping", description: "Impeccable room maintenance every day.", icon: "Sparkle", enabled: true, order: 7 },
     { id: "front-desk", name: "Front Desk 24/7", description: "Always available for your needs.", icon: "Clock", enabled: true, order: 8 },
-    { id: "sauna", name: "Sauna & Steam", description: "Rejuvenating thermal wellness experiences.", icon: "Flame", enabled: true, order: 9 },
+    { id: "sauna", name: "Sauna & Steam", description: "Rejuvenating thermal wellness experience.", icon: "Wind", enabled: true, order: 9 },
   ],
   rooms: [
     {
