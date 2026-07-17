@@ -81,6 +81,7 @@ const SECTIONS = [
   { id: "contactEnquiries", label: "Contact Enquiries", icon: MessageSquare },
   { id: "footer", label: "Footer", icon: PanelTop },
   { id: "seo", label: "SEO", icon: Search },
+  { id: "performance", label: "Performance", icon: Sparkles },
   { id: "media", label: "Media Library", icon: Image },
   { id: "backups", label: "Backups", icon: Save },
   { id: "settings", label: "Settings", icon: Settings },
@@ -3172,10 +3173,48 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 <ImagePicker label="Favicon" folder="seo" category="General" value={content.seo.favicon} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => update("seo", { ...content.seo, favicon: url })} />
                 <AdminInput label="Google Analytics ID" value={content.seo.googleAnalytics} onChange={(e) => update("seo", { ...content.seo, googleAnalytics: e.target.value })} />
                 <AdminInput label="Google Tag Manager ID" value={content.seo.googleTagManager} onChange={(e) => update("seo", { ...content.seo, googleTagManager: e.target.value })} />
+                <AdminInput label="Google Site Verification" value={content.seo.googleSiteVerification || ""} onChange={(e) => update("seo", { ...content.seo, googleSiteVerification: e.target.value })} />
+                <AdminInput label="Bing Site Verification" value={content.seo.bingSiteVerification || ""} onChange={(e) => update("seo", { ...content.seo, bingSiteVerification: e.target.value })} />
                 <label className="flex items-center gap-3 text-sm text-white/70">
                   <input type="checkbox" checked={content.seo.robotsAllow} onChange={(e) => update("seo", { ...content.seo, robotsAllow: e.target.checked })} className="accent-luxury-gold" />
                   Allow search engines to index site (robots.txt)
                 </label>
+                <p className="text-xs text-white/40">
+                  Sitemap: /sitemap.xml · Robots: /robots.txt · Canonical domain uses NEXT_PUBLIC_SITE_URL
+                </p>
+              </>
+            )}
+
+            {activeSection === "performance" && (
+              <>
+                <p className="font-display text-lg text-luxury-gold">Website Performance Settings</p>
+                <p className="text-xs text-white/40">
+                  Optimize Core Web Vitals, PWA installability, and mobile motion without changing the luxury design.
+                </p>
+                {(
+                  [
+                    ["lazyLoadImages", "Lazy load images below the fold"],
+                    ["reduceMotionOnMobile", "Reduce continuous animations on mobile"],
+                    ["pwaEnabled", "Enable Progressive Web App (installable)"],
+                    ["imageFadeIn", "Soft fade-in when images load"],
+                    ["cacheStaticAssets", "Long-cache static assets (headers)"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-3 text-sm text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(content.performanceSettings?.[key])}
+                      onChange={(e) =>
+                        update("performanceSettings", {
+                          ...content.performanceSettings,
+                          [key]: e.target.checked,
+                        })
+                      }
+                      className="accent-luxury-gold"
+                    />
+                    {label}
+                  </label>
+                ))}
               </>
             )}
 

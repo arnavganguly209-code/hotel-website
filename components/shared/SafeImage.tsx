@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { mediaUrl } from "@/lib/cms/media-url";
+import { usePerformanceSettings } from "@/components/shared/PerformanceProvider";
 
 interface SafeImageProps {
   src: string;
@@ -17,6 +18,8 @@ interface SafeImageProps {
   objectFit?: "contain" | "cover" | "none";
   onError?: () => void;
   style?: React.CSSProperties;
+  /** Soft fade-in when image loads (default follows Orbit performance setting) */
+  fadeIn?: boolean;
 }
 
 /**
@@ -32,15 +35,22 @@ export function SafeImage({
   width,
   height,
   priority,
+  sizes,
   objectFit,
   onError,
   style,
+  fadeIn,
 }: SafeImageProps) {
+  const perf = usePerformanceSettings();
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const resolved = mediaUrl(src, src);
+  const enableFade = fadeIn ?? perf.imageFadeIn !== false;
+  const lazy = perf.lazyLoadImages !== false;
 
   useEffect(() => {
     setFailed(false);
+    setLoaded(false);
   }, [resolved]);
 
   if (!resolved || failed) return null;
@@ -53,12 +63,16 @@ export function SafeImage({
       alt={alt}
       width={fill ? undefined : width}
       height={fill ? undefined : height}
-      loading={priority ? "eager" : "lazy"}
+      sizes={sizes}
+      loading={priority || !lazy ? "eager" : "lazy"}
       decoding="async"
+      fetchPriority={priority ? "high" : "auto"}
       className={cn(
         fill && "absolute inset-0 h-full w-full",
         objectFit === "contain" && "object-contain object-center",
         objectFit === "cover" && "object-cover object-center",
+        enableFade && "transition-opacity duration-500 ease-out",
+        enableFade && (loaded || priority ? "opacity-100" : "opacity-0"),
         className
       )}
       style={{
@@ -72,6 +86,7 @@ export function SafeImage({
           : null),
         ...style,
       }}
+      onLoad={() => setLoaded(true)}
       onError={() => {
         setFailed(true);
         onError?.();

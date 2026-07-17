@@ -951,7 +951,7 @@ export const defaultContent: SiteContent = {
       guests: "2 Guests",
       size: "32 m²",
       bedType: "Twin Beds",
-      features: ["Twin Beds", "City View", "En-suite Bathroom", "Climate Control"],
+      features: ["City View", "En-suite Bathroom", "Climate Control"],
       description:
         "An exquisite twin room offering refined comfort with elegant furnishings and serene ambiance for discerning travelers.",
       longDescription:
@@ -968,7 +968,7 @@ export const defaultContent: SiteContent = {
       guests: "2 Guests",
       size: "35 m²",
       bedType: "King Bed",
-      features: ["King Bed", "Garden View", "Mini Bar", "Premium Linens"],
+      features: ["Garden View", "Mini Bar", "Premium Linens"],
       description:
         "A spacious sanctuary of luxury featuring a king bed, sophisticated décor, and every amenity for an exceptional stay.",
       longDescription:
@@ -1002,7 +1002,7 @@ export const defaultContent: SiteContent = {
       guests: "2 Guests",
       size: "28 m²",
       bedType: "Queen Bed",
-      features: ["Queen Bed", "Premium Comfort", "Work Space", "Complimentary WiFi"],
+      features: ["Premium Comfort", "Work Space", "Complimentary WiFi"],
       description:
         "Elegant simplicity meets luxury comfort in our thoughtfully curated standard deluxe accommodation.",
       longDescription:
@@ -2279,6 +2279,15 @@ export const defaultContent: SiteContent = {
     googleAnalytics: "",
     googleTagManager: "",
     robotsAllow: true,
+    googleSiteVerification: "",
+    bingSiteVerification: "",
+  },
+  performanceSettings: {
+    lazyLoadImages: true,
+    reduceMotionOnMobile: true,
+    pwaEnabled: true,
+    imageFadeIn: true,
+    cacheStaticAssets: true,
   },
   theme: {
     primary: "#244736",

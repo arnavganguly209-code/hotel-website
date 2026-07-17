@@ -60,7 +60,7 @@ export function InnerPageHero({
 
       <motion.div
         style={{ opacity }}
-        className="relative z-10 w-full px-6 pb-20 pt-32 lg:px-8 lg:pb-28"
+        className="relative z-10 w-full px-4 pb-16 pt-28 sm:px-6 sm:pb-20 sm:pt-32 lg:px-8 lg:pb-28"
       >
         <div className="mx-auto max-w-7xl">
           {subtitle && (
@@ -77,7 +77,7 @@ export function InnerPageHero({
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="font-display text-5xl font-light leading-tight text-white md:text-6xl lg:text-7xl"
+            className="font-display text-4xl font-light leading-tight text-white sm:text-5xl md:text-6xl lg:text-7xl"
           >
             {title}
           </motion.h1>

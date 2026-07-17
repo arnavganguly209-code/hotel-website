@@ -3,6 +3,12 @@ import type { Variants } from "framer-motion";
 /** Luxury cubic-bezier — calm, cinematic, no bounce */
 export const luxuryEase = [0.22, 1, 0.36, 1] as const;
 
+/** Instant variants when prefers-reduced-motion is set (SSR-safe default is full motion). */
+export const reducedMotionFade: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.01 } },
+};
+
 export const luxuryFadeUp: Variants = {
   hidden: { opacity: 0, y: 48 },
   visible: {

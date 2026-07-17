@@ -87,7 +87,7 @@ export function Header({ header, hotelName }: HeaderProps) {
         >
           <button
             onClick={() => setMenuOpen(true)}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-luxury-green/8 bg-white/50 text-luxury-green-dark backdrop-blur-sm transition-all hover:border-luxury-gold/30 hover:shadow-luxury"
+            className="flex h-12 w-12 items-center justify-center rounded-full border border-luxury-green/8 bg-white/50 text-luxury-green-dark backdrop-blur-sm transition-all active:scale-95 hover:border-luxury-gold/30 hover:shadow-luxury"
             aria-label="Open menu"
           >
             <HamburgerIcon open={false} />

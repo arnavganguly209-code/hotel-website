@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { SITE_URL } from "@/lib/seo";
+import { SITE_URL, SITE_NAME } from "@/lib/seo";
 import type { PageSeo } from "@/lib/cms/types";
 
 export function buildPageMetadata(
   seo: PageSeo,
   path: string,
-  siteName = "Hotel Thamel Park"
+  siteName = SITE_NAME
 ): Metadata {
   const url = `${SITE_URL}${path === "/" ? "" : path}`;
   const ogImage = seo.ogImage ?? "/media/hero/hero-background.png";
@@ -39,7 +39,7 @@ export function buildBreadcrumbSchema(items: { name: string; url: string }[]) {
       "@type": "ListItem",
       position: i + 1,
       name: item.name,
-      item: item.url,
+      item: item.url.startsWith("http") ? item.url : `${SITE_URL}${item.url}`,
     })),
   };
 }

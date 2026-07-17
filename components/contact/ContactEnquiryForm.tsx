@@ -9,7 +9,7 @@ interface ContactEnquiryFormProps {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-[#D4AF37]/25 bg-white px-4 py-3 font-body text-sm text-[#1A2E26] outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20";
+  "w-full min-h-12 rounded-xl border border-[#D4AF37]/25 bg-white px-4 py-3 font-body text-sm text-[#1A2E26] outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20";
 const labelClass =
   "mb-1.5 block font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-[#5A635C]";
 

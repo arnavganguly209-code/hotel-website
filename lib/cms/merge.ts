@@ -390,6 +390,15 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     contactPage: mergeContactPage(partial.contactPage),
     contact: { ...defaultContent.contact, ...(partial.contact ?? {}) },
     seo: { ...defaultContent.seo, ...partial.seo },
+    performanceSettings: {
+      ...defaultContent.performanceSettings,
+      ...(partial.performanceSettings ?? {}),
+      lazyLoadImages: partial.performanceSettings?.lazyLoadImages !== false,
+      reduceMotionOnMobile: partial.performanceSettings?.reduceMotionOnMobile !== false,
+      pwaEnabled: partial.performanceSettings?.pwaEnabled !== false,
+      imageFadeIn: partial.performanceSettings?.imageFadeIn !== false,
+      cacheStaticAssets: partial.performanceSettings?.cacheStaticAssets !== false,
+    },
     theme: { ...defaultContent.theme, ...(partial.theme ?? {}) },
     settings: { ...defaultContent.settings, ...(partial.settings ?? {}) },
     footer: {

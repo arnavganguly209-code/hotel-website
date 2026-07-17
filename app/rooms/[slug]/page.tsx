@@ -4,6 +4,8 @@ import { getContent } from "@/lib/cms/store";
 import { InnerPageHero } from "@/components/shared/InnerPageHero";
 import { RoomDetailPage } from "@/sections/pages/RoomDetailPage";
 import { bookingSearchFromParams } from "@/lib/booking/utils";
+import { SITE_URL, generateHotelRoomSchema } from "@/lib/seo";
+import { buildBreadcrumbSchema } from "@/lib/seo/page-metadata";
 
 /** Always render from latest CMS — never serve a stale statically generated room page. */
 export const dynamic = "force-dynamic";
@@ -19,9 +21,30 @@ export async function generateMetadata({ params }: RoomDetailRouteProps): Promis
   const content = await getContent();
   const room = content.rooms.find((r) => r.id === slug);
   if (!room) return { title: "Room Not Found" };
+
+  const title = `${room.name} | ${content.hotel.name}`;
+  const description = room.description;
+  const url = `${SITE_URL}/rooms/${room.id}`;
+  const image = room.imageSrc || content.seo.ogImage;
+
   return {
-    title: `${room.name} | ${content.hotel.name}`,
-    description: room.description,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: content.hotel.name,
+      type: "website",
+      images: image ? [{ url: image, width: 1200, height: 630, alt: room.name }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
   };
 }
 
@@ -35,8 +58,30 @@ export default async function RoomDetailRoute({ params, searchParams }: RoomDeta
   const search = bookingSearchFromParams(query);
   const hasSearch = Boolean(search.checkIn && search.checkOut);
 
+  const roomSchema = generateHotelRoomSchema({
+    name: room.name,
+    description: room.description,
+    slug: room.id,
+    image: room.imageSrc,
+    price: room.price,
+  });
+
+  const breadcrumb = buildBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Rooms", url: "/rooms" },
+    { name: room.name, url: `/rooms/${room.id}` },
+  ]);
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(roomSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
       <InnerPageHero
         title={room.name}
         subtitle="Accommodations"

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getContent } from "@/lib/cms/store";
-import { buildPageMetadata } from "@/lib/seo/page-metadata";
+import { buildPageMetadata, buildBreadcrumbSchema } from "@/lib/seo/page-metadata";
 import { InnerPageHero } from "@/components/shared/InnerPageHero";
 import { RoomsPage } from "@/sections/pages/RoomsPage";
 
@@ -11,9 +11,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RoomsRoute() {
   const content = await getContent();
+  const breadcrumb = buildBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Rooms", url: "/rooms" },
+  ]);
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
       <InnerPageHero
         title={content.roomsSection.title}
         subtitle={content.roomsSection.eyebrow}

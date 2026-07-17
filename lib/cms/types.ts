@@ -970,6 +970,15 @@ export interface SiteContent {
     googleAnalytics: string;
     googleTagManager: string;
     robotsAllow: boolean;
+    googleSiteVerification: string;
+    bingSiteVerification: string;
+  };
+  performanceSettings: {
+    lazyLoadImages: boolean;
+    reduceMotionOnMobile: boolean;
+    pwaEnabled: boolean;
+    imageFadeIn: boolean;
+    cacheStaticAssets: boolean;
   };
   theme: ThemeSettings;
   settings: {

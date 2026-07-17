@@ -77,7 +77,7 @@ export function EventInquiryForm({
   }
 
   const inputClass =
-    "w-full rounded-xl border bg-white/90 px-4 py-3 font-body text-sm outline-none transition focus:ring-2";
+    "w-full min-h-12 rounded-xl border bg-white/90 px-4 py-3 font-body text-sm outline-none transition focus:ring-2";
   const labelClass = "mb-1.5 block font-body text-[11px] font-semibold uppercase tracking-[0.14em]";
 
   return (
@@ -102,7 +102,7 @@ export function EventInquiryForm({
           <label className={labelClass} style={{ color: headingColor }}>
             Full Name *
           </label>
-          <input name="name" required className={inputClass} style={{ borderColor: `${goldColor}44` }} />
+            <input name="name" required autoComplete="name" className={inputClass} style={{ borderColor: `${goldColor}44` }} />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -110,13 +110,13 @@ export function EventInquiryForm({
             <label className={labelClass} style={{ color: headingColor }}>
               Email *
             </label>
-            <input name="email" type="email" required className={inputClass} style={{ borderColor: `${goldColor}44` }} />
+            <input name="email" type="email" required autoComplete="email" inputMode="email" className={inputClass} style={{ borderColor: `${goldColor}44` }} />
           </div>
           <div>
             <label className={labelClass} style={{ color: headingColor }}>
               Phone
             </label>
-            <input name="phone" type="tel" className={inputClass} style={{ borderColor: `${goldColor}44` }} />
+            <input name="phone" type="tel" autoComplete="tel" inputMode="tel" className={inputClass} style={{ borderColor: `${goldColor}44` }} />
           </div>
         </div>
 
@@ -125,13 +125,13 @@ export function EventInquiryForm({
             <label className={labelClass} style={{ color: headingColor }}>
               Country
             </label>
-            <input name="country" className={inputClass} style={{ borderColor: `${goldColor}44` }} />
+            <input name="country" autoComplete="country-name" className={inputClass} style={{ borderColor: `${goldColor}44` }} />
           </div>
           <div>
             <label className={labelClass} style={{ color: headingColor }}>
               Company
             </label>
-            <input name="company" className={inputClass} style={{ borderColor: `${goldColor}44` }} />
+            <input name="company" autoComplete="organization" className={inputClass} style={{ borderColor: `${goldColor}44` }} />
           </div>
         </div>
 

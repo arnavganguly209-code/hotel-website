@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getContent } from "@/lib/cms/store";
 import { AboutHero } from "@/components/about/AboutHero";
 import { AboutPage } from "@/sections/pages/AboutPage";
+import { SITE_URL } from "@/lib/seo";
+import { buildBreadcrumbSchema } from "@/lib/seo/page-metadata";
 import { siteConfig } from "@/lib/config";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -29,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 function aboutSchema(content: Awaited<ReturnType<typeof getContent>>) {
   const page = content.aboutPage;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hotel.theglobalorbit.com";
+  const siteUrl = SITE_URL;
   return {
     "@context": "https://schema.org",
     "@type": "AboutPage",
@@ -54,12 +56,20 @@ function aboutSchema(content: Awaited<ReturnType<typeof getContent>>) {
 
 export default async function AboutRoute() {
   const content = await getContent();
+  const breadcrumb = buildBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "About", url: "/about" },
+  ]);
 
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutSchema(content)) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
       <AboutHero hero={content.aboutPage.hero} />
       <AboutPage content={content.aboutPage} />

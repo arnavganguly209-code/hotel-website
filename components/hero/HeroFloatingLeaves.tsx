@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useMotionPreference } from "@/lib/motion-preference";
 
 interface HeroFloatingLeavesProps {
   enabled: boolean;
@@ -8,7 +9,9 @@ interface HeroFloatingLeavesProps {
 }
 
 export function HeroFloatingLeaves({ enabled, opacity = 0.35 }: HeroFloatingLeavesProps) {
-  if (!enabled) return null;
+  const { skipLoops } = useMotionPreference();
+
+  if (!enabled || skipLoops) return null;
 
   return (
     <>

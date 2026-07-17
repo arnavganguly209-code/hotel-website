@@ -77,8 +77,12 @@ export function RoomDetailPage({ room, booking, search, showCheckout = false }: 
               <div>
                 <h2 className="font-display text-2xl text-luxury-forest">Room Features</h2>
                 <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-                  {room.features.map((feature) => (
-                    <motion.li key={feature} variants={fadeUp} className="flex items-center gap-3 text-sm text-luxury-muted">
+                  {room.features.map((feature, index) => (
+                    <motion.li
+                      key={`${room.id}-feature-${index}`}
+                      variants={fadeUp}
+                      className="flex items-center gap-3 text-sm text-luxury-muted"
+                    >
                       <Check className="h-4 w-4 shrink-0 text-luxury-gold" />
                       {feature}
                     </motion.li>
@@ -89,8 +93,12 @@ export function RoomDetailPage({ room, booking, search, showCheckout = false }: 
               <div>
                 <h2 className="font-display text-2xl text-luxury-forest">Amenities & Facilities</h2>
                 <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-                  {room.amenities.map((item) => (
-                    <motion.li key={item} variants={fadeUp} className="flex items-center gap-3 text-sm text-luxury-muted">
+                  {room.amenities.map((item, index) => (
+                    <motion.li
+                      key={`${room.id}-amenity-${index}`}
+                      variants={fadeUp}
+                      className="flex items-center gap-3 text-sm text-luxury-muted"
+                    >
                       <Check className="h-4 w-4 shrink-0 text-luxury-gold" />
                       {item}
                     </motion.li>
@@ -101,8 +109,12 @@ export function RoomDetailPage({ room, booking, search, showCheckout = false }: 
               <div>
                 <h2 className="font-display text-2xl text-luxury-forest">Policies</h2>
                 <ul className="mt-6 space-y-3">
-                  {room.policies.map((policy) => (
-                    <motion.li key={policy} variants={fadeUp} className="text-sm leading-relaxed text-luxury-muted">
+                  {room.policies.map((policy, index) => (
+                    <motion.li
+                      key={`${room.id}-policy-${index}`}
+                      variants={fadeUp}
+                      className="text-sm leading-relaxed text-luxury-muted"
+                    >
                       {policy}
                     </motion.li>
                   ))}

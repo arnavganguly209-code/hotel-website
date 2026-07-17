@@ -1,4 +1,8 @@
-export const SITE_URL = "https://www.hotelthamelpark.com";
+import type { SiteContent } from "@/lib/cms/types";
+
+export const SITE_URL =
+  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "")) ||
+  "https://hotel.theglobalorbit.com";
 
 export const SITE_NAME = "Hotel Thamel Park";
 
@@ -18,18 +22,32 @@ export const SITE_KEYWORDS = [
   "Wellness hotel Nepal",
 ];
 
-export function generateHotelSchema() {
+type HotelInfo = SiteContent["hotel"];
+
+export function generateHotelSchema(hotel?: Partial<HotelInfo>) {
+  const phone = hotel?.phone || "+977-1-4412345";
+  const email = hotel?.email || "reservations@hotelthamelpark.com";
+  const address = hotel?.address || "Thamel, Kathmandu";
+  const name = hotel?.name || SITE_NAME;
+  const description = hotel?.description || SITE_DESCRIPTION;
+  const sameAs = [
+    hotel?.social?.facebook,
+    hotel?.social?.instagram,
+    hotel?.social?.twitter,
+    hotel?.social?.tripadvisor,
+  ].filter(Boolean) as string[];
+
   return {
     "@context": "https://schema.org",
     "@type": "Hotel",
-    name: SITE_NAME,
-    description: SITE_DESCRIPTION,
+    name,
+    description,
     url: SITE_URL,
-    telephone: "+977-1-4412345",
-    email: "reservations@hotelthamelpark.com",
+    telephone: phone,
+    email,
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Thamel, Kathmandu",
+      streetAddress: address,
       addressLocality: "Kathmandu",
       addressRegion: "Bagmati",
       postalCode: "44600",
@@ -54,23 +72,35 @@ export function generateHotelSchema() {
     ],
     checkinTime: "14:00",
     checkoutTime: "12:00",
+    ...(sameAs.length ? { sameAs } : {}),
   };
 }
 
-export function generateLocalBusinessSchema() {
+export function generateLocalBusinessSchema(hotel?: Partial<HotelInfo>) {
+  const phone = hotel?.phone || "+977-1-4412345";
+  const email = hotel?.email || "reservations@hotelthamelpark.com";
+  const address = hotel?.address || "Thamel, Kathmandu";
+  const name = hotel?.name || SITE_NAME;
+  const description = hotel?.description || SITE_DESCRIPTION;
+  const sameAs = [
+    hotel?.social?.facebook || "https://www.facebook.com/hotelthamelpark",
+    hotel?.social?.instagram || "https://www.instagram.com/hotelthamelpark",
+    hotel?.social?.tripadvisor || "https://www.tripadvisor.com/hotelthamelpark",
+  ].filter(Boolean);
+
   return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "@id": SITE_URL,
-    name: SITE_NAME,
-    description: SITE_DESCRIPTION,
+    name,
+    description,
     url: SITE_URL,
-    telephone: "+977-1-4412345",
-    email: "reservations@hotelthamelpark.com",
-    image: SITE_URL,
+    telephone: phone,
+    email,
+    image: `${SITE_URL}/media/hero/hero-background.png`,
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Thamel, Kathmandu",
+      streetAddress: address,
       addressLocality: "Kathmandu",
       addressRegion: "Bagmati",
       postalCode: "44600",
@@ -95,10 +125,34 @@ export function generateLocalBusinessSchema() {
       opens: "00:00",
       closes: "23:59",
     },
-    sameAs: [
-      "https://www.facebook.com/hotelthamelpark",
-      "https://www.instagram.com/hotelthamelpark",
-      "https://www.tripadvisor.com/hotelthamelpark",
-    ],
+    sameAs,
+  };
+}
+
+export function generateHotelRoomSchema(room: {
+  name: string;
+  description: string;
+  slug: string;
+  image?: string;
+  price?: number | string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HotelRoom",
+    name: room.name,
+    description: room.description,
+    url: `${SITE_URL}/rooms/${room.slug}`,
+    image: room.image ? (room.image.startsWith("http") ? room.image : `${SITE_URL}${room.image}`) : undefined,
+    ...(room.price
+      ? {
+          offers: {
+            "@type": "Offer",
+            priceCurrency: "USD",
+            price: String(room.price),
+            availability: "https://schema.org/InStock",
+            url: `${SITE_URL}/rooms/${room.slug}`,
+          },
+        }
+      : {}),
   };
 }

@@ -17,13 +17,13 @@ interface PremiumNavDrawerProps {
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, x: -32 },
+  hidden: { opacity: 0, x: -24 },
   visible: (i: number) => ({
     opacity: 1,
     x: 0,
-    transition: { delay: 0.08 + i * 0.06, duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: 0.04 + i * 0.04, duration: 0.35, ease: [0.22, 1, 0.36, 1] },
   }),
-  exit: { opacity: 0, x: -20, transition: { duration: 0.25 } },
+  exit: { opacity: 0, x: -12, transition: { duration: 0.18 } },
 };
 
 export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNavDrawerProps) {
@@ -35,7 +35,7 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.45 }}
+        transition={{ duration: 0.28 }}
         className="fixed inset-0 z-[90] bg-luxury-green-dark/40 backdrop-blur-md"
         onClick={onClose}
       />
@@ -44,7 +44,7 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
         initial={{ x: "-100%" }}
         animate={{ x: 0 }}
         exit={{ x: "-100%" }}
-        transition={{ type: "tween", duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ type: "tween", duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
         className="fixed inset-y-0 left-0 z-[100] flex w-full max-w-md flex-col border-r border-white/10 bg-luxury-cream-light/90 shadow-2xl backdrop-blur-2xl"
       >
         <div className="flex items-center justify-between border-b border-luxury-green/10 px-6 py-5">
@@ -60,15 +60,15 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
           />
           <button
             onClick={onClose}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-luxury-green/10 bg-white/60 text-luxury-green-dark transition-colors hover:border-luxury-gold/40"
+            className="flex h-12 w-12 items-center justify-center rounded-full border border-luxury-green/10 bg-white/60 text-luxury-green-dark transition-colors active:scale-95 hover:border-luxury-gold/40"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" strokeWidth={1.5} />
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-6 py-10" aria-label="Main navigation">
-          <p className="mb-6 text-[10px] font-medium uppercase tracking-[0.35em] text-luxury-gold/80">
+        <nav className="flex-1 overflow-y-auto px-6 py-8" aria-label="Main navigation">
+          <p className="mb-4 text-[10px] font-medium uppercase tracking-[0.35em] text-luxury-gold/80">
             Explore
           </p>
           {header.menuItems.map((item, i) => (
@@ -84,7 +84,7 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
                 href={item.href}
                 prefetch
                 onClick={onClose}
-                className="group relative flex items-center justify-between py-4"
+                className="group relative flex min-h-12 items-center justify-between py-3.5"
               >
                 <span className="font-display text-xl font-light tracking-wide text-luxury-green-dark transition-colors group-hover:text-luxury-gold">
                   {item.label}
