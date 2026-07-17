@@ -102,3 +102,118 @@ export async function sendContactEnquiryEmails(
 
   return { guestSent, adminSent };
 }
+
+export type DiningReservationMailPayload = {
+  referenceNumber: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  country: string;
+  restaurant: string;
+  reservationDate?: string | null;
+  reservationTime: string;
+  adults: number;
+  children: number;
+  specialOccasion: string;
+  specialRequest: string;
+};
+
+/** Sends guest confirmation + admin notification for dining reservations. */
+export async function sendDiningReservationEmails(
+  payload: DiningReservationMailPayload,
+  adminEmail: string
+): Promise<{ guestSent: boolean; adminSent: boolean }> {
+  if (!smtpConfigured()) {
+    console.info(
+      "[mail] SMTP not configured — dining reservation stored without email send.",
+      payload.referenceNumber
+    );
+    return { guestSent: false, adminSent: false };
+  }
+
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@hotelthamelpark.com";
+  const hotelName = "Hotel Thamel Park";
+  const transport = createTransport();
+  let guestSent = false;
+  let adminSent = false;
+
+  try {
+    await transport.sendMail({
+      from,
+      to: payload.email,
+      subject: `Table reservation confirmed — ${hotelName}`,
+      text: [
+        `Dear ${payload.fullName},`,
+        "",
+        `Thank you for choosing ${hotelName}.`,
+        `Your table reservation at ${payload.restaurant} has been received.`,
+        `Reference: ${payload.referenceNumber}`,
+        `Date: ${payload.reservationDate || "—"}`,
+        `Time: ${payload.reservationTime || "—"}`,
+        `Party: ${payload.adults} adult(s), ${payload.children} child(ren)`,
+        payload.specialOccasion ? `Occasion: ${payload.specialOccasion}` : "",
+        "",
+        "Our dining team will confirm your reservation shortly.",
+        "",
+        "Warm regards,",
+        hotelName,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+      html: `<p>Dear ${payload.fullName},</p>
+<p>Thank you for choosing <strong>${hotelName}</strong>.</p>
+<p>Your table reservation at <strong>${payload.restaurant}</strong> has been received.</p>
+<p><strong>Reference:</strong> ${payload.referenceNumber}<br/>
+<strong>Date:</strong> ${payload.reservationDate || "—"}<br/>
+<strong>Time:</strong> ${payload.reservationTime || "—"}<br/>
+<strong>Party:</strong> ${payload.adults} adult(s), ${payload.children} child(ren)${payload.specialOccasion ? `<br/><strong>Occasion:</strong> ${payload.specialOccasion}` : ""}</p>
+<p>Our dining team will confirm your reservation shortly.</p>
+<p>Warm regards,<br/>${hotelName}</p>`,
+    });
+    guestSent = true;
+  } catch (err) {
+    console.error("[mail] Guest dining confirmation failed:", err);
+  }
+
+  if (adminEmail) {
+    try {
+      await transport.sendMail({
+        from,
+        to: adminEmail,
+        subject: `New dining reservation ${payload.referenceNumber}`,
+        text: [
+          `New dining reservation ${payload.referenceNumber}`,
+          `Guest: ${payload.fullName}`,
+          `Email: ${payload.email}`,
+          `Phone: ${payload.phone}`,
+          `Country: ${payload.country || "—"}`,
+          `Restaurant: ${payload.restaurant}`,
+          `Date: ${payload.reservationDate || "—"}`,
+          `Time: ${payload.reservationTime || "—"}`,
+          `Adults: ${payload.adults}`,
+          `Children: ${payload.children}`,
+          `Occasion: ${payload.specialOccasion || "—"}`,
+          "",
+          payload.specialRequest || "(no special request)",
+        ].join("\n"),
+        html: `<h2>New Dining Reservation ${payload.referenceNumber}</h2>
+<p><strong>Guest:</strong> ${payload.fullName}<br/>
+<strong>Email:</strong> ${payload.email}<br/>
+<strong>Phone:</strong> ${payload.phone}<br/>
+<strong>Country:</strong> ${payload.country || "—"}<br/>
+<strong>Restaurant:</strong> ${payload.restaurant}<br/>
+<strong>Date:</strong> ${payload.reservationDate || "—"}<br/>
+<strong>Time:</strong> ${payload.reservationTime || "—"}<br/>
+<strong>Adults:</strong> ${payload.adults}<br/>
+<strong>Children:</strong> ${payload.children}<br/>
+<strong>Occasion:</strong> ${payload.specialOccasion || "—"}</p>
+<p>${(payload.specialRequest || "").replace(/\n/g, "<br/>")}</p>`,
+      });
+      adminSent = true;
+    } catch (err) {
+      console.error("[mail] Admin dining notification failed:", err);
+    }
+  }
+
+  return { guestSent, adminSent };
+}

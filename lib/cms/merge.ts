@@ -220,7 +220,7 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       enrichRoom(defaultContent.rooms[i] ?? defaultContent.rooms[0], room)
     ),
     roomBooking: { ...defaultContent.roomBooking, ...(partial.roomBooking ?? {}) },
-    diningPage: mergePageSection(defaultContent.diningPage, partial.diningPage),
+    diningPage: mergeDiningPage(defaultContent.diningPage, partial.diningPage),
     spaPage: mergePageSection(defaultContent.spaPage, partial.spaPage),
     meetingsEventsPage: mergeMeetingsEventsPage(
       defaultContent.meetingsEventsPage,
@@ -474,6 +474,187 @@ function mergePageSection<T extends { hero: object; cta: object; seo?: object }>
     cta: { ...defaults.cta, ...(partial.cta ?? {}) },
     seo: { ...(defaults.seo ?? {}), ...(partial.seo ?? {}) },
   } as T;
+}
+
+function mergeDiningPage(
+  defaults: SiteContent["diningPage"],
+  partial?: Partial<SiteContent["diningPage"]> & {
+    intro?: { title?: string; content?: string };
+    highlights?: Array<{ title: string; description: string }>;
+  }
+): SiteContent["diningPage"] {
+  if (!partial) return defaults;
+
+  const legacyIntro = (partial as { intro?: { title?: string; content?: string } }).intro;
+
+  const venues = definedArray(partial.venues, defaults.venues).map((venue, i) => {
+    const base = defaults.venues[i] ?? defaults.venues[0];
+    return {
+      id: venue.id || base.id,
+      enabled: venue.enabled !== false,
+      order: typeof venue.order === "number" ? venue.order : (base.order ?? i),
+      name: definedString(venue.name, base.name),
+      tagline: definedString(venue.tagline, base.tagline),
+      description: definedString(venue.description, base.description),
+      cuisine: definedString(venue.cuisine, base.cuisine),
+      hours: definedString(venue.hours, base.hours),
+      capacity: definedString(venue.capacity, base.capacity),
+      signaturesLabel: definedString(venue.signaturesLabel, base.signaturesLabel),
+      signatures: definedArray(venue.signatures, base.signatures),
+      features: definedArray(venue.features, base.features),
+      imageSrc: definedString(venue.imageSrc, base.imageSrc),
+      imageAlt: definedString(venue.imageAlt, base.imageAlt || venue.name || base.name),
+      ctaText: definedString(venue.ctaText, base.ctaText),
+      ctaHref: definedString(venue.ctaHref, base.ctaHref),
+    };
+  });
+
+  const menuCategories = definedArray(
+    partial.menu?.categories,
+    defaults.menu.categories
+  ).map((cat, i) => {
+    const base = defaults.menu.categories[i] ?? defaults.menu.categories[0];
+    return {
+      id: cat.id || base.id,
+      name: definedString(cat.name, base.name),
+      enabled: cat.enabled !== false,
+      order: typeof cat.order === "number" ? cat.order : (base.order ?? i),
+      items: definedArray(cat.items, base.items).map((item, j) => {
+        const itemBase = base.items[j] ?? base.items[0];
+        return {
+          id: item.id || itemBase?.id || `mi-${i}-${j}`,
+          enabled: item.enabled !== false,
+          order: typeof item.order === "number" ? item.order : (itemBase?.order ?? j),
+          title: definedString(item.title, itemBase?.title ?? ""),
+          description: definedString(item.description, itemBase?.description ?? ""),
+          price: definedString(item.price, itemBase?.price ?? ""),
+          imageSrc: definedString(item.imageSrc, itemBase?.imageSrc ?? ""),
+          imageAlt: definedString(item.imageAlt, itemBase?.imageAlt ?? item.title ?? ""),
+          chefRecommended: item.chefRecommended === true,
+        };
+      }),
+    };
+  });
+
+  const gallery = definedArray(partial.gallery, defaults.gallery).map((item, i) => {
+    const base = defaults.gallery[i] ?? defaults.gallery[0];
+    const legacy = item as { src?: string; title?: string; alt?: string };
+    return {
+      id: item.id || base.id,
+      src: definedString(legacy.src, base.src),
+      title: definedString(legacy.title, base.title),
+      alt: definedString(legacy.alt, base.alt || legacy.title || base.title),
+      enabled: item.enabled !== false,
+      order: typeof item.order === "number" ? item.order : (base.order ?? i),
+    };
+  });
+
+  return {
+    ...defaults,
+    ...partial,
+    hero: {
+      ...defaults.hero,
+      ...(partial.hero ?? {}),
+    },
+    seo: {
+      ...defaults.seo,
+      ...(partial.seo ?? {}),
+    },
+    welcome: {
+      ...defaults.welcome,
+      ...(partial.welcome ?? {}),
+      title: definedString(
+        partial.welcome?.title ?? legacyIntro?.title,
+        defaults.welcome.title
+      ),
+      content: definedString(
+        partial.welcome?.content ?? legacyIntro?.content,
+        defaults.welcome.content
+      ),
+    },
+    destinations: {
+      ...defaults.destinations,
+      ...(partial.destinations ?? {}),
+    },
+    venues,
+    menu: {
+      ...defaults.menu,
+      ...(partial.menu ?? {}),
+      categories: menuCategories,
+    },
+    chefRecommendation: {
+      ...defaults.chefRecommendation,
+      ...(partial.chefRecommendation ?? {}),
+      dishes: definedArray(
+        partial.chefRecommendation?.dishes,
+        defaults.chefRecommendation.dishes
+      ).map((dish, i) => {
+        const base = defaults.chefRecommendation.dishes[i] ?? defaults.chefRecommendation.dishes[0];
+        return {
+          id: dish.id || base.id,
+          enabled: dish.enabled !== false,
+          order: typeof dish.order === "number" ? dish.order : (base.order ?? i),
+          title: definedString(dish.title, base.title),
+          description: definedString(dish.description, base.description),
+          price: definedString(dish.price, base.price),
+          imageSrc: definedString(dish.imageSrc, base.imageSrc),
+          imageAlt: definedString(dish.imageAlt, base.imageAlt),
+        };
+      }),
+    },
+    form: {
+      ...defaults.form,
+      ...(partial.form ?? {}),
+      restaurantOptions: definedArray(
+        partial.form?.restaurantOptions,
+        defaults.form.restaurantOptions
+      ),
+      occasionOptions: definedArray(
+        partial.form?.occasionOptions,
+        defaults.form.occasionOptions
+      ),
+    },
+    gallerySection: {
+      ...defaults.gallerySection,
+      ...(partial.gallerySection ?? {}),
+    },
+    gallery,
+    reviews: {
+      ...defaults.reviews,
+      ...(partial.reviews ?? {}),
+      items: definedArray(partial.reviews?.items, defaults.reviews.items).map((item, i) => {
+        const base = defaults.reviews.items[i] ?? defaults.reviews.items[0];
+        return {
+          id: item.id || base.id,
+          enabled: item.enabled !== false,
+          order: typeof item.order === "number" ? item.order : (base.order ?? i),
+          name: definedString(item.name, base.name),
+          country: definedString(item.country, base.country),
+          rating: typeof item.rating === "number" ? item.rating : base.rating,
+          review: definedString(item.review, base.review),
+          photoSrc: definedString(item.photoSrc, base.photoSrc),
+        };
+      }),
+    },
+    faq: {
+      ...defaults.faq,
+      ...(partial.faq ?? {}),
+      items: definedArray(partial.faq?.items, defaults.faq.items).map((item, i) => {
+        const base = defaults.faq.items[i] ?? defaults.faq.items[0];
+        return {
+          id: item.id || base.id,
+          question: definedString(item.question, base.question),
+          answer: definedString(item.answer, base.answer),
+          enabled: item.enabled !== false,
+          order: typeof item.order === "number" ? item.order : (base.order ?? i),
+        };
+      }),
+    },
+    cta: {
+      ...defaults.cta,
+      ...(partial.cta ?? {}),
+    },
+  };
 }
 
 function mergeCulture(

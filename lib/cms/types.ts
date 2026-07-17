@@ -523,20 +523,143 @@ export interface SiteContent {
     bodyColor: string;
   };
   diningPage: {
-    hero: PageHero;
-    seo: PageSeo;
-    intro: { title: string; content: string };
+    hero: PageHero & {
+      breadcrumbHome: string;
+      breadcrumbCurrent: string;
+      overlayOpacity: number;
+      scrollHint: string;
+    };
+    seo: PageSeo & { keywords: string };
+    welcome: {
+      eyebrow: string;
+      title: string;
+      content: string;
+      quote: string;
+      quoteAuthor: string;
+      imageSrc: string;
+      imageAlt: string;
+    };
+    destinations: {
+      eyebrow: string;
+      title: string;
+      description: string;
+    };
     venues: Array<{
       id: string;
+      enabled: boolean;
+      order: number;
       name: string;
       tagline: string;
       description: string;
+      cuisine: string;
+      hours: string;
+      capacity: string;
+      signaturesLabel: string;
+      signatures: string[];
       features: string[];
       imageSrc: string;
+      imageAlt: string;
+      ctaText: string;
+      ctaHref: string;
     }>;
-    highlights: Array<{ title: string; description: string }>;
-    gallery: Array<{ id: string; src: string; title: string }>;
-    cta: { title: string; description: string; buttonText: string };
+    menu: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      categories: Array<{
+        id: string;
+        name: string;
+        enabled: boolean;
+        order: number;
+        items: Array<{
+          id: string;
+          enabled: boolean;
+          order: number;
+          title: string;
+          description: string;
+          price: string;
+          imageSrc: string;
+          imageAlt: string;
+          chefRecommended: boolean;
+        }>;
+      }>;
+    };
+    chefRecommendation: {
+      enabled: boolean;
+      eyebrow: string;
+      title: string;
+      description: string;
+      dishes: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        title: string;
+        description: string;
+        price: string;
+        imageSrc: string;
+        imageAlt: string;
+      }>;
+    };
+    form: {
+      title: string;
+      description: string;
+      submitLabel: string;
+      successTitle: string;
+      successMessage: string;
+      successSecondary: string;
+      restaurantOptions: string[];
+      occasionOptions: string[];
+      consentLabel: string;
+    };
+    gallerySection: {
+      eyebrow: string;
+      title: string;
+      description: string;
+    };
+    gallery: Array<{
+      id: string;
+      src: string;
+      title: string;
+      alt: string;
+      enabled: boolean;
+      order: number;
+    }>;
+    reviews: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        name: string;
+        country: string;
+        rating: number;
+        review: string;
+        photoSrc: string;
+      }>;
+    };
+    faq: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      items: Array<{
+        id: string;
+        question: string;
+        answer: string;
+        enabled: boolean;
+        order: number;
+      }>;
+    };
+    cta: {
+      title: string;
+      description: string;
+      buttonText: string;
+      buttonHref: string;
+      secondaryText: string;
+      secondaryHref: string;
+      backgroundImage: string;
+    };
   };
   spaPage: {
     hero: PageHero;

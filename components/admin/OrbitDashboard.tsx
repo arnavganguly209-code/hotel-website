@@ -38,6 +38,8 @@ import { GalleryManager } from "@/components/admin/media/GalleryManager";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
 import { EventInquiriesPanel } from "@/components/admin/EventInquiriesPanel";
 import { ContactEnquiriesPanel } from "@/components/admin/ContactEnquiriesPanel";
+import { DiningReservationsPanel } from "@/components/admin/DiningReservationsPanel";
+import { DiningPageEditor } from "@/components/admin/DiningPageEditor";
 import { ContactPageEditor } from "@/components/admin/ContactPageEditor";
 import { AboutPageEditor } from "@/components/admin/AboutPageEditor";
 import { ArticlesManager } from "@/components/admin/ArticlesManager";
@@ -69,6 +71,7 @@ const SECTIONS = [
   { id: "exploreKathmandu", label: "Explore Kathmandu Section", icon: Globe },
   { id: "rooms", label: "Rooms Section", icon: Bed },
   { id: "dining", label: "Dining Page", icon: Utensils },
+  { id: "diningReservations", label: "Dining Reservations", icon: Utensils },
   { id: "spa", label: "Spa Page", icon: Waves },
   { id: "meetingsEventsPage", label: "Meetings & Events Page", icon: MessageSquare },
   { id: "eventInquiries", label: "Event Inquiries", icon: MessageSquare },
@@ -2885,34 +2888,18 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
             )}
 
             {activeSection === "dining" && (
+              <DiningPageEditor content={content} update={update} />
+            )}
+
+            {activeSection === "diningReservations" && (
               <>
-                <AdminInput label="Hero Title" value={content.diningPage.hero.title} onChange={(e) => update("diningPage", { ...content.diningPage, hero: { ...content.diningPage.hero, title: e.target.value } })} />
-                <AdminTextarea label="Intro Content" rows={3} value={content.diningPage.intro.content} onChange={(e) => update("diningPage", { ...content.diningPage, intro: { ...content.diningPage.intro, content: e.target.value } })} />
-                {content.diningPage.venues.map((venue, i) => (
-                  <div key={venue.id} className="space-y-4 border border-luxury-gold/10 p-6">
-                    <AdminInput label="Venue Name" value={venue.name} onChange={(e) => {
-                      const venues = [...content.diningPage.venues];
-                      venues[i] = { ...venue, name: e.target.value };
-                      update("diningPage", { ...content.diningPage, venues });
-                    }} />
-                    <AdminTextarea label="Description" rows={2} value={venue.description} onChange={(e) => {
-                      const venues = [...content.diningPage.venues];
-                      venues[i] = { ...venue, description: e.target.value };
-                      update("diningPage", { ...content.diningPage, venues });
-                    }} />
-                    <AdminInput label="Image URL" value={venue.imageSrc} onChange={(e) => {
-                      const venues = [...content.diningPage.venues];
-                      venues[i] = { ...venue, imageSrc: e.target.value };
-                      update("diningPage", { ...content.diningPage, venues });
-                    }} />
-                    <ImagePicker label="Venue Image" folder="dining" category="Dining" value={venue.imageSrc} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => {
-                      const venues = [...content.diningPage.venues];
-                      venues[i] = { ...venue, imageSrc: url };
-                      update("diningPage", { ...content.diningPage, venues });
-                    }} />
-                  </div>
-                ))}
-                <AdminInput label="CTA Title" value={content.diningPage.cta.title} onChange={(e) => update("diningPage", { ...content.diningPage, cta: { ...content.diningPage.cta, title: e.target.value } })} />
+                <div className="mb-4 space-y-1">
+                  <p className="font-display text-lg text-luxury-gold">Dining Reservations</p>
+                  <p className="text-xs text-white/40">
+                    Table reservations from /dining — permanently stored in the database.
+                  </p>
+                </div>
+                <DiningReservationsPanel />
               </>
             )}
 
