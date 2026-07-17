@@ -34,6 +34,8 @@ function slugify(s: string) {
 
 export function ArticlesManager({ content, update }: ArticlesManagerProps) {
   const page = content.articlesPage;
+  const homeSection = content.articlesHomeSection;
+  const homeToggle = content.homeSections.articles;
   const articles = content.articles;
   const categories = content.articleCategories;
   const tags = content.articleTags;
@@ -170,6 +172,221 @@ export function ArticlesManager({ content, update }: ArticlesManagerProps) {
 
   return (
     <div className="space-y-8">
+      {/* Homepage Latest Articles section */}
+      <div className="space-y-4 border border-luxury-gold/10 p-6">
+        <p className="font-display text-lg text-luxury-gold">
+          Homepage · Latest Articles Section
+        </p>
+        <p className="text-xs text-white/50">
+          Slider loads published articles automatically. Manage article content below — no duplicate
+          entries needed.
+        </p>
+        <div className="flex flex-wrap gap-6">
+          <label className="flex items-center gap-2 text-sm text-white/80">
+            <input
+              type="checkbox"
+              checked={homeSection.enabled !== false}
+              onChange={(e) =>
+                update("articlesHomeSection", {
+                  ...homeSection,
+                  enabled: e.target.checked,
+                })
+              }
+              className="accent-luxury-gold"
+            />
+            Section visible
+          </label>
+          <label className="flex items-center gap-2 text-sm text-white/80">
+            <input
+              type="checkbox"
+              checked={homeToggle.enabled}
+              onChange={(e) =>
+                update("homeSections", {
+                  ...content.homeSections,
+                  articles: { ...homeToggle, enabled: e.target.checked },
+                })
+              }
+              className="accent-luxury-gold"
+            />
+            Enabled in homepage order
+          </label>
+        </div>
+        <AdminInput
+          label="Homepage Order"
+          type="number"
+          value={homeToggle.order}
+          onChange={(e) =>
+            update("homeSections", {
+              ...content.homeSections,
+              articles: { ...homeToggle, order: Number(e.target.value) },
+            })
+          }
+        />
+        <AdminInput
+          label="Small Label (Eyebrow)"
+          value={homeSection.eyebrow}
+          onChange={(e) =>
+            update("articlesHomeSection", { ...homeSection, eyebrow: e.target.value })
+          }
+        />
+        <AdminInput
+          label="Main Heading"
+          value={homeSection.title}
+          onChange={(e) =>
+            update("articlesHomeSection", { ...homeSection, title: e.target.value })
+          }
+        />
+        <AdminTextarea
+          label="Description"
+          rows={3}
+          value={homeSection.description}
+          onChange={(e) =>
+            update("articlesHomeSection", { ...homeSection, description: e.target.value })
+          }
+        />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <AdminInput
+            label="Number of Articles"
+            type="number"
+            value={homeSection.articleLimit}
+            onChange={(e) =>
+              update("articlesHomeSection", {
+                ...homeSection,
+                articleLimit: Number(e.target.value),
+              })
+            }
+          />
+          <AdminInput
+            label="Slider Speed (ms)"
+            type="number"
+            value={homeSection.slideIntervalMs}
+            onChange={(e) =>
+              update("articlesHomeSection", {
+                ...homeSection,
+                slideIntervalMs: Number(e.target.value),
+              })
+            }
+          />
+          <AdminInput
+            label="Transition Speed (ms)"
+            type="number"
+            value={homeSection.transitionSpeedMs}
+            onChange={(e) =>
+              update("articlesHomeSection", {
+                ...homeSection,
+                transitionSpeedMs: Number(e.target.value),
+              })
+            }
+          />
+          <AdminInput
+            label="Read Article Button Text"
+            value={homeSection.readMoreText}
+            onChange={(e) =>
+              update("articlesHomeSection", { ...homeSection, readMoreText: e.target.value })
+            }
+          />
+          <AdminInput
+            label="Section Padding Y (px)"
+            type="number"
+            value={homeSection.sectionPaddingY}
+            onChange={(e) =>
+              update("articlesHomeSection", {
+                ...homeSection,
+                sectionPaddingY: Number(e.target.value),
+              })
+            }
+          />
+          <AdminInput
+            label="Card Gap (px)"
+            type="number"
+            value={homeSection.cardGapPx}
+            onChange={(e) =>
+              update("articlesHomeSection", {
+                ...homeSection,
+                cardGapPx: Number(e.target.value),
+              })
+            }
+          />
+        </div>
+        <div className="flex flex-wrap gap-4">
+          {(
+            [
+              ["autoSlide", "Auto Slide"],
+              ["showAuthor", "Show Author"],
+              ["showReadingTime", "Show Reading Time"],
+              ["showDate", "Show Date"],
+              ["showCategory", "Show Category"],
+              ["showExcerpt", "Show Excerpt"],
+            ] as const
+          ).map(([key, label]) => (
+            <label key={key} className="flex items-center gap-2 text-xs text-white/70">
+              <input
+                type="checkbox"
+                checked={Boolean(homeSection[key])}
+                onChange={(e) =>
+                  update("articlesHomeSection", {
+                    ...homeSection,
+                    [key]: e.target.checked,
+                  })
+                }
+                className="accent-luxury-gold"
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <AdminInput
+            label="Background Top"
+            value={homeSection.backgroundTop}
+            onChange={(e) =>
+              update("articlesHomeSection", {
+                ...homeSection,
+                backgroundTop: e.target.value,
+              })
+            }
+          />
+          <AdminInput
+            label="Background Bottom"
+            value={homeSection.backgroundBottom}
+            onChange={(e) =>
+              update("articlesHomeSection", {
+                ...homeSection,
+                backgroundBottom: e.target.value,
+              })
+            }
+          />
+          <AdminInput
+            label="Gold Color"
+            value={homeSection.goldColor}
+            onChange={(e) =>
+              update("articlesHomeSection", { ...homeSection, goldColor: e.target.value })
+            }
+          />
+          <AdminInput
+            label="Heading Color"
+            value={homeSection.headingColor}
+            onChange={(e) =>
+              update("articlesHomeSection", { ...homeSection, headingColor: e.target.value })
+            }
+          />
+          <AdminInput
+            label="Body Color"
+            value={homeSection.bodyColor}
+            onChange={(e) =>
+              update("articlesHomeSection", { ...homeSection, bodyColor: e.target.value })
+            }
+          />
+          <AdminInput
+            label="Border Color"
+            value={homeSection.borderColor}
+            onChange={(e) =>
+              update("articlesHomeSection", { ...homeSection, borderColor: e.target.value })
+            }
+          />
+        </div>
+      </div>
+
       {/* Page settings */}
       <div className="space-y-4 border border-luxury-gold/10 p-6">
         <p className="font-display text-lg text-luxury-gold">Articles Page · Hero</p>

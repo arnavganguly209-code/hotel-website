@@ -179,6 +179,7 @@ export interface SiteContent {
     exploreKathmandu: HomeSectionMeta;
     gallery: HomeSectionMeta;
     testimonials: HomeSectionMeta;
+    articles: HomeSectionMeta;
     cta: HomeSectionMeta;
   };
   overview: {
@@ -793,6 +794,31 @@ export interface SiteContent {
     cardRadiusPx: number;
     gridGapPx: number;
     overlayOpacity: number;
+  };
+  articlesHomeSection: {
+    enabled: boolean;
+    eyebrow: string;
+    title: string;
+    description: string;
+    articleLimit: number;
+    autoSlide: boolean;
+    slideIntervalMs: number;
+    transitionSpeedMs: number;
+    showAuthor: boolean;
+    showReadingTime: boolean;
+    showDate: boolean;
+    showCategory: boolean;
+    showExcerpt: boolean;
+    readMoreText: string;
+    backgroundTop: string;
+    backgroundBottom: string;
+    goldColor: string;
+    headingColor: string;
+    bodyColor: string;
+    borderColor: string;
+    cardRadiusPx: number;
+    sectionPaddingY: number;
+    cardGapPx: number;
   };
   galleryPage: {
     hero: PageHero & {

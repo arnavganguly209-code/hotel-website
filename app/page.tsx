@@ -13,6 +13,7 @@ import { MeetingsEventsSection } from "@/sections/MeetingsEventsSection";
 import { ExploreKathmanduSection } from "@/sections/ExploreKathmanduSection";
 import { GalleryHomeSection } from "@/sections/GalleryHomeSection";
 import { ReviewsSection } from "@/sections/ReviewsSection";
+import { ArticlesHomeSection } from "@/sections/ArticlesHomeSection";
 import { ContactHomeSection } from "@/sections/ContactHomeSection";
 import { FinalCTA } from "@/sections/FinalCTA";
 import type { SiteContent } from "@/lib/cms/types";
@@ -120,6 +121,20 @@ export default async function HomePage() {
   }
   if (isEnabled(hs.testimonials)) {
     sections.push({ key: "testimonials", order: hs.testimonials.order, node: <ReviewsSection reviews={content.reviews} /> });
+  }
+  if (isEnabled(hs.articles) && content.articlesHomeSection.enabled !== false) {
+    sections.push({
+      key: "articles",
+      order: hs.articles.order,
+      node: (
+        <ArticlesHomeSection
+          articles={content.articles}
+          section={content.articlesHomeSection}
+          categories={content.articleCategories}
+          authors={content.articleAuthors}
+        />
+      ),
+    });
   }
   if (isEnabled(hs.cta)) {
     sections.push({ key: "cta", order: hs.cta.order, node: <FinalCTA meta={hs.cta} /> });

@@ -166,6 +166,7 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       },
       gallery: { ...defaultContent.homeSections.gallery, ...partial.homeSections?.gallery },
       testimonials: { ...defaultContent.homeSections.testimonials, ...partial.homeSections?.testimonials },
+      articles: { ...defaultContent.homeSections.articles, ...partial.homeSections?.articles },
       cta: { ...defaultContent.homeSections.cta, ...partial.homeSections?.cta },
     },
     overview: mergeOverview(defaultContent.overview, partial.overview),
@@ -301,6 +302,10 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     gallerySection: mergeGallerySection(
       defaultContent.gallerySection,
       partial.gallerySection
+    ),
+    articlesHomeSection: mergeArticlesHomeSection(
+      defaultContent.articlesHomeSection,
+      partial.articlesHomeSection
     ),
     galleryPage: mergeGalleryPage(defaultContent.galleryPage, partial.galleryPage),
     articlesPage: {
@@ -949,6 +954,42 @@ function mergeGallerySection(
       typeof partial.homeImageLimit === "number"
         ? partial.homeImageLimit
         : defaults.homeImageLimit,
+  };
+}
+
+function mergeArticlesHomeSection(
+  defaults: SiteContent["articlesHomeSection"],
+  partial?: Partial<SiteContent["articlesHomeSection"]>
+): SiteContent["articlesHomeSection"] {
+  if (!partial) return defaults;
+  return {
+    ...defaults,
+    ...partial,
+    enabled: partial.enabled !== false,
+    autoSlide: partial.autoSlide !== false,
+    showAuthor: partial.showAuthor !== false,
+    showReadingTime: partial.showReadingTime !== false,
+    showDate: partial.showDate !== false,
+    showCategory: partial.showCategory !== false,
+    showExcerpt: partial.showExcerpt !== false,
+    articleLimit:
+      typeof partial.articleLimit === "number" ? partial.articleLimit : defaults.articleLimit,
+    slideIntervalMs:
+      typeof partial.slideIntervalMs === "number"
+        ? partial.slideIntervalMs
+        : defaults.slideIntervalMs,
+    transitionSpeedMs:
+      typeof partial.transitionSpeedMs === "number"
+        ? partial.transitionSpeedMs
+        : defaults.transitionSpeedMs,
+    sectionPaddingY:
+      typeof partial.sectionPaddingY === "number"
+        ? partial.sectionPaddingY
+        : defaults.sectionPaddingY,
+    cardGapPx:
+      typeof partial.cardGapPx === "number" ? partial.cardGapPx : defaults.cardGapPx,
+    cardRadiusPx:
+      typeof partial.cardRadiusPx === "number" ? partial.cardRadiusPx : defaults.cardRadiusPx,
   };
 }
 
