@@ -164,7 +164,6 @@ export function ArticlesHomeSlider({
                       fill
                       className="object-cover transition duration-700 group-hover:scale-105"
                       sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      loading="lazy"
                     />
                     <div
                       className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0F2420]/55 via-transparent to-transparent opacity-80 transition-opacity duration-500 group-hover:opacity-100"
