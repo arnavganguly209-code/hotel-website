@@ -32,6 +32,29 @@ function ensureMeetingsNavItem(items: SiteContent["header"]["menuItems"]) {
   return [...items, entry];
 }
 
+function ensureArticlesNavItem(items: SiteContent["header"]["menuItems"]) {
+  const hasArticles = items.some((item) => item.href === routes.articles);
+  if (hasArticles) {
+    return items.map((item) =>
+      item.href === routes.articles ? { ...item, label: "Articles" } : item
+    );
+  }
+  const galleryIndex = items.findIndex((item) => item.href === routes.gallery);
+  const entry = { label: "Articles", href: routes.articles };
+  if (galleryIndex >= 0) {
+    const next = [...items];
+    next.splice(galleryIndex + 1, 0, entry);
+    return next;
+  }
+  const aboutIndex = items.findIndex((item) => item.href === routes.about);
+  if (aboutIndex >= 0) {
+    const next = [...items];
+    next.splice(aboutIndex, 0, entry);
+    return next;
+  }
+  return [...items, entry];
+}
+
 /** Preserve explicit empty values — never fall back to defaults when the field was set. */
 function definedString(value: string | undefined, fallback: string): string {
   return value !== undefined ? value : fallback;
@@ -118,8 +141,10 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     header: {
       ...defaultContent.header,
       ...partial.header,
-      menuItems: ensureMeetingsNavItem(
-        definedArray(partial.header?.menuItems, defaultContent.header.menuItems)
+      menuItems: ensureArticlesNavItem(
+        ensureMeetingsNavItem(
+          definedArray(partial.header?.menuItems, defaultContent.header.menuItems)
+        )
       ),
       overlayMenuItems: partial.header?.overlayMenuItems ?? defaultContent.header.overlayMenuItems,
     },
@@ -278,6 +303,84 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       partial.gallerySection
     ),
     galleryPage: mergeGalleryPage(defaultContent.galleryPage, partial.galleryPage),
+    articlesPage: {
+      ...defaultContent.articlesPage,
+      ...(partial.articlesPage ?? {}),
+      hero: {
+        ...defaultContent.articlesPage.hero,
+        ...(partial.articlesPage?.hero ?? {}),
+        media: {
+          ...defaultContent.articlesPage.hero.media,
+          ...(partial.articlesPage?.hero?.media ?? {}),
+        },
+      },
+      seo: { ...defaultContent.articlesPage.seo, ...(partial.articlesPage?.seo ?? {}) },
+      sidebar: {
+        ...defaultContent.articlesPage.sidebar,
+        ...(partial.articlesPage?.sidebar ?? {}),
+      },
+      newsletterCta: {
+        ...defaultContent.articlesPage.newsletterCta,
+        ...(partial.articlesPage?.newsletterCta ?? {}),
+      },
+    },
+    articleAuthors: definedArray(
+      partial.articleAuthors,
+      defaultContent.articleAuthors
+    ).map((a, i) => ({
+      ...(defaultContent.articleAuthors[i] ?? defaultContent.articleAuthors[0]),
+      ...a,
+      social: {
+        ...(defaultContent.articleAuthors[i] ?? defaultContent.articleAuthors[0]).social,
+        ...(a.social ?? {}),
+      },
+    })),
+    articleCategories: definedArray(
+      partial.articleCategories,
+      defaultContent.articleCategories
+    ).map((c, i) => ({
+      ...(defaultContent.articleCategories[i] ?? {
+        id: `cat-${i}`,
+        name: "Category",
+        slug: `category-${i}`,
+        enabled: true,
+        order: i,
+      }),
+      ...c,
+      enabled: c.enabled !== false,
+      order: typeof c.order === "number" ? c.order : i,
+    })),
+    articleTags: definedArray(partial.articleTags, defaultContent.articleTags),
+    articles: (() => {
+      const merged = definedArray(partial.articles, defaultContent.articles).map(
+        (article, i) => {
+          const base = defaultContent.articles[i] ?? defaultContent.articles[0];
+          return {
+            ...base,
+            ...article,
+            tagIds: article.tagIds ?? base.tagIds ?? [],
+            relatedIds: article.relatedIds ?? base.relatedIds ?? [],
+            seo: { ...base.seo, ...(article.seo ?? {}) },
+            faq: definedArray(article.faq, base.faq ?? []),
+            toc: definedArray(article.toc, base.toc ?? []),
+            revisions: article.revisions ?? [],
+            status: article.status ?? "published",
+            featured: article.featured === true,
+            pinned: article.pinned === true,
+            allowComments: article.allowComments !== false,
+            order: typeof article.order === "number" ? article.order : i,
+          };
+        }
+      );
+      if (merged.length === 0) return defaultContent.articles;
+      const ids = new Set(merged.map((a) => a.id));
+      for (const def of defaultContent.articles) {
+        if (!ids.has(def.id) && !merged.some((a) => a.slug === def.slug)) {
+          merged.push({ ...def, revisions: def.revisions ?? [] });
+        }
+      }
+      return merged;
+    })(),
     roomsPage: { ...defaultContent.roomsPage, ...(partial.roomsPage ?? {}) },
     contactPage: mergeContactPage(partial.contactPage),
     contact: { ...defaultContent.contact, ...(partial.contact ?? {}) },

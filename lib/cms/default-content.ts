@@ -3,6 +3,13 @@ import { DRAWER_NAV_ITEMS, routes } from "@/lib/navigation";
 import { defaultHeroBuilder } from "./hero-builder-defaults";
 import { CULTURE_HOME_CONTENT, CULTURE_PAGE_STORY } from "./culture-content";
 import { DEFAULT_ROOM_POLICIES } from "./room-helpers";
+import {
+  buildDefaultArticles,
+  defaultArticleAuthors,
+  defaultArticleCategories,
+  defaultArticlesPage,
+  defaultArticleTags,
+} from "./articles-seed";
 
 export const defaultContent: SiteContent = {
   hotel: {
@@ -2333,5 +2340,10 @@ export const defaultContent: SiteContent = {
       sectionPaddingY: 96,
     },
   },
+  articlesPage: defaultArticlesPage,
+  articleAuthors: defaultArticleAuthors,
+  articleCategories: defaultArticleCategories,
+  articleTags: defaultArticleTags,
+  articles: buildDefaultArticles(),
   mediaLibrary: [],
 };

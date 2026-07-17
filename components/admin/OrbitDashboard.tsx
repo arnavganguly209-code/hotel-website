@@ -27,6 +27,7 @@ import {
   MessageSquare,
   Plus,
   Trash2,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
@@ -39,6 +40,7 @@ import { EventInquiriesPanel } from "@/components/admin/EventInquiriesPanel";
 import { ContactEnquiriesPanel } from "@/components/admin/ContactEnquiriesPanel";
 import { ContactPageEditor } from "@/components/admin/ContactPageEditor";
 import { AboutPageEditor } from "@/components/admin/AboutPageEditor";
+import { ArticlesManager } from "@/components/admin/ArticlesManager";
 import type { SiteContent } from "@/lib/cms/types";
 import {
   isPaymentLogoCleared,
@@ -73,6 +75,7 @@ const SECTIONS = [
   { id: "culturalExperience", label: "Cultural Page", icon: Globe },
   { id: "about", label: "About Page", icon: Globe },
   { id: "gallery", label: "Gallery", icon: Image },
+  { id: "articles", label: "Articles", icon: FileText },
   { id: "reviews", label: "Testimonials", icon: Star },
   { id: "contact", label: "Contact Page", icon: MessageSquare },
   { id: "contactEnquiries", label: "Contact Enquiries", icon: MessageSquare },
@@ -2906,6 +2909,10 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 library={content.mediaLibrary}
                 onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
               />
+            )}
+
+            {activeSection === "articles" && (
+              <ArticlesManager content={content} update={update} />
             )}
 
             {activeSection === "dining" && (

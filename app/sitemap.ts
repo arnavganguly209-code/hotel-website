@@ -14,11 +14,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     routes.dining,
     routes.spa,
     routes.gallery,
+    routes.articles,
     routes.culturalExperience,
     routes.contact,
     routes.privacy,
     routes.terms,
     ...content.rooms.map((room) => `/rooms/${room.id}`),
+    ...content.articles
+      .filter((a) => a.status === "published")
+      .map((a) => `/articles/${a.slug}`),
   ];
 
   return publicRoutes.map((path) => ({

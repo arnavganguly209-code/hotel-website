@@ -1002,6 +1002,101 @@ export interface SiteContent {
       sectionPaddingY: number;
     };
   };
+  articlesPage: {
+    hero: PageHero & {
+      media: CmsMedia;
+      breadcrumbHome: string;
+      breadcrumbCurrent: string;
+      overlayOpacity: number;
+    };
+    seo: PageSeo & { keywords?: string };
+    eyebrow: string;
+    title: string;
+    description: string;
+    sidebar: {
+      searchPlaceholder: string;
+      categoriesTitle: string;
+      recentTitle: string;
+      popularTitle: string;
+      featuredTitle: string;
+      tagsTitle: string;
+      newsletterTitle: string;
+      newsletterDescription: string;
+      newsletterButton: string;
+    };
+    newsletterCta: {
+      title: string;
+      description: string;
+      buttonText: string;
+    };
+    goldColor: string;
+    headingColor: string;
+    bodyColor: string;
+    backgroundTop: string;
+    backgroundBottom: string;
+  };
+  articleAuthors: Array<{
+    id: string;
+    name: string;
+    designation: string;
+    bio: string;
+    photo: string;
+    social: {
+      facebook?: string;
+      instagram?: string;
+      linkedin?: string;
+      twitter?: string;
+    };
+  }>;
+  articleCategories: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    enabled: boolean;
+    order: number;
+  }>;
+  articleTags: Array<{
+    id: string;
+    name: string;
+    slug: string;
+  }>;
+  articles: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    excerpt: string;
+    body: string;
+    coverImage: string;
+    coverAlt: string;
+    categoryId: string;
+    tagIds: string[];
+    authorId: string;
+    readingTime: number;
+    publishedAt: string;
+    updatedAt?: string;
+    status: "draft" | "published" | "scheduled" | "trash";
+    featured: boolean;
+    pinned: boolean;
+    allowComments: boolean;
+    relatedIds: string[];
+    seo: {
+      title: string;
+      description: string;
+      keywords: string;
+      canonical: string;
+      ogImage: string;
+    };
+    faq: Array<{ question: string; answer: string }>;
+    toc: Array<{ id: string; label: string; level: 2 | 3 }>;
+    revisions?: Array<{
+      id: string;
+      savedAt: string;
+      title: string;
+      body: string;
+    }>;
+    scheduledAt?: string;
+    order: number;
+  }>;
   mediaLibrary: MediaAsset[];
 }
 

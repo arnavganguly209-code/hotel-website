@@ -7,6 +7,7 @@ const SITE_PATHS = [
   "/about",
   "/contact",
   "/gallery",
+  "/articles",
   "/rooms",
   "/dining",
   "/spa",
@@ -27,4 +28,5 @@ export function revalidateSiteContent(): void {
     revalidatePath(route);
   }
   revalidatePath("/rooms/[slug]", "page");
+  revalidatePath("/articles/[slug]", "page");
 }

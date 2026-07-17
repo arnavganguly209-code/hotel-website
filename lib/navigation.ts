@@ -8,6 +8,7 @@ export const routes = {
   spa: "/spa",
   meetingsEvents: "/meetings-events",
   gallery: "/gallery",
+  articles: "/articles",
   culturalExperience: "/cultural-experience",
   contact: "/contact",
   privacy: "/privacy-policy",
@@ -20,6 +21,10 @@ export function roomDetailPath(id: string) {
   return `/rooms/${id}`;
 }
 
+export function articleDetailPath(slug: string) {
+  return `/articles/${slug}`;
+}
+
 export const DRAWER_NAV_ITEMS = [
   { label: "Overview", href: routes.home },
   { label: "Rooms", href: routes.rooms },
@@ -27,6 +32,7 @@ export const DRAWER_NAV_ITEMS = [
   { label: "Spa & Wellness", href: routes.spa },
   { label: "Meetings & Events", href: routes.meetingsEvents },
   { label: "Gallery", href: routes.gallery },
+  { label: "Articles", href: routes.articles },
   { label: "About", href: routes.about },
   { label: "Contact", href: routes.contact },
 ] as const;
