@@ -83,6 +83,31 @@ model EventInquiry {
   createdAt      DateTime  @default(now())
 }
 
+model ContactEnquiry {
+  id                   Int       @id @default(autoincrement())
+  fullName             String
+  email                String
+  phone                String    @default("")
+  country              String    @default("")
+  arrivalDate          DateTime?
+  departureDate        DateTime?
+  guests               Int       @default(1)
+  adults               Int       @default(1)
+  children             Int       @default(0)
+  roomPreference       String    @default("")
+  bookingType          String    @default("General Inquiry")
+  preferredContact     String    @default("Email")
+  budget               String    @default("")
+  specialRequest       String    @default("")
+  message              String    @default("")
+  attachmentUrl        String    @default("")
+  consent              Boolean   @default(false)
+  status               String    @default("new")
+  adminNotes           String    @default("")
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
 model DiningReservation {
   id              Int       @id @default(autoincrement())
   referenceNumber String    @unique
