@@ -40,6 +40,7 @@ import { EventInquiriesPanel } from "@/components/admin/EventInquiriesPanel";
 import { ContactEnquiriesPanel } from "@/components/admin/ContactEnquiriesPanel";
 import { DiningReservationsPanel } from "@/components/admin/DiningReservationsPanel";
 import { DiningPageEditor } from "@/components/admin/DiningPageEditor";
+import { SpaPageEditor } from "@/components/admin/SpaPageEditor";
 import { ContactPageEditor } from "@/components/admin/ContactPageEditor";
 import { AboutPageEditor } from "@/components/admin/AboutPageEditor";
 import { ArticlesManager } from "@/components/admin/ArticlesManager";
@@ -2903,28 +2904,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
               </>
             )}
 
-            {activeSection === "spa" && (
-              <>
-                <AdminInput label="Hero Title" value={content.spaPage.hero.title} onChange={(e) => update("spaPage", { ...content.spaPage, hero: { ...content.spaPage.hero, title: e.target.value } })} />
-                <AdminTextarea label="Philosophy" rows={4} value={content.spaPage.philosophy.content} onChange={(e) => update("spaPage", { ...content.spaPage, philosophy: { ...content.spaPage.philosophy, content: e.target.value } })} />
-                <ImagePicker label="Philosophy Image" folder="spa" category="Spa" value={content.spaPage.philosophy.imageSrc} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => update("spaPage", { ...content.spaPage, philosophy: { ...content.spaPage.philosophy, imageSrc: url } })} />
-                {content.spaPage.services.map((service, i) => (
-                  <div key={service.id} className="space-y-3 border border-luxury-gold/10 p-4">
-                    <AdminInput label="Service Name" value={service.name} onChange={(e) => {
-                      const services = [...content.spaPage.services];
-                      services[i] = { ...service, name: e.target.value };
-                      update("spaPage", { ...content.spaPage, services });
-                    }} />
-                    <AdminTextarea label="Description" rows={2} value={service.description} onChange={(e) => {
-                      const services = [...content.spaPage.services];
-                      services[i] = { ...service, description: e.target.value };
-                      update("spaPage", { ...content.spaPage, services });
-                    }} />
-                  </div>
-                ))}
-                <AdminInput label="CTA Title" value={content.spaPage.cta.title} onChange={(e) => update("spaPage", { ...content.spaPage, cta: { ...content.spaPage.cta, title: e.target.value } })} />
-              </>
-            )}
+            {activeSection === "spa" && <SpaPageEditor content={content} update={update} />}
 
             {activeSection === "meetingsEventsPage" && (
               <>

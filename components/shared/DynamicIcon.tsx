@@ -36,6 +36,7 @@ import {
   Car,
   Camera,
   Wind,
+  Leaf,
   type LucideIcon,
 } from "lucide-react";
 
@@ -75,6 +76,7 @@ const iconMap: Record<string, LucideIcon> = {
   Car,
   Camera,
   Wind,
+  Leaf,
 };
 
 interface DynamicIconProps {

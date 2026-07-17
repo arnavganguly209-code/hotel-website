@@ -221,7 +221,7 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     ),
     roomBooking: { ...defaultContent.roomBooking, ...(partial.roomBooking ?? {}) },
     diningPage: mergeDiningPage(defaultContent.diningPage, partial.diningPage),
-    spaPage: mergePageSection(defaultContent.spaPage, partial.spaPage),
+    spaPage: mergeSpaPage(defaultContent.spaPage, partial.spaPage),
     meetingsEventsPage: mergeMeetingsEventsPage(
       defaultContent.meetingsEventsPage,
       partial.meetingsEventsPage
@@ -653,6 +653,192 @@ function mergeDiningPage(
     cta: {
       ...defaults.cta,
       ...(partial.cta ?? {}),
+    },
+  };
+}
+
+function mergeSpaPage(
+  defaults: SiteContent["spaPage"],
+  partial?: Partial<SiteContent["spaPage"]> & {
+    philosophy?: { title?: string; content?: string; imageSrc?: string };
+    services?: Array<{ id?: string; name?: string; description?: string }>;
+  }
+): SiteContent["spaPage"] {
+  if (!partial) return defaults;
+
+  const legacyPhilosophy = partial.philosophy;
+  const legacyServices = partial.services;
+
+  const treatmentItems = definedArray(
+    partial.treatments?.items ??
+      legacyServices?.map((s, i) => ({
+        id: s.id || `t${i}`,
+        name: s.name || "",
+        description: s.description || "",
+        enabled: true,
+        order: i,
+        icon: "Flower2",
+        imageSrc: "",
+        imageAlt: s.name || "",
+      })),
+    defaults.treatments.items
+  ).map((item, i) => {
+    const base = defaults.treatments.items[i] ?? defaults.treatments.items[0];
+    return {
+      id: item.id || base.id,
+      enabled: item.enabled !== false,
+      order: typeof item.order === "number" ? item.order : (base.order ?? i),
+      name: definedString(item.name, base.name),
+      description: definedString(item.description, base.description),
+      icon: definedString(item.icon, base.icon),
+      imageSrc: definedString(item.imageSrc, base.imageSrc),
+      imageAlt: definedString(item.imageAlt, base.imageAlt),
+    };
+  });
+
+  const gallery = definedArray(partial.gallery, defaults.gallery).map((item, i) => {
+    const base = defaults.gallery[i] ?? defaults.gallery[0];
+    const legacy = item as { src?: string; title?: string; alt?: string };
+    return {
+      id: item.id || base.id,
+      src: definedString(legacy.src, base.src),
+      title: definedString(legacy.title, base.title),
+      alt: definedString(legacy.alt, base.alt || legacy.title || base.title),
+      enabled: item.enabled !== false,
+      order: typeof item.order === "number" ? item.order : (base.order ?? i),
+    };
+  });
+
+  return {
+    ...defaults,
+    ...partial,
+    hero: { ...defaults.hero, ...(partial.hero ?? {}) },
+    seo: { ...defaults.seo, ...(partial.seo ?? {}) },
+    introduction: {
+      ...defaults.introduction,
+      ...(partial.introduction ?? {}),
+      title: definedString(
+        partial.introduction?.title ?? legacyPhilosophy?.title,
+        defaults.introduction.title
+      ),
+      content: definedString(
+        partial.introduction?.content ?? legacyPhilosophy?.content,
+        defaults.introduction.content
+      ),
+      imageSrc: definedString(
+        partial.introduction?.imageSrc ?? legacyPhilosophy?.imageSrc,
+        defaults.introduction.imageSrc
+      ),
+    },
+    treatments: {
+      ...defaults.treatments,
+      ...(partial.treatments ?? {}),
+      items: treatmentItems,
+    },
+    experiences: {
+      ...defaults.experiences,
+      ...(partial.experiences ?? {}),
+      items: definedArray(partial.experiences?.items, defaults.experiences.items).map((item, i) => {
+        const base = defaults.experiences.items[i] ?? defaults.experiences.items[0];
+        return {
+          id: item.id || base.id,
+          enabled: item.enabled !== false,
+          order: typeof item.order === "number" ? item.order : (base.order ?? i),
+          title: definedString(item.title, base.title),
+          description: definedString(item.description, base.description),
+          imageSrc: definedString(item.imageSrc, base.imageSrc),
+          imageAlt: definedString(item.imageAlt, base.imageAlt),
+        };
+      }),
+    },
+    packages: {
+      ...defaults.packages,
+      ...(partial.packages ?? {}),
+      items: definedArray(partial.packages?.items, defaults.packages.items).map((item, i) => {
+        const base = defaults.packages.items[i] ?? defaults.packages.items[0];
+        return {
+          id: item.id || base.id,
+          enabled: item.enabled !== false,
+          order: typeof item.order === "number" ? item.order : (base.order ?? i),
+          name: definedString(item.name, base.name),
+          duration: definedString(item.duration, base.duration),
+          price: definedString(item.price, base.price),
+          description: definedString(item.description, base.description),
+          benefits: definedArray(item.benefits, base.benefits),
+          imageSrc: definedString(item.imageSrc, base.imageSrc),
+          imageAlt: definedString(item.imageAlt, base.imageAlt),
+          ctaText: definedString(item.ctaText, base.ctaText),
+        };
+      }),
+    },
+    gallerySection: {
+      ...defaults.gallerySection,
+      ...(partial.gallerySection ?? {}),
+    },
+    gallery,
+    whyChoose: {
+      ...defaults.whyChoose,
+      ...(partial.whyChoose ?? {}),
+      items: definedArray(partial.whyChoose?.items, defaults.whyChoose.items).map((item, i) => {
+        const base = defaults.whyChoose.items[i] ?? defaults.whyChoose.items[0];
+        return {
+          id: item.id || base.id,
+          enabled: item.enabled !== false,
+          order: typeof item.order === "number" ? item.order : (base.order ?? i),
+          title: definedString(item.title, base.title),
+          description: definedString(item.description, base.description),
+          icon: definedString(item.icon, base.icon),
+        };
+      }),
+    },
+    testimonials: {
+      ...defaults.testimonials,
+      ...(partial.testimonials ?? {}),
+      items: definedArray(partial.testimonials?.items, defaults.testimonials.items).map((item, i) => {
+        const base = defaults.testimonials.items[i] ?? defaults.testimonials.items[0];
+        return {
+          id: item.id || base.id,
+          enabled: item.enabled !== false,
+          order: typeof item.order === "number" ? item.order : (base.order ?? i),
+          name: definedString(item.name, base.name),
+          country: definedString(item.country, base.country),
+          rating: typeof item.rating === "number" ? item.rating : base.rating,
+          review: definedString(item.review, base.review),
+          photoSrc: definedString(item.photoSrc, base.photoSrc),
+        };
+      }),
+    },
+    booking: {
+      ...defaults.booking,
+      ...(partial.booking ?? {}),
+      buttonHref: definedString(
+        partial.booking?.buttonHref,
+        defaults.booking.buttonHref
+      ),
+      secondaryHref: definedString(
+        partial.booking?.secondaryHref,
+        defaults.booking.secondaryHref
+      ),
+    },
+    faq: {
+      ...defaults.faq,
+      ...(partial.faq ?? {}),
+      items: definedArray(partial.faq?.items, defaults.faq.items).map((item, i) => {
+        const base = defaults.faq.items[i] ?? defaults.faq.items[0];
+        return {
+          id: item.id || base.id,
+          question: definedString(item.question, base.question),
+          answer: definedString(item.answer, base.answer),
+          enabled: item.enabled !== false,
+          order: typeof item.order === "number" ? item.order : (base.order ?? i),
+        };
+      }),
+    },
+    cta: {
+      ...defaults.cta,
+      ...(partial.cta ?? {}),
+      buttonHref: definedString(partial.cta?.buttonHref, defaults.cta.buttonHref),
+      secondaryHref: definedString(partial.cta?.secondaryHref, defaults.cta.secondaryHref),
     },
   };
 }

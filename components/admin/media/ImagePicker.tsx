@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { ImagePlus, Library, Loader2, Search, Upload, X } from "lucide-react";
+import { CheckCircle2, ImagePlus, Library, Loader2, Search, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { ImageCropDialog } from "@/components/admin/media/ImageCropDialog";
@@ -27,7 +27,10 @@ interface ImagePickerProps {
   keepValueOnFailedUpload?: boolean;
   onUploadError?: (message: string) => void;
   onUploadSuccess?: (url: string) => void;
-  /** Show crop dialog before upload (payment logos). */
+  /**
+   * Optional crop tool after a successful upload (never auto-opens on file select).
+   * Original file always uploads first at full quality.
+   */
   enableCrop?: boolean;
 }
 
@@ -53,6 +56,7 @@ export function ImagePicker({
   const [filter, setFilter] = useState<string>("All");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [cropFile, setCropFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -83,8 +87,8 @@ export function ImagePicker({
   const fail = (message: string) => {
     console.error("[ImagePicker] Upload failed:", message);
     setError(message);
+    setSuccess(null);
     onUploadError?.(message);
-    // Keep previous image — never blank the slot on failure
     if (keepValueOnFailedUpload && previousValueRef.current) {
       console.info("[ImagePicker] Keeping previous image:", previousValueRef.current);
     }
@@ -101,13 +105,13 @@ export function ImagePicker({
 
     setUploading(true);
     setError(null);
+    setSuccess(null);
     const blobPreview = URL.createObjectURL(file);
     setPreview(blobPreview);
 
     const formData = new FormData();
     formData.append("file", file);
     formData.append("folder", uploadFolder);
-    // Never instruct server to delete bundled /media assets
     if (value && !isBundledPaymentUrl(value)) {
       formData.append("oldUrl", value);
     }
@@ -133,22 +137,15 @@ export function ImagePicker({
         return;
       }
 
-      // Server never returns success unless disk + HTTP 200 verified.
-      // On failure: keep previous image — do NOT call onChange / do NOT save CMS.
       if (!res.ok || !data.url || !data.diskVerified || !data.httpVerified) {
         const detail = data.error || `Upload failed (HTTP ${res.status}).`;
-        fail(
-          data.root
-            ? `${detail} (storage: ${data.root})`
-            : detail
-        );
+        fail(data.root ? `${detail} (storage: ${data.root})` : detail);
         return;
       }
 
       const nextUrl = data.urlWithBust || `${data.url}?v=${Date.now()}`;
       const cleanPath = data.url.split("?")[0];
 
-      // Client-side confirmation — must be HTTP 200 before we replace the slot
       try {
         const probe = await fetch(`${cleanPath}?v=${Date.now()}`, {
           method: "GET",
@@ -198,12 +195,15 @@ export function ImagePicker({
         ),
       ]);
 
-      // ONLY replace previous image after upload + disk + HTTP probes succeed
       onChange(nextUrl, asset);
       onUploadSuccess?.(nextUrl);
-      setOpen(false);
-      setPreview(null);
+      setSuccess("Image uploaded successfully.");
       setError(null);
+      // Keep modal open briefly so user sees preview + success, then close
+      setTimeout(() => {
+        setOpen(false);
+        setPreview(null);
+      }, 900);
     } catch (err) {
       console.error("[ImagePicker] Stack:", err);
       fail(err instanceof Error ? err.message : "Upload failed");
@@ -242,6 +242,8 @@ export function ImagePicker({
             className="border-luxury-gold/30 text-luxury-gold"
             onClick={() => {
               setTab("library");
+              setSuccess(null);
+              setError(null);
               setOpen(true);
             }}
           >
@@ -255,12 +257,33 @@ export function ImagePicker({
             disabled={uploading}
             onClick={() => {
               setTab("upload");
+              setSuccess(null);
+              setError(null);
               setOpen(true);
             }}
           >
             <Upload className="h-4 w-4" />
             {uploading ? "Uploading…" : "Upload New"}
           </Button>
+          {enableCrop && value && !value.toLowerCase().endsWith(".svg") ? (
+            <button
+              type="button"
+              className="text-left text-xs text-luxury-gold/80 hover:underline"
+              onClick={async () => {
+                try {
+                  const res = await fetch(value.split("?")[0], { cache: "no-store" });
+                  if (!res.ok) throw new Error("Could not load image for optional crop");
+                  const blob = await res.blob();
+                  const name = value.split("/").pop()?.split("?")[0] || "image.jpg";
+                  setCropFile(new File([blob], name, { type: blob.type || "image/jpeg" }));
+                } catch (err) {
+                  fail(err instanceof Error ? err.message : "Crop failed to start");
+                }
+              }}
+            >
+              Optional crop…
+            </button>
+          ) : null}
           {value ? (
             <button
               type="button"
@@ -273,6 +296,12 @@ export function ImagePicker({
         </div>
       </div>
       {value ? <p className="truncate text-[11px] text-white/40">{value}</p> : null}
+      {success ? (
+        <p className="flex items-center gap-2 rounded-md border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">
+          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+          {success}
+        </p>
+      ) : null}
       {error ? (
         <p className="rounded-md border border-red-400/40 bg-red-500/10 px-3 py-2 text-xs text-red-300">
           {error}
@@ -346,6 +375,7 @@ export function ImagePicker({
                         onClick={() => {
                           onChange(item.url, item);
                           onUploadSuccess?.(item.url);
+                          setSuccess("Image selected successfully.");
                           setOpen(false);
                         }}
                         className={cn(
@@ -388,10 +418,17 @@ export function ImagePicker({
                   ) : value ? (
                     <div className="relative mx-auto h-40 w-40">
                       <SafeImage src={value} alt="" fill objectFit="contain" />
-                      <p className="mt-2 text-xs text-white/50">Current logo (kept until new upload succeeds)</p>
+                      <p className="mt-2 text-xs text-white/50">
+                        Current image (kept until new upload succeeds)
+                      </p>
                     </div>
                   ) : null}
-                  <p className="text-sm text-white/60">PNG, JPG, JPEG, WEBP, SVG · max 10MB</p>
+                  <p className="text-sm text-white/60">
+                    PNG, JPG, JPEG, WEBP, SVG · max 10MB · original quality preserved
+                  </p>
+                  <p className="text-xs text-white/40">
+                    Images upload as-is — no automatic zoom or forced crop.
+                  </p>
                   <Button
                     type="button"
                     variant="gold"
@@ -413,14 +450,16 @@ export function ImagePicker({
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
-                      // SVG skip crop; otherwise optional crop step
-                      if (enableCrop && file.type !== "image/svg+xml") {
-                        setCropFile(file);
-                        return;
-                      }
+                      // Always upload the original file — never force crop on select
                       void handleUpload(file);
                     }}
                   />
+                  {success ? (
+                    <p className="flex items-center justify-center gap-2 text-sm text-emerald-300">
+                      <CheckCircle2 className="h-4 w-4" />
+                      {success}
+                    </p>
+                  ) : null}
                   {error ? <p className="text-sm text-red-400">{error}</p> : null}
                 </div>
               )}

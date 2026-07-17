@@ -662,12 +662,144 @@ export interface SiteContent {
     };
   };
   spaPage: {
-    hero: PageHero;
-    seo: PageSeo;
-    philosophy: { title: string; content: string; imageSrc: string };
-    services: Array<{ id: string; name: string; description: string }>;
-    gallery: Array<{ id: string; src: string; title: string }>;
-    cta: { title: string; description: string; buttonText: string };
+    hero: PageHero & {
+      breadcrumbHome: string;
+      breadcrumbCurrent: string;
+      overlayOpacity: number;
+      scrollHint: string;
+    };
+    seo: PageSeo & { keywords: string };
+    introduction: {
+      eyebrow: string;
+      title: string;
+      content: string;
+      quote: string;
+      quoteAuthor: string;
+      imageSrc: string;
+      imageAlt: string;
+    };
+    treatments: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        name: string;
+        description: string;
+        icon: string;
+        imageSrc: string;
+        imageAlt: string;
+      }>;
+    };
+    experiences: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        title: string;
+        description: string;
+        imageSrc: string;
+        imageAlt: string;
+      }>;
+    };
+    packages: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        name: string;
+        duration: string;
+        price: string;
+        description: string;
+        benefits: string[];
+        imageSrc: string;
+        imageAlt: string;
+        ctaText: string;
+      }>;
+    };
+    gallerySection: {
+      eyebrow: string;
+      title: string;
+      description: string;
+    };
+    gallery: Array<{
+      id: string;
+      src: string;
+      title: string;
+      alt: string;
+      enabled: boolean;
+      order: number;
+    }>;
+    whyChoose: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        title: string;
+        description: string;
+        icon: string;
+      }>;
+    };
+    testimonials: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        name: string;
+        country: string;
+        rating: number;
+        review: string;
+        photoSrc: string;
+      }>;
+    };
+    booking: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      buttonText: string;
+      buttonHref: string;
+      secondaryText: string;
+      secondaryHref: string;
+    };
+    faq: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      items: Array<{
+        id: string;
+        question: string;
+        answer: string;
+        enabled: boolean;
+        order: number;
+      }>;
+    };
+    cta: {
+      title: string;
+      description: string;
+      buttonText: string;
+      buttonHref: string;
+      secondaryText: string;
+      secondaryHref: string;
+      backgroundImage: string;
+    };
+    /** @deprecated legacy — merged into introduction */
+    philosophy?: { title: string; content: string; imageSrc: string };
+    /** @deprecated legacy — merged into treatments */
+    services?: Array<{ id: string; name: string; description: string }>;
   };
   meetingsEventsPage: {
     hero: PageHero & { ctaText: string; ctaHref: string; media: CmsMedia };

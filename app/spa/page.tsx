@@ -1,24 +1,64 @@
 import type { Metadata } from "next";
 import { getContent } from "@/lib/cms/store";
 import { buildPageMetadata, buildBreadcrumbSchema } from "@/lib/seo/page-metadata";
-import { InnerPageHero } from "@/components/shared/InnerPageHero";
+import { SITE_URL } from "@/lib/seo";
+import { SpaHero } from "@/components/spa/SpaHero";
 import { SpaPage } from "@/sections/pages/SpaPage";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getContent();
   const seo = content.spaPage.seo ?? {
-    title: "Spa & Wellness",
-    description: `Luxury spa and wellness treatments at ${content.hotel.name}, Kathmandu.`,
+    title: "Spa & Wellness | Hotel Thamel Park",
+    description: `Luxury spa and wellness at ${content.hotel.name}, Kathmandu.`,
   };
-  return buildPageMetadata(seo, "/spa", content.hotel.name);
+  const meta = buildPageMetadata(seo, "/spa", content.hotel.name);
+  if (seo.keywords) {
+    return { ...meta, keywords: seo.keywords };
+  }
+  return meta;
 }
 
 export default async function SpaRoute() {
   const content = await getContent();
+  const page = content.spaPage;
+  const hotel = content.hotel;
+
   const breadcrumb = buildBreadcrumbSchema([
-    { name: "Home", url: "/" },
-    { name: "Spa & Wellness", url: "/spa" },
+    { name: page.hero.breadcrumbHome || "Home", url: "/" },
+    { name: page.hero.breadcrumbCurrent || "Spa & Wellness", url: "/spa" },
   ]);
+
+  const spaSchema = {
+    "@context": "https://schema.org",
+    "@type": "DaySpa",
+    name: `${hotel.name} Spa & Wellness`,
+    description: page.seo.description || page.hero.description,
+    image: page.hero.imageSrc?.startsWith("http")
+      ? page.hero.imageSrc
+      : `${SITE_URL}${page.hero.imageSrc || ""}`,
+    url: `${SITE_URL}/spa`,
+    telephone: hotel.phone,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: hotel.address || "Thamel",
+      addressLocality: "Kathmandu",
+      addressCountry: "NP",
+    },
+  };
+
+  const faqItems = page.faq.items.filter((f) => f.enabled !== false);
+  const faqSchema =
+    faqItems.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqItems.map((f) => ({
+            "@type": "Question",
+            name: f.question,
+            acceptedAnswer: { "@type": "Answer", text: f.answer },
+          })),
+        }
+      : null;
 
   return (
     <>
@@ -26,13 +66,18 @@ export default async function SpaRoute() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
-      <InnerPageHero
-        title={content.spaPage.hero.title}
-        subtitle={content.spaPage.hero.subtitle}
-        description={content.spaPage.hero.description}
-        imageSrc={content.spaPage.hero.imageSrc}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(spaSchema) }}
       />
-      <SpaPage content={content.spaPage} />
+      {faqSchema ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      ) : null}
+      <SpaHero hero={page.hero} />
+      <SpaPage content={page} />
     </>
   );
 }

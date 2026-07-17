@@ -72,7 +72,6 @@ export function AdminMediaField({
           value={value.imageSrc}
           folder={folder}
           category={category}
-          enableCrop
           library={library}
           onLibraryChange={onLibraryChange}
           onChange={(url, asset) =>
@@ -140,7 +139,6 @@ export function AdminMediaField({
             value={value.poster}
             folder={folder}
             category={category}
-            enableCrop
             library={library}
             onLibraryChange={onLibraryChange}
             onChange={(url, asset) =>
