@@ -123,7 +123,7 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
     <section
       id="hero"
       ref={sectionRef}
-      className="relative isolate flex min-h-[100svh] w-full flex-col overflow-hidden bg-[#12271C] lg:h-[92vh] lg:min-h-[880px] lg:max-h-[950px]"
+      className="relative isolate flex min-h-[100svh] w-full flex-col overflow-hidden bg-[#12271C]"
     >
       {/* ---- Background: full-bleed image (or video) with parallax + fade ---- */}
       <motion.div
@@ -179,7 +179,7 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
 
       {/* ---- Hero content (left) ---- */}
       <div className="relative z-10 flex flex-1 items-center">
-        <div className="w-full px-5 pb-8 pt-28 sm:px-8 lg:px-14 lg:pt-32 xl:px-20">
+        <div className="w-full px-5 pb-6 pt-24 sm:px-8 lg:px-14 lg:pt-28 xl:px-20">
           <div className="max-w-3xl">
             {hero.welcomeText ? (
               <motion.p
@@ -283,7 +283,7 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
       {showFeatures ? (
         <motion.div
           {...fadeUp(0.7, reducedMotion)}
-          className="relative z-10 w-full px-5 pb-6 sm:px-8 lg:px-14 xl:px-20"
+          className="relative z-10 w-full px-5 pb-5 sm:px-8 lg:px-14 xl:px-20"
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-8 lg:gap-x-10">
             {features.map((feature, i) => (
