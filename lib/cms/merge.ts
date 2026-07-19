@@ -503,6 +503,7 @@ function mergeHero(
     primaryButton: { ...defaults.primaryButton, ...partial.primaryButton },
     secondaryButton: { ...defaults.secondaryButton, ...partial.secondaryButton },
     features: definedArray(partial.features, defaults.features),
+    previousMedia: { ...defaults.previousMedia, ...partial.previousMedia },
     bookingBar: {
       ...defaults.bookingBar,
       ...partial.bookingBar,

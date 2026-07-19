@@ -244,9 +244,16 @@ export interface HeroFeatureItem {
   enabled: boolean;
 }
 
+export type HeroMediaMode = "none" | "image" | "video";
+
 export interface HeroBuilderSettings {
   layout: "premium" | "classic";
   type: "animated" | "image" | "video" | "premium";
+  /**
+   * Hero background media: "none" = clean luxury gradient (default),
+   * "image" = image.src cover, "video" = videoSrc cover.
+   */
+  mediaMode: HeroMediaMode;
   showTitle: boolean;
   welcomeText: string;
   title: string;
@@ -266,6 +273,8 @@ export interface HeroBuilderSettings {
   /** Feature icon row rendered above the booking bar (Prime Location, etc). */
   features: HeroFeatureItem[];
   showFeatures: boolean;
+  /** Last replaced hero media, for one-click restore in Orbit. */
+  previousMedia: { imageSrc: string; videoSrc: string };
   colors: HeroColorSettings;
   image: HeroImageSettings;
   logo: HeroLogoSettings;

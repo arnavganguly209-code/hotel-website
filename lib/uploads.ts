@@ -11,7 +11,9 @@ import {
 import path from "node:path";
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB images
-export const MAX_VIDEO_UPLOAD_BYTES = 80 * 1024 * 1024; // 80MB videos
+// Videos have NO artificial size limit — uploads are bounded only by available
+// VPS disk space (and any reverse-proxy client_max_body_size configured there).
+export const MAX_VIDEO_UPLOAD_BYTES = Number.POSITIVE_INFINITY;
 
 /**
  * Absolute uploads root.
@@ -111,7 +113,7 @@ export function assertAllowedImage(fileName: string, mimeType: string, size: num
   }
 }
 
-/** Images (10MB) or gallery videos (80MB). */
+/** Images (10MB) or videos (no artificial cap — disk space only). */
 export function assertAllowedMedia(fileName: string, mimeType: string, size: number): void {
   if (size <= 0) {
     throw new UploadError("Empty file", 400);
@@ -119,15 +121,10 @@ export function assertAllowedMedia(fileName: string, mimeType: string, size: num
 
   const mime = (mimeType || "").toLowerCase();
   const video = isVideoUpload(fileName, mime);
-  const max = video ? MAX_VIDEO_UPLOAD_BYTES : MAX_UPLOAD_BYTES;
 
-  if (size > max) {
-    throw new UploadError(
-      video
-        ? "Video too large. Maximum upload size is 80MB."
-        : "File too large. Maximum upload size is 10MB.",
-      400
-    );
+  // Videos: no artificial cap — limited only by disk space.
+  if (!video && size > MAX_UPLOAD_BYTES) {
+    throw new UploadError("File too large. Maximum upload size is 10MB.", 400);
   }
 
   const ext = extensionForUpload(fileName, mime);

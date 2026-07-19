@@ -43,6 +43,8 @@ const baseButton = (overrides: Partial<HeroButtonStyle>): HeroButtonStyle => ({
 export const defaultHeroBuilder: HeroBuilderSettings = {
   layout: "premium",
   type: "premium",
+  mediaMode: "none",
+  previousMedia: { imageSrc: "", videoSrc: "" },
   showTitle: true,
   welcomeText: "LUXURY • HOSPITALITY • MEMORIES",
   title: "EXPERIENCE LUXURY",

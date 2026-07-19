@@ -1,27 +1,28 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { Undo2, Redo2, Eye } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
+import { Undo2, Redo2, Eye, Loader2, RotateCcw, Trash2, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
 import { PremiumHero } from "@/components/hero/PremiumHero";
-import type { HeroBuilderSettings, HeroFeatureItem } from "@/lib/cms/hero-builder-types";
+import { mediaUrl } from "@/lib/cms/media-url";
+import type { HeroBuilderSettings, HeroMediaMode } from "@/lib/cms/hero-builder-types";
 import type { SiteContent } from "@/lib/cms/types";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   "Preview",
-  "Content",
-  "Hero Image",
-  "Features",
-  "Logo",
-  "Buttons",
+  "Hero Media",
   "Booking Bar",
-  "Effects",
-  "Colors",
   "SEO",
 ] as const;
+
+const MEDIA_MODES: { value: HeroMediaMode; label: string; hint: string }[] = [
+  { value: "none", label: "Clean Background", hint: "Luxury cream–green gradient, no media" },
+  { value: "image", label: "Hero Image", hint: "Full-bleed image, original quality" },
+  { value: "video", label: "Hero Video", hint: "Autoplay, muted, looping" },
+];
 
 type Tab = (typeof TABS)[number];
 
@@ -98,6 +99,90 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
     [patch]
   );
 
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoError, setVideoError] = useState("");
+  const videoInputRef = useRef<HTMLInputElement>(null);
+
+  const prevMedia = hero.previousMedia ?? { imageSrc: "", videoSrc: "" };
+
+  /** Set/replace the hero image, stashing the current one so it can be restored. */
+  const setHeroImage = (url: string) => {
+    patch({
+      mediaMode: "image",
+      previousMedia: {
+        ...prevMedia,
+        imageSrc: hero.image.src && hero.image.src !== url ? hero.image.src : prevMedia.imageSrc,
+      },
+      image: { ...hero.image, src: url, desktopSrc: url, tabletSrc: url, mobileSrc: url },
+    });
+  };
+
+  /** Set/replace the hero video, stashing the current one so it can be restored. */
+  const setHeroVideo = (url: string) => {
+    patch({
+      mediaMode: "video",
+      previousMedia: {
+        ...prevMedia,
+        videoSrc: hero.videoSrc && hero.videoSrc !== url ? hero.videoSrc : prevMedia.videoSrc,
+      },
+      videoSrc: url,
+    });
+  };
+
+  const handleVideoUpload = async (file: File) => {
+    setVideoUploading(true);
+    setVideoError("");
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("folder", "hero");
+      // NOTE: old video is intentionally kept on disk so "Restore Previous Media" works.
+      const res = await fetch("/api/upload", { method: "POST", body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || `Upload failed (HTTP ${res.status})`);
+      }
+      setHeroVideo(data.url as string);
+    } catch (error) {
+      setVideoError(error instanceof Error ? error.message : "Video upload failed");
+    } finally {
+      setVideoUploading(false);
+    }
+  };
+
+  /** Clear current media (files stay on disk for restore) and fall back to the clean gradient. */
+  const removeHeroMedia = () => {
+    patch({
+      mediaMode: "none",
+      previousMedia: {
+        imageSrc: hero.image.src || prevMedia.imageSrc,
+        videoSrc: hero.videoSrc || prevMedia.videoSrc,
+      },
+      videoSrc: "",
+      image: { ...hero.image, src: "", desktopSrc: "", tabletSrc: "", mobileSrc: "" },
+    });
+  };
+
+  /** Swap current and previous media (works after Replace or Remove). */
+  const restorePreviousMedia = () => {
+    if (!prevMedia.imageSrc && !prevMedia.videoSrc) return;
+    const restoreMode: HeroMediaMode = prevMedia.videoSrc ? "video" : "image";
+    patch({
+      mediaMode: restoreMode,
+      videoSrc: prevMedia.videoSrc || hero.videoSrc,
+      image: prevMedia.imageSrc
+        ? {
+            ...hero.image,
+            src: prevMedia.imageSrc,
+            desktopSrc: prevMedia.imageSrc,
+            tabletSrc: prevMedia.imageSrc,
+            mobileSrc: prevMedia.imageSrc,
+          }
+        : hero.image,
+      previousMedia: { imageSrc: hero.image.src || "", videoSrc: hero.videoSrc || "" },
+    });
+  };
+
   const undo = () => {
     if (historyIndex <= 0) return;
     const idx = historyIndex - 1;
@@ -155,211 +240,148 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
         </Panel>
       )}
 
-      {tab === "Content" && (
+      {tab === "Hero Media" && (
         <>
-          <Panel title="Hotel Title">
-            <AdminInput label="Welcome Line (e.g. HOTEL)" value={hero.welcomeText} onChange={(e) => patch({ welcomeText: e.target.value })} />
-            <AdminInput label="Main Title" value={hero.title} onChange={(e) => patch({ title: e.target.value })} />
-            <AdminInput label="Subtitle" value={hero.subtitle} onChange={(e) => patch({ subtitle: e.target.value })} />
-            <AdminTextarea label="Description (HTML supported)" rows={3} value={hero.description} onChange={(e) => patch({ description: e.target.value })} />
-            <div className="grid grid-cols-2 gap-4">
-              <AdminInput label="Title Color" value={hero.titleStyle.color} onChange={(e) => patchNested("titleStyle", { ...hero.titleStyle, color: e.target.value })} />
-              <AdminInput label="Subtitle Color" value={hero.subtitleStyle.color} onChange={(e) => patchNested("subtitleStyle", { ...hero.subtitleStyle, color: e.target.value })} />
-              <AdminInput label="Title Desktop Size" value={hero.titleStyle.desktopFontSize} onChange={(e) => patchNested("titleStyle", { ...hero.titleStyle, desktopFontSize: e.target.value })} />
-              <AdminInput label="Subtitle Letter Spacing" value={hero.subtitleStyle.letterSpacing} onChange={(e) => patchNested("subtitleStyle", { ...hero.subtitleStyle, letterSpacing: e.target.value })} />
+          <Panel title="Background Mode">
+            <div className="grid gap-3 md:grid-cols-3">
+              {MEDIA_MODES.map((m) => (
+                <button
+                  key={m.value}
+                  type="button"
+                  onClick={() => patch({ mediaMode: m.value })}
+                  className={cn(
+                    "rounded-xl border p-4 text-left transition-colors",
+                    (hero.mediaMode ?? "none") === m.value
+                      ? "border-luxury-gold bg-luxury-gold/10"
+                      : "border-white/10 bg-white/[0.02] hover:border-luxury-gold/40"
+                  )}
+                >
+                  <p className={cn("text-sm font-medium", (hero.mediaMode ?? "none") === m.value ? "text-luxury-gold" : "text-white/80")}>
+                    {m.label}
+                  </p>
+                  <p className="mt-1 text-xs text-white/40">{m.hint}</p>
+                </button>
+              ))}
             </div>
+            <p className="text-xs text-white/40">
+              Uploaded media is displayed exactly as uploaded — no compression, cropping or quality loss. Use the Preview tab, then Save to publish live.
+            </p>
+            {(hero.previousMedia?.imageSrc || hero.previousMedia?.videoSrc) && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="border-luxury-gold/20 text-luxury-gold"
+                onClick={restorePreviousMedia}
+              >
+                <RotateCcw className="mr-2 h-3.5 w-3.5" /> Restore Previous Media
+              </Button>
+            )}
+            {(hero.image.src || hero.videoSrc) && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="border-red-400/30 text-red-300"
+                onClick={removeHeroMedia}
+              >
+                <Trash2 className="mr-2 h-3.5 w-3.5" /> Remove Media (switch to clean background)
+              </Button>
+            )}
           </Panel>
-        </>
-      )}
 
-      {tab === "Hero Image" && (
-        <>
-          <Panel title="Hero Background Image">
-            <AdminInput label="Image URL" value={hero.image.src} onChange={(e) => patchNested("image", { ...hero.image, src: e.target.value, desktopSrc: e.target.value })} />
-            <ImagePicker
-              label="Hero Background Image"
-              folder="hero"
-              category="Hero"
-              value={hero.image.src}
-              library={library}
-              onLibraryChange={onLibraryChange}
-              onChange={(url) =>
-                patchNested("image", {
-                  ...hero.image,
-                  src: url,
-                  desktopSrc: url,
-                  tabletSrc: url,
-                  mobileSrc: url,
-                })
-              }
-            />
-            <AdminInput label="Alt Text" value={hero.image.alt} onChange={(e) => patchNested("image", { ...hero.image, alt: e.target.value })} />
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <AdminInput label="Mobile Image URL" value={hero.image.mobileSrc} onChange={(e) => patchNested("image", { ...hero.image, mobileSrc: e.target.value })} />
-              <AdminInput label="Tablet Image URL" value={hero.image.tabletSrc} onChange={(e) => patchNested("image", { ...hero.image, tabletSrc: e.target.value })} />
-              <AdminInput label="Desktop Image URL" value={hero.image.desktopSrc} onChange={(e) => patchNested("image", { ...hero.image, desktopSrc: e.target.value })} />
-            </div>
-            <Slider label="Scale" value={hero.image.scale} min={0.8} max={1.4} step={0.05} onChange={(v) => patchNested("image", { ...hero.image, scale: v })} />
-            <Slider label="Brightness %" value={hero.image.brightness} min={50} max={150} onChange={(v) => patchNested("image", { ...hero.image, brightness: v })} />
-            <Slider label="Contrast %" value={hero.image.contrast} min={50} max={150} onChange={(v) => patchNested("image", { ...hero.image, contrast: v })} />
-            <Slider label="Saturation %" value={hero.image.saturation} min={0} max={200} onChange={(v) => patchNested("image", { ...hero.image, saturation: v })} />
-            <Slider label="Blur (px)" value={hero.image.blur} min={0} max={12} onChange={(v) => patchNested("image", { ...hero.image, blur: v })} />
-            <Slider label="Rotate (deg)" value={hero.image.rotate} min={-180} max={180} onChange={(v) => patchNested("image", { ...hero.image, rotate: v })} />
-            <Slider label="Overlay Opacity" value={hero.image.overlayOpacity} min={0} max={100} onChange={(v) => patchNested("image", { ...hero.image, overlayOpacity: v / 100 })} />
-            <AdminInput label="Image Position" value={hero.image.position} onChange={(e) => patchNested("image", { ...hero.image, position: e.target.value })} />
-            <AdminInput label="Border Radius" value={hero.image.borderRadius} onChange={(e) => patchNested("image", { ...hero.image, borderRadius: e.target.value })} />
-            <AdminInput label="Gradient Overlay (CSS)" value={hero.image.gradientOverlay} onChange={(e) => patchNested("image", { ...hero.image, gradientOverlay: e.target.value })} />
-            <label className="flex items-center gap-3 text-sm text-white/70">
-              <input type="checkbox" checked={hero.image.parallax} onChange={(e) => patchNested("image", { ...hero.image, parallax: e.target.checked })} className="accent-luxury-gold" />
-              Parallax ON
-            </label>
-            <label className="flex items-center gap-3 text-sm text-white/70">
-              <input type="checkbox" checked={hero.image.flipX} onChange={(e) => patchNested("image", { ...hero.image, flipX: e.target.checked })} className="accent-luxury-gold" />
-              Flip Horizontal
-            </label>
-          </Panel>
-        </>
-      )}
+          {(hero.mediaMode ?? "none") === "image" && (
+            <Panel title="Hero Image">
+              <ImagePicker
+                label="Hero Image (upload / replace)"
+                folder="hero"
+                category="Hero"
+                value={hero.image.src}
+                library={library}
+                onLibraryChange={onLibraryChange}
+                onChange={setHeroImage}
+              />
+              <AdminInput label="Image URL" value={hero.image.src} onChange={(e) => setHeroImage(e.target.value)} />
+              <AdminInput label="Alt Text" value={hero.image.alt} onChange={(e) => patchNested("image", { ...hero.image, alt: e.target.value })} />
+              <AdminInput label="Focal Position (e.g. center, center 40%)" value={hero.image.position} onChange={(e) => patchNested("image", { ...hero.image, position: e.target.value })} />
+            </Panel>
+          )}
 
-      {tab === "Features" && (
-        <Panel title="Feature Icon Row (below hero text)">
-          <label className="flex items-center gap-3 text-sm text-white/70">
-            <input
-              type="checkbox"
-              checked={hero.showFeatures !== false}
-              onChange={(e) => patch({ showFeatures: e.target.checked })}
-              className="accent-luxury-gold"
-            />
-            Show Feature Row
-          </label>
-          <p className="text-xs text-white/40">
-            Icons use lucide names, e.g. map-pin, badge-check, headphones, star, shield-check, clock, phone, wifi, award, sparkles.
-          </p>
-          {(hero.features ?? []).map((feature, index) => (
-            <div key={feature.id || index} className="space-y-3 rounded-lg border border-luxury-gold/10 bg-white/[0.02] p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-xs uppercase tracking-wider text-luxury-gold">Feature {index + 1}</p>
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-2 text-xs text-white/60">
-                    <input
-                      type="checkbox"
-                      checked={feature.enabled !== false}
-                      onChange={(e) => {
-                        const next = [...hero.features];
-                        next[index] = { ...feature, enabled: e.target.checked };
-                        patch({ features: next });
-                      }}
-                      className="accent-luxury-gold"
-                    />
-                    Visible
-                  </label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="border-red-400/30 text-red-300"
-                    onClick={() => patch({ features: hero.features.filter((_, i) => i !== index) })}
-                  >
-                    Remove
-                  </Button>
-                </div>
+          {(hero.mediaMode ?? "none") === "video" && (
+            <Panel title="Hero Video">
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="border-luxury-gold/20 text-luxury-gold"
+                  disabled={videoUploading}
+                  onClick={() => videoInputRef.current?.click()}
+                >
+                  {videoUploading ? (
+                    <>
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> Uploading…
+                    </>
+                  ) : (
+                    <>
+                      <UploadCloud className="mr-2 h-3.5 w-3.5" /> {hero.videoSrc ? "Replace Video" : "Upload Video"}
+                    </>
+                  )}
+                </Button>
+                <span className="text-xs text-white/40">MP4, WEBM or MOV — original quality preserved, size limited only by server storage.</span>
               </div>
-              <AdminInput
-                label="Icon (lucide name)"
-                value={feature.icon}
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+                className="hidden"
                 onChange={(e) => {
-                  const next = [...hero.features];
-                  next[index] = { ...feature, icon: e.target.value };
-                  patch({ features: next });
+                  const file = e.target.files?.[0];
+                  if (file) void handleVideoUpload(file);
+                  e.target.value = "";
                 }}
               />
-              <AdminInput
-                label="Title"
-                value={feature.title}
-                onChange={(e) => {
-                  const next = [...hero.features];
-                  next[index] = { ...feature, title: e.target.value };
-                  patch({ features: next });
-                }}
+              {videoError && <p className="text-xs text-red-300">{videoError}</p>}
+              <AdminInput label="Video URL (or paste external URL)" value={hero.videoSrc} onChange={(e) => setHeroVideo(e.target.value)} />
+              {hero.videoSrc ? (
+                <div className="overflow-hidden rounded-xl border border-luxury-gold/20 bg-black">
+                  <video
+                    key={hero.videoSrc}
+                    src={mediaUrl(hero.videoSrc, hero.videoSrc)}
+                    controls
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="max-h-64 w-full object-contain"
+                  />
+                </div>
+              ) : (
+                <p className="text-xs text-white/40">No video selected yet.</p>
+              )}
+              <ImagePicker
+                label="Poster Image (shown while video loads)"
+                folder="hero"
+                category="Hero"
+                value={hero.poster}
+                library={library}
+                onLibraryChange={onLibraryChange}
+                onChange={(url) => patch({ poster: url })}
               />
-              <AdminInput
-                label="Description"
-                value={feature.description}
-                onChange={(e) => {
-                  const next = [...hero.features];
-                  next[index] = { ...feature, description: e.target.value };
-                  patch({ features: next });
-                }}
-              />
-            </div>
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="border-luxury-gold/20 text-luxury-gold"
-            onClick={() => {
-              const item: HeroFeatureItem = {
-                id: `feature-${Date.now()}`,
-                icon: "star",
-                title: "NEW FEATURE",
-                description: "Description",
-                enabled: true,
-              };
-              patch({ features: [...(hero.features ?? []), item] });
-            }}
-          >
-            + Add Feature
-          </Button>
-        </Panel>
-      )}
+            </Panel>
+          )}
 
-      {tab === "Logo" && (
-        <Panel title="Hero Logo">
-          <label className="flex items-center gap-3 text-sm text-white/70">
-            <input type="checkbox" checked={hero.logo.visible} onChange={(e) => patchNested("logo", { ...hero.logo, visible: e.target.checked })} className="accent-luxury-gold" />
-            Show Logo
-          </label>
-          <AdminInput label="Logo URL" value={hero.logo.src} onChange={(e) => patchNested("logo", { ...hero.logo, src: e.target.value })} />
-          <ImagePicker
-            label="Hero Logo"
-            folder="logo"
-            category="General"
-            value={hero.logo.src}
-            library={library}
-            onLibraryChange={onLibraryChange}
-            onChange={(url) => patchNested("logo", { ...hero.logo, src: url })}
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <Slider label="Width (px)" value={hero.logo.width} min={60} max={200} onChange={(v) => patchNested("logo", { ...hero.logo, width: v })} />
-            <Slider label="Opacity" value={Math.round(hero.logo.opacity * 100)} min={0} max={100} onChange={(v) => patchNested("logo", { ...hero.logo, opacity: v / 100 })} />
-            <Slider label="Rotation" value={hero.logo.rotation} min={-45} max={45} onChange={(v) => patchNested("logo", { ...hero.logo, rotation: v })} />
-          </div>
-          <AdminInput label="Glow (CSS shadow)" value={hero.logo.glow} onChange={(e) => patchNested("logo", { ...hero.logo, glow: e.target.value })} />
-        </Panel>
-      )}
-
-      {tab === "Buttons" && (
-        <>
-          <Panel title="CTA Button (Explore Hotel)">
-            <AdminInput label="Text" value={hero.primaryButton.text} onChange={(e) => patchNested("primaryButton", { ...hero.primaryButton, text: e.target.value })} />
-            <AdminInput label="URL" value={hero.primaryButton.href} onChange={(e) => patchNested("primaryButton", { ...hero.primaryButton, href: e.target.value })} />
-            <AdminInput label="Background Color" value={hero.primaryButton.backgroundColor} onChange={(e) => patchNested("primaryButton", { ...hero.primaryButton, backgroundColor: e.target.value })} />
-            <AdminInput label="Border Radius" value={hero.primaryButton.borderRadius} onChange={(e) => patchNested("primaryButton", { ...hero.primaryButton, borderRadius: e.target.value })} />
-            <label className="flex items-center gap-3 text-sm text-white/70">
-              <input type="checkbox" checked={hero.primaryButton.visible} onChange={(e) => patchNested("primaryButton", { ...hero.primaryButton, visible: e.target.checked })} className="accent-luxury-gold" />
-              Visible
-            </label>
-          </Panel>
-          <Panel title="Explore Rooms Button (Secondary)">
-            <AdminInput label="Text" value={hero.secondaryButton.text} onChange={(e) => patchNested("secondaryButton", { ...hero.secondaryButton, text: e.target.value })} />
-            <AdminInput label="URL" value={hero.secondaryButton.href} onChange={(e) => patchNested("secondaryButton", { ...hero.secondaryButton, href: e.target.value })} />
-            <AdminInput label="Border Color" value={hero.secondaryButton.borderColor} onChange={(e) => patchNested("secondaryButton", { ...hero.secondaryButton, borderColor: e.target.value })} />
-            <label className="flex items-center gap-3 text-sm text-white/70">
-              <input type="checkbox" checked={hero.secondaryButton.visible} onChange={(e) => patchNested("secondaryButton", { ...hero.secondaryButton, visible: e.target.checked })} className="accent-luxury-gold" />
-              Visible
-            </label>
-          </Panel>
+          {(hero.mediaMode ?? "none") !== "none" && (
+            <Panel title="Overlay">
+              <Slider
+                label="Overlay Opacity (booking bar legibility)"
+                value={Math.round((hero.overlayOpacity ?? 0.35) * 100)}
+                min={0}
+                max={85}
+                onChange={(v) => patch({ overlayOpacity: v / 100 })}
+              />
+              <AdminInput label="Overlay Color" value={hero.overlayColor} onChange={(e) => patch({ overlayColor: e.target.value })} />
+            </Panel>
+          )}
         </>
       )}
 
@@ -510,56 +532,6 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
             ))}
           </Panel>
         </>
-      )}
-
-      {tab === "Effects" && (
-        <>
-          <Panel title="Background Effects">
-            {(["goldenGlow", "creamGlow", "orangeGlow", "greenGlow", "lightRays", "fog", "floatingLeaves", "floatingShapes", "particles"] as const).map((key) => (
-              <label key={key} className="flex items-center gap-3 text-sm capitalize text-white/70">
-                <input
-                  type="checkbox"
-                  checked={hero.effects[key]}
-                  onChange={(e) => patchNested("effects", { ...hero.effects, [key]: e.target.checked })}
-                  className="accent-luxury-gold"
-                />
-                {key.replace(/([A-Z])/g, " $1")}
-              </label>
-            ))}
-            <AdminInput label="Background Gradient" value={hero.effects.gradient} onChange={(e) => patchNested("effects", { ...hero.effects, gradient: e.target.value })} />
-          </Panel>
-          <Panel title="Floating Elements">
-            <Slider label="Shape Count" value={hero.floating.shapeCount} min={0} max={12} onChange={(v) => patchNested("floating", { ...hero.floating, shapeCount: v })} />
-            <Slider label="Opacity" value={Math.round(hero.floating.opacity * 100)} min={0} max={100} onChange={(v) => patchNested("floating", { ...hero.floating, opacity: v / 100 })} />
-            <Slider label="Speed" value={hero.floating.speed} min={5} max={40} onChange={(v) => patchNested("floating", { ...hero.floating, speed: v })} />
-          </Panel>
-          <Panel title="Animations">
-            <label className="flex items-center gap-3 text-sm text-white/70">
-              <input type="checkbox" checked={hero.animations.mouseParallax} onChange={(e) => patchNested("animations", { ...hero.animations, mouseParallax: e.target.checked })} className="accent-luxury-gold" />
-              Mouse Parallax
-            </label>
-            <label className="flex items-center gap-3 text-sm text-white/70">
-              <input type="checkbox" checked={hero.animations.scrollReveal} onChange={(e) => patchNested("animations", { ...hero.animations, scrollReveal: e.target.checked })} className="accent-luxury-gold" />
-              Scroll Reveal
-            </label>
-            <Slider label="Transition Duration (s)" value={hero.animations.transitionDuration} min={0.3} max={2} step={0.1} onChange={(v) => patchNested("animations", { ...hero.animations, transitionDuration: v })} />
-          </Panel>
-        </>
-      )}
-
-      {tab === "Colors" && (
-        <Panel title="Hero Color Palette">
-          <div className="grid grid-cols-2 gap-4">
-            {Object.entries(hero.colors).map(([key, value]) => (
-              <AdminInput
-                key={key}
-                label={key.replace(/([A-Z])/g, " $1")}
-                value={value}
-                onChange={(e) => patchNested("colors", { ...hero.colors, [key]: e.target.value })}
-              />
-            ))}
-          </div>
-        </Panel>
       )}
 
       {tab === "SEO" && (
