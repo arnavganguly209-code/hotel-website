@@ -492,7 +492,10 @@ function mergeHero(
 
   // The rebuilt hero has no "none" state: legacy clean-background records move
   // to the bundled demo video until an administrator publishes image/video media.
-  const legacyMedia = !partial.mediaMode || partial.mediaMode === "none";
+  const legacyMedia =
+    partial.videoAutoplay === undefined ||
+    !partial.mediaMode ||
+    partial.mediaMode === "none";
 
   return {
     ...defaults,
