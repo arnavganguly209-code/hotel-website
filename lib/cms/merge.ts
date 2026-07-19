@@ -465,6 +465,18 @@ function mergeHero(
     }
   }
 
+  // The first hero redesign shipped 3.5rem / 1.12 heading defaults which sites
+  // saved untouched from Orbit; normalize those exact values to the refined
+  // typography. Admin-customized sizes are left as-is.
+  if (partial.titleStyle?.desktopFontSize === "3.5rem" && partial.titleStyle?.lineHeight === "1.12") {
+    const { titleStyle: _staleTitle, ...rest } = partial;
+    partial = rest;
+  }
+  if (partial.subtitleStyle?.desktopFontSize === "3.5rem" && partial.subtitleStyle?.lineHeight === "1.12") {
+    const { subtitleStyle: _staleSubtitle, ...rest } = partial;
+    partial = rest;
+  }
+
   return {
     ...defaults,
     ...partial,

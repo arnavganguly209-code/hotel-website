@@ -91,7 +91,7 @@ function FeatureItem({
       </div>
       {divider ? (
         <span
-          className="ml-2 hidden h-9 w-px shrink-0 lg:block"
+          className="ml-4 hidden h-9 w-px shrink-0 lg:block lg:ml-6"
           style={{ background: "rgba(201,164,76,0.35)" }}
           aria-hidden
         />
@@ -107,7 +107,7 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
     target: sectionRef,
     offset: ["start start", "end start"],
   });
-  const parallaxY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const parallaxY = useTransform(scrollYProgress, [0, 1], ["0%", "4%"]);
 
   const videoSrc = hero.videoSrc;
   const imageSrc = hero.image?.src || hero.imageSrc;
@@ -123,14 +123,15 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
     <section
       id="hero"
       ref={sectionRef}
-      className="relative isolate flex min-h-[100svh] w-full flex-col overflow-hidden bg-[#12271C]"
+      className="relative isolate flex min-h-[100svh] w-full flex-col overflow-hidden bg-[#12271C] lg:h-[min(100svh,820px)] lg:min-h-[720px]"
     >
-      {/* ---- Background: full-bleed image (or video) with parallax + fade ---- */}
+      {/* ---- Background: full-bleed image (or video), vertical-only overscan for
+           parallax so the building is never zoom-cropped horizontally ---- */}
       <motion.div
-        className="absolute inset-0 -z-10"
-        style={enableParallax ? { y: parallaxY, scale: 1.12 } : undefined}
-        initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: enableParallax ? 1.16 : 1.04 }}
-        animate={{ opacity: 1, scale: enableParallax ? 1.12 : 1 }}
+        className="absolute inset-x-0 -top-[4%] -z-10 h-[108%]"
+        style={enableParallax ? { y: parallaxY } : undefined}
+        initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 1.04 }}
+        animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.6, ease: luxuryEase }}
       >
         {videoSrc ? (
@@ -164,8 +165,8 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
       <div
         className="pointer-events-none absolute inset-0 -z-[5]"
         style={{
-          background: `linear-gradient(90deg, ${overlayColor}E6 0%, ${overlayColor}66 42%, ${overlayColor}26 72%, ${overlayColor}1A 100%)`,
-          opacity: overlayOpacity + 0.18,
+          background: `linear-gradient(90deg, ${overlayColor}CC 0%, ${overlayColor}59 45%, ${overlayColor}21 72%, ${overlayColor}14 100%)`,
+          opacity: overlayOpacity + 0.15,
         }}
         aria-hidden
       />
@@ -179,8 +180,8 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
 
       {/* ---- Hero content (left) ---- */}
       <div className="relative z-10 flex flex-1 items-center">
-        <div className="w-full px-5 pb-6 pt-24 sm:px-8 lg:px-14 lg:pt-28 xl:px-20">
-          <div className="max-w-3xl">
+        <div className="w-full px-5 pb-8 pt-28 sm:px-8 lg:px-14 lg:pt-36 xl:px-20">
+          <div className="max-w-[54rem]">
             {hero.welcomeText ? (
               <motion.p
                 {...fadeUp(0.15, reducedMotion)}
@@ -196,19 +197,19 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
 
             <motion.h1
               {...fadeUp(0.3, reducedMotion)}
-              className="mt-4 font-display uppercase"
-              style={{ lineHeight: hero.titleStyle?.lineHeight || "1.12" }}
+              className="mt-5 font-display uppercase"
+              style={{ lineHeight: hero.titleStyle?.lineHeight || "1.2" }}
             >
               {hero.title ? (
                 <span
                   className="block"
                   style={{
                     color: hero.titleStyle?.color || "#FFFFFF",
-                    letterSpacing: hero.titleStyle?.letterSpacing || "0.06em",
+                    letterSpacing: hero.titleStyle?.letterSpacing || "0.05em",
                     fontSize: clampFont(
-                      hero.titleStyle?.mobileFontSize || "2rem",
-                      hero.titleStyle?.desktopFontSize || "3.5rem",
-                      "5vw"
+                      hero.titleStyle?.mobileFontSize || "1.875rem",
+                      hero.titleStyle?.desktopFontSize || "2.75rem",
+                      "3.4vw"
                     ),
                     fontWeight: hero.titleStyle?.fontWeight || 500,
                     textShadow: "0 2px 30px rgba(0,0,0,0.35)",
@@ -222,11 +223,11 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
                   className="block"
                   style={{
                     color: hero.subtitleStyle?.color || "#D9B45C",
-                    letterSpacing: hero.subtitleStyle?.letterSpacing || "0.06em",
+                    letterSpacing: hero.subtitleStyle?.letterSpacing || "0.05em",
                     fontSize: clampFont(
-                      hero.subtitleStyle?.mobileFontSize || "2rem",
-                      hero.subtitleStyle?.desktopFontSize || "3.5rem",
-                      "5vw"
+                      hero.subtitleStyle?.mobileFontSize || "1.875rem",
+                      hero.subtitleStyle?.desktopFontSize || "2.75rem",
+                      "3.4vw"
                     ),
                     fontWeight: hero.subtitleStyle?.fontWeight || 500,
                     textShadow: "0 2px 30px rgba(0,0,0,0.35)",
@@ -283,9 +284,9 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
       {showFeatures ? (
         <motion.div
           {...fadeUp(0.7, reducedMotion)}
-          className="relative z-10 w-full px-5 pb-5 sm:px-8 lg:px-14 xl:px-20"
+          className="relative z-10 w-full px-5 pb-8 sm:px-8 lg:px-14 lg:pb-9 xl:px-20"
         >
-          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-8 lg:gap-x-10">
+          <div className="flex flex-col gap-5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-10 lg:gap-x-16">
             {features.map((feature, i) => (
               <FeatureItem key={feature.id || i} feature={feature} divider={i < features.length - 1} />
             ))}
