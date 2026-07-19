@@ -43,6 +43,8 @@ model Booking {
   name            String
   email           String
   phone           String    @default("")
+  whatsapp        String    @default("")
+  countryCode     String    @default("")
   country         String    @default("")
   checkIn         DateTime
   checkOut        DateTime
@@ -53,7 +55,12 @@ model Booking {
   roomName        String    @default("")
   breakfast       String    @default("room-only")
   specialRequests String    @default("")
+  promoCode       String    @default("")
+  arrivalTime     String    @default("")
+  flightNumber    String    @default("")
+  notes           String    @default("")
   paymentMethod   String    @default("hotel")
+  cardLast4       String    @default("")
   totalAmount     Int       @default(0)
   nights          Int       @default(1)
   status          String    @default("pending")

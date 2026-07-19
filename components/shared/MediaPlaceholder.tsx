@@ -14,6 +14,7 @@ interface MediaPlaceholderProps {
   className?: string;
   priority?: boolean;
   hoverScale?: boolean;
+  fadeIn?: boolean;
 }
 
 const variantGradients = {
@@ -42,6 +43,7 @@ export function MediaPlaceholder({
   className,
   priority = false,
   hoverScale = true,
+  fadeIn,
 }: MediaPlaceholderProps) {
   const [error, setError] = useState(false);
   const showImage = src && !error;
@@ -65,6 +67,7 @@ export function MediaPlaceholder({
             alt={alt}
             fill
             priority={priority}
+            fadeIn={fadeIn}
             className="object-cover"
             onError={() => setError(true)}
           />

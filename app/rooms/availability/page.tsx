@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getContent } from "@/lib/cms/store";
-import { InnerPageHero } from "@/components/shared/InnerPageHero";
-import { RoomAvailabilityPage } from "@/sections/pages/RoomAvailabilityPage";
-import { bookingSearchFromParams } from "@/lib/booking/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -19,21 +17,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function AvailabilityRoute({ searchParams }: AvailabilityRouteProps) {
-  const content = await getContent();
   const params = await searchParams;
-  const search = bookingSearchFromParams(params);
-
-  return (
-    <>
-      <InnerPageHero
-        title="Select Your Room"
-        subtitle="Reservations"
-        description="Discover our collection of refined accommodations, curated for an exceptional stay in Kathmandu."
-        imageSrc={content.rooms[0]?.imageSrc ?? "/media/rooms/super-deluxe.jpg"}
-        overlay="gold"
-        height="medium"
-      />
-      <RoomAvailabilityPage rooms={content.rooms} search={search} />
-    </>
-  );
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (Array.isArray(value)) value.forEach((item) => query.append(key, item));
+    else if (value) query.set(key, value);
+  }
+  redirect(`/rooms${query.size ? `?${query.toString()}` : ""}`);
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2, Minus, Plus, X } from "lucide-react";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { cn } from "@/lib/utils";
 import { luxuryEase } from "@/lib/animations";
@@ -15,12 +15,31 @@ interface LuxuryRoomGalleryProps {
 
 export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryProps) {
   const [active, setActive] = useState(0);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [zoom, setZoom] = useState(1);
   const touchStart = useRef<number | null>(null);
   const gallery = images.length ? images : ["/media/rooms/super-deluxe.jpg"];
 
-  const go = (dir: -1 | 1) => {
+  const go = useCallback((dir: -1 | 1) => {
     setActive((i) => (i + dir + gallery.length) % gallery.length);
-  };
+    setZoom(1);
+  }, [gallery.length]);
+
+  useEffect(() => {
+    if (!fullscreen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setFullscreen(false);
+      if (event.key === "ArrowLeft") go(-1);
+      if (event.key === "ArrowRight") go(1);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [fullscreen, go]);
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -50,6 +69,7 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
               alt={alt}
               fill
               priority={active === 0}
+              fadeIn={false}
               className="object-cover"
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-luxury-green-dark/35 via-transparent to-transparent" />
@@ -90,6 +110,14 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
             </div>
           </>
         ) : null}
+        <button
+          type="button"
+          aria-label="Open fullscreen gallery"
+          onClick={() => setFullscreen(true)}
+          className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-luxury-green-dark/55 text-white backdrop-blur-md transition hover:bg-luxury-gold"
+        >
+          <Maximize2 className="h-4 w-4" />
+        </button>
       </div>
 
       {gallery.length > 1 ? (
@@ -104,11 +132,56 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
                 i === active ? "border-luxury-gold shadow-luxury-gold" : "border-white/50 opacity-75 hover:opacity-100"
               )}
             >
-              <SafeImage src={src} alt="" fill className="object-cover" />
+              <SafeImage src={src} alt="" fill fadeIn={false} className="object-cover" />
             </button>
           ))}
         </div>
       ) : null}
+
+      <AnimatePresence>
+        {fullscreen ? (
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${alt} fullscreen gallery`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex touch-none items-center justify-center bg-[#07120d]/96 p-3 sm:p-8"
+            onTouchStart={(e) => {
+              touchStart.current = e.touches[0].clientX;
+            }}
+            onTouchEnd={(e) => {
+              if (touchStart.current === null || zoom > 1) return;
+              const diff = e.changedTouches[0].clientX - touchStart.current;
+              if (Math.abs(diff) > 48) go(diff > 0 ? -1 : 1);
+              touchStart.current = null;
+            }}
+          >
+            <div className="absolute right-3 top-3 z-20 flex gap-2 sm:right-6 sm:top-6">
+              <button type="button" aria-label="Zoom out" onClick={() => setZoom((value) => Math.max(1, value - 0.5))} className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/30 text-white backdrop-blur-md"><Minus className="h-5 w-5" /></button>
+              <button type="button" aria-label="Zoom in" onClick={() => setZoom((value) => Math.min(3, value + 0.5))} className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/30 text-white backdrop-blur-md"><Plus className="h-5 w-5" /></button>
+              <button type="button" aria-label="Close fullscreen gallery" onClick={() => setFullscreen(false)} className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/30 text-white backdrop-blur-md"><X className="h-5 w-5" /></button>
+            </div>
+
+            <button type="button" aria-label="Previous image" onClick={() => go(-1)} className="absolute left-3 z-20 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/30 text-white sm:left-6"><ChevronLeft /></button>
+            <div className="relative h-[78vh] w-[88vw] overflow-auto">
+              <SafeImage
+                src={gallery[active]}
+                alt={`${alt} — image ${active + 1} of ${gallery.length}`}
+                fill
+                priority
+                fadeIn={false}
+                objectFit="contain"
+                className="transition-transform duration-300"
+                style={{ transform: `scale(${zoom})` }}
+              />
+            </div>
+            <button type="button" aria-label="Next image" onClick={() => go(1)} className="absolute right-3 z-20 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/30 text-white sm:right-6"><ChevronRight /></button>
+            <p className="absolute bottom-4 text-xs uppercase tracking-[0.2em] text-white/65">{active + 1} / {gallery.length}</p>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

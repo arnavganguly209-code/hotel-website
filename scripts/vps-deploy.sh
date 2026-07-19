@@ -60,6 +60,9 @@ else
   npm install
 fi
 
+echo "Applying idempotent rooms booking schema update"
+npx prisma db execute --file prisma/migrations/20260719230000_rooms_booking_flow/migration.sql
+
 if [ -d .next ]; then
   echo "Backing up previous build → .next.prev"
   rm -rf .next.prev

@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
 import { isDatabaseAvailable, db } from "@/lib/db";
+import { getContent } from "@/lib/cms/store";
+import {
+  bookingDatesAreValid,
+  calculateBookingTotal,
+  calculateNights,
+  roomPublicSlug,
+} from "@/lib/booking/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +23,8 @@ export async function POST(req: Request) {
       name: string;
       email: string;
       phone?: string;
+      whatsapp?: string;
+      countryCode?: string;
       country?: string;
       checkIn: string;
       checkOut: string;
@@ -29,30 +38,75 @@ export async function POST(req: Request) {
       paymentMethod?: string;
       totalAmount?: number;
       nights?: number;
+      promoCode?: string;
+      arrivalTime?: string;
+      flightNumber?: string;
+      notes?: string;
+      cardLast4?: string;
     };
 
-    if (!body.name || !body.email || !body.checkIn || !body.checkOut || !body.roomSlug) {
+    if (
+      !body.name?.trim() ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email || "") ||
+      !body.phone?.trim() ||
+      !body.country?.trim() ||
+      !body.roomSlug ||
+      !bookingDatesAreValid(body.checkIn, body.checkOut)
+    ) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
     }
+
+    const content = await getContent();
+    const room = content.rooms.find(
+      (candidate) =>
+        candidate.id === body.roomSlug ||
+        roomPublicSlug(candidate) === body.roomSlug
+    );
+    if (!room || room.available === false) {
+      return NextResponse.json({ success: false, error: "This room is not available." }, { status: 400 });
+    }
+
+    const guests = Math.max(1, Math.min(8, Number(body.guests) || 1));
+    const children = Math.max(0, Math.min(6, Number(body.children) || 0));
+    const roomQuantity = Math.max(1, Math.min(4, Number(body.roomQuantity) || 1));
+    const maxGuests = room.maxGuests ?? 2;
+    if (guests + children > maxGuests * roomQuantity) {
+      return NextResponse.json({ success: false, error: "Guest count exceeds room capacity." }, { status: 400 });
+    }
+    const breakfast = body.breakfast === "room-only" ? "room-only" : "with-breakfast";
+    const nights = calculateNights(body.checkIn, body.checkOut);
+    const totalAmount = calculateBookingTotal({
+      room,
+      nights,
+      roomQuantity,
+      breakfast,
+    });
 
     const booking = await db.booking.create({
       data: {
         name: body.name,
         email: body.email,
         phone: body.phone ?? "",
+        whatsapp: body.whatsapp ?? "",
+        countryCode: body.countryCode ?? "",
         country: body.country ?? "",
         checkIn: new Date(body.checkIn),
         checkOut: new Date(body.checkOut),
-        guests: Number(body.guests) || 1,
-        children: Number(body.children) || 0,
-        roomQuantity: Number(body.roomQuantity) || 1,
-        roomSlug: body.roomSlug,
-        roomName: body.roomName,
-        breakfast: body.breakfast ?? "room-only",
+        guests,
+        children,
+        roomQuantity,
+        roomSlug: roomPublicSlug(room),
+        roomName: room.name,
+        breakfast,
         specialRequests: body.specialRequests ?? "",
+        promoCode: body.promoCode ?? "",
+        arrivalTime: body.arrivalTime ?? "",
+        flightNumber: body.flightNumber ?? "",
+        notes: body.notes ?? "",
         paymentMethod: body.paymentMethod ?? "hotel",
-        totalAmount: Number(body.totalAmount) || 0,
-        nights: Number(body.nights) || 1,
+        cardLast4: /^\d{4}$/.test(body.cardLast4 || "") ? body.cardLast4! : "",
+        totalAmount,
+        nights,
         status: "pending",
         paymentStatus: body.paymentMethod === "online" ? "awaiting_payment" : "pay_at_hotel",
         transactionId: null,

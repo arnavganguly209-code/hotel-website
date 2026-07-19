@@ -2836,6 +2836,17 @@ export const defaultContent: SiteContent = {
       title: "Rooms & Suites | Hotel Thamel Park",
       description: "Luxury accommodations in Thamel — Super Deluxe, Family Room, and more.",
     },
+    hero: {
+      imageSrc: "/media/rooms/super-deluxe.jpg",
+      imageAlt: "Luxury guest room at Hotel Thamel Park",
+      eyebrow: "Rooms & Suites",
+      title: "Refined Stays in the Heart of Thamel",
+      description:
+        "Thoughtfully designed rooms, warm Nepali hospitality, and contemporary comfort for every journey.",
+      breadcrumbHome: "Home",
+      breadcrumbCurrent: "Rooms",
+      overlayOpacity: 0.42,
+    },
   },
   contactPage: {
     hero: {

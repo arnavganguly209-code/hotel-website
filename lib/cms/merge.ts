@@ -64,6 +64,41 @@ function definedArray<T>(value: T[] | undefined, fallback: T[]): T[] {
   return value !== undefined ? value : fallback;
 }
 
+function existingMediaOrFallback(src: string | undefined, fallback: string): string {
+  const value = src?.trim();
+  if (!value) return fallback;
+  if (!value.includes("/uploads/")) return value;
+  const absolute = resolveLocalUploadPath(value);
+  return absolute && existsSync(absolute) ? value : fallback;
+}
+
+function normalizeRoomMedia(
+  room: SiteContent["rooms"][number],
+  defaults: SiteContent["rooms"][number]
+): SiteContent["rooms"][number] {
+  const imageSrc = existingMediaOrFallback(room.imageSrc, defaults.imageSrc);
+  const gallery = (room.gallery || [])
+    .map((src, index) =>
+      existingMediaOrFallback(
+        src,
+        defaults.gallery?.[index] || defaults.imageSrc
+      )
+    )
+    .filter(Boolean);
+  return {
+    ...room,
+    imageSrc,
+    gallery: gallery.length ? Array.from(new Set(gallery)) : [imageSrc],
+    seo: room.seo
+      ? {
+          ...room.seo,
+          ogImage: existingMediaOrFallback(room.seo.ogImage, imageSrc),
+          twitterImage: existingMediaOrFallback(room.seo.twitterImage, imageSrc),
+        }
+      : room.seo,
+  };
+}
+
 function mergePaymentLogos(
   partial?: SiteContent["footer"]["paymentLogos"]
 ): SiteContent["footer"]["paymentLogos"] {
@@ -216,9 +251,15 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
         order: typeof f.order === "number" ? f.order : (base.order ?? i),
       };
     }),
-    rooms: definedArray(partial.rooms, defaultContent.rooms).map((room, i) =>
-      enrichRoom(defaultContent.rooms[i] ?? defaultContent.rooms[0], room)
-    ),
+    rooms: definedArray(partial.rooms, defaultContent.rooms).map((room) => {
+      const base =
+        defaultContent.rooms.find(
+          (candidate) =>
+            candidate.id === room.id ||
+            candidate.slug === room.slug
+        ) ?? defaultContent.rooms[0];
+      return normalizeRoomMedia(enrichRoom(base, room), base);
+    }),
     roomBooking: { ...defaultContent.roomBooking, ...(partial.roomBooking ?? {}) },
     diningPage: mergeDiningPage(defaultContent.diningPage, partial.diningPage),
     spaPage: mergeSpaPage(defaultContent.spaPage, partial.spaPage),
@@ -386,7 +427,22 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       }
       return merged;
     })(),
-    roomsPage: { ...defaultContent.roomsPage, ...(partial.roomsPage ?? {}) },
+    roomsPage: {
+      ...defaultContent.roomsPage,
+      ...(partial.roomsPage ?? {}),
+      seo: {
+        ...defaultContent.roomsPage.seo,
+        ...(partial.roomsPage?.seo ?? {}),
+      },
+      hero: {
+        ...defaultContent.roomsPage.hero,
+        ...(partial.roomsPage?.hero ?? {}),
+        imageSrc: existingMediaOrFallback(
+          partial.roomsPage?.hero?.imageSrc,
+          defaultContent.roomsPage.hero.imageSrc
+        ),
+      },
+    },
     contactPage: mergeContactPage(partial.contactPage),
     contact: { ...defaultContent.contact, ...(partial.contact ?? {}) },
     seo: { ...defaultContent.seo, ...partial.seo },

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getContent } from "@/lib/cms/store";
 import { InnerPageHero } from "@/components/shared/InnerPageHero";
 import { LuxuryBookingCheckout } from "@/components/booking/LuxuryBookingCheckout";
-import { bookingSearchFromParams } from "@/lib/booking/utils";
+import { bookingSearchFromParams, roomPublicSlug } from "@/lib/booking/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,7 @@ export default async function BookRoute({ searchParams }: BookRouteProps) {
   const content = await getContent();
   const params = await searchParams;
   const slug = Array.isArray(params.room) ? params.room[0] : params.room;
-  const room = content.rooms.find((r) => r.id === slug);
+  const room = content.rooms.find((r) => r.id === slug || roomPublicSlug(r) === slug);
   if (!room) notFound();
 
   const search = bookingSearchFromParams(params);

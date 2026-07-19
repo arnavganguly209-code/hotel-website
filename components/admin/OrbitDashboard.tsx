@@ -2571,6 +2571,26 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
             {activeSection === "rooms" && (
               <>
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Rooms Page Cover</p>
+                  <ImagePicker
+                    label="Rooms Cover Image"
+                    folder="rooms"
+                    category="Rooms"
+                    value={content.roomsPage.hero.imageSrc}
+                    library={content.mediaLibrary}
+                    onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                    onChange={(imageSrc) => update("roomsPage", {
+                      ...content.roomsPage,
+                      hero: { ...content.roomsPage.hero, imageSrc },
+                    })}
+                  />
+                  <AdminInput label="Cover Alt Text" value={content.roomsPage.hero.imageAlt} onChange={(e) => update("roomsPage", { ...content.roomsPage, hero: { ...content.roomsPage.hero, imageAlt: e.target.value } })} />
+                  <AdminInput label="Cover Eyebrow" value={content.roomsPage.hero.eyebrow} onChange={(e) => update("roomsPage", { ...content.roomsPage, hero: { ...content.roomsPage.hero, eyebrow: e.target.value } })} />
+                  <AdminInput label="Cover Title" value={content.roomsPage.hero.title} onChange={(e) => update("roomsPage", { ...content.roomsPage, hero: { ...content.roomsPage.hero, title: e.target.value } })} />
+                  <AdminTextarea label="Cover Description" rows={2} value={content.roomsPage.hero.description} onChange={(e) => update("roomsPage", { ...content.roomsPage, hero: { ...content.roomsPage.hero, description: e.target.value } })} />
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
                   <p className="font-display text-lg text-luxury-gold">Rooms Section</p>
                   <p className="text-xs text-white/40">
                     Homepage Accommodations section (below Cultural Experience). Card structure stays; atmosphere is editable.
@@ -2655,7 +2675,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       visible: true,
                       order: content.rooms.length,
                       exploreText: "Explore Room",
-                      breakfastPrice: 15,
+                      breakfastPrice: 5,
                     }])}
                   >
                     <Plus className="h-4 w-4" /> Add Room
@@ -2686,9 +2706,14 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                         rooms[i] = { ...room, price: Number(e.target.value) };
                         update("rooms", rooms);
                       }} />
-                      <AdminInput label="Breakfast add-on ($)" type="number" value={room.breakfastPrice ?? 15} onChange={(e) => {
+                      <AdminInput label="Without Breakfast Discount ($)" type="number" value={room.breakfastPrice ?? 5} onChange={(e) => {
                         const rooms = [...content.rooms];
                         rooms[i] = { ...room, breakfastPrice: Number(e.target.value) };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="SEO Slug" value={room.slug || room.id} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, slug: e.target.value.toLowerCase().trim().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") };
                         update("rooms", rooms);
                       }} />
                       <AdminInput label="Guests label" value={room.guests} onChange={(e) => {
@@ -2709,6 +2734,11 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       <AdminInput label="Bed Type" value={room.bedType} onChange={(e) => {
                         const rooms = [...content.rooms];
                         rooms[i] = { ...room, bedType: e.target.value };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Cancellation Badge" value={room.cancellationLabel || "Flexible cancellation"} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, cancellationLabel: e.target.value };
                         update("rooms", rooms);
                       }} />
                       <AdminInput label="Display Order" type="number" value={room.order ?? i} onChange={(e) => {
@@ -2824,6 +2854,66 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       rooms[i] = { ...room, policies: e.target.value.split("\n").map((f) => f.trim()).filter(Boolean) };
                       update("rooms", rooms);
                     }} />
+                    <AdminTextarea label="Facilities (one per line)" rows={4} value={(room.facilities || []).join("\n")} onChange={(e) => {
+                      const rooms = [...content.rooms];
+                      rooms[i] = { ...room, facilities: e.target.value.split("\n").map((f) => f.trim()).filter(Boolean) };
+                      update("rooms", rooms);
+                    }} />
+                    <AdminTextarea label="Services (one per line)" rows={4} value={(room.services || []).join("\n")} onChange={(e) => {
+                      const rooms = [...content.rooms];
+                      rooms[i] = { ...room, services: e.target.value.split("\n").map((f) => f.trim()).filter(Boolean) };
+                      update("rooms", rooms);
+                    }} />
+                    <AdminTextarea label="Nearby Attractions (one per line)" rows={4} value={(room.nearbyAttractions || []).join("\n")} onChange={(e) => {
+                      const rooms = [...content.rooms];
+                      rooms[i] = { ...room, nearbyAttractions: e.target.value.split("\n").map((f) => f.trim()).filter(Boolean) };
+                      update("rooms", rooms);
+                    }} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <AdminInput label="Check-in Time" value={room.checkInTime || "2:00 PM"} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, checkInTime: e.target.value };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Check-out Time" value={room.checkOutTime || "12:00 PM"} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, checkOutTime: e.target.value };
+                        update("rooms", rooms);
+                      }} />
+                    </div>
+                    <div className="space-y-4 border border-luxury-gold/10 p-4">
+                      <p className="text-sm font-medium text-luxury-gold">Room SEO</p>
+                      <AdminInput label="Meta Title" value={room.seo?.metaTitle || ""} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, seo: { metaTitle: e.target.value, metaDescription: room.seo?.metaDescription || "", canonical: room.seo?.canonical || "", ogImage: room.seo?.ogImage || room.imageSrc, twitterImage: room.seo?.twitterImage || room.imageSrc, altText: room.seo?.altText || room.name } };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminTextarea label="Meta Description" rows={2} value={room.seo?.metaDescription || ""} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, seo: { metaTitle: room.seo?.metaTitle || room.name, metaDescription: e.target.value, canonical: room.seo?.canonical || "", ogImage: room.seo?.ogImage || room.imageSrc, twitterImage: room.seo?.twitterImage || room.imageSrc, altText: room.seo?.altText || room.name } };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Canonical URL" value={room.seo?.canonical || ""} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, seo: { metaTitle: room.seo?.metaTitle || room.name, metaDescription: room.seo?.metaDescription || room.description, canonical: e.target.value, ogImage: room.seo?.ogImage || room.imageSrc, twitterImage: room.seo?.twitterImage || room.imageSrc, altText: room.seo?.altText || room.name } };
+                        update("rooms", rooms);
+                      }} />
+                      <ImagePicker label="OpenGraph Image" folder="seo" category="SEO" value={room.seo?.ogImage || room.imageSrc} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(ogImage) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, seo: { metaTitle: room.seo?.metaTitle || room.name, metaDescription: room.seo?.metaDescription || room.description, canonical: room.seo?.canonical || "", ogImage, twitterImage: room.seo?.twitterImage || room.imageSrc, altText: room.seo?.altText || room.name } };
+                        update("rooms", rooms);
+                      }} />
+                      <ImagePicker label="Twitter Card Image" folder="seo" category="SEO" value={room.seo?.twitterImage || room.imageSrc} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(twitterImage) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, seo: { metaTitle: room.seo?.metaTitle || room.name, metaDescription: room.seo?.metaDescription || room.description, canonical: room.seo?.canonical || "", ogImage: room.seo?.ogImage || room.imageSrc, twitterImage, altText: room.seo?.altText || room.name } };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Image Alt Text" value={room.seo?.altText || room.name} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, seo: { metaTitle: room.seo?.metaTitle || room.name, metaDescription: room.seo?.metaDescription || room.description, canonical: room.seo?.canonical || "", ogImage: room.seo?.ogImage || room.imageSrc, twitterImage: room.seo?.twitterImage || room.imageSrc, altText: e.target.value } };
+                        update("rooms", rooms);
+                      }} />
+                    </div>
                   </div>
                 ))}
                 <div className="space-y-3 border border-luxury-gold/10 p-4">

@@ -260,7 +260,10 @@ export async function verifyUploadsWritable(): Promise<{
 }
 
 /** Confirm a public /uploads URL is HTTP 200 (via SITE_URL or loopback). */
-export async function verifyUploadHttpReachable(publicUrl: string): Promise<{
+export async function verifyUploadHttpReachable(
+  publicUrl: string,
+  preferredBase?: string
+): Promise<{
   ok: boolean;
   status: number;
   detail: string;
@@ -277,6 +280,7 @@ export async function verifyUploadHttpReachable(publicUrl: string): Promise<{
   }
 
   const bases = [
+    (preferredBase || "").replace(/\/$/, ""),
     (process.env.SITE_URL || "").replace(/\/$/, ""),
     (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, ""),
     "http://127.0.0.1:3000",

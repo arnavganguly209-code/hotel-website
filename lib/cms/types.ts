@@ -476,6 +476,7 @@ export interface SiteContent {
   }>;
   rooms: Array<{
     id: string;
+    slug?: string;
     name: string;
     price: number;
     guests: string;
@@ -495,6 +496,20 @@ export interface SiteContent {
     order?: number;
     exploreText?: string;
     breakfastPrice?: number;
+    facilities?: string[];
+    services?: string[];
+    nearbyAttractions?: string[];
+    checkInTime?: string;
+    checkOutTime?: string;
+    cancellationLabel?: string;
+    seo?: {
+      metaTitle: string;
+      metaDescription: string;
+      canonical: string;
+      ogImage: string;
+      twitterImage: string;
+      altText: string;
+    };
   }>;
   roomBooking: {
     submitLabel: string;
@@ -1124,6 +1139,16 @@ export interface SiteContent {
   };
   roomsPage: {
     seo: PageSeo;
+    hero: {
+      imageSrc: string;
+      imageAlt: string;
+      eyebrow: string;
+      title: string;
+      description: string;
+      breadcrumbHome: string;
+      breadcrumbCurrent: string;
+      overlayOpacity: number;
+    };
   };
   contactPage: {
     hero: {

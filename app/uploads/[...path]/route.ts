@@ -51,6 +51,7 @@ async function resolveUploadFile(pathSegments: string[]) {
 }
 
 async function handle(
+  request: Request,
   context: { params: Promise<{ path: string[] }> },
   method: "GET" | "HEAD"
 ) {
@@ -72,32 +73,55 @@ async function handle(
     );
   }
 
+  const etag = `"${Math.trunc(file.mtimeMs).toString(36)}-${file.size.toString(36)}"`;
   const headers = new Headers({
     "Content-Type": contentTypeFor(file.absolutePath),
     "Content-Length": String(file.size),
-    "Cache-Control": "public, max-age=0, must-revalidate",
+    "Cache-Control": "public, max-age=31536000, immutable",
     "Last-Modified": new Date(file.mtimeMs).toUTCString(),
+    ETag: etag,
+    "Accept-Ranges": "bytes",
     "X-Content-Type-Options": "nosniff",
   });
+
+  if (request.headers.get("if-none-match") === etag) {
+    return new NextResponse(null, { status: 304, headers });
+  }
 
   if (method === "HEAD") {
     return new NextResponse(null, { status: 200, headers });
   }
 
   const buffer = await readFile(file.absolutePath);
+  const range = request.headers.get("range");
+  if (range) {
+    const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+    if (match) {
+      const start = match[1] ? Number(match[1]) : 0;
+      const end = match[2] ? Math.min(Number(match[2]), file.size - 1) : file.size - 1;
+      if (start <= end && start < file.size) {
+        const chunk = buffer.subarray(start, end + 1);
+        headers.set("Content-Length", String(chunk.length));
+        headers.set("Content-Range", `bytes ${start}-${end}/${file.size}`);
+        return new NextResponse(chunk, { status: 206, headers });
+      }
+    }
+    headers.set("Content-Range", `bytes */${file.size}`);
+    return new NextResponse(null, { status: 416, headers });
+  }
   return new NextResponse(buffer, { status: 200, headers });
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ path: string[] }> }
 ) {
-  return handle(context, "GET");
+  return handle(request, context, "GET");
 }
 
 export async function HEAD(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ path: string[] }> }
 ) {
-  return handle(context, "HEAD");
+  return handle(request, context, "HEAD");
 }

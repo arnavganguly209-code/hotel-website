@@ -20,6 +20,7 @@ interface SafeImageProps {
   style?: React.CSSProperties;
   /** Soft fade-in when image loads (default follows Orbit performance setting) */
   fadeIn?: boolean;
+  fallbackSrc?: string;
 }
 
 /**
@@ -40,26 +41,32 @@ export function SafeImage({
   onError,
   style,
   fadeIn,
+  fallbackSrc,
 }: SafeImageProps) {
   const perf = usePerformanceSettings();
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const resolved = mediaUrl(src, src);
+  const fallback = mediaUrl(fallbackSrc, fallbackSrc);
+  const [displaySrc, setDisplaySrc] = useState(resolved);
+  const [retryCount, setRetryCount] = useState(0);
   const enableFade = fadeIn ?? perf.imageFadeIn !== false;
   const lazy = perf.lazyLoadImages !== false;
 
   useEffect(() => {
     setFailed(false);
     setLoaded(false);
+    setRetryCount(0);
+    setDisplaySrc(resolved);
   }, [resolved]);
 
-  if (!resolved || failed) return null;
+  if (!displaySrc || failed) return null;
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      key={resolved}
-      src={resolved}
+      key={displaySrc}
+      src={displaySrc}
       alt={alt}
       width={fill ? undefined : width}
       height={fill ? undefined : height}
@@ -88,6 +95,16 @@ export function SafeImage({
       }}
       onLoad={() => setLoaded(true)}
       onError={() => {
+        if (retryCount === 0) {
+          setRetryCount(1);
+          setDisplaySrc(`${resolved}${resolved.includes("?") ? "&" : "?"}retry=${Date.now()}`);
+          return;
+        }
+        if (fallback && !displaySrc.startsWith(fallback)) {
+          setRetryCount(2);
+          setDisplaySrc(fallback);
+          return;
+        }
         setFailed(true);
         onError?.();
       }}

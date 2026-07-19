@@ -98,7 +98,10 @@ export async function POST(request: Request) {
 
     // HTTP reachability — must be 200 before we call this a success.
     // Next.js production 404s files written into public/ after boot; we serve via /uploads route.
-    const httpProbe = await verifyUploadHttpReachable(result.url);
+    const httpProbe = await verifyUploadHttpReachable(
+      result.url,
+      new URL(request.url).origin
+    );
     if (!httpProbe.ok) {
       console.error("[Upload] HTTP probe failed after disk write", {
         url: result.url,

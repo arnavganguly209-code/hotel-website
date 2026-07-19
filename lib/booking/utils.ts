@@ -16,6 +16,28 @@ export function calculateNights(checkIn: string, checkOut: string): number {
   return diff > 0 ? diff : 1;
 }
 
+export function bookingDatesAreValid(checkIn: string, checkOut: string): boolean {
+  if (!checkIn || !checkOut) return false;
+  const start = new Date(`${checkIn}T00:00:00`);
+  const end = new Date(`${checkOut}T00:00:00`);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return (
+    Number.isFinite(start.getTime()) &&
+    Number.isFinite(end.getTime()) &&
+    start >= today &&
+    end > start
+  );
+}
+
+export function roomPublicSlug(room: SiteContent["rooms"][number]): string {
+  return room.slug?.trim() || room.id;
+}
+
+export function roomOnlyNightlyPrice(room: SiteContent["rooms"][number]): number {
+  return Math.max(0, room.price - (room.breakfastPrice ?? 5));
+}
+
 export function calculateBookingTotal(options: {
   room: SiteContent["rooms"][number];
   nights: number;
@@ -23,10 +45,9 @@ export function calculateBookingTotal(options: {
   breakfast: "room-only" | "with-breakfast";
 }): number {
   const { room, nights, roomQuantity, breakfast } = options;
-  const base = room.price * nights * roomQuantity;
-  const breakfastExtra =
-    breakfast === "with-breakfast" ? (room.breakfastPrice ?? 15) * nights * roomQuantity : 0;
-  return base + breakfastExtra;
+  const nightly =
+    breakfast === "with-breakfast" ? room.price : roomOnlyNightlyPrice(room);
+  return nightly * nights * roomQuantity;
 }
 
 export function bookingSearchFromParams(
@@ -42,6 +63,7 @@ export function bookingSearchFromParams(
     guests: get("guests") || "2",
     children: get("children") || "0",
     rooms: get("rooms") || get("room") || "1",
+    breakfast: get("breakfast") === "room-only" ? "room-only" : "with-breakfast",
   };
 }
 
@@ -52,8 +74,9 @@ export function buildAvailabilityUrl(search: BookingSearchParams): string {
     guests: search.guests,
     children: search.children,
     rooms: search.rooms,
+    breakfast: search.breakfast || "with-breakfast",
   });
-  return `${routes.availability}?${params.toString()}`;
+  return `${routes.rooms}?${params.toString()}`;
 }
 
 export function buildRoomDetailUrl(slug: string, search: BookingSearchParams): string {
@@ -63,6 +86,7 @@ export function buildRoomDetailUrl(slug: string, search: BookingSearchParams): s
     guests: search.guests,
     children: search.children,
     rooms: search.rooms,
+    breakfast: search.breakfast || "with-breakfast",
   });
   return `${roomDetailPath(slug)}?${params.toString()}`;
 }
@@ -75,6 +99,7 @@ export function buildBookUrl(slug: string, search: BookingSearchParams): string 
     guests: search.guests,
     children: search.children,
     rooms: search.rooms,
+    breakfast: search.breakfast || "with-breakfast",
   });
   return `${routes.book}?${params.toString()}`;
 }
@@ -94,7 +119,11 @@ export function isRoomAvailableForSearch(
   search: BookingSearchParams
 ): boolean {
   if (room.available === false) return false;
-  const guestCount = Number(search.guests) || 1;
+  if ((search.checkIn || search.checkOut) && !bookingDatesAreValid(search.checkIn, search.checkOut)) {
+    return false;
+  }
+  const guestCount = (Number(search.guests) || 1) + (Number(search.children) || 0);
+  const roomCount = Math.max(1, Number(search.rooms) || 1);
   const maxGuests = room.maxGuests ?? parseMaxGuests(room.guests);
-  return guestCount <= maxGuests;
+  return guestCount <= maxGuests * roomCount;
 }

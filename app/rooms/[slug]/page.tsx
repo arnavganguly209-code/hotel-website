@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getContent } from "@/lib/cms/store";
-import { InnerPageHero } from "@/components/shared/InnerPageHero";
 import { RoomDetailPage } from "@/sections/pages/RoomDetailPage";
-import { bookingSearchFromParams } from "@/lib/booking/utils";
+import { bookingSearchFromParams, roomPublicSlug } from "@/lib/booking/utils";
 import { SITE_URL, generateHotelRoomSchema } from "@/lib/seo";
 import { buildBreadcrumbSchema } from "@/lib/seo/page-metadata";
 
@@ -19,13 +18,15 @@ interface RoomDetailRouteProps {
 export async function generateMetadata({ params }: RoomDetailRouteProps): Promise<Metadata> {
   const { slug } = await params;
   const content = await getContent();
-  const room = content.rooms.find((r) => r.id === slug);
+  const room = content.rooms.find((r) => r.id === slug || roomPublicSlug(r) === slug);
   if (!room) return { title: "Room Not Found" };
 
-  const title = `${room.name} | ${content.hotel.name}`;
-  const description = room.description;
-  const url = `${SITE_URL}/rooms/${room.id}`;
-  const image = room.imageSrc || content.seo.ogImage;
+  const title = room.seo?.metaTitle || `${room.name} | ${content.hotel.name}`;
+  const description = room.seo?.metaDescription || room.description;
+  const publicSlug = roomPublicSlug(room);
+  const canonical = room.seo?.canonical || `/rooms/${publicSlug}`;
+  const url = canonical.startsWith("http") ? canonical : `${SITE_URL}${canonical.startsWith("/") ? "" : "/"}${canonical}`;
+  const image = room.seo?.ogImage || room.imageSrc || content.seo.ogImage;
 
   return {
     title,
@@ -37,13 +38,13 @@ export async function generateMetadata({ params }: RoomDetailRouteProps): Promis
       url,
       siteName: content.hotel.name,
       type: "website",
-      images: image ? [{ url: image, width: 1200, height: 630, alt: room.name }] : undefined,
+      images: image ? [{ url: image, width: 1200, height: 630, alt: room.seo?.altText || room.name }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: image ? [image] : undefined,
+      images: room.seo?.twitterImage ? [room.seo.twitterImage] : image ? [image] : undefined,
     },
   };
 }
@@ -52,7 +53,7 @@ export default async function RoomDetailRoute({ params, searchParams }: RoomDeta
   const { slug } = await params;
   const query = await searchParams;
   const content = await getContent();
-  const room = content.rooms.find((r) => r.id === slug);
+  const room = content.rooms.find((r) => r.id === slug || roomPublicSlug(r) === slug);
   if (!room) notFound();
 
   const search = bookingSearchFromParams(query);
@@ -61,7 +62,7 @@ export default async function RoomDetailRoute({ params, searchParams }: RoomDeta
   const roomSchema = generateHotelRoomSchema({
     name: room.name,
     description: room.description,
-    slug: room.id,
+    slug: roomPublicSlug(room),
     image: room.imageSrc,
     price: room.price,
   });
@@ -69,7 +70,7 @@ export default async function RoomDetailRoute({ params, searchParams }: RoomDeta
   const breadcrumb = buildBreadcrumbSchema([
     { name: "Home", url: "/" },
     { name: "Rooms", url: "/rooms" },
-    { name: room.name, url: `/rooms/${room.id}` },
+    { name: room.name, url: `/rooms/${roomPublicSlug(room)}` },
   ]);
 
   return (
@@ -82,15 +83,12 @@ export default async function RoomDetailRoute({ params, searchParams }: RoomDeta
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
-      <InnerPageHero
-        title={room.name}
-        subtitle="Accommodations"
-        description={room.description}
-        imageSrc={room.imageSrc}
-        overlay="gold"
-        height="medium"
+      <RoomDetailPage
+        room={room}
+        search={hasSearch ? search : undefined}
+        suggestedRooms={content.rooms.filter((candidate) => candidate.id !== room.id)}
+        reviews={content.reviews}
       />
-      <RoomDetailPage room={room} booking={content.roomBooking} search={hasSearch ? search : undefined} />
     </>
   );
 }
