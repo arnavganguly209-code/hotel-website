@@ -121,7 +121,7 @@ export const defaultHeroBuilder: HeroBuilderSettings = {
     tabletSrc: "/media/hero/hero-background.png",
     desktopSrc: "/media/hero/hero-background.png",
     alt: "Hotel Thamel Park with Himalayan mountain views",
-    position: "center",
+    position: "center 42%",
     scale: 1,
     brightness: 100,
     contrast: 100,

@@ -477,6 +477,19 @@ function mergeHero(
     partial = rest;
   }
 
+  // Default "center" crop over-zooms the cinematic dusk photo on wide desktops —
+  // promote to the framing that keeps the building, sky and room extension visible.
+  if (partial.image && (partial.image.position === "center" || partial.image.position === "center center")) {
+    partial = {
+      ...partial,
+      image: {
+        ...partial.image,
+        position: defaults.image.position,
+        scale: partial.image.scale && partial.image.scale > 1 ? 1 : partial.image.scale,
+      },
+    };
+  }
+
   return {
     ...defaults,
     ...partial,

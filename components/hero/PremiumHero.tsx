@@ -107,7 +107,7 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
     target: sectionRef,
     offset: ["start start", "end start"],
   });
-  const parallaxY = useTransform(scrollYProgress, [0, 1], ["0%", "4%"]);
+  const parallaxY = useTransform(scrollYProgress, [0, 1], ["0%", "3%"]);
 
   const videoSrc = hero.videoSrc;
   const imageSrc = hero.image?.src || hero.imageSrc;
@@ -123,16 +123,16 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
     <section
       id="hero"
       ref={sectionRef}
-      className="relative isolate flex min-h-[100svh] w-full flex-col overflow-hidden bg-[#12271C] lg:h-[min(100svh,820px)] lg:min-h-[720px]"
+      className="relative isolate flex h-[100svh] min-h-[640px] w-full flex-col overflow-hidden bg-[#12271C]"
     >
-      {/* ---- Background: full-bleed image (or video), vertical-only overscan for
-           parallax so the building is never zoom-cropped horizontally ---- */}
+      {/* ---- Full-bleed cinematic image: exact viewport aspect so cover
+           does not over-crop the building on wide desktop screens ---- */}
       <motion.div
-        className="absolute inset-x-0 -top-[4%] -z-10 h-[108%]"
+        className="absolute inset-0 -z-10"
         style={enableParallax ? { y: parallaxY } : undefined}
-        initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 1.04 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.6, ease: luxuryEase }}
+        initial={reducedMotion ? { opacity: 0 } : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.4, ease: luxuryEase }}
       >
         {videoSrc ? (
           <video
@@ -142,6 +142,7 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
             playsInline
             poster={hero.poster || undefined}
             className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: hero.image?.position || "center 42%" }}
           >
             <source src={videoSrc} type={videoSrc.endsWith(".webm") ? "video/webm" : "video/mp4"} />
           </video>
@@ -154,7 +155,7 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
             objectFit="cover"
             sizes="100vw"
             style={{
-              objectPosition: hero.image?.position || "center",
+              objectPosition: hero.image?.position || "center 42%",
               filter: `brightness(${hero.image?.brightness ?? 100}%) contrast(${hero.image?.contrast ?? 100}%) saturate(${hero.image?.saturation ?? 100}%)`,
             }}
           />
@@ -180,8 +181,8 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
 
       {/* ---- Hero content (left) ---- */}
       <div className="relative z-10 flex flex-1 items-center">
-        <div className="w-full px-5 pb-8 pt-28 sm:px-8 lg:px-14 lg:pt-36 xl:px-20">
-          <div className="max-w-[54rem]">
+        <div className="w-full px-5 pb-6 pt-24 sm:px-8 lg:px-14 lg:pb-8 lg:pt-32 xl:px-20">
+          <div className="max-w-[52rem]">
             {hero.welcomeText ? (
               <motion.p
                 {...fadeUp(0.15, reducedMotion)}
@@ -284,9 +285,9 @@ export function PremiumHero({ hero, rooms, preview }: PremiumHeroProps) {
       {showFeatures ? (
         <motion.div
           {...fadeUp(0.7, reducedMotion)}
-          className="relative z-10 w-full px-5 pb-8 sm:px-8 lg:px-14 lg:pb-9 xl:px-20"
+          className="relative z-10 w-full px-5 pb-7 sm:px-8 lg:px-14 lg:pb-10 xl:px-20"
         >
-          <div className="flex flex-col gap-5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-10 lg:gap-x-16">
+          <div className="flex flex-col gap-5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-12 lg:gap-x-20">
             {features.map((feature, i) => (
               <FeatureItem key={feature.id || i} feature={feature} divider={i < features.length - 1} />
             ))}
