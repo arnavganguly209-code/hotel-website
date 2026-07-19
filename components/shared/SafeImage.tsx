@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { mediaUrl } from "@/lib/cms/media-url";
 import { usePerformanceSettings } from "@/components/shared/PerformanceProvider";
@@ -44,21 +44,24 @@ export function SafeImage({
   fallbackSrc,
 }: SafeImageProps) {
   const perf = usePerformanceSettings();
-  const [failed, setFailed] = useState(false);
-  const [loaded, setLoaded] = useState(false);
   const resolved = mediaUrl(src, src);
   const fallback = mediaUrl(fallbackSrc, fallbackSrc);
-  const [displaySrc, setDisplaySrc] = useState(resolved);
-  const [retryCount, setRetryCount] = useState(0);
+  const [errorState, setErrorState] = useState({
+    source: "",
+    attempt: 0,
+    token: 0,
+  });
+  const [loadedSrc, setLoadedSrc] = useState("");
   const enableFade = fadeIn ?? perf.imageFadeIn !== false;
   const lazy = perf.lazyLoadImages !== false;
-
-  useEffect(() => {
-    setFailed(false);
-    setLoaded(false);
-    setRetryCount(0);
-    setDisplaySrc(resolved);
-  }, [resolved]);
+  const attempt = errorState.source === resolved ? errorState.attempt : 0;
+  const hasFallback = Boolean(fallback && fallback !== resolved);
+  const failed = attempt >= (hasFallback ? 3 : 2);
+  const baseSrc = attempt >= 2 && hasFallback ? fallback : resolved || fallback;
+  const displaySrc =
+    attempt === 1 && baseSrc
+      ? `${baseSrc}${baseSrc.includes("?") ? "&" : "?"}retry=${errorState.token}`
+      : baseSrc;
 
   if (!displaySrc || failed) return null;
 
@@ -79,7 +82,7 @@ export function SafeImage({
         objectFit === "contain" && "object-contain object-center",
         objectFit === "cover" && "object-cover object-center",
         enableFade && "transition-opacity duration-500 ease-out",
-        enableFade && (loaded || priority ? "opacity-100" : "opacity-0"),
+        enableFade && (loadedSrc === displaySrc || priority ? "opacity-100" : "opacity-0"),
         className
       )}
       style={{
@@ -93,20 +96,15 @@ export function SafeImage({
           : null),
         ...style,
       }}
-      onLoad={() => setLoaded(true)}
+      onLoad={() => setLoadedSrc(displaySrc)}
       onError={() => {
-        if (retryCount === 0) {
-          setRetryCount(1);
-          setDisplaySrc(`${resolved}${resolved.includes("?") ? "&" : "?"}retry=${Date.now()}`);
-          return;
-        }
-        if (fallback && !displaySrc.startsWith(fallback)) {
-          setRetryCount(2);
-          setDisplaySrc(fallback);
-          return;
-        }
-        setFailed(true);
-        onError?.();
+        const nextAttempt = attempt + 1;
+        setErrorState({
+          source: resolved,
+          attempt: nextAttempt,
+          token: Date.now(),
+        });
+        if (nextAttempt >= (hasFallback ? 3 : 2)) onError?.();
       }}
     />
   );

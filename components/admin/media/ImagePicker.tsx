@@ -10,7 +10,6 @@ import {
   categoryFromFolder,
   folderFromCategory,
 } from "@/lib/cms/media-categories";
-import { isBundledPaymentUrl } from "@/lib/cms/payment-logos";
 import type { MediaAsset } from "@/lib/cms/types";
 import { cn } from "@/lib/utils";
 
@@ -112,9 +111,8 @@ export function ImagePicker({
     const formData = new FormData();
     formData.append("file", file);
     formData.append("folder", uploadFolder);
-    if (value && !isBundledPaymentUrl(value)) {
-      formData.append("oldUrl", value);
-    }
+    // Keep the currently published file until the new CMS value is saved.
+    // Deleting it during upload leaves the live site pointing at a missing URL.
 
     try {
       const res = await fetch("/api/upload", { method: "POST", body: formData });
@@ -197,6 +195,7 @@ export function ImagePicker({
 
       onChange(nextUrl, asset);
       onUploadSuccess?.(nextUrl);
+      setPreview(nextUrl);
       setSuccess("Image uploaded successfully.");
       setError(null);
       // Keep modal open briefly so user sees preview + success, then close

@@ -44,6 +44,7 @@ export function RoomsPage({ rooms, page, search, hasSearch }: RoomsPageProps) {
       <section className="relative min-h-[430px] overflow-hidden md:min-h-[520px]">
         <SafeImage
           src={page.hero.imageSrc || rooms[0]?.imageSrc}
+          fallbackSrc="/media/rooms/super-deluxe.jpg"
           alt={page.hero.imageAlt}
           fill
           priority
@@ -167,13 +168,20 @@ export function RoomsPage({ rooms, page, search, hasSearch }: RoomsPageProps) {
                         <div className="text-sm text-[#68736d]">
                           Without breakfast <span className="font-semibold text-[#183b2c]">${roomOnlyNightlyPrice(room)}</span>
                         </div>
-                        <div className="flex gap-2">
-                          <Button asChild variant="outline" className="flex-1 border-[#b79352]/40 bg-transparent text-[#173a2b] sm:flex-none">
-                            <Link href={detailHref}>Read More</Link>
-                          </Button>
-                          <Button asChild variant="gold" className="flex-1 gap-2 sm:flex-none">
-                            <Link href={`${detailHref}#reserve`}>Book Now <ArrowRight className="h-4 w-4" /></Link>
-                          </Button>
+                        <div className="grid grid-cols-2 gap-3 sm:flex">
+                          <Link
+                            href={detailHref}
+                            className="group/button inline-flex min-h-12 items-center justify-center rounded-full border border-[#b48b49]/70 bg-white/70 px-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#173a2b] shadow-[0_8px_24px_rgba(37,61,48,0.08)] transition-all duration-500 hover:-translate-y-0.5 hover:border-[#d0aa63] hover:bg-[#173a2b] hover:text-[#f4dfae] hover:shadow-[0_14px_32px_rgba(22,58,42,0.20)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b48b49] focus-visible:ring-offset-2 sm:min-w-[132px]"
+                          >
+                            Read More
+                          </Link>
+                          <Link
+                            href={`${detailHref}#reserve`}
+                            className="group/button inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#d3ad64] bg-gradient-to-r from-[#173a2b] to-[#214b38] px-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f5dfad] shadow-[0_10px_28px_rgba(22,58,42,0.24)] transition-all duration-500 hover:-translate-y-0.5 hover:from-[#b8893e] hover:to-[#d0a65d] hover:text-[#10281d] hover:shadow-[0_16px_38px_rgba(156,113,51,0.30)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b48b49] focus-visible:ring-offset-2 sm:min-w-[132px]"
+                          >
+                            Book Now
+                            <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 group-hover/button:translate-x-1" />
+                          </Link>
                         </div>
                       </div>
                     </div>

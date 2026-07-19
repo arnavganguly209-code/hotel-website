@@ -66,6 +66,7 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
           >
             <SafeImage
               src={gallery[active]}
+              fallbackSrc="/media/rooms/super-deluxe.jpg"
               alt={alt}
               fill
               priority={active === 0}
@@ -132,7 +133,7 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
                 i === active ? "border-luxury-gold shadow-luxury-gold" : "border-white/50 opacity-75 hover:opacity-100"
               )}
             >
-              <SafeImage src={src} alt="" fill fadeIn={false} className="object-cover" />
+              <SafeImage src={src} fallbackSrc="/media/rooms/super-deluxe.jpg" alt="" fill fadeIn={false} className="object-cover" />
             </button>
           ))}
         </div>
@@ -168,6 +169,7 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
             <div className="relative h-[78vh] w-[88vw] overflow-auto">
               <SafeImage
                 src={gallery[active]}
+                fallbackSrc="/media/rooms/super-deluxe.jpg"
                 alt={`${alt} — image ${active + 1} of ${gallery.length}`}
                 fill
                 priority

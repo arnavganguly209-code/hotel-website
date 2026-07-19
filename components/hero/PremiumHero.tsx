@@ -30,6 +30,8 @@ function videoMime(src: string) {
 export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const [mediaVisible, setMediaVisible] = useState(false);
+  const [failedVideoSource, setFailedVideoSource] = useState("");
+  const [loadedVideoSource, setLoadedVideoSource] = useState("");
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -52,7 +54,13 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const imageSrc = hero.image?.src || hero.imageSrc;
   const mode = hero.mediaMode === "image" && imageSrc ? "image" : "video";
   const videoSrc = hero.videoSrc?.trim() || DEMO_VIDEO;
+  const effectiveVideoSrc =
+    failedVideoSource === videoSrc ? DEMO_VIDEO : videoSrc;
   const poster = hero.poster?.trim() || DEMO_POSTER;
+  const activeMediaKey =
+    mode === "image"
+      ? `image:${mediaUrl(imageSrc, imageSrc)}`
+      : `video:${mediaUrl(effectiveVideoSrc, effectiveVideoSrc)}:${mediaUrl(poster, poster)}`;
   const overlayOpacity = Math.min(Math.max(hero.overlayOpacity ?? 0.18, 0), 0.85);
   const overlayColor = hero.overlayColor || "#000000";
   const bookingBottom = hero.bookingPosition?.trim() || "32px";
@@ -80,10 +88,15 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
       className="relative isolate h-[var(--hero-mobile-height)] min-h-[500px] max-h-[560px] w-full overflow-hidden bg-[#162A20] lg:h-[var(--hero-desktop-height)] lg:min-h-[640px] lg:max-h-[760px]"
       style={heroStyle}
     >
-      <div className="absolute inset-0 -z-10 overflow-hidden bg-[#162A20]">
+      <div
+        key={activeMediaKey}
+        data-active-hero-media={activeMediaKey}
+        className="absolute inset-0 -z-10 overflow-hidden bg-[#162A20]"
+      >
         {mode === "image" ? (
           <SafeImage
             src={imageSrc}
+            fallbackSrc={DEMO_POSTER}
             alt={hero.image?.alt || hero.seo?.altText || "Hotel Thamel Park"}
             fill
             priority
@@ -97,6 +110,7 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
           <>
             <SafeImage
               src={poster}
+              fallbackSrc={DEMO_POSTER}
               alt=""
               fill
               priority
@@ -106,18 +120,25 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
             />
             {mediaVisible ? (
               <video
-                key={videoSrc}
+                key={effectiveVideoSrc}
                 autoPlay={hero.videoAutoplay !== false}
                 loop={hero.videoLoop !== false}
                 muted={hero.videoMuted !== false}
                 playsInline
                 preload="metadata"
                 poster={mediaUrl(poster, poster) || undefined}
-                className="absolute inset-0 h-full w-full transform-gpu object-cover will-change-transform"
+                className={`absolute inset-0 h-full w-full transform-gpu object-cover transition-opacity duration-300 will-change-transform ${
+                  loadedVideoSource === effectiveVideoSrc ? "opacity-100" : "opacity-0"
+                }`}
                 style={{ objectPosition: hero.image?.position || "center" }}
                 aria-label="Hotel ambience"
+                onLoadedData={() => setLoadedVideoSource(effectiveVideoSrc)}
+                onError={() => setFailedVideoSource(videoSrc)}
               >
-                <source src={mediaUrl(videoSrc, videoSrc)} type={videoMime(videoSrc)} />
+                <source
+                  src={mediaUrl(effectiveVideoSrc, effectiveVideoSrc)}
+                  type={videoMime(effectiveVideoSrc)}
+                />
               </video>
             ) : null}
           </>

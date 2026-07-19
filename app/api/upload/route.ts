@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/cms/auth";
 import { revalidateSiteContent } from "@/lib/cms/revalidate";
-import { isBundledPaymentUrl, stripUrlQuery } from "@/lib/cms/payment-logos";
 import {
   UploadError,
   deleteLocalUpload,
-  resolveLocalUploadPath,
   saveUploadedFile,
   sanitizeFolder,
   verifyUploadHttpReachable,
@@ -64,8 +62,6 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     folder = sanitizeFolder((formData.get("folder") as string) || "general");
-    const oldPublicId = ((formData.get("oldPublicId") as string) || "").trim();
-    const oldUrl = ((formData.get("oldUrl") as string) || "").trim();
 
     if (!file) {
       return NextResponse.json(
@@ -81,7 +77,6 @@ export async function POST(request: Request) {
       folder,
       root: writable.root,
       cwd: writable.cwd,
-      oldUrl: oldUrl || null,
     });
 
     const mimeType = file.type || "application/octet-stream";
@@ -123,25 +118,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Only delete replaced LOCAL uploads — never touch bundled /media assets
-    // and never delete until the new file is verified HTTP 200.
-    const replaceTarget = oldPublicId || oldUrl;
-    let deletedOld = false;
-    if (replaceTarget && !isBundledPaymentUrl(replaceTarget)) {
-      const absOld = resolveLocalUploadPath(replaceTarget);
-      if (absOld) {
-        try {
-          const del = await deleteLocalUpload(replaceTarget);
-          deletedOld = del.deleted;
-          console.info("[Upload] Replaced old local file", {
-            old: stripUrlQuery(replaceTarget),
-            deleted: del.deleted,
-          });
-        } catch (error) {
-          console.warn("[Upload] Could not delete replaced local file:", replaceTarget, error);
-        }
-      }
-    }
+    // Never delete the currently published file during an upload. Orbit only
+    // publishes the new URL after Save/Publish, so early deletion creates a
+    // window where the live site references a missing image.
+    const deletedOld = false;
 
     revalidateSiteContent();
 

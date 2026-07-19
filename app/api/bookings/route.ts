@@ -65,6 +65,15 @@ export async function POST(req: Request) {
     if (!room || room.available === false) {
       return NextResponse.json({ success: false, error: "This room is not available." }, { status: 400 });
     }
+    if (body.paymentMethod !== "hotel" && body.paymentMethod !== "online") {
+      return NextResponse.json({ success: false, error: "Select a valid payment method." }, { status: 400 });
+    }
+    if (body.paymentMethod === "online" && !/^\d{4}$/.test(body.cardLast4 || "")) {
+      return NextResponse.json(
+        { success: false, error: "Complete and validate the online card details." },
+        { status: 400 }
+      );
+    }
 
     const guests = Math.max(1, Math.min(8, Number(body.guests) || 1));
     const children = Math.max(0, Math.min(6, Number(body.children) || 0));
@@ -103,7 +112,7 @@ export async function POST(req: Request) {
         arrivalTime: body.arrivalTime ?? "",
         flightNumber: body.flightNumber ?? "",
         notes: body.notes ?? "",
-        paymentMethod: body.paymentMethod ?? "hotel",
+        paymentMethod: body.paymentMethod,
         cardLast4: /^\d{4}$/.test(body.cardLast4 || "") ? body.cardLast4! : "",
         totalAmount,
         nights,

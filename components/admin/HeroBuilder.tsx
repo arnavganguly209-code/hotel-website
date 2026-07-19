@@ -127,6 +127,13 @@ export function HeroBuilder({
 
   /** Set/replace the hero image, stashing the current one so it can be restored. */
   const setHeroImage = (url: string) => {
+    if (!url) {
+      patch({
+        mediaMode: "video",
+        image: { ...hero.image, src: "", desktopSrc: "", tabletSrc: "", mobileSrc: "" },
+      });
+      return;
+    }
     patch({
       mediaMode: "image",
       previousMedia: {
@@ -146,6 +153,7 @@ export function HeroBuilder({
         videoSrc: hero.videoSrc && hero.videoSrc !== url ? hero.videoSrc : prevMedia.videoSrc,
       },
       videoSrc: url,
+      poster: "",
     });
   };
 
@@ -163,7 +171,7 @@ export function HeroBuilder({
       if (!res.ok || !data.url) {
         throw new Error(data.error || `Upload failed (HTTP ${res.status})`);
       }
-      setHeroVideo(data.url as string);
+      setHeroVideo((data.urlWithBust || data.url) as string);
       setUploadSuccess("Upload Successful");
     } catch (error) {
       setVideoError(error instanceof Error ? error.message : "Video upload failed");
@@ -176,11 +184,9 @@ export function HeroBuilder({
   const removeHeroMedia = () => {
     patch({
       mediaMode: "video",
-      previousMedia: {
-        imageSrc: hero.image.src || prevMedia.imageSrc,
-        videoSrc: hero.videoSrc || prevMedia.videoSrc,
-      },
+      previousMedia: { imageSrc: "", videoSrc: "" },
       videoSrc: "",
+      poster: "",
       image: { ...hero.image, src: "", desktopSrc: "", tabletSrc: "", mobileSrc: "" },
     });
     setUploadSuccess("Demo video restored");
