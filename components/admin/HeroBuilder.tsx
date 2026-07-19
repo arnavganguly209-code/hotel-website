@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
 import { PremiumHero } from "@/components/hero/PremiumHero";
-import type { HeroBuilderSettings } from "@/lib/cms/hero-builder-types";
+import type { HeroBuilderSettings, HeroFeatureItem } from "@/lib/cms/hero-builder-types";
 import type { SiteContent } from "@/lib/cms/types";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,7 @@ const TABS = [
   "Preview",
   "Content",
   "Hero Image",
+  "Features",
   "Logo",
   "Buttons",
   "Booking Bar",
@@ -220,6 +221,99 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
         </>
       )}
 
+      {tab === "Features" && (
+        <Panel title="Feature Icon Row (below hero text)">
+          <label className="flex items-center gap-3 text-sm text-white/70">
+            <input
+              type="checkbox"
+              checked={hero.showFeatures !== false}
+              onChange={(e) => patch({ showFeatures: e.target.checked })}
+              className="accent-luxury-gold"
+            />
+            Show Feature Row
+          </label>
+          <p className="text-xs text-white/40">
+            Icons use lucide names, e.g. map-pin, badge-check, headphones, star, shield-check, clock, phone, wifi, award, sparkles.
+          </p>
+          {(hero.features ?? []).map((feature, index) => (
+            <div key={feature.id || index} className="space-y-3 rounded-lg border border-luxury-gold/10 bg-white/[0.02] p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-xs uppercase tracking-wider text-luxury-gold">Feature {index + 1}</p>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-2 text-xs text-white/60">
+                    <input
+                      type="checkbox"
+                      checked={feature.enabled !== false}
+                      onChange={(e) => {
+                        const next = [...hero.features];
+                        next[index] = { ...feature, enabled: e.target.checked };
+                        patch({ features: next });
+                      }}
+                      className="accent-luxury-gold"
+                    />
+                    Visible
+                  </label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-red-400/30 text-red-300"
+                    onClick={() => patch({ features: hero.features.filter((_, i) => i !== index) })}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              </div>
+              <AdminInput
+                label="Icon (lucide name)"
+                value={feature.icon}
+                onChange={(e) => {
+                  const next = [...hero.features];
+                  next[index] = { ...feature, icon: e.target.value };
+                  patch({ features: next });
+                }}
+              />
+              <AdminInput
+                label="Title"
+                value={feature.title}
+                onChange={(e) => {
+                  const next = [...hero.features];
+                  next[index] = { ...feature, title: e.target.value };
+                  patch({ features: next });
+                }}
+              />
+              <AdminInput
+                label="Description"
+                value={feature.description}
+                onChange={(e) => {
+                  const next = [...hero.features];
+                  next[index] = { ...feature, description: e.target.value };
+                  patch({ features: next });
+                }}
+              />
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="border-luxury-gold/20 text-luxury-gold"
+            onClick={() => {
+              const item: HeroFeatureItem = {
+                id: `feature-${Date.now()}`,
+                icon: "star",
+                title: "NEW FEATURE",
+                description: "Description",
+                enabled: true,
+              };
+              patch({ features: [...(hero.features ?? []), item] });
+            }}
+          >
+            + Add Feature
+          </Button>
+        </Panel>
+      )}
+
       {tab === "Logo" && (
         <Panel title="Hero Logo">
           <label className="flex items-center gap-3 text-sm text-white/70">
@@ -247,7 +341,7 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
 
       {tab === "Buttons" && (
         <>
-          <Panel title="Discover More Button">
+          <Panel title="CTA Button (Explore Hotel)">
             <AdminInput label="Text" value={hero.primaryButton.text} onChange={(e) => patchNested("primaryButton", { ...hero.primaryButton, text: e.target.value })} />
             <AdminInput label="URL" value={hero.primaryButton.href} onChange={(e) => patchNested("primaryButton", { ...hero.primaryButton, href: e.target.value })} />
             <AdminInput label="Background Color" value={hero.primaryButton.backgroundColor} onChange={(e) => patchNested("primaryButton", { ...hero.primaryButton, backgroundColor: e.target.value })} />
@@ -277,7 +371,25 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
               Enable Booking Bar
             </label>
             <AdminInput label="Button Text" value={hero.bookingBar.buttonText} onChange={(e) => patchNested("bookingBar", { ...hero.bookingBar, buttonText: e.target.value })} />
-            <AdminInput label="Background" value={hero.bookingBar.background} onChange={(e) => patchNested("bookingBar", { ...hero.bookingBar, background: e.target.value })} />
+            <AdminInput label="Background Color / Gradient (CSS)" value={hero.bookingBar.background} onChange={(e) => patchNested("bookingBar", { ...hero.bookingBar, background: e.target.value })} />
+            <AdminInput label="Border Color (soft gold frame)" value={hero.bookingBar.borderColor ?? "rgba(201,164,76,0.45)"} onChange={(e) => patchNested("bookingBar", { ...hero.bookingBar, borderColor: e.target.value })} />
+            <div className="grid grid-cols-3 gap-4">
+              <AdminInput
+                label="Default Guests"
+                value={hero.bookingBar.defaults?.guests ?? "2"}
+                onChange={(e) => patchNested("bookingBar", { ...hero.bookingBar, defaults: { ...hero.bookingBar.defaults, guests: e.target.value } })}
+              />
+              <AdminInput
+                label="Default Children"
+                value={hero.bookingBar.defaults?.children ?? "0"}
+                onChange={(e) => patchNested("bookingBar", { ...hero.bookingBar, defaults: { ...hero.bookingBar.defaults, children: e.target.value } })}
+              />
+              <AdminInput
+                label="Default Rooms"
+                value={hero.bookingBar.defaults?.rooms ?? "1"}
+                onChange={(e) => patchNested("bookingBar", { ...hero.bookingBar, defaults: { ...hero.bookingBar.defaults, rooms: e.target.value } })}
+              />
+            </div>
             <AdminInput label="Shadow" value={hero.bookingBar.shadow} onChange={(e) => patchNested("bookingBar", { ...hero.bookingBar, shadow: e.target.value })} />
             <AdminInput label="Border Radius" value={hero.bookingBar.borderRadius} onChange={(e) => patchNested("bookingBar", { ...hero.bookingBar, borderRadius: e.target.value })} />
             <AdminInput label="Padding" value={hero.bookingBar.padding} onChange={(e) => patchNested("bookingBar", { ...hero.bookingBar, padding: e.target.value })} />

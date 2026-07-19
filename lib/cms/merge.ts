@@ -432,6 +432,39 @@ function mergeHero(
   partial?: Partial<SiteContent["hero"]>
 ): SiteContent["hero"] {
   if (!partial) return defaults;
+
+  // Content saved before the 2026 hero redesign has no `features` field. The old
+  // hero never rendered text/CTA/overlay and hardcoded the booking bar styling,
+  // so those stored values are stale — drop them and let the new defaults apply.
+  // User-managed data (hero image, video, SEO, booking bar enabled/fields) is kept.
+  if (partial.features === undefined) {
+    const {
+      welcomeText: _w,
+      title: _t,
+      subtitle: _s,
+      description: _d,
+      showTitle: _st,
+      overlayOpacity: _oo,
+      overlayColor: _oc,
+      primaryButton: _pb,
+      secondaryButton: _sb,
+      titleStyle: _ts,
+      subtitleStyle: _ss,
+      descriptionStyle: _ds,
+      welcomeStyle: _ws,
+      bookingBar: legacyBookingBar,
+      ...rest
+    } = partial;
+    partial = { ...rest };
+    if (legacyBookingBar) {
+      const kept: Partial<SiteContent["hero"]["bookingBar"]> = {};
+      if (legacyBookingBar.enabled !== undefined) kept.enabled = legacyBookingBar.enabled;
+      if (legacyBookingBar.buttonText !== undefined) kept.buttonText = legacyBookingBar.buttonText;
+      if (legacyBookingBar.fields !== undefined) kept.fields = legacyBookingBar.fields;
+      partial.bookingBar = kept as SiteContent["hero"]["bookingBar"];
+    }
+  }
+
   return {
     ...defaults,
     ...partial,
@@ -444,9 +477,11 @@ function mergeHero(
     welcomeStyle: { ...defaults.welcomeStyle, ...partial.welcomeStyle },
     primaryButton: { ...defaults.primaryButton, ...partial.primaryButton },
     secondaryButton: { ...defaults.secondaryButton, ...partial.secondaryButton },
+    features: definedArray(partial.features, defaults.features),
     bookingBar: {
       ...defaults.bookingBar,
       ...partial.bookingBar,
+      defaults: { ...defaults.bookingBar.defaults, ...partial.bookingBar?.defaults },
       fields: { ...defaults.bookingBar.fields, ...partial.bookingBar?.fields },
       colors: { ...defaults.bookingBar.colors, ...partial.bookingBar?.colors },
       labels: { ...defaults.bookingBar.labels, ...partial.bookingBar?.labels },

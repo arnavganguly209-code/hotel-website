@@ -53,17 +53,19 @@ function formatDisplayDate(value: string) {
 
 function mergeSettings(bookingBar?: HeroBookingBarSettings): HeroBookingBarSettings {
   const d = defaultHeroBuilder.bookingBar;
-  if (!bookingBar) return { ...d, background: FRAME_BG };
+  if (!bookingBar) return { ...d };
   return {
     ...d,
     ...bookingBar,
+    background: bookingBar.background || d.background,
+    borderColor: bookingBar.borderColor || d.borderColor,
+    defaults: { ...d.defaults, ...bookingBar.defaults },
     fields: { ...d.fields, ...bookingBar.fields },
     colors: { ...d.colors, ...bookingBar.colors },
     labels: { ...d.labels, ...bookingBar.labels },
     icons: { ...d.icons, ...bookingBar.icons },
     animations: { ...d.animations, ...bookingBar.animations },
     responsive: { ...d.responsive, ...bookingBar.responsive },
-    background: FRAME_BG,
   };
 }
 
@@ -73,21 +75,31 @@ interface FieldCellProps {
   icon: LucideIcon;
   children: React.ReactNode;
   bordered?: boolean;
+  labelColor?: string;
+  dividerColor?: string;
 }
 
-function FieldCell({ id, label, icon: Icon, children, bordered = true }: FieldCellProps) {
+function FieldCell({
+  id,
+  label,
+  icon: Icon,
+  children,
+  bordered = true,
+  labelColor,
+  dividerColor,
+}: FieldCellProps) {
   return (
     <div
       className={cn(
         "group flex min-h-[88px] min-w-0 flex-col justify-center px-4 py-3 transition-all duration-700",
         bordered && "border-r"
       )}
-      style={{ borderColor: bordered ? "rgba(246,236,215,0.4)" : undefined }}
+      style={{ borderColor: bordered ? dividerColor || "rgba(201,164,76,0.3)" : undefined }}
     >
       <label
         htmlFor={id}
         className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase"
-        style={{ color: LABEL_GOLD, letterSpacing: "2px" }}
+        style={{ color: labelColor || LABEL_GOLD, letterSpacing: "2px" }}
       >
         <Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
         <span className="truncate">{label}</span>
@@ -110,11 +122,14 @@ function DateValue({ id, value, onChange }: { id: string; value: string; onChang
   return (
     <div className="relative min-w-0">
       <div className="pointer-events-none flex items-center justify-between gap-2">
-        <span
-          className="truncate text-base font-bold tracking-wide md:text-lg"
-          style={{ color: value ? VALUE_WHITE : PLACEHOLDER_IVORY }}
-        >
-          {value ? formatDisplayDate(value) : "mm / dd / yyyy"}
+        <span className="flex min-w-0 items-center gap-2">
+          <Calendar className="h-3.5 w-3.5 shrink-0" style={{ color: LABEL_GOLD, opacity: 0.85 }} strokeWidth={1.75} />
+          <span
+            className="truncate text-base font-bold tracking-wide md:text-lg"
+            style={{ color: value ? VALUE_WHITE : PLACEHOLDER_IVORY }}
+          >
+            {value ? formatDisplayDate(value) : "mm / dd / yyyy"}
+          </span>
         </span>
         <ChevronDown className="h-4 w-4 shrink-0" style={{ color: LABEL_GOLD, opacity: 0.7 }} />
       </div>
@@ -229,9 +244,9 @@ export function PremiumFloatingBookingBar({
   const settings = mergeSettings(bookingBar);
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
-  const [guests, setGuests] = useState("2");
-  const [childrenCount, setChildrenCount] = useState("0");
-  const [roomQuantity, setRoomQuantity] = useState("1");
+  const [guests, setGuests] = useState(settings.defaults?.guests || "2");
+  const [childrenCount, setChildrenCount] = useState(settings.defaults?.children || "0");
+  const [roomQuantity, setRoomQuantity] = useState(settings.defaults?.rooms || "1");
   const [mobileOpen, setMobileOpen] = useState<string | null>("checkIn");
 
   const show = (key: keyof HeroBookingBarSettings["fields"]) => settings.fields[key] !== false;
@@ -261,11 +276,11 @@ export function PremiumFloatingBookingBar({
     background: settings.background || FRAME_BG,
     backdropFilter: `blur(${settings.blur ?? 32}px)`,
     WebkitBackdropFilter: `blur(${settings.blur ?? 32}px)`,
-    border: "1px solid rgba(212,176,106,0.35)",
-    borderRadius: settings.borderRadius || "28px",
+    border: `1px solid ${settings.borderColor || "rgba(201,164,76,0.45)"}`,
+    borderRadius: settings.borderRadius || "20px",
     boxShadow:
       settings.shadow ||
-      "0 32px 90px rgba(10,24,18,0.35), 0 0 0 1px rgba(212,176,106,0.15), inset 0 1px 0 rgba(255,255,255,0.12)",
+      "0 30px 80px rgba(8,20,14,0.45), inset 0 1px 0 rgba(255,255,255,0.08)",
     boxSizing: "border-box",
   };
 
@@ -296,6 +311,11 @@ export function PremiumFloatingBookingBar({
         }
       : {};
 
+  const cellColors = {
+    labelColor: settings.colors.label,
+    dividerColor: settings.colors.divider,
+  };
+
   const desktopForm = (
     <motion.form
       onSubmit={handleSubmit}
@@ -307,17 +327,17 @@ export function PremiumFloatingBookingBar({
     >
       <div className="grid h-full w-full items-stretch" style={{ gridTemplateColumns: gridColumns }}>
         {show("checkIn") && (
-          <FieldCell id="hero-check-in" label={settings.labels.checkIn} icon={resolveIcon(settings.icons.checkIn)}>
+          <FieldCell id="hero-check-in" label={settings.labels.checkIn} icon={resolveIcon(settings.icons.checkIn)} {...cellColors}>
             <DateValue id="hero-check-in" value={checkIn} onChange={setCheckIn} />
           </FieldCell>
         )}
         {show("checkOut") && (
-          <FieldCell id="hero-check-out" label={settings.labels.checkOut} icon={resolveIcon(settings.icons.checkOut)}>
+          <FieldCell id="hero-check-out" label={settings.labels.checkOut} icon={resolveIcon(settings.icons.checkOut)} {...cellColors}>
             <DateValue id="hero-check-out" value={checkOut} onChange={setCheckOut} />
           </FieldCell>
         )}
         {show("guests") && (
-          <FieldCell id="hero-guests" label={settings.labels.guests} icon={resolveIcon(settings.icons.guests)}>
+          <FieldCell id="hero-guests" label={settings.labels.guests} icon={resolveIcon(settings.icons.guests)} {...cellColors}>
             <SelectValue id="hero-guests" value={guests} onChange={setGuests} display={guestLabel}>
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <option key={n} value={n}>
@@ -328,7 +348,7 @@ export function PremiumFloatingBookingBar({
           </FieldCell>
         )}
         {show("children") && (
-          <FieldCell id="hero-children" label={settings.labels.children} icon={resolveIcon(settings.icons.children)}>
+          <FieldCell id="hero-children" label={settings.labels.children} icon={resolveIcon(settings.icons.children)} {...cellColors}>
             <SelectValue id="hero-children" value={childrenCount} onChange={setChildrenCount} display={childrenCount}>
               {[0, 1, 2, 3, 4].map((n) => (
                 <option key={n} value={n}>
@@ -339,7 +359,7 @@ export function PremiumFloatingBookingBar({
           </FieldCell>
         )}
         {show("room") && (
-          <FieldCell id="hero-room" label={settings.labels.room} icon={resolveIcon(settings.icons.room)} bordered={false}>
+          <FieldCell id="hero-room" label={settings.labels.room} icon={resolveIcon(settings.icons.room)} bordered={false} {...cellColors}>
             <SelectValue id="hero-room" value={roomQuantity} onChange={setRoomQuantity} display={roomLabel}>
               {[1, 2, 3, 4, 5].map((n) => (
                 <option key={n} value={n}>
@@ -355,10 +375,12 @@ export function PremiumFloatingBookingBar({
             whileHover={{ scale: 1.04, y: -3, boxShadow: "0 32px 70px rgba(190,150,50,0.5)" }}
             whileTap={{ scale: 0.98 }}
             transition={{ duration: 0.5, ease: luxuryEase }}
-            className="group relative flex h-[80px] w-full min-w-[168px] items-center justify-center gap-2 overflow-hidden rounded-[22px] px-3 text-[10px] font-bold uppercase leading-tight tracking-[0.12em] text-white xl:text-[11px] xl:tracking-[0.14em]"
+            className="group relative flex h-[80px] w-full min-w-[168px] items-center justify-center gap-2 overflow-hidden px-3 text-[10px] font-bold uppercase leading-tight tracking-[0.12em] xl:text-[11px] xl:tracking-[0.14em]"
             style={{
               background: settings.buttonGradient || "linear-gradient(180deg, #E8C878 0%, #C9A44C 45%, #B98B2C 100%)",
               boxShadow: settings.buttonShadow || "0 24px 60px rgba(201,164,76,0.45), inset 0 1px 0 rgba(255,255,255,0.35)",
+              color: settings.colors.buttonText || settings.buttonColor || "#1E4530",
+              borderRadius: settings.buttonBorderRadius || "14px",
             }}
           >
             <motion.span
@@ -472,10 +494,12 @@ export function PremiumFloatingBookingBar({
           whileHover={{ scale: 1.03, y: -2, boxShadow: "0 28px 60px rgba(190,150,50,0.45)" }}
           whileTap={{ scale: 0.98 }}
           transition={{ duration: 0.5, ease: luxuryEase }}
-          className="group relative mt-2 flex min-h-[60px] w-full items-center justify-center gap-2 overflow-hidden rounded-[20px] text-xs font-bold uppercase tracking-[0.18em] text-white"
+          className="group relative mt-2 flex min-h-[60px] w-full items-center justify-center gap-2 overflow-hidden text-xs font-bold uppercase tracking-[0.18em]"
           style={{
             background: settings.buttonGradient || "linear-gradient(180deg, #E8C878 0%, #C9A44C 45%, #B98B2C 100%)",
             boxShadow: settings.buttonShadow || "0 24px 60px rgba(201,164,76,0.45), inset 0 1px 0 rgba(255,255,255,0.35)",
+            color: settings.colors.buttonText || settings.buttonColor || "#1E4530",
+            borderRadius: settings.buttonBorderRadius || "14px",
           }}
         >
           <motion.span

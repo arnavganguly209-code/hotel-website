@@ -121,10 +121,19 @@ export interface HeroBookingBarResponsiveSettings {
   mobilePadding: string;
 }
 
+export interface HeroBookingBarDefaults {
+  guests: string;
+  children: string;
+  rooms: string;
+}
+
 export interface HeroBookingBarSettings {
   enabled: boolean;
   fixedPosition: boolean;
   background: string;
+  /** Soft gold frame border around the whole booking bar. */
+  borderColor: string;
+  defaults: HeroBookingBarDefaults;
   glassEffect: boolean;
   blur: number;
   shadow: string;
@@ -226,6 +235,15 @@ export interface HeroColorSettings {
   champagne: string;
 }
 
+export interface HeroFeatureItem {
+  id: string;
+  /** Lucide icon name (e.g. "map-pin", "badge-check", "headphones"). */
+  icon: string;
+  title: string;
+  description: string;
+  enabled: boolean;
+}
+
 export interface HeroBuilderSettings {
   layout: "premium" | "classic";
   type: "animated" | "image" | "video" | "premium";
@@ -245,6 +263,9 @@ export interface HeroBuilderSettings {
   showScrollIndicator: boolean;
   primaryButton: HeroButtonStyle;
   secondaryButton: HeroButtonStyle;
+  /** Feature icon row rendered above the booking bar (Prime Location, etc). */
+  features: HeroFeatureItem[];
+  showFeatures: boolean;
   colors: HeroColorSettings;
   image: HeroImageSettings;
   logo: HeroLogoSettings;
