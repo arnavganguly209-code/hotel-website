@@ -496,7 +496,7 @@ function mergeHero(
   // The rebuilt hero has no "none" state: legacy clean-background records move
   // to the bundled demo video until an administrator publishes image/video media.
   const legacyVideoSrc =
-    partial.videoSrc?.split("?")[0] === LEGACY_HERO_VIDEO_SRC;
+    partial.videoSrc?.split("?")[0]?.endsWith(LEGACY_HERO_VIDEO_SRC) ?? false;
   const legacyMedia =
     partial.schemaVersion !== 2 ||
     !partial.mediaMode ||
@@ -507,9 +507,17 @@ function mergeHero(
     ...defaults,
     ...partial,
     schemaVersion: 2,
-    mediaMode: partial.mediaMode === "image" ? "image" : "video",
-    videoSrc: partial.videoSrc?.trim() || defaults.videoSrc,
-    poster: partial.poster?.trim() || defaults.poster,
+    mediaMode: legacyMedia
+      ? "video"
+      : partial.mediaMode === "image"
+        ? "image"
+        : "video",
+    videoSrc: legacyMedia
+      ? defaults.videoSrc
+      : (partial.videoSrc?.trim() || defaults.videoSrc),
+    poster: legacyMedia
+      ? defaults.poster
+      : (partial.poster?.trim() || defaults.poster),
     overlayOpacity: legacyMedia
       ? defaults.overlayOpacity
       : (partial.overlayOpacity ?? defaults.overlayOpacity),
