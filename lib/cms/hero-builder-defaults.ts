@@ -41,6 +41,7 @@ const baseButton = (overrides: Partial<HeroButtonStyle>): HeroButtonStyle => ({
 });
 
 export const defaultHeroBuilder: HeroBuilderSettings = {
+  schemaVersion: 2,
   layout: "premium",
   type: "premium",
   mediaMode: "video",

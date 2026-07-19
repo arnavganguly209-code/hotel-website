@@ -247,6 +247,7 @@ export interface HeroFeatureItem {
 export type HeroMediaMode = "none" | "image" | "video";
 
 export interface HeroBuilderSettings {
+  schemaVersion: 2;
   layout: "premium" | "classic";
   type: "animated" | "image" | "video" | "premium";
   /**
