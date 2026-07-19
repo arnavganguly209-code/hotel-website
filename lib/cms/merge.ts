@@ -490,9 +490,22 @@ function mergeHero(
     };
   }
 
+  // The rebuilt hero has no "none" state: legacy clean-background records move
+  // to the bundled demo video until an administrator publishes image/video media.
+  const legacyMedia = !partial.mediaMode || partial.mediaMode === "none";
+
   return {
     ...defaults,
     ...partial,
+    mediaMode: partial.mediaMode === "image" ? "image" : "video",
+    videoSrc: partial.videoSrc?.trim() || defaults.videoSrc,
+    poster: partial.poster?.trim() || defaults.poster,
+    overlayOpacity: legacyMedia
+      ? defaults.overlayOpacity
+      : (partial.overlayOpacity ?? defaults.overlayOpacity),
+    overlayColor: legacyMedia
+      ? defaults.overlayColor
+      : (partial.overlayColor ?? defaults.overlayColor),
     colors: { ...defaults.colors, ...partial.colors },
     image: { ...defaults.image, ...partial.image },
     logo: { ...defaults.logo, ...partial.logo },
@@ -513,7 +526,10 @@ function mergeHero(
       labels: { ...defaults.bookingBar.labels, ...partial.bookingBar?.labels },
       icons: { ...defaults.bookingBar.icons, ...partial.bookingBar?.icons },
       animations: { ...defaults.bookingBar.animations, ...partial.bookingBar?.animations },
-      responsive: { ...defaults.bookingBar.responsive, ...partial.bookingBar?.responsive },
+      responsive: {
+        ...defaults.bookingBar.responsive,
+        ...(legacyMedia ? undefined : partial.bookingBar?.responsive),
+      },
     },
     effects: { ...defaults.effects, ...partial.effects },
     floating: { ...defaults.floating, ...partial.floating },

@@ -254,6 +254,12 @@ export interface HeroBuilderSettings {
    * "image" = image.src cover, "video" = videoSrc cover.
    */
   mediaMode: HeroMediaMode;
+  videoAutoplay: boolean;
+  videoLoop: boolean;
+  videoMuted: boolean;
+  desktopHeight: string;
+  mobileHeight: string;
+  bookingPosition: string;
   showTitle: boolean;
   welcomeText: string;
   title: string;

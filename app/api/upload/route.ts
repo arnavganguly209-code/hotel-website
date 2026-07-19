@@ -162,7 +162,7 @@ export async function POST(request: Request) {
       url: result.url,
       urlWithBust,
       public_id: result.publicId,
-      resource_type: "image",
+      resource_type: mimeType.startsWith("video/") ? "video" : "image",
       bytes: result.bytes,
       absolutePath: result.absolutePath,
       verified: true,

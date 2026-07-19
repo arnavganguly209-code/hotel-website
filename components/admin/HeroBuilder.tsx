@@ -1,7 +1,17 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { Undo2, Redo2, Eye, Loader2, RotateCcw, Trash2, UploadCloud } from "lucide-react";
+import {
+  CheckCircle2,
+  Undo2,
+  Redo2,
+  Eye,
+  Loader2,
+  RotateCcw,
+  Save,
+  Trash2,
+  UploadCloud,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
@@ -19,9 +29,8 @@ const TABS = [
 ] as const;
 
 const MEDIA_MODES: { value: HeroMediaMode; label: string; hint: string }[] = [
-  { value: "none", label: "Clean Background", hint: "Luxury cream–green gradient, no media" },
-  { value: "image", label: "Hero Image", hint: "Full-bleed image, original quality" },
   { value: "video", label: "Hero Video", hint: "Autoplay, muted, looping" },
+  { value: "image", label: "Hero Image", hint: "Full-bleed image, original quality" },
 ];
 
 type Tab = (typeof TABS)[number];
@@ -32,6 +41,7 @@ interface HeroBuilderProps {
   onChange: (hero: HeroBuilderSettings) => void;
   library: SiteContent["mediaLibrary"];
   onLibraryChange: (library: SiteContent["mediaLibrary"]) => void;
+  onPublish?: () => Promise<void> | void;
 }
 
 function Slider({
@@ -77,7 +87,14 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }: HeroBuilderProps) {
+export function HeroBuilder({
+  hero,
+  rooms,
+  onChange,
+  library,
+  onLibraryChange,
+  onPublish,
+}: HeroBuilderProps) {
   const [tab, setTab] = useState<Tab>("Preview");
   const [history, setHistory] = useState<HeroBuilderSettings[]>([hero]);
   const [historyIndex, setHistoryIndex] = useState(0);
@@ -101,9 +118,12 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
 
   const [videoUploading, setVideoUploading] = useState(false);
   const [videoError, setVideoError] = useState("");
+  const [uploadSuccess, setUploadSuccess] = useState("");
+  const [publishing, setPublishing] = useState(false);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
   const prevMedia = hero.previousMedia ?? { imageSrc: "", videoSrc: "" };
+  const activeMediaMode: HeroMediaMode = hero.mediaMode === "image" ? "image" : "video";
 
   /** Set/replace the hero image, stashing the current one so it can be restored. */
   const setHeroImage = (url: string) => {
@@ -132,6 +152,7 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
   const handleVideoUpload = async (file: File) => {
     setVideoUploading(true);
     setVideoError("");
+    setUploadSuccess("");
     try {
       const form = new FormData();
       form.append("file", file);
@@ -143,6 +164,7 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
         throw new Error(data.error || `Upload failed (HTTP ${res.status})`);
       }
       setHeroVideo(data.url as string);
+      setUploadSuccess("Upload Successful");
     } catch (error) {
       setVideoError(error instanceof Error ? error.message : "Video upload failed");
     } finally {
@@ -150,10 +172,10 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
     }
   };
 
-  /** Clear current media (files stay on disk for restore) and fall back to the clean gradient. */
+  /** Clear uploaded media and return to the bundled temporary demo video. */
   const removeHeroMedia = () => {
     patch({
-      mediaMode: "none",
+      mediaMode: "video",
       previousMedia: {
         imageSrc: hero.image.src || prevMedia.imageSrc,
         videoSrc: hero.videoSrc || prevMedia.videoSrc,
@@ -161,6 +183,7 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
       videoSrc: "",
       image: { ...hero.image, src: "", desktopSrc: "", tabletSrc: "", mobileSrc: "" },
     });
+    setUploadSuccess("Demo video restored");
   };
 
   /** Swap current and previous media (works after Replace or Remove). */
@@ -197,11 +220,40 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
     onChange(history[idx]);
   };
 
+  const publishLive = async () => {
+    if (!onPublish) return;
+    setPublishing(true);
+    try {
+      await onPublish();
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-white/50">Premium Hero Builder — changes preview instantly. Save to publish.</p>
+        <p className="text-sm text-white/50">Hero Manager — preview, save and publish the live homepage hero.</p>
         <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setTab("Preview")}
+            className="border-luxury-gold/20 text-luxury-gold"
+          >
+            <Eye className="mr-1 h-4 w-4" /> Preview
+          </Button>
+          <Button
+            type="button"
+            variant="gold"
+            size="sm"
+            onClick={() => void publishLive()}
+            disabled={publishing || !onPublish}
+          >
+            {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            Publish Live
+          </Button>
           <Button type="button" variant="outline" size="sm" onClick={undo} disabled={historyIndex <= 0} className="border-luxury-gold/20 text-luxury-gold">
             <Undo2 className="h-4 w-4" />
           </Button>
@@ -251,12 +303,12 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
                   onClick={() => patch({ mediaMode: m.value })}
                   className={cn(
                     "rounded-xl border p-4 text-left transition-colors",
-                    (hero.mediaMode ?? "none") === m.value
+                    activeMediaMode === m.value
                       ? "border-luxury-gold bg-luxury-gold/10"
                       : "border-white/10 bg-white/[0.02] hover:border-luxury-gold/40"
                   )}
                 >
-                  <p className={cn("text-sm font-medium", (hero.mediaMode ?? "none") === m.value ? "text-luxury-gold" : "text-white/80")}>
+                  <p className={cn("text-sm font-medium", activeMediaMode === m.value ? "text-luxury-gold" : "text-white/80")}>
                     {m.label}
                   </p>
                   <p className="mt-1 text-xs text-white/40">{m.hint}</p>
@@ -285,12 +337,17 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
                 className="border-red-400/30 text-red-300"
                 onClick={removeHeroMedia}
               >
-                <Trash2 className="mr-2 h-3.5 w-3.5" /> Remove Media (switch to clean background)
+                <Trash2 className="mr-2 h-3.5 w-3.5" /> Reset to Demo Video
               </Button>
             )}
+            {uploadSuccess ? (
+              <p className="flex items-center gap-2 rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">
+                <CheckCircle2 className="h-4 w-4" /> {uploadSuccess}
+              </p>
+            ) : null}
           </Panel>
 
-          {(hero.mediaMode ?? "none") === "image" && (
+          {activeMediaMode === "image" && (
             <Panel title="Hero Image">
               <ImagePicker
                 label="Hero Image (upload / replace)"
@@ -300,6 +357,7 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
                 library={library}
                 onLibraryChange={onLibraryChange}
                 onChange={setHeroImage}
+                onUploadSuccess={() => setUploadSuccess("Upload Successful")}
               />
               <AdminInput label="Image URL" value={hero.image.src} onChange={(e) => setHeroImage(e.target.value)} />
               <AdminInput label="Alt Text" value={hero.image.alt} onChange={(e) => patchNested("image", { ...hero.image, alt: e.target.value })} />
@@ -307,7 +365,7 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
             </Panel>
           )}
 
-          {(hero.mediaMode ?? "none") === "video" && (
+          {activeMediaMode === "video" && (
             <Panel title="Hero Video">
               <div className="flex flex-wrap items-center gap-3">
                 <Button
@@ -366,22 +424,59 @@ export function HeroBuilder({ hero, rooms, onChange, library, onLibraryChange }:
                 library={library}
                 onLibraryChange={onLibraryChange}
                 onChange={(url) => patch({ poster: url })}
+                onUploadSuccess={() => setUploadSuccess("Upload Successful")}
               />
             </Panel>
           )}
 
-          {(hero.mediaMode ?? "none") !== "none" && (
-            <Panel title="Overlay">
-              <Slider
-                label="Overlay Opacity (booking bar legibility)"
-                value={Math.round((hero.overlayOpacity ?? 0.35) * 100)}
-                min={0}
-                max={85}
-                onChange={(v) => patch({ overlayOpacity: v / 100 })}
+          <Panel title="Playback, Sizing & Overlay">
+            <div className="grid gap-3 sm:grid-cols-3">
+              {([
+                ["videoAutoplay", "Enable Autoplay"],
+                ["videoLoop", "Enable Loop"],
+                ["videoMuted", "Enable Mute"],
+              ] as const).map(([key, label]) => (
+                <label key={key} className="flex items-center gap-2 text-sm text-white/70">
+                  <input
+                    type="checkbox"
+                    checked={hero[key] !== false}
+                    onChange={(e) => patch({ [key]: e.target.checked })}
+                    className="accent-luxury-gold"
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <AdminInput
+                label="Desktop Height"
+                value={hero.desktopHeight || "72vh"}
+                onChange={(e) => patch({ desktopHeight: e.target.value })}
               />
-              <AdminInput label="Overlay Color" value={hero.overlayColor} onChange={(e) => patch({ overlayColor: e.target.value })} />
-            </Panel>
-          )}
+              <AdminInput
+                label="Mobile Height"
+                value={hero.mobileHeight || "540px"}
+                onChange={(e) => patch({ mobileHeight: e.target.value })}
+              />
+              <AdminInput
+                label="Booking Position (bottom)"
+                value={hero.bookingPosition || "32px"}
+                onChange={(e) => patch({ bookingPosition: e.target.value })}
+              />
+            </div>
+            <Slider
+              label="Overlay Opacity"
+              value={Math.round((hero.overlayOpacity ?? 0.18) * 100)}
+              min={0}
+              max={85}
+              onChange={(v) => patch({ overlayOpacity: v / 100 })}
+            />
+            <AdminInput
+              label="Overlay Color"
+              value={hero.overlayColor}
+              onChange={(e) => patch({ overlayColor: e.target.value })}
+            />
+          </Panel>
         </>
       )}
 

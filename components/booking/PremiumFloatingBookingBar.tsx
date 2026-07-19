@@ -247,7 +247,7 @@ export function PremiumFloatingBookingBar({
   const [guests, setGuests] = useState(settings.defaults?.guests || "2");
   const [childrenCount, setChildrenCount] = useState(settings.defaults?.children || "0");
   const [roomQuantity, setRoomQuantity] = useState(settings.defaults?.rooms || "1");
-  const [mobileOpen, setMobileOpen] = useState<string | null>("checkIn");
+  const [mobileOpen, setMobileOpen] = useState<string | null>(null);
 
   const show = (key: keyof HeroBookingBarSettings["fields"]) => settings.fields[key] !== false;
 

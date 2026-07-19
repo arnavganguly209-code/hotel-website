@@ -68,8 +68,8 @@ export function Header({ header, hotelName }: HeaderProps) {
     header.sticky !== false && "fixed",
     "left-0 right-0 top-0 z-50 transition-all duration-700",
     useTransparent
-      ? "border-b border-[#184D3D]/10 bg-gradient-to-r from-[#F6F3E7] via-[#F1F1E4] to-[#ECEFE1] backdrop-blur-xl"
-      : "border-b border-[#C89A3D]/10 bg-gradient-to-r from-[#F6F3E7]/95 via-[#F1F1E4]/95 to-[#ECEFE1]/95 shadow-[0_4px_30px_rgba(24,77,61,0.06)] backdrop-blur-xl"
+      ? "border-b border-[#184D3D]/10 bg-gradient-to-r from-[#F6F3E7] via-[#F3F2E7] to-[#EFF0E5] backdrop-blur-xl"
+      : "border-b border-[#C89A3D]/10 bg-gradient-to-r from-[#F6F3E7]/95 via-[#F3F2E7]/95 to-[#EFF0E5]/95 shadow-[0_4px_30px_rgba(24,77,61,0.06)] backdrop-blur-xl"
   );
 
   return (

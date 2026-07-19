@@ -458,6 +458,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 onChange={(hero) => update("hero", hero)}
                 library={content.mediaLibrary}
                 onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                onPublish={handleSave}
               />
             )}
 
