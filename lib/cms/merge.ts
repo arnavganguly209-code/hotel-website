@@ -427,6 +427,9 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
   };
 }
 
+const LEGACY_HERO_VIDEO_SRC =
+  "/uploads/hero/3d63d021-fdda-4380-a5d9-c7da90e8d6d4.mp4";
+
 function mergeHero(
   defaults: SiteContent["hero"],
   partial?: Partial<SiteContent["hero"]>
@@ -493,8 +496,7 @@ function mergeHero(
   // The rebuilt hero has no "none" state: legacy clean-background records move
   // to the bundled demo video until an administrator publishes image/video media.
   const legacyVideoSrc =
-    partial.videoSrc?.split("?")[0] ===
-    "/uploads/hero/3d63d021-fdda-4380-a5d9-c7da90e8d6d4.mp4";
+    partial.videoSrc?.split("?")[0] === LEGACY_HERO_VIDEO_SRC;
   const legacyMedia =
     partial.schemaVersion !== 2 ||
     !partial.mediaMode ||
