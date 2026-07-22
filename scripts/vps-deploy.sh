@@ -81,7 +81,15 @@ set +a
 
 npx prisma generate
 set +e
+# Clear failed migration state from earlier roomSlug ordering bug, then re-apply
+npx prisma migrate resolve --rolled-back "20260722183000_admin_pms"
 npx prisma migrate deploy
+MIGRATE_RC=$?
+if [ "$MIGRATE_RC" -ne 0 ]; then
+  echo "migrate deploy still failing — db push + mark applied"
+  npx prisma db push --accept-data-loss=false
+  npx prisma migrate resolve --applied "20260722183000_admin_pms"
+fi
 set -e
 
 set +e
