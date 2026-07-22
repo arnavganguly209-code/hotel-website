@@ -48,7 +48,7 @@ export default async function AdminLoginPage() {
         <style dangerouslySetInnerHTML={{ __html: `.admin-login-logo{background:transparent!important;background-color:transparent!important;background-image:none!important}` }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brand/htp-admin-mark.png?v=nobox-2"
+            src="/brand/htp-admin-mark.png?v=nobox-3"
             alt="Hotel Thamel Park & Spa"
             width={720}
             height={360}
