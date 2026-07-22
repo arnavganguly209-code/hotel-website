@@ -81,22 +81,31 @@ chmod 600 "$BACKUP_DIR/env-before-cutover-${STAMP}.bak" || true
 if ! command -v psql >/dev/null 2>&1; then
   echo "Installing postgresql / postgresql-client…"
   export DEBIAN_FRONTEND=noninteractive
+  set +e
   if command -v sudo >/dev/null 2>&1; then
-    sudo apt-get update -y
-    sudo apt-get install -y postgresql postgresql-contrib postgresql-client
-    sudo systemctl enable --now postgresql || sudo service postgresql start || true
+    sudo -n apt-get update -y
+    sudo -n apt-get install -y postgresql postgresql-contrib postgresql-client
+    sudo -n systemctl enable --now postgresql || sudo -n service postgresql start
   else
     apt-get update -y
     apt-get install -y postgresql postgresql-contrib postgresql-client
-    systemctl enable --now postgresql || service postgresql start || true
+    systemctl enable --now postgresql || service postgresql start
   fi
+  set -e
 fi
 
-if command -v sudo >/dev/null 2>&1; then
-  sudo systemctl start postgresql 2>/dev/null || sudo service postgresql start || true
-else
-  systemctl start postgresql 2>/dev/null || service postgresql start || true
+if ! command -v psql >/dev/null 2>&1; then
+  echo "ERROR: psql still not available after install attempt"
+  exit 1
 fi
+
+set +e
+if command -v sudo >/dev/null 2>&1; then
+  sudo -n systemctl start postgresql 2>/dev/null || sudo -n service postgresql start 2>/dev/null
+else
+  systemctl start postgresql 2>/dev/null || service postgresql start 2>/dev/null
+fi
+set -e
 
 LOCAL_DB="thamelpark"
 LOCAL_USER="${LOCAL_DB_USER:-thamelpark}"

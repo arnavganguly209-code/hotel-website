@@ -2,7 +2,6 @@
 # Target: https://hotel.theglobalorbit.com (/var/www/hotel-website)
 #
 # Required secrets: VPS_HOST, VPS_USER, VPS_PORT, VPS_SSH_KEY
-# Does NOT modify DATABASE_URL (Neon cutover is a separate phase).
 
 name: Deploy to Hostinger VPS
 
@@ -59,74 +58,57 @@ jobs:
           request_pty: true
           envs: GITHUB_SHA
           script: |
-            set -euxo pipefail
-
-            echo "Deployment Started"
-            echo "SSH user=$(id -un) HOME=$HOME"
-            echo "GITHUB_SHA=${GITHUB_SHA:-}"
+            set -e
 
             APP_DIR="/var/www/hotel-website"
-            if [ ! -d "$APP_DIR/.git" ]; then
-              echo "ERROR: $APP_DIR is not a git repo"
+            cd "$APP_DIR"
+
+            mkdir -p public
+            echo "beacon $(date -u +%Y-%m-%dT%H:%M:%SZ) sha=${GITHUB_SHA:-none} user=$(id -un)" > public/__deploy-beacon.txt
+
+            if [ ! -d .git ]; then
+              echo "ERROR: not a git repo" | tee public/__deploy-beacon.txt
+              exit 1
+            fi
+            if [ ! -f .env ]; then
+              echo "ERROR: .env missing" | tee public/__deploy-beacon.txt
               exit 1
             fi
 
             export PATH="/usr/local/bin:/usr/bin:/bin:${HOME}/.local/bin:${PATH:-}"
-            command -v git
-            git --version
 
-            cd "$APP_DIR"
-            echo "pwd=$(pwd)"
-            if [ ! -f .env ]; then
-              echo "ERROR: .env missing in $APP_DIR"
-              exit 1
-            fi
-
-            # NEVER lose VPS secrets / DATABASE_URL across git reset
-            cp -a .env "/tmp/htp-env-preserve-$$"
-            echo "Preserved .env before git sync"
-
-            mkdir -p public/uploads
-
-            echo "git remote -v"
-            git remote -v
-            echo "Before sync HEAD=$(git rev-parse HEAD 2>/dev/null || echo n/a)"
+            cp -a .env "/tmp/htp-env-preserve"
+            echo "env-preserved" >> public/__deploy-beacon.txt
 
             git fetch origin
-            git reset --hard origin/main
+            echo "fetch-ok" >> public/__deploy-beacon.txt
 
-            # Restore VPS .env (do not use any .env that might have been in git history)
-            cp -a "/tmp/htp-env-preserve-$$" .env
-            rm -f "/tmp/htp-env-preserve-$$"
+            git reset --hard origin/main
+            echo "reset-ok HEAD=$(git rev-parse --short HEAD)" >> public/__deploy-beacon.txt
+
+            cp -a /tmp/htp-env-preserve .env
             chmod 600 .env || true
-            echo "Restored preserved .env after git sync"
+            rm -f /tmp/htp-env-preserve
+            echo "env-restored" >> public/__deploy-beacon.txt
 
             mkdir -p public/uploads
             touch public/uploads/.gitkeep
             chmod -R ug+rwX public/uploads || true
             export UPLOADS_ROOT="$APP_DIR/public/uploads"
-            echo "UPLOADS_ROOT=$UPLOADS_ROOT"
 
-            echo "After sync HEAD=$(git rev-parse HEAD)"
-            echo "git branch=$(git branch --show-current)"
-            HEAD_SHA="$(git rev-parse HEAD)"
-            if [ -n "${GITHUB_SHA:-}" ] && [ "$HEAD_SHA" != "$GITHUB_SHA" ]; then
-              echo "WARN: HEAD $HEAD_SHA != GITHUB_SHA $GITHUB_SHA — continuing with origin/main"
-            else
-              echo "OK: HEAD matches expected SHA (or GITHUB_SHA unset)"
-            fi
+            chmod +x scripts/vps-env.sh scripts/vps-deploy.sh scripts/cutover-to-thamelpark.sh || true
 
-            # Lightweight status for remote debugging (host only, no secrets)
-            DB_HOST="$(grep -E '^DATABASE_URL=' .env 2>/dev/null | sed -E 's/.*@([^/:?]+).*/\1/' | head -1 || echo unknown)"
-            printf '{"updatedAt":"%s","message":"post-env-restore","databaseHost":"%s","commit":"%s"}\n' \
-              "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-              "$(printf '%s' "$DB_HOST" | tr '"\\' '  ')" \
-              "$(git rev-parse --short HEAD)" \
-              > public/__deploy-status.json || true
-
-            chmod +x scripts/vps-env.sh scripts/vps-deploy.sh scripts/cutover-to-thamelpark.sh
+            set +e
             # shellcheck disable=SC1091
             . "$APP_DIR/scripts/vps-env.sh"
+            ENV_RC=$?
+            set -e
+            echo "vps-env-rc=$ENV_RC" >> public/__deploy-beacon.txt
+            if [ "$ENV_RC" -ne 0 ]; then
+              echo "ERROR: vps-env.sh failed"
+              exit 1
+            fi
 
             export GITHUB_SHA
             bash "$APP_DIR/scripts/vps-deploy.sh"
+            echo "deploy-script-ok" >> public/__deploy-beacon.txt
