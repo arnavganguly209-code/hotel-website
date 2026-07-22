@@ -71,7 +71,7 @@ fi
 echo "========== CUTOVER → localhost / thamelpark =========="
 date -u +"%Y-%m-%dT%H:%M:%SZ"
 
-BACKUP_DIR="${BACKUP_DIR:-/var/backups/hotel-thamel-park}"
+BACKUP_DIR="${BACKUP_DIR:-$ROOT/backups}"
 mkdir -p "$BACKUP_DIR"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 cp -a .env "$BACKUP_DIR/env-before-cutover-${STAMP}.bak"

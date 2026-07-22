@@ -81,7 +81,12 @@ jobs:
               echo "ERROR: .env missing in $APP_DIR"
               exit 1
             fi
-            mkdir -p public/uploads/{culture,gallery,rooms,dining,spa,logo,payments,hero,seo,general}
+
+            # NEVER lose VPS secrets / DATABASE_URL across git reset
+            cp -a .env "/tmp/htp-env-preserve-$$"
+            echo "Preserved .env before git sync"
+
+            mkdir -p public/uploads
 
             echo "git remote -v"
             git remote -v
@@ -90,7 +95,13 @@ jobs:
             git fetch origin
             git reset --hard origin/main
 
-            mkdir -p public/uploads/{culture,gallery,rooms,dining,spa,logo,payments,hero,seo,general}
+            # Restore VPS .env (do not use any .env that might have been in git history)
+            cp -a "/tmp/htp-env-preserve-$$" .env
+            rm -f "/tmp/htp-env-preserve-$$"
+            chmod 600 .env || true
+            echo "Restored preserved .env after git sync"
+
+            mkdir -p public/uploads
             touch public/uploads/.gitkeep
             chmod -R ug+rwX public/uploads || true
             export UPLOADS_ROOT="$APP_DIR/public/uploads"
@@ -104,6 +115,14 @@ jobs:
             else
               echo "OK: HEAD matches expected SHA (or GITHUB_SHA unset)"
             fi
+
+            # Lightweight status for remote debugging (host only, no secrets)
+            DB_HOST="$(grep -E '^DATABASE_URL=' .env 2>/dev/null | sed -E 's/.*@([^/:?]+).*/\1/' | head -1 || echo unknown)"
+            printf '{"updatedAt":"%s","message":"post-env-restore","databaseHost":"%s","commit":"%s"}\n' \
+              "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              "$(printf '%s' "$DB_HOST" | tr '"\\' '  ')" \
+              "$(git rev-parse --short HEAD)" \
+              > public/__deploy-status.json || true
 
             chmod +x scripts/vps-env.sh scripts/vps-deploy.sh scripts/cutover-to-thamelpark.sh
             # shellcheck disable=SC1091

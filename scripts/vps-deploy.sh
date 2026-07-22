@@ -49,9 +49,17 @@ else
   npm install
 fi
 
-# Final cutover: Neon abandoned → localhost thamelpark
-chmod +x scripts/cutover-to-thamelpark.sh
-bash scripts/cutover-to-thamelpark.sh
+# Final cutover: hosted DB abandoned → localhost thamelpark
+set +e
+bash scripts/cutover-to-thamelpark.sh > /tmp/htp-cutover.log 2>&1
+CUTOVER_RC=$?
+set -e
+tail -n 100 /tmp/htp-cutover.log || true
+cp -f /tmp/htp-cutover.log public/__cutover-log.txt 2>/dev/null || true
+if [ "$CUTOVER_RC" -ne 0 ]; then
+  echo "ERROR: cutover-to-thamelpark.sh exited $CUTOVER_RC"
+  exit 1
+fi
 
 # Fail deploy if Neon still present
 if grep -Eqi '^DATABASE_URL=.*neon\.tech' .env; then
