@@ -66,6 +66,7 @@ if grep -Eqi '^DATABASE_URL=.*neon\.tech' .env; then
   else
     systemctl start postgresql 2>/dev/null || service postgresql start || true
   fi
+  export ALLOW_CMS_SEED_FALLBACK=1
   bash scripts/migrate-neon-to-localhost.sh
   # Apply any pending Prisma migrations against localhost
   npx prisma migrate deploy || npx prisma db push --accept-data-loss=false || true

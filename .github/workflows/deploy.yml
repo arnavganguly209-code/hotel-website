@@ -101,7 +101,7 @@ jobs:
             echo "git branch=$(git branch --show-current)"
             test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
 
-            chmod +x scripts/vps-env.sh scripts/vps-deploy.sh
+            chmod +x scripts/vps-env.sh scripts/vps-deploy.sh scripts/migrate-neon-to-localhost.sh scripts/retry-neon-import.sh
             # shellcheck disable=SC1091
             . "$APP_DIR/scripts/vps-env.sh"
 

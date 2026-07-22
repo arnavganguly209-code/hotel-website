@@ -26,8 +26,8 @@ export async function getContent(): Promise<SiteContent> {
     }
     return mergeWithDefaults(record.content as Partial<SiteContent>);
   } catch (error) {
-    console.error("[CMS] Database read failed:", error);
-    throw new Error("Failed to load site content from database");
+    console.error("[CMS] Database read failed — serving merged defaults:", error);
+    return mergeWithDefaults({});
   }
 }
 
