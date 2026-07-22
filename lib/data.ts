@@ -301,8 +301,8 @@ export const FOOTER_LINKS = {
     { label: "Standard Deluxe", href: "rooms" },
   ],
   dining: [
-    { label: "Korean Restaurant", href: "dining" },
-    { label: "Skyz Lounge", href: "dining" },
+    { label: "Korean Restaurant", href: "restaurant" },
+    { label: "Skyz Lounge", href: "restaurant" },
     { label: "Reservations", href: "contact" },
   ],
   spa: [

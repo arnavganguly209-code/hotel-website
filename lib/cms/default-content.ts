@@ -54,7 +54,7 @@ export const defaultContent: SiteContent = {
     aboutPreview: { enabled: true, order: 2, eyebrow: "Heritage", title: "Authentic Cultural Experience", description: "Experience Nepali warmth and charm." },
     rooms: { enabled: true, order: 3, eyebrow: "Accommodations", title: "The Rooms", description: "Sanctuaries of refined comfort.", ctaText: "View All Rooms", ctaHref: routes.rooms },
     facilities: { enabled: true, order: 4, eyebrow: "Amenities", title: "World-Class Facilities", description: "Every detail curated for your comfort." },
-    dining: { enabled: true, order: 5, eyebrow: "Culinary", title: "Dining Experiences", description: "From Korean cuisine to rooftop evenings." },
+    dining: { enabled: true, order: 5, eyebrow: "Culinary", title: "Restaurant Experiences", description: "From Korean cuisine to rooftop evenings." },
     spa: { enabled: true, order: 6, eyebrow: "Wellness", title: "Spa & Renewal", description: "Restore body, mind, and spirit." },
     meetingsEvents: { enabled: true, order: 6.5, eyebrow: "Events & Meetings", title: "Meetings & Events", description: "World-class event facilities with Himalayan backdrops." },
     exploreKathmandu: { enabled: true, order: 6.75, eyebrow: "Explore Kathmandu", title: "Sightseeing & Day Trips", description: "Private and group excursions to UNESCO sites and hidden gems." },
@@ -379,7 +379,7 @@ export const defaultContent: SiteContent = {
     title: "Garden View & Korean Restaurant",
     description:
       "Garden View & Korean Restaurant offers a relaxing dining experience with beautiful ambiance, delicious cuisine, and memorable hospitality.",
-    ctaText: "Explore Dining",
+    ctaText: "Explore Restaurant",
     ctaHref: routes.dining,
     ctaVisible: true,
     showMist: true,
@@ -1028,22 +1028,22 @@ export const defaultContent: SiteContent = {
   diningPage: {
     hero: {
       title: "Garden View & Sky Lounge",
-      subtitle: "Dining Experience",
+      subtitle: "Restaurant Experience",
       description:
         "Experience exceptional cuisine, handcrafted beverages and unforgettable dining moments in the heart of Kathmandu.",
       imageSrc: "/media/dining/korean-restaurant.jpg",
       breadcrumbHome: "Home",
-      breadcrumbCurrent: "Dining",
+      breadcrumbCurrent: "Restaurant",
       overlayOpacity: 0.45,
       scrollHint: "Discover",
     },
     seo: {
-      title: "Dining Experience | Hotel Thamel Park & Spa",
+      title: "Restaurant | Hotel Thamel Park & Spa",
       description:
         "Reserve a table at Garden View Korean Restaurant or Sky Lounge Restaurant & Bar — fine dining and rooftop evenings in Thamel, Kathmandu.",
       keywords:
-        "hotel dining Kathmandu, Korean restaurant Thamel, sky lounge Kathmandu, fine dining Nepal, Hotel Thamel Park restaurant",
-      canonical: "/dining",
+        "hotel restaurant Kathmandu, Korean restaurant Thamel, sky lounge Kathmandu, fine dining Nepal, Hotel Thamel Park restaurant",
+      canonical: "/restaurant",
       ogImage: "/media/dining/korean-restaurant.jpg",
     },
     welcome: {
@@ -1058,7 +1058,7 @@ export const defaultContent: SiteContent = {
     },
     destinations: {
       eyebrow: "Destinations",
-      title: "Our Dining Destinations",
+      title: "Our Restaurant Destinations",
       description:
         "Two distinctive restaurants — each with its own character, cuisine, and atmosphere — awaiting your reservation.",
     },
@@ -1329,7 +1329,7 @@ export const defaultContent: SiteContent = {
     },
     gallerySection: {
       eyebrow: "Atmosphere",
-      title: "Dining Gallery",
+      title: "Restaurant Gallery",
       description: "A glimpse into our restaurants, tablescapes, and evenings above the city.",
     },
     gallery: [
@@ -1424,7 +1424,7 @@ export const defaultContent: SiteContent = {
     },
     faq: {
       eyebrow: "Helpful Details",
-      title: "Dining FAQ",
+      title: "Restaurant FAQ",
       description: "Answers to the questions our guests ask most often.",
       items: [
         {
@@ -1470,7 +1470,7 @@ export const defaultContent: SiteContent = {
       ],
     },
     cta: {
-      title: "Reserve an Exceptional Dining Experience",
+      title: "Reserve an Exceptional Restaurant Experience",
       description:
         "Whether a quiet garden lunch or a celebratory rooftop evening, our tables are ready for you.",
       buttonText: "Reserve Table",
@@ -2332,48 +2332,7 @@ export const defaultContent: SiteContent = {
       eyebrow: "People Behind the Experience",
       title: "Our Team",
       description: "Dedicated professionals who bring luxury hospitality to life every day.",
-      members: [
-        {
-          id: "t1",
-          enabled: true,
-          order: 1,
-          name: "Rajesh Sharma",
-          position: "General Manager",
-          bio: "Leading with vision and a passion for world-class Nepali hospitality.",
-          imageSrc:
-            "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80",
-        },
-        {
-          id: "t2",
-          enabled: true,
-          order: 2,
-          name: "Anita Gurung",
-          position: "Front Office Manager",
-          bio: "Ensuring every arrival feels seamless, warm, and memorable.",
-          imageSrc:
-            "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80",
-        },
-        {
-          id: "t3",
-          enabled: true,
-          order: 3,
-          name: "Kim Jae-ho",
-          position: "Executive Chef",
-          bio: "Crafting refined Korean and international cuisine with artistry.",
-          imageSrc:
-            "https://images.unsplash.com/photo-1583394293214-28ded15ee548?auto=format&fit=crop&w=600&q=80",
-        },
-        {
-          id: "t4",
-          enabled: true,
-          order: 4,
-          name: "Priya Thapa",
-          position: "Guest Relations",
-          bio: "Personalizing stays with thoughtful touches and local insight.",
-          imageSrc:
-            "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80",
-        },
-      ],
+      members: [],
     },
     awards: {
       eyebrow: "Recognition",
@@ -3135,7 +3094,7 @@ export const defaultContent: SiteContent = {
     quickLinks: [
       { label: "Overview", href: routes.home },
       { label: "Rooms", href: routes.rooms },
-      { label: "Dining", href: routes.dining },
+      { label: "Restaurant", href: routes.dining },
       { label: "Spa & Wellness", href: routes.spa },
       { label: "Gallery", href: routes.gallery },
       { label: "About Us", href: routes.about },

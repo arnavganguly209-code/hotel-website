@@ -86,7 +86,7 @@ export function LobbyCafeSection({ section }: LobbyCafeSectionProps) {
             {section.ctaVisible !== false && section.ctaText ? (
               <motion.div variants={luxuryFadeUp} className="mt-8">
                 <Link
-                  href={section.ctaHref || "/dining"}
+                  href={section.ctaHref || "/restaurant"}
                   prefetch
                   className="inline-flex items-center gap-2.5 rounded-full px-8 py-3.5 font-body text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition-all duration-500 hover:-translate-y-0.5"
                   style={{

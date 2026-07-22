@@ -40,8 +40,8 @@
         "href": "/rooms"
       },
       {
-        "label": "Dining",
-        "href": "/dining"
+        "label": "Restaurant",
+        "href": "/restaurant"
       },
       {
         "label": "Spa & Wellness",
@@ -1014,12 +1014,12 @@
   "diningPage": {
     "hero": {
       "title": "Culinary Excellence",
-      "subtitle": "Dining",
+      "subtitle": "Restaurant",
       "description": "From authentic Korean cuisine to rooftop evenings, every meal is an occasion.",
       "imageSrc": "/media/dining/korean-restaurant.jpg"
     },
     "seo": {
-      "title": "Dining | Hotel Thamel Park",
+      "title": "Restaurant | Hotel Thamel Park",
       "description": "Fine dining, Korean restaurant, and Sky Lounge at Hotel Thamel Park, Kathmandu."
     },
     "intro": {
@@ -1396,7 +1396,7 @@
     "quickLinks": [
       { "label": "Overview", "href": "/" },
       { "label": "Rooms", "href": "/rooms" },
-      { "label": "Dining", "href": "/dining" },
+      { "label": "Restaurant", "href": "/restaurant" },
       { "label": "Spa & Wellness", "href": "/spa" },
       { "label": "Gallery", "href": "/gallery" },
       { "label": "About Us", "href": "/about" },

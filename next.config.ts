@@ -21,6 +21,20 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "10mb",
     },
   },
+  async redirects() {
+    return [
+      {
+        source: "/dining",
+        destination: "/restaurant",
+        permanent: true,
+      },
+      {
+        source: "/dining/:path*",
+        destination: "/restaurant/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

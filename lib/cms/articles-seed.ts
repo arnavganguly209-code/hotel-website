@@ -105,7 +105,7 @@ const TOPICS: Array<{
         id: "where-to-book",
         title: "Where Discerning Guests Book",
         paragraphs: [
-          "Direct booking often unlocks flexible rates, late checkout requests, and spa add-ons. Explore <a href=\"/rooms\">rooms at Hotel Thamel Park</a>, then refine with our <a href=\"/spa\">spa experiences</a> and <a href=\"/dining\">dining venues</a>.",
+          "Direct booking often unlocks flexible rates, late checkout requests, and spa add-ons. Explore <a href=\"/rooms\">rooms at Hotel Thamel Park</a>, then refine with our <a href=\"/spa\">spa experiences</a> and <a href=\"/restaurant\">restaurants</a>.",
         ],
       },
     ],
@@ -310,7 +310,7 @@ const TOPICS: Array<{
         id: "evening",
         title: "Evenings Worth Dressing For",
         paragraphs: [
-          "Live music cafés, craft cocktail bars, and hotel sky lounges. End with a nightcap at <a href=\"/dining\">Sky Lounge</a> after dinner.",
+          "Live music cafés, craft cocktail bars, and hotel sky lounges. End with a nightcap at <a href=\"/restaurant\">Sky Lounge</a> after dinner.",
         ],
       },
     ],
@@ -342,7 +342,7 @@ const TOPICS: Array<{
         id: "reservations",
         title: "Reservations & Hotel Dining",
         paragraphs: [
-          "Book popular rooftops on weekends. In-house guests can reserve through reception — start at our <a href=\"/dining\">dining page</a>.",
+          "Book popular rooftops on weekends. In-house guests can reserve through reception — start at our <a href=\"/restaurant\">restaurant page</a>.",
         ],
       },
     ],
@@ -555,7 +555,7 @@ const TOPICS: Array<{
         id: "wellness-dining",
         title: "Spa, Dining & Events",
         paragraphs: [
-          "Book spa rituals, reserve dinner, or plan weddings and conferences. Visit <a href=\"/spa\">Spa</a>, <a href=\"/dining\">Dining</a>, and <a href=\"/meetings-events\">Meetings &amp; Events</a>.",
+          "Book spa rituals, reserve dinner, or plan weddings and conferences. Visit <a href=\"/spa\">Spa</a>, <a href=\"/restaurant\">Restaurant</a>, and <a href=\"/meetings-events\">Meetings &amp; Events</a>.",
         ],
       },
       {

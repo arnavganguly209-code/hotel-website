@@ -14,9 +14,9 @@ interface ExperienceSectionsProps {
 }
 
 const EXPERIENCE_META: Record<string, { eyebrow: string; href: string; cta: string }> = {
-  dining: { eyebrow: "Fine Dining", href: routes.dining, cta: "Explore Dining" },
-  cafe: { eyebrow: "Lobby Café", href: routes.dining, cta: "View Café Experience" },
-  lounge: { eyebrow: "Rooftop Experience", href: routes.dining, cta: "Explore Sky Lounge" },
+  dining: { eyebrow: "Fine Dining", href: routes.restaurant, cta: "Explore Restaurant" },
+  cafe: { eyebrow: "Lobby Café", href: routes.restaurant, cta: "View Café Experience" },
+  lounge: { eyebrow: "Rooftop Experience", href: routes.restaurant, cta: "Explore Sky Lounge" },
   spa: { eyebrow: "Spa & Wellness", href: routes.spa, cta: "Explore Wellness" },
   culture: { eyebrow: "Nepali Heritage", href: routes.culturalExperience, cta: "Explore Culture" },
   room: { eyebrow: "Accommodations", href: routes.rooms, cta: "View Rooms" },

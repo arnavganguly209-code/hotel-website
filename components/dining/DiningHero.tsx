@@ -65,7 +65,7 @@ export function DiningHero({ hero }: DiningHeroProps) {
             <span className="text-[#C5A059]" aria-hidden>
               ›
             </span>
-            <span className="text-white/90">{hero.breadcrumbCurrent || "Dining"}</span>
+            <span className="text-white/90">{hero.breadcrumbCurrent || "Restaurant"}</span>
           </nav>
 
           <motion.p

@@ -9,6 +9,7 @@ const SITE_PATHS = [
   "/gallery",
   "/articles",
   "/rooms",
+  "/restaurant",
   "/dining",
   "/spa",
   "/cultural-experience",

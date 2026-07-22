@@ -297,11 +297,11 @@ export function DiningReservationForm({
               ) : null}
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
                 <Link
-                  href="/dining"
+                  href="/restaurant"
                   className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#062C24] px-6 py-2.5 font-body text-[11px] font-semibold uppercase tracking-[0.16em] text-[#C5A059]"
                   onClick={() => setShowSuccess(false)}
                 >
-                  Return to Dining
+                  Return to Restaurant
                 </Link>
                 <button
                   type="button"

@@ -78,9 +78,6 @@ export function AboutPage({ content }: AboutPageProps) {
   const services = page.services.items
     .filter((i) => i.enabled !== false)
     .sort((a, b) => a.order - b.order);
-  const team = page.team.members
-    .filter((m) => m.enabled !== false)
-    .sort((a, b) => a.order - b.order);
   const awards = page.awards.items
     .filter((a) => a.enabled !== false)
     .sort((a, b) => a.order - b.order);
@@ -315,35 +312,6 @@ export function AboutPage({ content }: AboutPageProps) {
             description={page.team.description}
             center
           />
-          <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {team.map((member, i) => (
-              <motion.article
-                key={member.id}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.06 }}
-                className="group text-center"
-              >
-                <div className="relative mx-auto aspect-[3/4] w-full max-w-[260px] overflow-hidden rounded-2xl border border-[#D4AF37]/25">
-                  <Image
-                    src={member.imageSrc}
-                    alt={member.name}
-                    fill
-                    className="object-cover transition duration-700 group-hover:scale-105"
-                    sizes="260px"
-                  />
-                </div>
-                <h3 className="mt-5 font-display text-xl text-[#1A2E26]">{member.name}</h3>
-                <p className="mt-1 font-body text-[11px] uppercase tracking-[0.18em] text-[#C9A227]">
-                  {member.position}
-                </p>
-                <p className="mx-auto mt-3 max-w-xs font-body text-sm text-[#5A635C]">
-                  {member.bio}
-                </p>
-              </motion.article>
-            ))}
-          </div>
         </div>
       </section>
 

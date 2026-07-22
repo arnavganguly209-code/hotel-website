@@ -55,6 +55,29 @@ function ensureArticlesNavItem(items: SiteContent["header"]["menuItems"]) {
   return [...items, entry];
 }
 
+/** Migrate legacy /dining nav labels & hrefs to /restaurant. */
+function normalizeRestaurantNavLinks<T extends { label: string; href: string }>(
+  items: T[]
+): T[] {
+  return items.map((item) => {
+    const href =
+      item.href === "/dining" || item.href.startsWith("/dining/")
+        ? item.href.replace(/^\/dining/, "/restaurant")
+        : item.href;
+    const label =
+      item.label.trim().toLowerCase() === "dining" ? "Restaurant" : item.label;
+    return { ...item, href, label };
+  });
+}
+
+function normalizeRestaurantCtaHref(href: string | undefined, fallback: string): string {
+  const value = href !== undefined ? href : fallback;
+  if (value === "/dining" || value.startsWith("/dining/")) {
+    return value.replace(/^\/dining/, "/restaurant");
+  }
+  return value;
+}
+
 /** Preserve explicit empty values — never fall back to defaults when the field was set. */
 function definedString(value: string | undefined, fallback: string): string {
   return value !== undefined ? value : fallback;
@@ -177,9 +200,11 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     header: {
       ...defaultContent.header,
       ...partial.header,
-      menuItems: ensureArticlesNavItem(
-        ensureMeetingsNavItem(
-          definedArray(partial.header?.menuItems, defaultContent.header.menuItems)
+      menuItems: normalizeRestaurantNavLinks(
+        ensureArticlesNavItem(
+          ensureMeetingsNavItem(
+            definedArray(partial.header?.menuItems, defaultContent.header.menuItems)
+          )
         )
       ),
       overlayMenuItems: partial.header?.overlayMenuItems ?? defaultContent.header.overlayMenuItems,
@@ -467,7 +492,9 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       social: mergeFooterSocial(partial.footer?.social, partial.hotel?.social),
       colors: { ...defaultContent.footer.colors, ...(partial.footer?.colors ?? {}) },
       spacing: { ...defaultContent.footer.spacing, ...(partial.footer?.spacing ?? {}) },
-      quickLinks: definedArray(partial.footer?.quickLinks, defaultContent.footer.quickLinks),
+      quickLinks: normalizeRestaurantNavLinks(
+        definedArray(partial.footer?.quickLinks, defaultContent.footer.quickLinks)
+      ),
       galleryPreview: definedArray(
         partial.footer?.galleryPreview,
         defaultContent.footer.galleryPreview
@@ -739,10 +766,28 @@ function mergeDiningPage(
     hero: {
       ...defaults.hero,
       ...(partial.hero ?? {}),
+      subtitle:
+        partial.hero?.subtitle === "Dining" ||
+        partial.hero?.subtitle === "Dining Experience"
+          ? defaults.hero.subtitle
+          : definedString(partial.hero?.subtitle, defaults.hero.subtitle),
+      breadcrumbCurrent:
+        partial.hero?.breadcrumbCurrent === "Dining"
+          ? defaults.hero.breadcrumbCurrent
+          : definedString(partial.hero?.breadcrumbCurrent, defaults.hero.breadcrumbCurrent),
     },
     seo: {
       ...defaults.seo,
       ...(partial.seo ?? {}),
+      title:
+        partial.seo?.title?.includes("Dining |") ||
+        partial.seo?.title?.startsWith("Dining Experience")
+          ? defaults.seo.title
+          : definedString(partial.seo?.title, defaults.seo.title),
+      canonical:
+        partial.seo?.canonical === "/dining"
+          ? (defaults.seo.canonical ?? "/restaurant")
+          : definedString(partial.seo?.canonical, defaults.seo.canonical ?? "/restaurant"),
     },
     welcome: {
       ...defaults.welcome,
@@ -759,6 +804,10 @@ function mergeDiningPage(
     destinations: {
       ...defaults.destinations,
       ...(partial.destinations ?? {}),
+      title:
+        partial.destinations?.title === "Our Dining Destinations"
+          ? defaults.destinations.title
+          : definedString(partial.destinations?.title, defaults.destinations.title),
     },
     venues,
     menu: {
@@ -1204,6 +1253,11 @@ function mergeFineDiningSection(
   return {
     ...defaults,
     ...partial,
+    ctaText:
+      partial.ctaText === "Explore Dining"
+        ? defaults.ctaText
+        : definedString(partial.ctaText, defaults.ctaText),
+    ctaHref: normalizeRestaurantCtaHref(partial.ctaHref, defaults.ctaHref),
     ctaVisible: partial.ctaVisible !== false,
     showMist: partial.showMist !== false,
     media: {
@@ -1225,6 +1279,7 @@ function mergeLobbyCafeSection(
     ...defaults,
     ...partial,
     enabled: partial.enabled !== false,
+    ctaHref: normalizeRestaurantCtaHref(partial.ctaHref, defaults.ctaHref),
     ctaVisible: partial.ctaVisible !== false,
     showMist: partial.showMist !== false,
     media: {
@@ -1246,6 +1301,7 @@ function mergeRooftopExperienceSection(
     ...defaults,
     ...partial,
     enabled: partial.enabled !== false,
+    ctaHref: normalizeRestaurantCtaHref(partial.ctaHref, defaults.ctaHref),
     ctaVisible: partial.ctaVisible !== false,
     showMist: partial.showMist !== false,
     media: {
@@ -1687,7 +1743,8 @@ function mergeAboutPage(
     team: {
       ...defaults.team,
       ...(partial.team ?? {}),
-      members: definedArray(partial.team?.members, defaults.team.members),
+      // Team member cards removed from public About page.
+      members: [],
     },
     awards: {
       ...defaults.awards,

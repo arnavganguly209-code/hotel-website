@@ -20,7 +20,7 @@ type SectionId = (typeof SECTIONS)[number]["id"];
 const SITEMAP_LINKS = [
   { label: "Overview", href: routes.home },
   { label: "Rooms", href: routes.rooms },
-  { label: "Dining", href: routes.dining },
+  { label: "Restaurant", href: routes.restaurant },
   { label: "Spa & Wellness", href: routes.spa },
   { label: "Meetings & Events", href: routes.meetingsEvents },
   { label: "Gallery", href: routes.gallery },
