@@ -69,7 +69,8 @@ function existingMediaOrFallback(src: string | undefined, fallback: string): str
   if (!value) return fallback;
   if (!value.includes("/uploads/")) return value;
   const absolute = resolveLocalUploadPath(value);
-  return absolute && existsSync(absolute) ? value : fallback;
+  // Missing Orbit upload → empty (elegant placeholder), never resurrect deleted media.
+  return absolute && existsSync(absolute) ? value : "";
 }
 
 function normalizeRoomMedia(
@@ -454,6 +455,7 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       pwaEnabled: partial.performanceSettings?.pwaEnabled !== false,
       imageFadeIn: partial.performanceSettings?.imageFadeIn !== false,
       cacheStaticAssets: partial.performanceSettings?.cacheStaticAssets !== false,
+      mediaRevision: partial.performanceSettings?.mediaRevision ?? "",
     },
     theme: { ...defaultContent.theme, ...(partial.theme ?? {}) },
     settings: { ...defaultContent.settings, ...(partial.settings ?? {}) },
@@ -549,39 +551,70 @@ function mergeHero(
     };
   }
 
-  // The rebuilt hero has no "none" state: legacy clean-background records move
-  // to the bundled demo video until an administrator publishes image/video media.
+  // One-time migration for pre-v2 / retired upload paths only.
+  // After schemaVersion 2, empty Orbit media stays empty (no demo flash).
   const legacyVideoSrc =
     partial.videoSrc?.split("?")[0]?.endsWith(LEGACY_HERO_VIDEO_SRC) ?? false;
-  const legacyMedia =
-    partial.schemaVersion !== 2 ||
-    !partial.mediaMode ||
-    partial.mediaMode === "none" ||
-    legacyVideoSrc;
+  const isLegacyRecord = partial.schemaVersion !== 2 || legacyVideoSrc;
+
+  const mergedImage = {
+    ...defaults.image,
+    ...partial.image,
+    src: isLegacyRecord
+      ? (partial.image?.src?.trim() || defaults.image.src)
+      : definedString(partial.image?.src, defaults.image.src),
+    desktopSrc: isLegacyRecord
+      ? (partial.image?.desktopSrc?.trim() || defaults.image.desktopSrc)
+      : definedString(partial.image?.desktopSrc, defaults.image.desktopSrc),
+    tabletSrc: isLegacyRecord
+      ? (partial.image?.tabletSrc?.trim() || defaults.image.tabletSrc)
+      : definedString(partial.image?.tabletSrc, defaults.image.tabletSrc),
+    mobileSrc: isLegacyRecord
+      ? (partial.image?.mobileSrc?.trim() || defaults.image.mobileSrc)
+      : definedString(partial.image?.mobileSrc, defaults.image.mobileSrc),
+  };
+
+  const videoSrc = isLegacyRecord
+    ? defaults.videoSrc
+    : partial.videoSrc !== undefined
+      ? partial.videoSrc.trim()
+      : defaults.videoSrc;
+  const poster = isLegacyRecord
+    ? defaults.poster
+    : partial.poster !== undefined
+      ? partial.poster.trim()
+      : defaults.poster;
+  const hasVideo = Boolean(videoSrc);
+  const hasImage = Boolean(mergedImage.src?.trim());
+  const mediaMode = isLegacyRecord
+    ? "video"
+    : partial.mediaMode === "none"
+      ? "none"
+      : partial.mediaMode === "image"
+        ? hasImage
+          ? "image"
+          : "none"
+        : hasVideo
+          ? "video"
+          : hasImage
+            ? "image"
+            : "none";
 
   return {
     ...defaults,
     ...partial,
     schemaVersion: 2,
-    mediaMode: legacyMedia
-      ? "video"
-      : partial.mediaMode === "image"
-        ? "image"
-        : "video",
-    videoSrc: legacyMedia
-      ? defaults.videoSrc
-      : (partial.videoSrc?.trim() || defaults.videoSrc),
-    poster: legacyMedia
-      ? defaults.poster
-      : (partial.poster?.trim() || defaults.poster),
-    overlayOpacity: legacyMedia
+    mediaMode,
+    videoSrc,
+    poster,
+    overlayOpacity: isLegacyRecord
       ? defaults.overlayOpacity
       : (partial.overlayOpacity ?? defaults.overlayOpacity),
-    overlayColor: legacyMedia
+    overlayColor: isLegacyRecord
       ? defaults.overlayColor
       : (partial.overlayColor ?? defaults.overlayColor),
     colors: { ...defaults.colors, ...partial.colors },
-    image: { ...defaults.image, ...partial.image },
+    image: mergedImage,
     logo: { ...defaults.logo, ...partial.logo },
     titleStyle: { ...defaults.titleStyle, ...partial.titleStyle },
     subtitleStyle: { ...defaults.subtitleStyle, ...partial.subtitleStyle },
@@ -602,7 +635,7 @@ function mergeHero(
       animations: { ...defaults.bookingBar.animations, ...partial.bookingBar?.animations },
       responsive: {
         ...defaults.bookingBar.responsive,
-        ...(legacyMedia ? undefined : partial.bookingBar?.responsive),
+        ...(isLegacyRecord ? undefined : partial.bookingBar?.responsive),
       },
     },
     effects: { ...defaults.effects, ...partial.effects },

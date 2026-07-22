@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/cms/auth";
+import { getContent, saveContent } from "@/lib/cms/store";
 import { revalidateSiteContent } from "@/lib/cms/revalidate";
 import { deleteLocalUpload, toPublicId } from "@/lib/uploads";
 
@@ -24,6 +25,21 @@ export async function DELETE(request: Request) {
     }
 
     const result = await deleteLocalUpload(target);
+
+    // Bust every media URL immediately after Orbit deletes a file.
+    try {
+      const content = await getContent();
+      const mediaRevision = String(Date.now());
+      await saveContent({
+        ...content,
+        performanceSettings: {
+          ...content.performanceSettings,
+          mediaRevision,
+        },
+      });
+    } catch (error) {
+      console.warn("[Media] Could not bump mediaRevision after delete:", error);
+    }
 
     revalidateSiteContent();
 

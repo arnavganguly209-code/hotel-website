@@ -1259,6 +1259,8 @@ export interface SiteContent {
     pwaEnabled: boolean;
     imageFadeIn: boolean;
     cacheStaticAssets: boolean;
+    /** Bumped on every Orbit Save/Publish to bust media caches site-wide. */
+    mediaRevision?: string;
   };
   theme: ThemeSettings;
   settings: {

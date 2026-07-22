@@ -43,13 +43,21 @@ export async function PUT(request: Request) {
       );
     }
 
-    await saveContent(content);
+    const mediaRevision = String(Date.now());
+    await saveContent({
+      ...content,
+      performanceSettings: {
+        ...content.performanceSettings,
+        mediaRevision,
+      },
+    });
     revalidateSiteContent();
-    console.info("[CMS] Database updated");
+    console.info("[CMS] Database updated", { mediaRevision });
 
     return NextResponse.json({
       success: true,
       message: "Content saved successfully",
+      mediaRevision,
       paymentLogos: content.footer?.paymentLogos ?? null,
     });
   } catch (error) {

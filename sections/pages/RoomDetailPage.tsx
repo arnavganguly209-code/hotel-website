@@ -89,7 +89,7 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
   return (
     <main className="overflow-x-clip bg-[#f8f4eb]">
       <section className="relative min-h-[540px] overflow-hidden lg:min-h-[680px]">
-        <SafeImage src={room.imageSrc} fallbackSrc={gallery.find((src) => src !== room.imageSrc) || "/media/rooms/super-deluxe.jpg"} alt={room.seo?.altText || room.name} fill priority fadeIn={false} objectFit="cover" sizes="100vw" />
+        <SafeImage src={room.imageSrc} alt={room.seo?.altText || room.name} fill priority fadeIn={false} objectFit="cover" sizes="100vw" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0d241a]/90 via-[#0d241a]/25 to-black/15" />
         <div className="relative mx-auto flex min-h-[540px] max-w-7xl flex-col justify-end px-5 pb-16 pt-32 text-white lg:min-h-[680px] lg:px-8 lg:pb-20">
           <nav className="mb-5 text-[10px] uppercase tracking-[0.23em] text-white/65">
@@ -207,7 +207,7 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
             <div className="mt-8 grid gap-6 md:grid-cols-3">
               {suggestedRooms.slice(0, 3).map((suggested) => (
                 <Link key={suggested.id} href={roomDetailPath(roomPublicSlug(suggested))} className="group overflow-hidden rounded-[24px] border border-[#d3bb8a]/25 bg-white shadow-sm">
-                  <div className="relative aspect-[16/10] overflow-hidden"><SafeImage src={suggested.imageSrc} fallbackSrc="/media/rooms/super-deluxe.jpg" alt={suggested.seo?.altText || suggested.name} fill fadeIn={false} className="object-cover transition duration-700 group-hover:scale-105" /></div>
+                  <div className="relative aspect-[16/10] overflow-hidden"><SafeImage src={suggested.imageSrc} alt={suggested.seo?.altText || suggested.name} fill fadeIn={false} className="object-cover transition duration-700 group-hover:scale-105" /></div>
                   <div className="p-5"><h3 className="font-display text-2xl text-[#153a2a]">{suggested.name}</h3><p className="mt-2 text-sm text-[#68736d]">From ${suggested.price} / night</p></div>
                 </Link>
               ))}

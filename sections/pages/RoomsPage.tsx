@@ -43,8 +43,7 @@ export function RoomsPage({ rooms, page, search, hasSearch }: RoomsPageProps) {
     <main className="overflow-x-clip bg-[#f8f4eb]">
       <section className="relative min-h-[430px] overflow-hidden md:min-h-[520px]">
         <SafeImage
-          src={page.hero.imageSrc || rooms[0]?.imageSrc}
-          fallbackSrc="/media/rooms/super-deluxe.jpg"
+          src={page.hero.imageSrc || rooms[0]?.imageSrc || ""}
           alt={page.hero.imageAlt}
           fill
           priority

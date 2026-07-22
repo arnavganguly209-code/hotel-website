@@ -1,5 +1,5 @@
-/* Hotel Thamel Park — lightweight static cache SW (network-first for HTML/API) */
-const CACHE = "htp-static-v1";
+/* Hotel Thamel Park — static shell only. Never cache Orbit media. */
+const CACHE = "htp-static-v3-no-media";
 const PRECACHE = ["/", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -16,6 +16,14 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "PURGE_MEDIA_CACHE") {
+    event.waitUntil(
+      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+    );
+  }
+});
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
@@ -23,17 +31,20 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Never cache CMS / API / Orbit
+  // Never intercept CMS, API, Orbit, uploads, or any media/video asset.
+  // Cache-first media was causing deleted Orbit assets to flash from SW memory.
   if (
     url.pathname.startsWith("/api/") ||
     url.pathname.startsWith("/orbit") ||
-    url.pathname.startsWith("/uploads/")
+    url.pathname.startsWith("/uploads/") ||
+    url.pathname.startsWith("/media/") ||
+    /\.(mp4|webm|mov|m4v|jpg|jpeg|png|webp|gif|svg|avif)(\?|$)/i.test(url.pathname)
   ) {
     return;
   }
 
-  // Cache-first for hashed Next static assets
-  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/media/") || url.pathname.startsWith("/icons/")) {
+  // Cache-first for hashed Next static assets only
+  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/")) {
     event.respondWith(
       caches.open(CACHE).then(async (cache) => {
         const cached = await cache.match(request);
@@ -46,15 +57,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Network-first for HTML navigations
+  // Network-first for HTML navigations — do not serve stale pages with old media URLs
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(request, copy));
-          return response;
-        })
+      fetch(request, { cache: "no-store" })
+        .then((response) => response)
         .catch(() => caches.match(request).then((r) => r || caches.match("/")))
     );
   }

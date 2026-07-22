@@ -129,7 +129,7 @@ export function HeroBuilder({
   const setHeroImage = (url: string) => {
     if (!url) {
       patch({
-        mediaMode: "video",
+        mediaMode: hero.videoSrc?.trim() ? "video" : "none",
         image: { ...hero.image, src: "", desktopSrc: "", tabletSrc: "", mobileSrc: "" },
       });
       return;
@@ -180,16 +180,16 @@ export function HeroBuilder({
     }
   };
 
-  /** Clear uploaded media and return to the bundled temporary demo video. */
+  /** Clear Orbit hero media. Never restore demo assets — empty = elegant blank hero. */
   const removeHeroMedia = () => {
     patch({
-      mediaMode: "video",
+      mediaMode: "none",
       previousMedia: { imageSrc: "", videoSrc: "" },
       videoSrc: "",
       poster: "",
       image: { ...hero.image, src: "", desktopSrc: "", tabletSrc: "", mobileSrc: "" },
     });
-    setUploadSuccess("Demo video restored");
+    setUploadSuccess("Hero media cleared");
   };
 
   /** Swap current and previous media (works after Replace or Remove). */
@@ -343,7 +343,7 @@ export function HeroBuilder({
                 className="border-red-400/30 text-red-300"
                 onClick={removeHeroMedia}
               >
-                <Trash2 className="mr-2 h-3.5 w-3.5" /> Reset to Demo Video
+                <Trash2 className="mr-2 h-3.5 w-3.5" /> Clear Hero Media
               </Button>
             )}
             {uploadSuccess ? (

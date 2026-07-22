@@ -18,9 +18,10 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
   const [fullscreen, setFullscreen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const touchStart = useRef<number | null>(null);
-  const gallery = images.length ? images : ["/media/rooms/super-deluxe.jpg"];
+  const gallery = images.filter(Boolean);
 
   const go = useCallback((dir: -1 | 1) => {
+    if (!gallery.length) return;
     setActive((i) => (i + dir + gallery.length) % gallery.length);
     setZoom(1);
   }, [gallery.length]);
@@ -40,6 +41,23 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [fullscreen, go]);
+
+  if (!gallery.length) {
+    return (
+      <div
+        className={cn(
+          "relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-[28px] border border-luxury-gold/20 bg-gradient-to-br from-stone-800 via-stone-700 to-stone-900 shadow-luxury-lg",
+          className
+        )}
+      >
+        <div className="text-center px-6">
+          <div className="mx-auto mb-3 h-px w-12 bg-luxury-gold/50" />
+          <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-luxury-gold/80">{alt}</p>
+          <p className="mt-2 text-[9px] uppercase tracking-widest text-white/30">Add gallery images in Orbit</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -66,7 +84,6 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
           >
             <SafeImage
               src={gallery[active]}
-              fallbackSrc="/media/rooms/super-deluxe.jpg"
               alt={alt}
               fill
               priority={active === 0}
@@ -133,7 +150,7 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
                 i === active ? "border-luxury-gold shadow-luxury-gold" : "border-white/50 opacity-75 hover:opacity-100"
               )}
             >
-              <SafeImage src={src} fallbackSrc="/media/rooms/super-deluxe.jpg" alt="" fill fadeIn={false} className="object-cover" />
+              <SafeImage src={src} alt="" fill fadeIn={false} className="object-cover" />
             </button>
           ))}
         </div>
@@ -169,7 +186,6 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
             <div className="relative h-[78vh] w-[88vw] overflow-auto">
               <SafeImage
                 src={gallery[active]}
-                fallbackSrc="/media/rooms/super-deluxe.jpg"
                 alt={`${alt} — image ${active + 1} of ${gallery.length}`}
                 fill
                 priority

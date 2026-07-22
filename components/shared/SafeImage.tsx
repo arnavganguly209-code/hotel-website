@@ -20,6 +20,10 @@ interface SafeImageProps {
   style?: React.CSSProperties;
   /** Soft fade-in when image loads (default follows Orbit performance setting) */
   fadeIn?: boolean;
+  /**
+   * Optional same-asset retry sibling only. Never pass deleted/demo media here —
+   * empty Orbit fields must stay empty (elegant placeholder), not flash old files.
+   */
   fallbackSrc?: string;
 }
 
@@ -44,8 +48,9 @@ export function SafeImage({
   fallbackSrc,
 }: SafeImageProps) {
   const perf = usePerformanceSettings();
-  const resolved = mediaUrl(src, src);
-  const fallback = mediaUrl(fallbackSrc, fallbackSrc);
+  const revision = perf.mediaRevision || "";
+  const resolved = mediaUrl(src, revision || src);
+  const fallback = mediaUrl(fallbackSrc, revision || fallbackSrc);
   const [errorState, setErrorState] = useState({
     source: "",
     attempt: 0,
@@ -57,7 +62,7 @@ export function SafeImage({
   const attempt = errorState.source === resolved ? errorState.attempt : 0;
   const hasFallback = Boolean(fallback && fallback !== resolved);
   const failed = attempt >= (hasFallback ? 3 : 2);
-  const baseSrc = attempt >= 2 && hasFallback ? fallback : resolved || fallback;
+  const baseSrc = attempt >= 2 && hasFallback ? fallback : resolved;
   const displaySrc =
     attempt === 1 && baseSrc
       ? `${baseSrc}${baseSrc.includes("?") ? "&" : "?"}retry=${errorState.token}`

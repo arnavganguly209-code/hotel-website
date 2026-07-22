@@ -3108,6 +3108,7 @@ export const defaultContent: SiteContent = {
     pwaEnabled: true,
     imageFadeIn: true,
     cacheStaticAssets: true,
+    mediaRevision: "",
   },
   theme: {
     primary: "#244736",

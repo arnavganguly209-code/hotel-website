@@ -69,7 +69,12 @@ async function handle(
         path: `/uploads/${(segments || []).join("/")}`,
         root: uploadsRoot(),
       },
-      { status: 404 }
+      {
+        status: 404,
+        headers: {
+          "Cache-Control": "no-store, max-age=0, must-revalidate",
+        },
+      }
     );
   }
 

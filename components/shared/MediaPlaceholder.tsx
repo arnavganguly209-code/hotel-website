@@ -64,7 +64,6 @@ export function MediaPlaceholder({
         >
           <SafeImage
             src={src}
-            fallbackSrc={variant === "room" ? "/media/rooms/super-deluxe.jpg" : undefined}
             alt={alt}
             fill
             priority={priority}

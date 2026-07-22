@@ -11,6 +11,7 @@ const PerformanceContext = createContext<PerformanceSettings>({
   pwaEnabled: true,
   imageFadeIn: true,
   cacheStaticAssets: true,
+  mediaRevision: "",
 });
 
 export function PerformanceProvider({
