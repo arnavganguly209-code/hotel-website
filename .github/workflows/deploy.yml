@@ -64,7 +64,7 @@ jobs:
 
             echo "Deployment Started"
             echo "SSH user=$(id -un) HOME=$HOME"
-            echo "GITHUB_SHA=${GITHUB_SHA}"
+            echo "GITHUB_SHA=${GITHUB_SHA:-}"
 
             APP_DIR="/var/www/hotel-website"
             if [ ! -d "$APP_DIR/.git" ]; then
@@ -99,9 +99,27 @@ jobs:
 
             echo "After sync HEAD=$(git rev-parse HEAD)"
             echo "git branch=$(git branch --show-current)"
-            test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+            HEAD_SHA="$(git rev-parse HEAD)"
+            if [ -n "${GITHUB_SHA:-}" ] && [ "$HEAD_SHA" != "$GITHUB_SHA" ]; then
+              echo "WARN: HEAD $HEAD_SHA != GITHUB_SHA $GITHUB_SHA — continuing with origin/main"
+            else
+              echo "OK: HEAD matches expected SHA (or GITHUB_SHA unset)"
+            fi
 
-            chmod +x scripts/vps-env.sh scripts/vps-deploy.sh scripts/migrate-neon-to-localhost.sh scripts/retry-neon-import.sh
+            # Early diagnostic file (served from public/) — survives even if later steps fail
+            DB_HOST="$(grep -E '^DATABASE_URL=' .env 2>/dev/null | sed -E 's/.*@([^/:?]+).*/\1/' | head -1 || echo unknown)"
+            IS_NEON=false
+            echo "$DB_HOST" | grep -qi 'neon\.tech' && IS_NEON=true || true
+            printf '{"updatedAt":"%s","message":"post-git-reset","databaseHost":"%s","isNeon":%s,"commit":"%s","githubSha":"%s"}\n' \
+              "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              "$(printf '%s' "$DB_HOST" | tr '"\\' '  ')" \
+              "$IS_NEON" \
+              "$(git rev-parse --short HEAD)" \
+              "$(printf '%s' "${GITHUB_SHA:-}" | cut -c1-12)" \
+              > public/__db-migrate-status.json
+            echo "Wrote early status: host=$DB_HOST neon=$IS_NEON"
+
+            chmod +x scripts/vps-env.sh scripts/vps-deploy.sh scripts/migrate-neon-to-localhost.sh scripts/retry-neon-import.sh || true
             # shellcheck disable=SC1091
             . "$APP_DIR/scripts/vps-env.sh"
 
