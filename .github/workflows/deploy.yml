@@ -2,6 +2,7 @@
 # Target: https://hotel.theglobalorbit.com (/var/www/hotel-website)
 #
 # Required secrets: VPS_HOST, VPS_USER, VPS_PORT, VPS_SSH_KEY
+# retrigger logo deploy
 
 name: Deploy to Hostinger VPS
 
