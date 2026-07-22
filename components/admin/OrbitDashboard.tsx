@@ -28,6 +28,7 @@ import {
   Plus,
   Trash2,
   FileText,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
@@ -44,6 +45,7 @@ import { SpaPageEditor } from "@/components/admin/SpaPageEditor";
 import { ContactPageEditor } from "@/components/admin/ContactPageEditor";
 import { AboutPageEditor } from "@/components/admin/AboutPageEditor";
 import { ArticlesManager } from "@/components/admin/ArticlesManager";
+import { AdminAccountPanel } from "@/components/admin/AdminAccountPanel";
 import type { SiteContent } from "@/lib/cms/types";
 import {
   isPaymentLogoCleared,
@@ -89,6 +91,7 @@ const SECTIONS = [
   { id: "media", label: "Media Library", icon: Image },
   { id: "backups", label: "Backups", icon: Save },
   { id: "settings", label: "Settings", icon: Settings },
+  { id: "adminAccount", label: "Admin Management", icon: Users },
 ] as const;
 
 type SectionId = (typeof SECTIONS)[number]["id"];
@@ -3573,6 +3576,16 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   setSaved(true);
                 }}>Create Backup Now</Button>
                 <p className="mt-4 text-xs text-white/40">Backups are stored in PostgreSQL.</p>
+              </>
+            )}
+
+            {activeSection === "adminAccount" && (
+              <>
+                <p className="mb-4 text-sm text-white/50">
+                  Manage the Admin PMS (/admin) login — change password, reset to default, and review
+                  recent sign-in activity.
+                </p>
+                <AdminAccountPanel />
               </>
             )}
           </div>

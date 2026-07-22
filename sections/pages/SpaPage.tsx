@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import { DynamicIcon } from "@/components/shared/DynamicIcon";
 import { SafeImage } from "@/components/shared/SafeImage";
+import { SpaInquiryForm } from "@/components/spa/SpaInquiryForm";
 import { luxuryEase, luxuryFadeUp, luxuryStagger } from "@/lib/animations";
 import type { SiteContent } from "@/lib/cms/types";
 
@@ -602,6 +603,9 @@ export function SpaPage({ content }: SpaPageProps) {
           </div>
         </div>
       </section>
+
+      {/* Quick inquiry form (direct enquiries handled internally) */}
+      <SpaInquiryForm />
 
       {/* FAQ */}
       {faqs.length > 0 ? (

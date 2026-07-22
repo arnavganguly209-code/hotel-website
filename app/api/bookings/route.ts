@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isDatabaseAvailable, db } from "@/lib/db";
 import { getContent } from "@/lib/cms/store";
+import { assertBookingAvailability } from "@/lib/admin/availability";
 import {
   bookingDatesAreValid,
   calculateBookingTotal,
@@ -84,6 +85,17 @@ export async function POST(req: Request) {
     }
     const breakfast = body.breakfast === "room-only" ? "room-only" : "with-breakfast";
     const nights = calculateNights(body.checkIn, body.checkOut);
+
+    const availability = await assertBookingAvailability({
+      roomSlug: roomPublicSlug(room),
+      checkIn: body.checkIn,
+      checkOut: body.checkOut,
+      roomQuantity,
+    });
+    if (!availability.ok) {
+      return NextResponse.json({ success: false, error: availability.error }, { status: 400 });
+    }
+
     const totalAmount = calculateBookingTotal({
       room,
       nights,
@@ -120,6 +132,7 @@ export async function POST(req: Request) {
         paymentStatus: body.paymentMethod === "online" ? "awaiting_payment" : "pay_at_hotel",
         transactionId: null,
         roomId: null,
+        source: "online",
       },
     });
 

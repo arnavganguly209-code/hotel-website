@@ -59,6 +59,8 @@ model Booking {
   arrivalTime     String    @default("")
   flightNumber    String    @default("")
   notes           String    @default("")
+  remarks         String    @default("")
+  source          String    @default("online")
   paymentMethod   String    @default("hotel")
   cardLast4       String    @default("")
   totalAmount     Int       @default(0)
@@ -67,8 +69,14 @@ model Booking {
   paymentStatus   String    @default("unpaid")
   transactionId   String?
   createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   roomId          Int?
   room            Room?     @relation(fields: [roomId], references: [id])
+
+  @@index([roomSlug, checkIn, checkOut])
+  @@index([status])
+  @@index([source])
+  @@index([createdAt])
 }
 
 model EventInquiry {
@@ -134,4 +142,99 @@ model DiningReservation {
   adminNotes      String    @default("")
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+}
+
+model AdminUser {
+  id                 String         @id @default(cuid())
+  username           String         @unique
+  passwordHash       String
+  passwordChangedAt  DateTime       @default(now())
+  createdAt          DateTime       @default(now())
+  lastLoginAt        DateTime?
+  failedAttempts     Int            @default(0)
+  lockedUntil        DateTime?
+  sessions           AdminSession[]
+  loginEvents        AdminLoginEvent[]
+}
+
+model AdminSession {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  ip        String    @default("")
+  userAgent String    @default("")
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AdminLoginEvent {
+  id        String    @id @default(cuid())
+  userId    String?
+  user      AdminUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  username  String    @default("")
+  success   Boolean
+  ip        String    @default("")
+  userAgent String    @default("")
+  createdAt DateTime  @default(now())
+
+  @@index([createdAt])
+}
+
+model RoomInventory {
+  id         String   @id @default(cuid())
+  roomSlug   String   @unique
+  totalRooms Int      @default(1)
+  overrides  Json?
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
+}
+
+model RoomBlock {
+  id        String   @id @default(cuid())
+  roomSlug  String
+  startDate DateTime
+  endDate   DateTime
+  reason    String   @default("other")
+  notes     String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([roomSlug, startDate, endDate])
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+model SpaInquiry {
+  id             Int       @id @default(autoincrement())
+  fullName       String
+  email          String
+  phone          String    @default("")
+  preferredDate  DateTime?
+  preferredTime  String    @default("")
+  treatment      String    @default("")
+  guests         Int       @default(1)
+  specialRequest String    @default("")
+  status         String    @default("new")
+  adminNotes     String    @default("")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model SiteVisitDay {
+  id        String   @id @default(cuid())
+  day       DateTime @unique @db.Date
+  count     Int      @default(0)
+  updatedAt DateTime @updatedAt
 }

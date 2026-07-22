@@ -26,6 +26,8 @@ type SocialItem = {
 
 export function FooterNewsletter({ newsletter, social }: FooterNewsletterProps) {
   const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
 
   const socialLinks: SocialItem[] = [
     {
@@ -69,9 +71,30 @@ export function FooterNewsletter({ newsletter, social }: FooterNewsletterProps) 
         </p>
 
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            setEmail("");
+            if (status === "loading") return;
+            setStatus("loading");
+            setMessage("");
+            try {
+              const res = await fetch("/api/newsletter", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+              });
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok || !data.success) {
+                setStatus("error");
+                setMessage(data.error || "Unable to subscribe. Please try again.");
+                return;
+              }
+              setStatus("success");
+              setMessage("Thank you for subscribing!");
+              setEmail("");
+            } catch {
+              setStatus("error");
+              setMessage("Unable to subscribe. Please try again.");
+            }
           }}
           className="mb-7 space-y-3"
         >
@@ -98,11 +121,12 @@ export function FooterNewsletter({ newsletter, social }: FooterNewsletterProps) 
           />
           <button
             type="submit"
+            disabled={status === "loading"}
             className={cn(
               "w-full rounded-md px-5 py-3.5",
               "font-display text-[11px] font-bold uppercase tracking-[0.28em]",
               "shadow-[0_6px_18px_rgba(0,0,0,0.25)]",
-              "transition-all duration-500"
+              "transition-all duration-500 disabled:cursor-not-allowed disabled:opacity-70"
             )}
             style={{
               backgroundColor: FOOTER.button,
@@ -122,8 +146,16 @@ export function FooterNewsletter({ newsletter, social }: FooterNewsletterProps) 
               e.currentTarget.style.borderColor = `${FOOTER.gold}55`;
             }}
           >
-            {newsletter.buttonText}
+            {status === "loading" ? "Subscribing…" : newsletter.buttonText}
           </button>
+          {message ? (
+            <p
+              className="font-body text-[12px] tracking-[0.02em]"
+              style={{ color: status === "error" ? "#e58a8a" : FOOTER.gold }}
+            >
+              {message}
+            </p>
+          ) : null}
         </form>
 
         {socialLinks.length > 0 ? (

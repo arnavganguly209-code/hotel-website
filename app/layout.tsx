@@ -17,6 +17,7 @@ import {
 } from "@/lib/brand";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
+import { trackSiteVisit } from "@/lib/analytics/track-visit";
 import "./globals.css";
 
 const cinzel = Cinzel({
@@ -148,6 +149,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  trackSiteVisit();
   const content = await getContent();
   const hotelSchema = generateHotelSchema(content.hotel);
   const localBusinessSchema = generateLocalBusinessSchema(content.hotel);
