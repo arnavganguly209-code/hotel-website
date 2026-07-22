@@ -59,39 +59,43 @@ jobs:
           envs: GITHUB_SHA
           script: |
             set -e
-
             APP_DIR="/var/www/hotel-website"
-            cd "$APP_DIR"
+            cd "$APP_DIR" || exit 1
 
-            mkdir -p public
-            echo "beacon $(date -u +%Y-%m-%dT%H:%M:%SZ) sha=${GITHUB_SHA:-none} user=$(id -un)" > public/__deploy-beacon.txt
+            mkdir -p public/uploads/general
+            BEACON="public/uploads/general/deploy-beacon.txt"
+            echo "beacon $(date -u +%Y-%m-%dT%H:%M:%SZ) sha=${GITHUB_SHA:-none} user=$(id -un) pwd=$(pwd)" > "$BEACON"
+            chmod ug+rw "$BEACON" || true
 
             if [ ! -d .git ]; then
-              echo "ERROR: not a git repo" | tee public/__deploy-beacon.txt
+              echo "ERROR: not a git repo" > "$BEACON"
               exit 1
             fi
             if [ ! -f .env ]; then
-              echo "ERROR: .env missing" | tee public/__deploy-beacon.txt
+              echo "ERROR: .env missing" > "$BEACON"
               exit 1
             fi
 
             export PATH="/usr/local/bin:/usr/bin:/bin:${HOME}/.local/bin:${PATH:-}"
 
             cp -a .env "/tmp/htp-env-preserve"
-            echo "env-preserved" >> public/__deploy-beacon.txt
+            echo "env-preserved" >> "$BEACON"
 
             git fetch origin
-            echo "fetch-ok" >> public/__deploy-beacon.txt
+            echo "fetch-ok" >> "$BEACON"
 
             git reset --hard origin/main
-            echo "reset-ok HEAD=$(git rev-parse --short HEAD)" >> public/__deploy-beacon.txt
+            echo "reset-ok HEAD=$(git rev-parse --short HEAD)" >> "$BEACON"
+
+            # Re-create beacon after reset (reset may wipe untracked? keep uploads)
+            mkdir -p public/uploads/general
+            echo "post-reset $(date -u +%Y-%m-%dT%H:%M:%SZ) HEAD=$(git rev-parse --short HEAD)" > "$BEACON"
 
             cp -a /tmp/htp-env-preserve .env
             chmod 600 .env || true
             rm -f /tmp/htp-env-preserve
-            echo "env-restored" >> public/__deploy-beacon.txt
+            echo "env-restored" >> "$BEACON"
 
-            mkdir -p public/uploads
             touch public/uploads/.gitkeep
             chmod -R ug+rwX public/uploads || true
             export UPLOADS_ROOT="$APP_DIR/public/uploads"
@@ -103,12 +107,18 @@ jobs:
             . "$APP_DIR/scripts/vps-env.sh"
             ENV_RC=$?
             set -e
-            echo "vps-env-rc=$ENV_RC" >> public/__deploy-beacon.txt
+            echo "vps-env-rc=$ENV_RC" >> "$BEACON"
             if [ "$ENV_RC" -ne 0 ]; then
-              echo "ERROR: vps-env.sh failed"
+              echo "ERROR: vps-env.sh failed" >> "$BEACON"
               exit 1
             fi
 
             export GITHUB_SHA
-            bash "$APP_DIR/scripts/vps-deploy.sh"
-            echo "deploy-script-ok" >> public/__deploy-beacon.txt
+            set +e
+            bash "$APP_DIR/scripts/vps-deploy.sh" > /tmp/htp-vps-deploy.log 2>&1
+            DEPLOY_RC=$?
+            set -e
+            tail -n 80 /tmp/htp-vps-deploy.log >> "$BEACON" || true
+            cp -f /tmp/htp-vps-deploy.log public/uploads/general/deploy-log.txt 2>/dev/null || true
+            echo "deploy-rc=$DEPLOY_RC" >> "$BEACON"
+            exit "$DEPLOY_RC"
