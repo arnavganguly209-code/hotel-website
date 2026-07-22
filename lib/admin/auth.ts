@@ -46,18 +46,23 @@ export async function verifyPasswordHash(
 /** Ensure the fixed admin user exists (server-only bootstrap). */
 export async function ensureAdminUser() {
   if (!isDatabaseAvailable()) return null;
-  const existing = await db.adminUser.findUnique({
-    where: { username: ADMIN_USERNAME },
-  });
-  if (existing) return existing;
+  try {
+    const existing = await db.adminUser.findUnique({
+      where: { username: ADMIN_USERNAME },
+    });
+    if (existing) return existing;
 
-  const passwordHash = await hashPassword(bootstrapPassword());
-  return db.adminUser.create({
-    data: {
-      username: ADMIN_USERNAME,
-      passwordHash,
-    },
-  });
+    const passwordHash = await hashPassword(bootstrapPassword());
+    return db.adminUser.create({
+      data: {
+        username: ADMIN_USERNAME,
+        passwordHash,
+      },
+    });
+  } catch (error) {
+    console.error("[admin] ensureAdminUser failed:", error);
+    return null;
+  }
 }
 
 export async function createAdminSession(options: {

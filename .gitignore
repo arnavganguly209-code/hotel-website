@@ -49,12 +49,10 @@ next-env.d.ts
 
 /lib/generated
 
-# DB dumps / Neon migration artifacts (never commit)
+# DB dumps / migration artifacts (never commit)
 /backups/
 *.dump
-neon-full-*.sql
-neon-full-*.dump
-neon-url-*.secret
+*-url-*.secret
 
 # never commit hosted-platform leftovers (Hostinger VPS is the only deploy target)
 .vercel

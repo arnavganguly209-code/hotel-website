@@ -8,8 +8,13 @@ const globalForPrisma = globalThis as unknown as {
 
 function createPrismaClient(): PrismaClient {
   const connectionString =
-    process.env.DATABASE_URL ?? "postgresql://localhost:5432/postgres";
-  const pool = new pg.Pool({ connectionString });
+    process.env.DATABASE_URL ?? "postgresql://127.0.0.1:5432/thamelpark";
+  const pool = new pg.Pool({
+    connectionString,
+    connectionTimeoutMillis: 8_000,
+    idleTimeoutMillis: 30_000,
+    max: 10,
+  });
   return new PrismaClient({ adapter: new PrismaPg(pool) });
 }
 

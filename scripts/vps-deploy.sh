@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 # Hostinger VPS production deploy (GitHub Actions → /var/www/hotel-website)
-# Protects: .env | public/uploads | PostgreSQL
-#
-# IMPORTANT: This script does NOT modify DATABASE_URL.
-# Neon → localhost migration is a separate, manual phase.
+# Protects: public/uploads (never delete) | cut over DATABASE_URL to localhost thamelpark
 
 set -euxo pipefail
 
@@ -17,19 +14,13 @@ cd "$ROOT"
 echo "========== PRE-DEPLOY DIAGNOSTICS =========="
 pwd
 whoami
-echo "HOME=$HOME"
-echo "PATH=$PATH"
 command -v git && git --version || echo "git MISSING"
 command -v node && node -v || echo "node MISSING"
 command -v npm && npm -v || echo "npm MISSING"
 command -v pm2 && pm2 -v || echo "pm2 MISSING"
 command -v npx && npx -v || echo "npx MISSING"
-command -v curl && curl --version | head -1 || echo "curl MISSING"
-echo "git remote -v:"
-git remote -v || true
-echo "git branch: $(git branch --show-current 2>/dev/null || true)"
 echo "git rev-parse HEAD: $(git rev-parse HEAD 2>/dev/null || true)"
-echo "EXPECTED_SHA (GitHub): ${EXPECTED_SHA:-not provided}"
+echo "EXPECTED_SHA: ${EXPECTED_SHA:-not provided}"
 echo "============================================"
 
 # shellcheck disable=SC1091
@@ -42,29 +33,49 @@ if [ ! -f .env ]; then
   echo "ERROR: .env missing — aborting."
   exit 1
 fi
-echo "Protected: .env (DATABASE_URL left unchanged)"
 
-mkdir -p public/uploads/{culture,gallery,rooms,dining,spa,logo,payments,hero,seo,general}
+# Preserve existing uploads — mkdir -p never deletes files
+mkdir -p public/uploads
 chmod -R ug+rwX public/uploads || true
-echo "Protected: public/uploads (untouched; writable for Orbit)"
-
 if [ -z "${UPLOADS_ROOT:-}" ]; then
   export UPLOADS_ROOT="$ROOT/public/uploads"
 fi
-echo "UPLOADS_ROOT=$UPLOADS_ROOT"
+echo "UPLOADS_ROOT=$UPLOADS_ROOT (preserved)"
 
 echo "Installing packages (npm ci)"
 if [ -f package-lock.json ]; then
   npm ci
 else
-  echo "WARN: package-lock.json missing — npm install"
   npm install
 fi
 
-echo "Generating Prisma client"
-npx prisma generate
+# Final cutover: Neon abandoned → localhost thamelpark
+chmod +x scripts/cutover-to-thamelpark.sh
+bash scripts/cutover-to-thamelpark.sh
 
-echo "Applying idempotent rooms booking schema update (best-effort; does not change DATABASE_URL)"
+# Fail deploy if Neon still present
+if grep -Eqi '^DATABASE_URL=.*neon\.tech' .env; then
+  echo "ERROR: DATABASE_URL still points at neon.tech"
+  exit 1
+fi
+if ! grep -Eqi '^DATABASE_URL=.*(127\.0\.0\.1|localhost).*/thamelpark' .env; then
+  echo "ERROR: DATABASE_URL must be localhost thamelpark"
+  exit 1
+fi
+echo "OK: DATABASE_URL uses local PostgreSQL thamelpark"
+
+# shellcheck disable=SC1091
+set -a
+# Export DATABASE_URL for subsequent prisma/build without printing secrets
+DATABASE_URL="$(grep -E '^DATABASE_URL=' .env | tail -1 | sed 's/^DATABASE_URL=//')"
+export DATABASE_URL
+set +a
+
+npx prisma generate
+set +e
+npx prisma migrate deploy
+set -e
+
 set +e
 npx prisma db execute --file prisma/migrations/20260719230000_rooms_booking_flow/migration.sql
 set -e
@@ -97,17 +108,15 @@ else
   if pm2 describe hotel-thamel-park-spa >/dev/null 2>&1; then
     pm2 delete hotel-thamel-park-spa || true
   fi
-  echo "PM2 process missing — pm2 start ecosystem.config.js"
   pm2 start ecosystem.config.js
 fi
 pm2 save
 
-echo "Waiting 8 seconds before health check..."
-sleep 8
+echo "Waiting 10 seconds before health check..."
+sleep 10
 
 echo "Health Check → $HEALTH_URL"
 set +e
-curl -I "$HEALTH_URL" || true
 HTTP_CODE="$(curl -sS -o /tmp/hotel-health-body.txt -w "%{http_code}" \
   --max-time 45 \
   -H "Cache-Control: no-cache" \
@@ -126,7 +135,7 @@ fi
 
 DEPLOYED_SHA="$(git rev-parse HEAD)"
 if [ -n "$EXPECTED_SHA" ] && [ "$DEPLOYED_SHA" != "$EXPECTED_SHA" ]; then
-  echo "WARN: Deployed commit $DEPLOYED_SHA != GitHub SHA $EXPECTED_SHA (continuing)"
+  echo "WARN: HEAD $DEPLOYED_SHA != GITHUB_SHA $EXPECTED_SHA (continuing)"
 fi
 
 echo "========== UPLOADS RUNTIME PROBE =========="
@@ -144,24 +153,17 @@ PROBE_CODE="$(curl -sS -o /tmp/hotel-upload-probe-body.bin -w "%{http_code}" \
   "$PROBE_URL" || echo "000")"
 PROBE_BODY="$(cat /tmp/hotel-upload-probe-body.bin 2>/dev/null || true)"
 set -e
-echo "Probe URL: $PROBE_URL"
-echo "Probe HTTP: $PROBE_CODE"
-echo "Probe body: $PROBE_BODY"
 if [ "$PROBE_CODE" != "200" ] || [ "$PROBE_BODY" != "HTP-UPLOAD-OK" ]; then
-  echo "ERROR: Runtime /uploads route failed — Orbit uploads will 404"
+  echo "ERROR: Runtime /uploads route failed"
   rm -f "$PROBE_PATH" || true
   exit 1
 fi
 rm -f "$PROBE_PATH" || true
 echo "Uploads runtime probe OK"
-echo "=========================================="
 
 rm -rf .next.prev
 
 echo "Deployment Successful"
-echo "Current deployed commit: $DEPLOYED_SHA"
-echo "Current deployed commit (short): $(git log -1 --pretty=format:'%h %s')"
-echo "Website URL: $SITE_URL"
-echo "HTTP status: $HTTP_CODE"
+echo "Commit: $DEPLOYED_SHA"
+echo "URL: $SITE_URL HTTP $HTTP_CODE"
 pm2 status
-echo "Website updated automatically — no manual VPS steps required."
