@@ -45,14 +45,15 @@ export default async function AdminLoginPage() {
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-14">
         {/* Transparent logo — PNG alpha only, no box / no fill behind it */}
         <div className="mb-9 flex w-full max-w-[380px] items-center justify-center bg-transparent p-0">
+        <style dangerouslySetInnerHTML={{ __html: `.admin-login-logo{background:transparent!important;background-color:transparent!important;background-image:none!important}` }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brand/admin-login-logo.png?v=alpha-20260722b"
+            src="/brand/htp-admin-mark.png?v=nobox-1"
             alt="Hotel Thamel Park & Spa"
             width={720}
             height={360}
-            className="mx-auto h-auto w-full max-w-[360px] bg-transparent object-contain"
-            style={{ backgroundColor: "transparent", backgroundImage: "none" }}
+            className="admin-login-logo mx-auto h-auto w-full max-w-[360px] bg-transparent object-contain"
+            style={{ background: "transparent", backgroundColor: "transparent", backgroundImage: "none" }}
           />
         </div>
 
