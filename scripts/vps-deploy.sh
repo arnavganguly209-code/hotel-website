@@ -41,11 +41,54 @@ if [ ! -f .env ]; then
   echo "ERROR: .env missing — aborting."
   exit 1
 fi
-echo "Protected: .env (untouched)"
+echo "Protected: .env (will only update DATABASE_URL during Neon→localhost migration)"
+
+# Auto-migrate off Neon if still configured (one-time, idempotent).
+if grep -Eqi '^DATABASE_URL=.*neon\.tech' .env; then
+  echo "DETECTED Neon DATABASE_URL — migrating to VPS localhost PostgreSQL"
+  chmod +x scripts/migrate-neon-to-localhost.sh
+  # Ensure server + client tools exist
+  if ! command -v pg_dump >/dev/null 2>&1 || ! command -v psql >/dev/null 2>&1; then
+    echo "Installing postgresql / postgresql-client…"
+    export DEBIAN_FRONTEND=noninteractive
+    if command -v sudo >/dev/null 2>&1; then
+      sudo apt-get update -y
+      sudo apt-get install -y postgresql postgresql-contrib postgresql-client
+      sudo systemctl enable --now postgresql || sudo service postgresql start || true
+    else
+      apt-get update -y
+      apt-get install -y postgresql postgresql-contrib postgresql-client
+      systemctl enable --now postgresql || service postgresql start || true
+    fi
+  fi
+  if command -v sudo >/dev/null 2>&1; then
+    sudo systemctl start postgresql 2>/dev/null || sudo service postgresql start || true
+  else
+    systemctl start postgresql 2>/dev/null || service postgresql start || true
+  fi
+  bash scripts/migrate-neon-to-localhost.sh
+  # Apply any pending Prisma migrations against localhost
+  npx prisma migrate deploy || npx prisma db push --accept-data-loss=false || true
+  npx prisma generate
+else
+  echo "DATABASE_URL is not Neon — skip DB migration"
+fi
+
+# Fail deploy if Neon still present after migration attempt
+if grep -Eqi '^DATABASE_URL=.*neon\.tech' .env; then
+  echo "ERROR: DATABASE_URL still points at neon.tech after migration"
+  exit 1
+fi
+if ! grep -Eqi '^DATABASE_URL=.*(127\.0\.0\.1|localhost)' .env; then
+  echo "ERROR: DATABASE_URL must use localhost / 127.0.0.1 on this VPS"
+  exit 1
+fi
+echo "OK: DATABASE_URL uses local PostgreSQL"
+
 mkdir -p public/uploads/{culture,gallery,rooms,dining,spa,logo,payments,hero,seo,general}
 chmod -R ug+rwX public/uploads || true
 echo "Protected: public/uploads (untouched; writable for Orbit)"
-echo "Protected: database (untouched)"
+echo "Protected: database (local PostgreSQL)"
 # Ensure Next can serve runtime uploads via app/uploads/[...path]
 if [ -z "${UPLOADS_ROOT:-}" ]; then
   export UPLOADS_ROOT="$ROOT/public/uploads"
