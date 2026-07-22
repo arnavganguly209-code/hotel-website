@@ -66,6 +66,8 @@ wrangler.jsonc
 vercel.json
 
 # local deploy / CI debug artifacts (never commit)
+public/__db-migrate-status.json
+public/__db-migrate-log.txt
 job-*.zip
 job-*-logs*
 job-logs-*/
