@@ -2,7 +2,7 @@
 # Target: https://hotel.theglobalorbit.com (/var/www/hotel-website)
 #
 # Required secrets: VPS_HOST, VPS_USER, VPS_PORT, VPS_SSH_KEY
-# retrigger logo deploy
+# Does NOT modify DATABASE_URL (Neon cutover is a separate phase).
 
 name: Deploy to Hostinger VPS
 
@@ -54,7 +54,6 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          # Dial timeout — default 30s caused flaky Hostinger connect failures
           timeout: 90s
           command_timeout: 40m
           request_pty: true
@@ -106,20 +105,7 @@ jobs:
               echo "OK: HEAD matches expected SHA (or GITHUB_SHA unset)"
             fi
 
-            # Early diagnostic file (served from public/) — survives even if later steps fail
-            DB_HOST="$(grep -E '^DATABASE_URL=' .env 2>/dev/null | sed -E 's/.*@([^/:?]+).*/\1/' | head -1 || echo unknown)"
-            IS_NEON=false
-            echo "$DB_HOST" | grep -qi 'neon\.tech' && IS_NEON=true || true
-            printf '{"updatedAt":"%s","message":"post-git-reset","databaseHost":"%s","isNeon":%s,"commit":"%s","githubSha":"%s"}\n' \
-              "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-              "$(printf '%s' "$DB_HOST" | tr '"\\' '  ')" \
-              "$IS_NEON" \
-              "$(git rev-parse --short HEAD)" \
-              "$(printf '%s' "${GITHUB_SHA:-}" | cut -c1-12)" \
-              > public/__db-migrate-status.json
-            echo "Wrote early status: host=$DB_HOST neon=$IS_NEON"
-
-            chmod +x scripts/vps-env.sh scripts/vps-deploy.sh scripts/migrate-neon-to-localhost.sh scripts/retry-neon-import.sh || true
+            chmod +x scripts/vps-env.sh scripts/vps-deploy.sh
             # shellcheck disable=SC1091
             . "$APP_DIR/scripts/vps-env.sh"
 

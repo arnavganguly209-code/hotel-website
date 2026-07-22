@@ -1,33 +1,45 @@
 import { unstable_noStore as noStore } from "next/cache";
+import { readFileSync } from "fs";
+import path from "path";
 import type { SiteContent } from "./types";
-import { defaultContent } from "./default-content";
 import { mergeWithDefaults } from "./merge";
 import { CMS_CONTENT_TAG } from "./revalidate";
 import { isDatabaseAvailable, db } from "@/lib/db";
 
 const RECORD_ID = "main";
 
+function loadCommittedSiteContent(): SiteContent {
+  try {
+    const jsonPath = path.join(process.cwd(), "data", "site-content.json");
+    const partial = JSON.parse(readFileSync(jsonPath, "utf8")) as Partial<SiteContent>;
+    return mergeWithDefaults(partial);
+  } catch {
+    return mergeWithDefaults({});
+  }
+}
+
 /**
- * CMS content is sourced exclusively from PostgreSQL (Hostinger VPS localhost).
- * mergeWithDefaults is only used to hydrate missing schema keys — never to override saved values.
+ * Prefer PostgreSQL CMS record. If the DB is unreachable (e.g. Neon quota),
+ * serve committed data/site-content.json so the public site stays up.
+ * Does not change DATABASE_URL.
  */
 export async function getContent(): Promise<SiteContent> {
   noStore();
 
   if (!isDatabaseAvailable()) {
-    console.error("[CMS] DATABASE_URL is not configured — cannot load CMS content.");
-    return mergeWithDefaults({});
+    console.error("[CMS] DATABASE_URL is not configured — serving committed site-content.json");
+    return loadCommittedSiteContent();
   }
 
   try {
     const record = await db.siteContentRecord.findUnique({ where: { id: RECORD_ID } });
     if (!record?.content) {
-      return mergeWithDefaults({});
+      return loadCommittedSiteContent();
     }
     return mergeWithDefaults(record.content as Partial<SiteContent>);
   } catch (error) {
-    console.error("[CMS] Database read failed — serving merged defaults:", error);
-    return mergeWithDefaults({});
+    console.error("[CMS] Database read failed — serving committed site-content.json:", error);
+    return loadCommittedSiteContent();
   }
 }
 
