@@ -17,10 +17,16 @@ fi
 
 get_env() {
   local key="$1"
-  local line
+  local line val
   line="$(grep -E "^${key}=" .env | tail -1 || true)"
   [ -z "$line" ] && { echo ""; return 0; }
-  echo "${line#*=}" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//'"
+  val="${line#*=}"
+  # Strip optional surrounding quotes without sed (URLs break sed delimiters)
+  val="${val#\"}"
+  val="${val%\"}"
+  val="${val#\'}"
+  val="${val%\'}"
+  printf '%s\n' "$val"
 }
 
 write_localhost_env() {
