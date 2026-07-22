@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SITE_URL, SITE_NAME } from "@/lib/seo";
+import { BRAND_OG_IMAGE_PATH, brandAsset } from "@/lib/brand";
 import type { PageSeo } from "@/lib/cms/types";
 
 export function buildPageMetadata(
@@ -8,7 +9,7 @@ export function buildPageMetadata(
   siteName = SITE_NAME
 ): Metadata {
   const url = `${SITE_URL}${path === "/" ? "" : path}`;
-  const ogImage = seo.ogImage ?? "/media/hero/hero-background.png";
+  const ogImage = seo.ogImage ?? brandAsset(BRAND_OG_IMAGE_PATH);
 
   return {
     title: seo.title,

@@ -3,11 +3,18 @@ import { Cinzel, Cormorant_Garamond, Jost } from "next/font/google";
 import { getContent } from "@/lib/cms/store";
 import {
   SITE_NAME,
-  SITE_KEYWORDS,
   SITE_URL,
   generateHotelSchema,
   generateLocalBusinessSchema,
+  generateOrganizationSchema,
+  generateWebsiteSchema,
 } from "@/lib/seo";
+import {
+  BRAND_APPLE_TOUCH_PATH,
+  BRAND_FAVICON_PATH,
+  BRAND_OG_IMAGE_PATH,
+  brandAsset,
+} from "@/lib/brand";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import "./globals.css";
@@ -57,6 +64,8 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   }
 
+  const ogImage = content.seo.ogImage || brandAsset(BRAND_OG_IMAGE_PATH);
+
   return {
     metadataBase: new URL(SITE_URL),
     title: {
@@ -80,6 +89,29 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     alternates: { canonical: SITE_URL },
+    icons: {
+      icon: [
+        { url: brandAsset(BRAND_FAVICON_PATH), sizes: "any" },
+        { url: brandAsset("/favicon-16x16.png"), sizes: "16x16", type: "image/png" },
+        { url: brandAsset("/favicon-32x32.png"), sizes: "32x32", type: "image/png" },
+        { url: brandAsset("/favicon-48x48.png"), sizes: "48x48", type: "image/png" },
+        { url: brandAsset("/icons/icon-192.png"), sizes: "192x192", type: "image/png" },
+        { url: brandAsset("/icons/icon-512.png"), sizes: "512x512", type: "image/png" },
+      ],
+      shortcut: brandAsset(BRAND_FAVICON_PATH),
+      apple: [
+        { url: brandAsset(BRAND_APPLE_TOUCH_PATH), sizes: "180x180", type: "image/png" },
+        { url: brandAsset("/icons/icon-152.png"), sizes: "152x152", type: "image/png" },
+        { url: brandAsset("/icons/icon-167.png"), sizes: "167x167", type: "image/png" },
+      ],
+      other: [
+        {
+          rel: "mask-icon",
+          url: brandAsset("/icons/monochrome-512.png"),
+        },
+      ],
+    },
+    manifest: "/manifest.webmanifest",
     openGraph: {
       type: "website",
       locale: "en_US",
@@ -87,12 +119,13 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: SITE_NAME,
       title: content.seo.title,
       description: content.seo.description,
-      images: content.seo.ogImage ? [{ url: content.seo.ogImage }] : undefined,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: SITE_NAME }],
     },
     twitter: {
       card: "summary_large_image",
       title: content.seo.title,
       description: content.seo.description,
+      images: [ogImage],
     },
     category: "hospitality",
     verification: Object.keys(verification).length ? verification : undefined,
@@ -102,6 +135,11 @@ export async function generateMetadata(): Promise<Metadata> {
       title: SITE_NAME,
     },
     applicationName: SITE_NAME,
+    other: {
+      "msapplication-TileColor": "#0F2420",
+      "msapplication-TileImage": brandAsset("/icons/mstile-150x150.png"),
+      "msapplication-config": "/browserconfig.xml",
+    },
   };
 }
 
@@ -113,7 +151,10 @@ export default async function RootLayout({
   const content = await getContent();
   const hotelSchema = generateHotelSchema(content.hotel);
   const localBusinessSchema = generateLocalBusinessSchema(content.hotel);
+  const organizationSchema = generateOrganizationSchema(content.hotel);
+  const websiteSchema = generateWebsiteSchema();
   const pwaEnabled = content.performanceSettings?.pwaEnabled !== false;
+  const faviconHref = brandAsset(BRAND_FAVICON_PATH);
 
   return (
     <html
@@ -121,7 +162,13 @@ export default async function RootLayout({
       className={`${cinzel.variable} ${cormorant.variable} ${jost.variable}`}
     >
       <head>
-        {content.seo.favicon && <link rel="icon" href={content.seo.favicon} />}
+        <link rel="icon" href={faviconHref} sizes="any" />
+        <link rel="icon" type="image/png" sizes="32x32" href={brandAsset("/favicon-32x32.png")} />
+        <link rel="icon" type="image/png" sizes="16x16" href={brandAsset("/favicon-16x16.png")} />
+        <link rel="apple-touch-icon" href={brandAsset(BRAND_APPLE_TOUCH_PATH)} />
+        <link rel="shortcut icon" href={faviconHref} />
+        <meta name="msapplication-TileColor" content="#0F2420" />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
         {content.seo.googleAnalytics && (
           <>
             <script
@@ -166,6 +213,14 @@ export default async function RootLayout({
             />
           </noscript>
         ) : null}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(hotelSchema) }}

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/seo";
+import { brandAsset } from "@/lib/brand";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -12,24 +13,31 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#0F2420",
     orientation: "portrait-primary",
     scope: "/",
+    id: "/",
     icons: [
       {
-        src: "/icons/icon-192.png",
+        src: brandAsset("/icons/icon-192.png"),
         sizes: "192x192",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/icons/icon-512.png",
+        src: brandAsset("/icons/icon-512.png"),
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/icons/icon-512.png",
+        src: brandAsset("/icons/maskable-512.png"),
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
+      },
+      {
+        src: brandAsset("/icons/monochrome-512.png"),
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "monochrome",
       },
     ],
     categories: ["travel", "lifestyle"],

@@ -1,4 +1,9 @@
 import type { SiteContent } from "@/lib/cms/types";
+import {
+  BRAND_LOGO_PATH,
+  BRAND_OG_IMAGE_PATH,
+  ICON_VERSION,
+} from "@/lib/brand";
 
 export const SITE_URL =
   (typeof process !== "undefined" && process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "")) ||
@@ -22,7 +27,54 @@ export const SITE_KEYWORDS = [
   "Wellness hotel Nepal",
 ];
 
+/** Absolute brand logo URL for Google Search / Knowledge Panel recognition. */
+export const SITE_LOGO_URL = `${SITE_URL}${BRAND_LOGO_PATH}?v=${ICON_VERSION}`;
+export const SITE_OG_IMAGE_URL = `${SITE_URL}${BRAND_OG_IMAGE_PATH}?v=${ICON_VERSION}`;
+
 type HotelInfo = SiteContent["hotel"];
+
+function brandLogoObject() {
+  return {
+    "@type": "ImageObject" as const,
+    url: SITE_LOGO_URL,
+    contentUrl: SITE_LOGO_URL,
+    width: 1024,
+    height: 1024,
+    caption: SITE_NAME,
+  };
+}
+
+export function generateOrganizationSchema(hotel?: Partial<HotelInfo>) {
+  const name = hotel?.name || SITE_NAME;
+  const sameAs = [
+    hotel?.social?.facebook,
+    hotel?.social?.instagram,
+    hotel?.social?.twitter,
+    hotel?.social?.tripadvisor,
+  ].filter(Boolean) as string[];
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${SITE_URL}/#organization`,
+    name,
+    url: SITE_URL,
+    logo: brandLogoObject(),
+    image: SITE_LOGO_URL,
+    ...(sameAs.length ? { sameAs } : {}),
+  };
+}
+
+export function generateWebsiteSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
+    name: SITE_NAME,
+    url: SITE_URL,
+    publisher: { "@id": `${SITE_URL}/#organization` },
+  };
+}
 
 export function generateHotelSchema(hotel?: Partial<HotelInfo>) {
   const phone = hotel?.phone || "+977-1-4412345";
@@ -40,11 +92,14 @@ export function generateHotelSchema(hotel?: Partial<HotelInfo>) {
   return {
     "@context": "https://schema.org",
     "@type": "Hotel",
+    "@id": `${SITE_URL}/#hotel`,
     name,
     description,
     url: SITE_URL,
     telephone: phone,
     email,
+    logo: brandLogoObject(),
+    image: [SITE_LOGO_URL, SITE_OG_IMAGE_URL],
     address: {
       "@type": "PostalAddress",
       streetAddress: address,
@@ -91,13 +146,14 @@ export function generateLocalBusinessSchema(hotel?: Partial<HotelInfo>) {
   return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "@id": SITE_URL,
+    "@id": `${SITE_URL}/#localbusiness`,
     name,
     description,
     url: SITE_URL,
     telephone: phone,
     email,
-    image: `${SITE_URL}/media/hero/hero-background.png`,
+    logo: brandLogoObject(),
+    image: [SITE_LOGO_URL, SITE_OG_IMAGE_URL],
     address: {
       "@type": "PostalAddress",
       streetAddress: address,

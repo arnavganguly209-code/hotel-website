@@ -1,6 +1,26 @@
 /* Hotel Thamel Park — static shell only. Never cache Orbit media. */
-const CACHE = "htp-static-v3-no-media";
-const PRECACHE = ["/", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png"];
+const CACHE = "htp-static-v4-brand-icons";
+const PRECACHE = [
+  "/",
+  "/manifest.webmanifest",
+  "/icons/icon-192.png?v=brand-20260722",
+  "/icons/icon-512.png?v=brand-20260722",
+  "/icons/maskable-512.png?v=brand-20260722",
+  "/apple-touch-icon.png?v=brand-20260722",
+  "/favicon.ico?v=brand-20260722",
+];
+
+function isBrandIconPath(pathname) {
+  return (
+    pathname.startsWith("/icons/") ||
+    pathname.startsWith("/brand/") ||
+    pathname === "/favicon.ico" ||
+    pathname.startsWith("/favicon-") ||
+    pathname === "/apple-touch-icon.png" ||
+    pathname === "/browserconfig.xml" ||
+    pathname === "/manifest.webmanifest"
+  );
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -31,8 +51,23 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
+  // Brand / PWA icons: network-first so logo updates never stick behind SW.
+  if (isBrandIconPath(url.pathname)) {
+    event.respondWith(
+      fetch(request, { cache: "no-store" })
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request).then((r) => r || fetch(request)))
+    );
+    return;
+  }
+
   // Never intercept CMS, API, Orbit, uploads, or any media/video asset.
-  // Cache-first media was causing deleted Orbit assets to flash from SW memory.
   if (
     url.pathname.startsWith("/api/") ||
     url.pathname.startsWith("/orbit") ||
@@ -44,7 +79,7 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Cache-first for hashed Next static assets only
-  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/")) {
+  if (url.pathname.startsWith("/_next/static/")) {
     event.respondWith(
       caches.open(CACHE).then(async (cache) => {
         const cached = await cache.match(request);
@@ -57,7 +92,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Network-first for HTML navigations — do not serve stale pages with old media URLs
+  // Network-first for HTML navigations
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request, { cache: "no-store" })

@@ -3094,8 +3094,8 @@ export const defaultContent: SiteContent = {
       "Experience ultra-luxury hospitality at Hotel Thamel Park — premium rooms, fine dining, spa wellness, and authentic Nepalese warmth in the heart of Thamel, Kathmandu.",
     keywords:
       "luxury hotel Kathmandu, boutique hotel Thamel, Hotel Thamel Park, spa hotel Kathmandu, fine dining Kathmandu",
-    ogImage: "/media/hero/hero-background.png",
-    favicon: "/favicon.ico",
+    ogImage: "/brand/og-image.png?v=brand-20260722",
+    favicon: "/favicon.ico?v=brand-20260722",
     googleAnalytics: "",
     googleTagManager: "",
     robotsAllow: true,
