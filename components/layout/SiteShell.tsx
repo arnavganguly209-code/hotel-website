@@ -22,8 +22,10 @@ function stripSpaBrand(value: string) {
 export function SiteShell({ children, content }: SiteShellProps) {
   const pathname = usePathname();
   const isOrbit = pathname.startsWith("/orbit");
+  const isAdmin = pathname.startsWith("/admin");
 
-  if (isOrbit) {
+  // Admin PMS and Orbit CMS use their own shells — never wrap with public site chrome.
+  if (isOrbit || isAdmin) {
     return <>{children}</>;
   }
 

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cinzel, Cormorant_Garamond, Jost } from "next/font/google";
+import { headers } from "next/headers";
 import { getContent } from "@/lib/cms/store";
 import {
   SITE_NAME,
@@ -149,6 +150,23 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const hdrs = await headers();
+  const isAdminRoute = hdrs.get("x-admin-route") === "1";
+
+  if (isAdminRoute) {
+    return (
+      <html
+        lang="en"
+        className={`${cinzel.variable} ${cormorant.variable} ${jost.variable}`}
+      >
+        <head>
+          <meta name="robots" content="noindex, nofollow" />
+        </head>
+        <body className="min-h-screen antialiased bg-[#f3eee6]">{children}</body>
+      </html>
+    );
+  }
+
   trackSiteVisit();
   const content = await getContent();
   const hotelSchema = generateHotelSchema(content.hotel);

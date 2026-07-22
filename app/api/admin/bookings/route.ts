@@ -210,3 +210,28 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ success: false, error: "Unable to update booking" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  if (!isDatabaseAvailable()) {
+    return NextResponse.json({ success: false, error: "Database not configured" }, { status: 503 });
+  }
+  const user = await getAdminSessionUser();
+  if (!user) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+  if (!assertSameOrigin(req)) {
+    return NextResponse.json({ success: false, error: "Invalid request" }, { status: 403 });
+  }
+
+  try {
+    const id = Number(new URL(req.url).searchParams.get("id"));
+    if (!Number.isFinite(id)) {
+      return NextResponse.json({ success: false, error: "Invalid id" }, { status: 400 });
+    }
+    await db.booking.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[AdminBookingsDelete]", error);
+    return NextResponse.json({ success: false, error: "Unable to delete booking" }, { status: 500 });
+  }
+}

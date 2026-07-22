@@ -29,6 +29,8 @@ import {
   Trash2,
   FileText,
   Users,
+  Mail,
+  ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
@@ -45,6 +47,9 @@ import { SpaPageEditor } from "@/components/admin/SpaPageEditor";
 import { ContactPageEditor } from "@/components/admin/ContactPageEditor";
 import { AboutPageEditor } from "@/components/admin/AboutPageEditor";
 import { ArticlesManager } from "@/components/admin/ArticlesManager";
+import { OrbitBookingsPanel } from "@/components/admin/OrbitBookingsPanel";
+import { OrbitNewsletterPanel } from "@/components/admin/OrbitNewsletterPanel";
+import { OrbitSpaInquiriesPanel } from "@/components/admin/OrbitSpaInquiriesPanel";
 import { AdminAccountPanel } from "@/components/admin/AdminAccountPanel";
 import type { SiteContent } from "@/lib/cms/types";
 import {
@@ -75,6 +80,9 @@ const SECTIONS = [
   { id: "rooms", label: "Rooms Section", icon: Bed },
   { id: "dining", label: "Dining Page", icon: Utensils },
   { id: "diningReservations", label: "Dining Reservations", icon: Utensils },
+  { id: "roomBookings", label: "Room Bookings", icon: ClipboardList },
+  { id: "spaInquiries", label: "Spa Inquiries", icon: Waves },
+  { id: "newsletterSubs", label: "Newsletter", icon: Mail },
   { id: "spa", label: "Spa Page", icon: Waves },
   { id: "meetingsEventsPage", label: "Meetings & Events Page", icon: MessageSquare },
   { id: "eventInquiries", label: "Event Inquiries", icon: MessageSquare },
@@ -2991,10 +2999,42 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 <div className="mb-4 space-y-1">
                   <p className="font-display text-lg text-luxury-gold">Dining Reservations</p>
                   <p className="text-xs text-white/40">
-                    Table reservations from /dining — permanently stored in the database.
+                    Table reservations from /restaurant — permanently stored in the database. Deletes sync to Admin PMS.
                   </p>
                 </div>
                 <DiningReservationsPanel />
+              </>
+            )}
+
+            {activeSection === "roomBookings" && (
+              <>
+                <div className="mb-4 space-y-1">
+                  <p className="font-display text-lg text-luxury-gold">Room Bookings</p>
+                  <p className="text-xs text-white/40">
+                    Online and offline room bookings shared with Admin. Deleting here removes ghost records from Admin.
+                  </p>
+                </div>
+                <OrbitBookingsPanel />
+              </>
+            )}
+
+            {activeSection === "spaInquiries" && (
+              <>
+                <div className="mb-4 space-y-1">
+                  <p className="font-display text-lg text-luxury-gold">Spa Inquiries</p>
+                  <p className="text-xs text-white/40">Spa booking requests — synced with Admin PMS.</p>
+                </div>
+                <OrbitSpaInquiriesPanel />
+              </>
+            )}
+
+            {activeSection === "newsletterSubs" && (
+              <>
+                <div className="mb-4 space-y-1">
+                  <p className="font-display text-lg text-luxury-gold">Newsletter Subscribers</p>
+                  <p className="text-xs text-white/40">Footer subscriptions — synced with Admin PMS.</p>
+                </div>
+                <OrbitNewsletterPanel />
               </>
             )}
 

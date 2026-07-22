@@ -117,29 +117,32 @@ export async function GET() {
   const occupancy =
     totalPhysical > 0 ? Math.round((occupied / totalPhysical) * 100) : 0;
 
-  return NextResponse.json({
-    success: true,
-    stats: {
-      todaysBookings,
-      pendingBooking: pending,
-      confirmedBooking: confirmed,
-      cancelledBooking: cancelled,
-      offlineBooking: offline,
-      onlineBooking: online,
-      todaysRevenue: todayRevenueAgg._sum.totalAmount ?? 0,
-      monthlyRevenue: monthRevenueAgg._sum.totalAmount ?? 0,
-      roomOccupancy: occupancy,
-      availableRooms: Math.max(0, totalPhysical - occupied),
-      blockedRooms: blocks,
-      pendingPayments: unpaid,
-      paidPayments: paid,
-      websiteVisitors: visitToday?.count ?? 0,
-      todaysInquiries: contactToday + diningToday + spaToday + meetingsToday,
-      restaurantBookings: diningToday,
-      spaBookings: spaToday,
-      meetingBookings: meetingsToday,
-      newsletterSubscribers: newsletter,
+  return NextResponse.json(
+    {
+      success: true,
+      stats: {
+        todaysBookings,
+        pendingBooking: pending,
+        confirmedBooking: confirmed,
+        cancelledBooking: cancelled,
+        offlineBooking: offline,
+        onlineBooking: online,
+        todaysRevenue: todayRevenueAgg._sum.totalAmount ?? 0,
+        monthlyRevenue: monthRevenueAgg._sum.totalAmount ?? 0,
+        roomOccupancy: occupancy,
+        availableRooms: Math.max(0, totalPhysical - occupied),
+        blockedRooms: blocks,
+        pendingPayments: unpaid,
+        paidPayments: paid,
+        websiteVisitors: visitToday?.count ?? 0,
+        todaysInquiries: contactToday + diningToday + spaToday + meetingsToday,
+        restaurantBookings: diningToday,
+        spaBookings: spaToday,
+        meetingBookings: meetingsToday,
+        newsletterSubscribers: newsletter,
+      },
+      recent: recentBookings,
     },
-    recent: recentBookings,
-  });
+    { headers: { "Cache-Control": "no-store" } }
+  );
 }

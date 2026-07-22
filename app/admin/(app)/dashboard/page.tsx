@@ -42,17 +42,28 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/api/admin/dashboard/stats")
-      .then((r) => r.json())
-      .then((d) => {
-        if (!d.success) {
-          setError("Unable to load dashboard");
-          return;
-        }
-        setStats(d.stats);
-        setRecent(d.recent || []);
-      })
-      .catch(() => setError("Unable to load dashboard"));
+    const load = () => {
+      fetch("/api/admin/dashboard/stats", { cache: "no-store" })
+        .then((r) => r.json())
+        .then((d) => {
+          if (!d.success) {
+            setError("Unable to load dashboard");
+            return;
+          }
+          setStats(d.stats);
+          setRecent(d.recent || []);
+          setError("");
+        })
+        .catch(() => setError("Unable to load dashboard"));
+    };
+    load();
+    const onFocus = () => load();
+    window.addEventListener("focus", onFocus);
+    const id = window.setInterval(load, 12000);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      window.clearInterval(id);
+    };
   }, []);
 
   return (

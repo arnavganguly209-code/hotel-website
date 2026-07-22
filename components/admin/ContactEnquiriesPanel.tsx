@@ -68,6 +68,13 @@ export function ContactEnquiriesPanel() {
 
   useEffect(() => {
     void load();
+    const onFocus = () => void load();
+    window.addEventListener("focus", onFocus);
+    const id = window.setInterval(() => void load(), 15000);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      window.clearInterval(id);
+    };
   }, [load]);
 
   async function updateStatus(id: number, next: string) {

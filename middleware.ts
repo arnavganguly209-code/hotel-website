@@ -13,6 +13,11 @@ function getSecret(): Uint8Array {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const requestHeaders = new Headers(req.headers);
+
+  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+    requestHeaders.set("x-admin-route", "1");
+  }
 
   const isAdminPage = pathname.startsWith("/admin");
   const isAdminApi = pathname.startsWith("/api/admin");
@@ -22,11 +27,15 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/api/admin/auth/logout");
 
   if (!isAdminPage && !isAdminApi) {
-    return NextResponse.next();
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    });
   }
 
   if (isLoginPage || isAuthApi) {
-    return NextResponse.next();
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    });
   }
 
   const token = req.cookies.get(ADMIN_SESSION_COOKIE)?.value;
@@ -42,7 +51,9 @@ export async function middleware(req: NextRequest) {
 
   try {
     await jwtVerify(token, getSecret());
-    return NextResponse.next();
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    });
   } catch {
     if (isAdminApi) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
