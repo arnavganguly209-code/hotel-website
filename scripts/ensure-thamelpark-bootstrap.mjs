@@ -194,12 +194,32 @@ async function main() {
   }
 
   const roomExact = await client.query(`SELECT COUNT(*)::int AS n FROM "Room"`);
+  const mediaExact = await client.query(`SELECT COUNT(*)::int AS n FROM "MediaFile"`);
   const cmsRooms = await client.query(
     `SELECT COALESCE(jsonb_array_length(content->'rooms'), 0)::int AS n FROM "SiteContentRecord" WHERE id = 'main'`
   );
   console.log("VERIFY Room count =", roomExact.rows[0].n, "CMS rooms =", cmsRooms.rows[0]?.n ?? 0);
   if ((cmsRooms.rows[0]?.n ?? 0) > 0 && roomExact.rows[0].n === 0) {
     throw new Error("Room table empty after sync — CMS has rooms but relational sync failed");
+  }
+
+  try {
+    const verifyPath = path.join(uploadsRoot(), "general", "db-verify.txt");
+    fs.mkdirSync(path.dirname(verifyPath), { recursive: true });
+    fs.writeFileSync(
+      verifyPath,
+      [
+        `updatedAt=${new Date().toISOString()}`,
+        `Room=${roomExact.rows[0].n}`,
+        `MediaFile=${mediaExact.rows[0].n}`,
+        `CmsRooms=${cmsRooms.rows[0]?.n ?? 0}`,
+        `host=127.0.0.1`,
+        `db=thamelpark`,
+      ].join("\n") + "\n"
+    );
+    console.log("Wrote", verifyPath);
+  } catch (e) {
+    console.warn("Could not write db-verify.txt:", e.message || e);
   }
 
   await client.end();

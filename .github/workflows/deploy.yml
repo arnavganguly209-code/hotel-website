@@ -118,9 +118,8 @@ jobs:
             bash "$APP_DIR/scripts/vps-deploy.sh" > /tmp/htp-vps-deploy.log 2>&1
             DEPLOY_RC=$?
             set -e
-            # Keep a short beacon only (no long logs with historical hostnames)
             echo "deploy-rc=$DEPLOY_RC HEAD=$(git rev-parse --short HEAD)" > "$BEACON"
-            # Remove diagnostic logs from public tree after deploy
+            # Remove diagnostic logs; keep db-verify.txt (Room/Media counts)
             rm -f public/uploads/general/deploy-log.txt \
               public/__cutover-log.txt \
               public/__deploy-status.json \
