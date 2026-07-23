@@ -103,6 +103,10 @@ export async function POST(req: Request) {
       breakfast,
     });
 
+    const slug = roomPublicSlug(room);
+    const { findRoomIdBySlug } = await import("@/lib/cms/sync-rooms");
+    const roomId = await findRoomIdBySlug(slug);
+
     const booking = await db.booking.create({
       data: {
         name: body.name,
@@ -116,7 +120,7 @@ export async function POST(req: Request) {
         guests,
         children,
         roomQuantity,
-        roomSlug: roomPublicSlug(room),
+        roomSlug: slug,
         roomName: room.name,
         breakfast,
         specialRequests: body.specialRequests ?? "",
@@ -131,7 +135,7 @@ export async function POST(req: Request) {
         status: "pending",
         paymentStatus: body.paymentMethod === "online" ? "awaiting_payment" : "pay_at_hotel",
         transactionId: null,
-        roomId: null,
+        roomId,
         source: "online",
       },
     });

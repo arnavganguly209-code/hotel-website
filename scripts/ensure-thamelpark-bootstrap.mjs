@@ -110,6 +110,61 @@ async function indexUploads(client) {
   console.log(`MediaFile index: inserted=${inserted} skipped=${skipped} scanned=${files.length} root=${root}`);
 }
 
+async function syncRoomsFromCms(client) {
+  // Ensure slug column exists (migration may not have run yet in some paths)
+  await client.query(`ALTER TABLE "Room" ADD COLUMN IF NOT EXISTS "slug" TEXT`);
+  await client.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Room_slug_key') THEN
+        BEGIN
+          UPDATE "Room" SET "slug" = 'room-' || "id"::text WHERE "slug" IS NULL OR "slug" = '';
+          ALTER TABLE "Room" ADD CONSTRAINT "Room_slug_key" UNIQUE ("slug");
+        EXCEPTION WHEN others THEN NULL;
+        END;
+      END IF;
+    END $$;
+  `);
+
+  const rec = await client.query(
+    `SELECT content FROM "SiteContentRecord" WHERE id = 'main'`
+  );
+  const content = rec.rows[0]?.content;
+  const rooms = Array.isArray(content?.rooms) ? content.rooms : [];
+  let upserted = 0;
+
+  for (const room of rooms) {
+    const slug = String(room.slug || room.id || "").trim();
+    if (!slug) continue;
+    const name = String(room.name || slug).trim() || slug;
+    const description = String(room.description || room.longDescription || name).trim() || name;
+    const price = Math.max(0, Math.round(Number(room.price) || 0));
+    const image = room.imageSrc ? String(room.imageSrc) : null;
+
+    await client.query(
+      `INSERT INTO "Room" (slug, name, description, price, image)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (slug) DO UPDATE
+       SET name = EXCLUDED.name,
+           description = EXCLUDED.description,
+           price = EXCLUDED.price,
+           image = EXCLUDED.image`,
+      [slug, name, description, price, image]
+    );
+
+    await client.query(
+      `INSERT INTO "RoomInventory" (id, "roomSlug", "totalRooms", "createdAt", "updatedAt")
+       VALUES ($1, $2, 1, NOW(), NOW())
+       ON CONFLICT ("roomSlug") DO NOTHING`,
+      [crypto.randomUUID(), slug]
+    );
+    upserted += 1;
+  }
+
+  const count = await client.query(`SELECT COUNT(*)::int AS n FROM "Room"`);
+  console.log(`Room sync: upserted=${upserted} total=${count.rows[0].n}`);
+}
+
 async function ensureAdmin(client) {
   const r = await client.query(`SELECT COUNT(*)::int AS n FROM "AdminUser"`);
   console.log("AdminUser count =", r.rows[0].n, "(app will bootstrap thamelpark on first login if 0)");
@@ -126,6 +181,7 @@ async function main() {
   await client.connect();
   await ensureCms(client);
   await indexUploads(client);
+  await syncRoomsFromCms(client);
   await ensureAdmin(client);
 
   const tables = await client.query(`
@@ -135,6 +191,15 @@ async function main() {
   console.log("Table row estimates:");
   for (const row of tables.rows) {
     console.log(`  ${row.name}: ${row.rows}`);
+  }
+
+  const roomExact = await client.query(`SELECT COUNT(*)::int AS n FROM "Room"`);
+  const cmsRooms = await client.query(
+    `SELECT COALESCE(jsonb_array_length(content->'rooms'), 0)::int AS n FROM "SiteContentRecord" WHERE id = 'main'`
+  );
+  console.log("VERIFY Room count =", roomExact.rows[0].n, "CMS rooms =", cmsRooms.rows[0]?.n ?? 0);
+  if ((cmsRooms.rows[0]?.n ?? 0) > 0 && roomExact.rows[0].n === 0) {
+    throw new Error("Room table empty after sync — CMS has rooms but relational sync failed");
   }
 
   await client.end();

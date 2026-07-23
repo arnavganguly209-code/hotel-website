@@ -127,6 +127,9 @@ export async function POST(req: Request) {
     const paymentStatus =
       body.paymentStatus && PAYMENT_STATUSES.has(body.paymentStatus) ? body.paymentStatus : "offline";
 
+    const { findRoomIdBySlug } = await import("@/lib/cms/sync-rooms");
+    const roomId = await findRoomIdBySlug(slug);
+
     const booking = await db.booking.create({
       data: {
         name: body.name.trim(),
@@ -152,6 +155,7 @@ export async function POST(req: Request) {
         nights,
         status,
         paymentStatus,
+        roomId,
       },
     });
 

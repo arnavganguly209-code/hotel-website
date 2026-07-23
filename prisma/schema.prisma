@@ -31,6 +31,7 @@ model ContentBackup {
 
 model Room {
   id          Int       @id @default(autoincrement())
+  slug        String    @unique
   name        String
   description String
   price       Int

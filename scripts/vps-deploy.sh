@@ -83,7 +83,8 @@ rm -f public/__deploy-status.json \
   2>/dev/null || true
 rm -f backups/env-before-cutover* 2>/dev/null || true
 rm -f /tmp/htp-cutover.log /tmp/htp-migrate.log /tmp/htp-vps-deploy.log 2>/dev/null || true
-echo "Cleaned historical deploy/cutover artifacts"
+echo "Cleaned historical deploy artifacts"
+rm -rf .npm-cache .node 2>/dev/null || true
 
 # shellcheck disable=SC1091
 set -a

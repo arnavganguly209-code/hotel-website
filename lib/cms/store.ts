@@ -49,6 +49,10 @@ export async function saveContent(content: SiteContent): Promise<void> {
       content: content as object,
     },
   });
+
+  // Keep relational Room table aligned with Orbit CMS rooms
+  const { syncRoomsFromCms } = await import("./sync-rooms");
+  await syncRoomsFromCms(content.rooms ?? []);
 }
 
 export async function createBackup(label?: string): Promise<void> {
