@@ -117,10 +117,8 @@ async function ensureAdmin(client) {
 
 async function main() {
   const url = loadDatabaseUrl();
-  if (/neon\.tech/i.test(url)) {
-    throw new Error("Refusing bootstrap against hosted endpoint — use localhost thamelpark");
-  }
-  if (!/thamelpark/i.test(url) || !/(127\.0\.0\.1|localhost)/i.test(url)) {
+  const host = (url.match(/@([^/:?]+)/) || [])[1] || "";
+  if (!/^(127\.0\.0\.1|localhost)$/i.test(host) || !/thamelpark/i.test(url)) {
     throw new Error("DATABASE_URL must target localhost thamelpark");
   }
 

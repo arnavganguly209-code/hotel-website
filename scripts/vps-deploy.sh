@@ -49,28 +49,41 @@ else
   npm install
 fi
 
-# Final cutover: hosted DB abandoned → localhost thamelpark
+# Ensure localhost thamelpark
 set +e
-bash scripts/cutover-to-thamelpark.sh > /tmp/htp-cutover.log 2>&1
-CUTOVER_RC=$?
+bash scripts/ensure-localhost-db.sh > /tmp/htp-db-ensure.log 2>&1
+ENSURE_RC=$?
 set -e
-tail -n 100 /tmp/htp-cutover.log || true
-cp -f /tmp/htp-cutover.log public/__cutover-log.txt 2>/dev/null || true
-if [ "$CUTOVER_RC" -ne 0 ]; then
-  echo "ERROR: cutover-to-thamelpark.sh exited $CUTOVER_RC"
+tail -n 100 /tmp/htp-db-ensure.log || true
+if [ "$ENSURE_RC" -ne 0 ]; then
+  echo "ERROR: ensure-localhost-db.sh exited $ENSURE_RC"
   exit 1
 fi
 
-# Fail deploy if Neon still present
-if grep -Eqi '^DATABASE_URL=.*neon\.tech' .env; then
-  echo "ERROR: DATABASE_URL still points at neon.tech"
-  exit 1
-fi
+# Require localhost thamelpark only (no remote DB hosts)
 if ! grep -Eqi '^DATABASE_URL=.*(127\.0\.0\.1|localhost).*/thamelpark' .env; then
   echo "ERROR: DATABASE_URL must be localhost thamelpark"
   exit 1
 fi
+DB_HOST="$(grep -E '^DATABASE_URL=' .env | tail -1 | sed -E 's/.*@([^/:?]+).*/\1/')"
+if ! echo "$DB_HOST" | grep -Eqi '^(127\.0\.0\.1|localhost)$'; then
+  echo "ERROR: DATABASE_URL host must be 127.0.0.1 or localhost (got non-local host)"
+  exit 1
+fi
 echo "OK: DATABASE_URL uses local PostgreSQL thamelpark"
+
+# Remove historical deploy/cutover artifacts from public + backups
+rm -f public/__deploy-status.json \
+  public/__db-migrate-status.json \
+  public/__db-migrate-log.txt \
+  public/__cutover-log.txt \
+  public/__deploy-beacon.txt \
+  public/uploads/general/deploy-beacon.txt \
+  public/uploads/general/deploy-log.txt \
+  2>/dev/null || true
+rm -f backups/env-before-cutover* 2>/dev/null || true
+rm -f /tmp/htp-cutover.log /tmp/htp-migrate.log /tmp/htp-vps-deploy.log 2>/dev/null || true
+echo "Cleaned historical deploy/cutover artifacts"
 
 # shellcheck disable=SC1091
 set -a

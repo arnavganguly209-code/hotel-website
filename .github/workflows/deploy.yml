@@ -100,7 +100,7 @@ jobs:
             chmod -R ug+rwX public/uploads || true
             export UPLOADS_ROOT="$APP_DIR/public/uploads"
 
-            chmod +x scripts/vps-env.sh scripts/vps-deploy.sh scripts/cutover-to-thamelpark.sh || true
+            chmod +x scripts/vps-env.sh scripts/vps-deploy.sh scripts/ensure-localhost-db.sh || true
 
             set +e
             # shellcheck disable=SC1091
@@ -118,7 +118,14 @@ jobs:
             bash "$APP_DIR/scripts/vps-deploy.sh" > /tmp/htp-vps-deploy.log 2>&1
             DEPLOY_RC=$?
             set -e
-            tail -n 80 /tmp/htp-vps-deploy.log >> "$BEACON" || true
-            cp -f /tmp/htp-vps-deploy.log public/uploads/general/deploy-log.txt 2>/dev/null || true
-            echo "deploy-rc=$DEPLOY_RC" >> "$BEACON"
+            # Keep a short beacon only (no long logs with historical hostnames)
+            echo "deploy-rc=$DEPLOY_RC HEAD=$(git rev-parse --short HEAD)" > "$BEACON"
+            # Remove diagnostic logs from public tree after deploy
+            rm -f public/uploads/general/deploy-log.txt \
+              public/__cutover-log.txt \
+              public/__deploy-status.json \
+              public/__db-migrate-status.json \
+              public/__db-migrate-log.txt \
+              backups/env-before-cutover* \
+              2>/dev/null || true
             exit "$DEPLOY_RC"

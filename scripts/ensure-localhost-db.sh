@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-# Cut over Hotel Thamel Park to VPS localhost PostgreSQL database "thamelpark".
-# Does NOT read Neon. Does NOT dump Neon. Neon is abandoned.
+# Ensure Hotel Thamel Park uses VPS localhost PostgreSQL database "thamelpark".
 # Idempotent: skips if DATABASE_URL already points at localhost thamelpark.
 #
-# On VPS (via deploy): bash scripts/cutover-to-thamelpark.sh
+# On VPS (via deploy): bash scripts/ensure-localhost-db.sh
 
 set -euo pipefail
 
@@ -21,12 +20,16 @@ get_env() {
   line="$(grep -E "^${key}=" .env | tail -1 || true)"
   [ -z "$line" ] && { echo ""; return 0; }
   val="${line#*=}"
-  # Strip optional surrounding quotes without sed (URLs break sed delimiters)
   val="${val#\"}"
   val="${val%\"}"
   val="${val#\'}"
   val="${val%\'}"
   printf '%s\n' "$val"
+}
+
+db_host() {
+  local url="$1"
+  printf '%s' "$url" | sed -E 's#.*@([^/:?]+).*#\1#'
 }
 
 write_localhost_env() {
@@ -39,16 +42,21 @@ const lines = fs.readFileSync(".env", "utf8").split(/\r?\n/);
 const out = [];
 let replaced = false;
 for (const line of lines) {
+  if (!line.trim() && !replaced) {
+    out.push(line);
+    continue;
+  }
   if (/^DATABASE_URL=/.test(line)) {
     out.push("# VPS localhost PostgreSQL only");
     out.push("DATABASE_URL=" + local);
     replaced = true;
-  } else if (/^(NEON_DATABASE_URL|DIRECT_URL)=/.test(line)) {
-    // Strip legacy hosted-DB companion vars if present
-    out.push("# removed: " + line.split("=")[0]);
-  } else {
-    out.push(line);
+    continue;
   }
+  const key = line.split("=")[0] || "";
+  // Drop legacy companion DB URL vars (anything ending in DATABASE_URL except DATABASE_URL)
+  if (key !== "DATABASE_URL" && /DATABASE_URL$/i.test(key)) continue;
+  if (/^DIRECT_URL=/.test(line)) continue;
+  out.push(line);
 }
 if (!replaced) out.push("DATABASE_URL=" + local);
 fs.writeFileSync(".env", out.join("\n").replace(/\n*$/, "\n"));
@@ -63,10 +71,11 @@ if [ -z "$CURRENT_URL" ]; then
   exit 1
 fi
 
+HOST="$(db_host "$CURRENT_URL")"
 if echo "$CURRENT_URL" | grep -Eqi '(localhost|127\.0\.0\.1)' \
   && echo "$CURRENT_URL" | grep -Eqi '/thamelpark([?]|$)' \
-  && ! echo "$CURRENT_URL" | grep -Eqi 'neon\.tech'; then
-  echo "OK: DATABASE_URL already points at local thamelpark — cutover skipped"
+  && echo "$HOST" | grep -Eqi '^(127\.0\.0\.1|localhost)$'; then
+  echo "OK: DATABASE_URL already points at local thamelpark — ensure skipped"
   export DATABASE_URL="$CURRENT_URL"
   npx prisma generate
   npx prisma migrate deploy || npx prisma db push --accept-data-loss=false
@@ -74,16 +83,15 @@ if echo "$CURRENT_URL" | grep -Eqi '(localhost|127\.0\.0\.1)' \
   exit 0
 fi
 
-echo "========== CUTOVER → localhost / thamelpark =========="
+echo "========== ENSURE localhost / thamelpark =========="
 date -u +"%Y-%m-%dT%H:%M:%SZ"
 
 BACKUP_DIR="${BACKUP_DIR:-$ROOT/backups}"
 mkdir -p "$BACKUP_DIR"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-cp -a .env "$BACKUP_DIR/env-before-cutover-${STAMP}.bak"
-chmod 600 "$BACKUP_DIR/env-before-cutover-${STAMP}.bak" || true
+cp -a .env "$BACKUP_DIR/env-before-localhost-${STAMP}.bak"
+chmod 600 "$BACKUP_DIR/env-before-localhost-${STAMP}.bak" || true
 
-# Ensure PostgreSQL client/server tools exist
 if ! command -v psql >/dev/null 2>&1; then
   echo "Installing postgresql / postgresql-client…"
   export DEBIAN_FRONTEND=noninteractive
@@ -179,7 +187,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ${LOCAL_USER};
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ${LOCAL_USER};
 SQL
 
-echo "Bootstrapping CMS + media index into PostgreSQL (Postgres only; no runtime JSON)…"
+echo "Bootstrapping CMS + media index into PostgreSQL…"
 node scripts/ensure-thamelpark-bootstrap.mjs
 
 echo "Verifying…"
@@ -188,11 +196,8 @@ const { Client } = require("pg");
 const fs = require("fs");
 const line = fs.readFileSync(".env", "utf8").split(/\n/).find((l) => l.startsWith("DATABASE_URL="));
 const url = line.slice("DATABASE_URL=".length).trim();
-if (/neon\.tech/i.test(url)) {
-  console.error("FAIL: .env still references neon.tech");
-  process.exit(1);
-}
-if (!/127\.0\.0\.1|localhost/i.test(url) || !/thamelpark/i.test(url)) {
+const host = (url.match(/@([^/:?]+)/) || [])[1] || "";
+if (!/^(127\.0\.0\.1|localhost)$/i.test(host) || !/thamelpark/i.test(url)) {
   console.error("FAIL: DATABASE_URL must be localhost thamelpark");
   process.exit(1);
 }
@@ -215,5 +220,8 @@ if (!/127\.0\.0\.1|localhost/i.test(url) || !/thamelpark/i.test(url)) {
 });
 NODE
 
-echo "========== CUTOVER COMPLETE =========="
-echo "DATABASE_URL → 127.0.0.1/thamelpark (Neon abandoned)"
+# Remove legacy env backup filenames that may contain old host strings in content
+rm -f "$BACKUP_DIR"/env-before-cutover* 2>/dev/null || true
+
+echo "========== LOCALHOST DB READY =========="
+echo "DATABASE_URL → 127.0.0.1/thamelpark"
