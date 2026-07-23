@@ -71,6 +71,8 @@ export async function isDateRangeBlocked(
 
 export async function getInventoryTotal(roomSlug: string, fallback = 1): Promise<number> {
   if (!isDatabaseAvailable()) return fallback;
+  const unitCount = await db.roomUnit.count({ where: { roomSlug } });
+  if (unitCount > 0) return unitCount;
   const row = await db.roomInventory.findUnique({ where: { roomSlug } });
   return row?.totalRooms ?? fallback;
 }

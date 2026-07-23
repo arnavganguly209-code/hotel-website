@@ -9,10 +9,9 @@ import {
   calculateBookingTotal,
   calculateNights,
   formatBookingDate,
-  roomOnlyNightlyPrice,
   roomPublicSlug,
 } from "@/lib/booking/utils";
-import type { BookingSearchParams, BreakfastOption, PaymentMethod } from "@/lib/booking/types";
+import type { BookingSearchParams, PaymentMethod } from "@/lib/booking/types";
 import type { SiteContent } from "@/lib/cms/types";
 
 interface LuxuryBookingCheckoutProps {
@@ -69,7 +68,7 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
     children: search.children || "0",
     rooms: search.rooms || "1",
   });
-  const [breakfast, setBreakfast] = useState<BreakfastOption>(search.breakfast || "with-breakfast");
+  const breakfast = "with-breakfast" as const;
   const [guest, setGuest] = useState({ firstName: "", lastName: "", email: "", phone: "", whatsapp: "", countryCode: "+977", country: "" });
   const [request, setRequest] = useState({ promoCode: "", arrivalTime: "", flightNumber: "", notes: "" });
   const [payment, setPayment] = useState<PaymentMethod | "">("");
@@ -77,7 +76,7 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const nights = calculateNights(stay.checkIn, stay.checkOut);
   const roomQuantity = Math.max(1, Number(stay.rooms) || 1);
-  const total = useMemo(() => calculateBookingTotal({ room, nights, roomQuantity, breakfast }), [room, nights, roomQuantity, breakfast]);
+  const total = useMemo(() => calculateBookingTotal({ room, nights, roomQuantity, breakfast }), [room, nights, roomQuantity]);
   const inputClass = (name: string) =>
     `${fieldClass} ${fieldErrors[name] ? "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-500/10" : ""}`;
 
@@ -208,8 +207,9 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
                   <label className="text-xs font-semibold text-[#4f5f56]">Children<input type="number" min="0" max="6" value={stay.children} onChange={(e) => setStay({ ...stay, children: e.target.value })} className={`mt-2 ${fieldClass}`} /></label>
                 </div>
                 <FieldError message={fieldErrors.dates} />
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  {[{ id: "with-breakfast" as const, label: "Breakfast Included", price: room.price }, { id: "room-only" as const, label: "Without Breakfast", price: roomOnlyNightlyPrice(room) }].map((option) => <button key={option.id} type="button" onClick={() => setBreakfast(option.id)} className={`flex justify-between rounded-2xl border p-4 text-left text-sm ${breakfast === option.id ? "border-[#ae8645] bg-[#f5edde] text-[#173a2b]" : "border-[#d7c49d]/50 text-[#68736d]"}`}><span>{option.label}</span><strong>${option.price}</strong></button>)}
+                <div className="mt-5 flex justify-between rounded-2xl border border-[#ae8645] bg-[#f5edde] p-4 text-sm text-[#173a2b]">
+                  <span>Breakfast Included</span>
+                  <strong>${room.price}</strong>
                 </div>
               </div>
             ) : null}
@@ -334,7 +334,7 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
         <div className="rounded-[28px] bg-[#153a2a] p-7 text-white shadow-[0_24px_70px_rgba(17,52,36,0.20)]">
           <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#d9bb7c]">Stay summary</p>
           <h3 className="mt-3 font-display text-2xl">{room.name}</h3>
-          <dl className="mt-6 space-y-3 text-sm text-white/72"><div className="flex justify-between gap-3"><dt>Check-in</dt><dd className="text-right text-white">{formatBookingDate(stay.checkIn)}</dd></div><div className="flex justify-between gap-3"><dt>Check-out</dt><dd className="text-right text-white">{formatBookingDate(stay.checkOut)}</dd></div><div className="flex justify-between"><dt>Nights</dt><dd className="text-white">{nights}</dd></div><div className="flex justify-between"><dt>Guests</dt><dd className="text-white">{stay.adults} adults, {stay.children} children</dd></div><div className="flex justify-between"><dt>Rate</dt><dd className="text-white">{breakfast === "with-breakfast" ? "Breakfast included" : "Without breakfast"}</dd></div></dl>
+          <dl className="mt-6 space-y-3 text-sm text-white/72"><div className="flex justify-between gap-3"><dt>Check-in</dt><dd className="text-right text-white">{formatBookingDate(stay.checkIn)}</dd></div><div className="flex justify-between gap-3"><dt>Check-out</dt><dd className="text-right text-white">{formatBookingDate(stay.checkOut)}</dd></div><div className="flex justify-between"><dt>Nights</dt><dd className="text-white">{nights}</dd></div><div className="flex justify-between"><dt>Guests</dt><dd className="text-white">{stay.adults} adults, {stay.children} children</dd></div><div className="flex justify-between"><dt>Rate</dt><dd className="text-white">Breakfast Included</dd></div></dl>
           <div className="mt-6 flex items-end justify-between border-t border-white/12 pt-6"><span className="text-xs uppercase tracking-widest text-white/55">Total</span><span className="font-display text-4xl text-[#e0c184]">${total}</span></div>
         </div>
       </aside>

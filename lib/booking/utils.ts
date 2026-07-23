@@ -34,19 +34,24 @@ export function roomPublicSlug(room: SiteContent["rooms"][number]): string {
   return room.slug?.trim() || room.id;
 }
 
+/** Nightly rate always includes breakfast. */
+export function breakfastIncludedNightlyPrice(room: SiteContent["rooms"][number]): number {
+  return Math.max(0, Math.round(Number(room.price) || 0));
+}
+
+/** @deprecated Use breakfastIncludedNightlyPrice — breakfast is always included. */
 export function roomOnlyNightlyPrice(room: SiteContent["rooms"][number]): number {
-  return Math.max(0, room.price - (room.breakfastPrice ?? 5));
+  return breakfastIncludedNightlyPrice(room);
 }
 
 export function calculateBookingTotal(options: {
   room: SiteContent["rooms"][number];
   nights: number;
   roomQuantity: number;
-  breakfast: "room-only" | "with-breakfast";
+  breakfast?: "with-breakfast" | string;
 }): number {
-  const { room, nights, roomQuantity, breakfast } = options;
-  const nightly =
-    breakfast === "with-breakfast" ? room.price : roomOnlyNightlyPrice(room);
+  const { room, nights, roomQuantity } = options;
+  const nightly = breakfastIncludedNightlyPrice(room);
   return nightly * nights * roomQuantity;
 }
 
@@ -63,7 +68,7 @@ export function bookingSearchFromParams(
     guests: get("guests") || "2",
     children: get("children") || "0",
     rooms: get("rooms") || get("room") || "1",
-    breakfast: get("breakfast") === "room-only" ? "room-only" : "with-breakfast",
+    breakfast: "with-breakfast",
   };
 }
 
@@ -74,7 +79,7 @@ export function buildAvailabilityUrl(search: BookingSearchParams): string {
     guests: search.guests,
     children: search.children,
     rooms: search.rooms,
-    breakfast: search.breakfast || "with-breakfast",
+    breakfast: "with-breakfast",
   });
   return `${routes.rooms}?${params.toString()}`;
 }
@@ -86,7 +91,7 @@ export function buildRoomDetailUrl(slug: string, search: BookingSearchParams): s
     guests: search.guests,
     children: search.children,
     rooms: search.rooms,
-    breakfast: search.breakfast || "with-breakfast",
+    breakfast: "with-breakfast",
   });
   return `${roomDetailPath(slug)}?${params.toString()}`;
 }
@@ -99,7 +104,7 @@ export function buildBookUrl(slug: string, search: BookingSearchParams): string 
     guests: search.guests,
     children: search.children,
     rooms: search.rooms,
-    breakfast: search.breakfast || "with-breakfast",
+    breakfast: "with-breakfast",
   });
   return `${routes.book}?${params.toString()}`;
 }

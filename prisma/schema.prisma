@@ -54,7 +54,8 @@ model Booking {
   roomQuantity    Int       @default(1)
   roomSlug        String    @default("")
   roomName        String    @default("")
-  breakfast       String    @default("room-only")
+  breakfast       String    @default("with-breakfast")
+  roomNumber      String    @default("")
   specialRequests String    @default("")
   promoCode       String    @default("")
   arrivalTime     String    @default("")
@@ -192,6 +193,19 @@ model RoomInventory {
   overrides  Json?
   updatedAt  DateTime @updatedAt
   createdAt  DateTime @default(now())
+}
+
+model RoomUnit {
+  id         String   @id @default(cuid())
+  roomSlug   String
+  roomNumber String
+  status     String   @default("available") // available | occupied | maintenance
+  notes      String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([roomSlug, roomNumber])
+  @@index([roomSlug, status])
 }
 
 model RoomBlock {

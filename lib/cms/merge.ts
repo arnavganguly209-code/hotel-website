@@ -430,9 +430,15 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
           return {
             ...base,
             ...article,
+            subtitle: article.subtitle ?? base.subtitle ?? "",
             tagIds: article.tagIds ?? base.tagIds ?? [],
             relatedIds: article.relatedIds ?? base.relatedIds ?? [],
-            seo: { ...base.seo, ...(article.seo ?? {}) },
+            seo: {
+              ...base.seo,
+              ...(article.seo ?? {}),
+              focusKeyword:
+                article.seo?.focusKeyword ?? base.seo?.focusKeyword ?? "",
+            },
             faq: definedArray(article.faq, base.faq ?? []),
             toc: definedArray(article.toc, base.toc ?? []),
             revisions: article.revisions ?? [],
@@ -448,7 +454,15 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       const ids = new Set(merged.map((a) => a.id));
       for (const def of defaultContent.articles) {
         if (!ids.has(def.id) && !merged.some((a) => a.slug === def.slug)) {
-          merged.push({ ...def, revisions: def.revisions ?? [] });
+          merged.push({
+            ...def,
+            subtitle: def.subtitle ?? "",
+            seo: {
+              ...def.seo,
+              focusKeyword: def.seo?.focusKeyword ?? "",
+            },
+            revisions: def.revisions ?? [],
+          });
         }
       }
       return merged;

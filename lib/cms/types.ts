@@ -1294,7 +1294,7 @@ export interface SiteContent {
     paymentLogos: Array<{ id: string; src: string }>;
     /** Centered legal row links (Privacy, Terms, Cancellation, Cookies, Sitemap) */
     legalLinks: NavItem[];
-    /** Mountain / pine silhouette artwork behind footer content */
+    /** Mountain silhouette artwork behind footer content */
     showMountains: boolean;
     copyrightText: string;
     developerLabel: string;
@@ -1381,6 +1381,7 @@ export interface SiteContent {
     id: string;
     slug: string;
     title: string;
+    subtitle?: string;
     excerpt: string;
     body: string;
     coverImage: string;
@@ -1402,6 +1403,9 @@ export interface SiteContent {
       keywords: string;
       canonical: string;
       ogImage: string;
+      focusKeyword?: string;
+      twitterTitle?: string;
+      twitterDescription?: string;
     };
     faq: Array<{ question: string; answer: string }>;
     toc: Array<{ id: string; label: string; level: 2 | 3 }>;

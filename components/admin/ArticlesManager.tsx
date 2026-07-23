@@ -90,6 +90,7 @@ export function ArticlesManager({ content, update }: ArticlesManagerProps) {
       id,
       slug: `new-article-${order}`,
       title: "New Article",
+      subtitle: "",
       excerpt: "",
       body: "<p>Start writing your luxury editorial story…</p>",
       coverImage: "",
@@ -110,6 +111,7 @@ export function ArticlesManager({ content, update }: ArticlesManagerProps) {
         keywords: "",
         canonical: "",
         ogImage: "",
+        focusKeyword: "",
       },
       faq: [],
       toc: [],
@@ -832,6 +834,14 @@ export function ArticlesManager({ content, update }: ArticlesManagerProps) {
               />
             </div>
 
+            <AdminInput
+              label="Subtitle"
+              value={selected.subtitle || ""}
+              onChange={(e) =>
+                patchArticle(selected.id, { subtitle: e.target.value })
+              }
+            />
+
             <AdminTextarea
               label="Excerpt"
               rows={2}
@@ -1029,6 +1039,15 @@ export function ArticlesManager({ content, update }: ArticlesManagerProps) {
                 onChange={(e) =>
                   patchArticle(selected.id, {
                     seo: { ...selected.seo, title: e.target.value },
+                  })
+                }
+              />
+              <AdminInput
+                label="Focus Keyword"
+                value={selected.seo.focusKeyword || ""}
+                onChange={(e) =>
+                  patchArticle(selected.id, {
+                    seo: { ...selected.seo, focusKeyword: e.target.value },
                   })
                 }
               />

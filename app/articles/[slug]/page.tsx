@@ -19,16 +19,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   );
   if (!article) return { title: "Article" };
 
+  const metaTitle = article.seo.title || article.title;
+  const metaDescription = article.seo.description || article.excerpt;
+  const keywords = article.seo.keywords
+    ? article.seo.keywords
+        .split(",")
+        .map((k) => k.trim())
+        .filter(Boolean)
+    : undefined;
+
   return {
-    title: article.seo.title || article.title,
-    description: article.seo.description || article.excerpt,
-    keywords: article.seo.keywords,
+    title: metaTitle,
+    description: metaDescription,
+    keywords,
     alternates: {
       canonical: article.seo.canonical || articleDetailPath(article.slug),
     },
     openGraph: {
-      title: article.seo.title || article.title,
-      description: article.seo.description || article.excerpt,
+      title: metaTitle,
+      description: metaDescription,
       url: article.seo.canonical || articleDetailPath(article.slug),
       type: "article",
       publishedTime: article.publishedAt,
@@ -41,8 +50,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: article.seo.title || article.title,
-      description: article.seo.description || article.excerpt,
+      title: article.seo.twitterTitle || metaTitle,
+      description: article.seo.twitterDescription || metaDescription,
       images: [article.seo.ogImage || article.coverImage],
     },
   };

@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
@@ -16,6 +16,7 @@ import { TableRow } from "@tiptap/extension-table-row";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
 import Youtube from "@tiptap/extension-youtube";
+import CharacterCount from "@tiptap/extension-character-count";
 import {
   AlignCenter,
   AlignJustify,
@@ -33,9 +34,13 @@ import {
   Link2,
   List,
   ListOrdered,
+  Maximize2,
+  Minimize2,
   Minus,
   Quote,
   Redo2,
+  Replace,
+  Search,
   Strikethrough,
   Table as TableIcon,
   Underline as UnderlineIcon,
@@ -50,6 +55,70 @@ interface ArticleRichEditorProps {
   onUploadImage?: (file: File) => Promise<string | null>;
 }
 
+function findNextInEditor(editor: Editor, query: string, fromPos: number): boolean {
+  if (!query) return false;
+  const { doc } = editor.state;
+  let match: { from: number; to: number } | null = null;
+
+  doc.descendants((node, pos) => {
+    if (match || !node.isText || !node.text) return;
+    const text = node.text;
+    const nodeEnd = pos + text.length;
+    if (nodeEnd <= fromPos) return;
+    const start = Math.max(0, fromPos - pos);
+    const index = text.indexOf(query, start);
+    if (index !== -1) {
+      match = { from: pos + index, to: pos + index + query.length };
+    }
+  });
+
+  if (!match) {
+    doc.descendants((node, pos) => {
+      if (match || !node.isText || !node.text) return;
+      const index = node.text.indexOf(query);
+      if (index !== -1) {
+        match = { from: pos + index, to: pos + index + query.length };
+      }
+    });
+  }
+
+  if (!match) return false;
+  editor.chain().focus().setTextSelection(match).scrollIntoView().run();
+  return true;
+}
+
+function replaceAllInEditor(editor: Editor, search: string, replacement: string): number {
+  if (!search) return 0;
+  const { doc } = editor.state;
+  const replacements: { from: number; to: number; text: string }[] = [];
+
+  doc.descendants((node, pos) => {
+    if (!node.isText || !node.text || !node.text.includes(search)) return;
+    const text = node.text;
+    let localFrom = 0;
+    while (true) {
+      const index = text.indexOf(search, localFrom);
+      if (index === -1) break;
+      replacements.push({
+        from: pos + index,
+        to: pos + index + search.length,
+        text: replacement,
+      });
+      localFrom = index + search.length;
+    }
+  });
+
+  if (replacements.length === 0) return 0;
+
+  let tr = editor.state.tr;
+  for (let i = replacements.length - 1; i >= 0; i -= 1) {
+    const r = replacements[i];
+    tr = tr.insertText(r.text, r.from, r.to);
+  }
+  editor.view.dispatch(tr);
+  return replacements.length;
+}
+
 export function ArticleRichEditor({
   value,
   onChange,
@@ -57,6 +126,23 @@ export function ArticleRichEditor({
 }: ArticleRichEditorProps) {
   const [mode, setMode] = useState<"visual" | "html">("visual");
   const [htmlDraft, setHtmlDraft] = useState(value);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [findQuery, setFindQuery] = useState("");
+  const uploadRef = useRef(onUploadImage);
+  uploadRef.current = onUploadImage;
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  const insertUploadedImage = useCallback(async (file: File, ed: Editor) => {
+    const upload = uploadRef.current;
+    if (!upload) return false;
+    const url = await upload(file);
+    if (url) {
+      ed.chain().focus().setImage({ src: url }).run();
+      return true;
+    }
+    return false;
+  }, []);
 
   const editor = useEditor({
     extensions: [
@@ -76,12 +162,13 @@ export function ArticleRichEditor({
       TableHeader,
       TableCell,
       Youtube.configure({ width: 640, height: 360 }),
+      CharacterCount,
     ],
     content: value || "",
     immediatelyRender: false,
     onUpdate: ({ editor: ed }) => {
       const html = ed.getHTML();
-      onChange(html);
+      onChangeRef.current(html);
       setHtmlDraft(html);
     },
     editorProps: {
@@ -94,20 +181,62 @@ export function ArticleRichEditor({
 
   useEffect(() => {
     if (!editor) return;
+    editor.setOptions({
+      editorProps: {
+        attributes: {
+          class:
+            "prose prose-sm max-w-none min-h-[360px] px-5 py-4 focus:outline-none text-white/90",
+        },
+        handlePaste: (_view, event) => {
+          const items = event.clipboardData?.items;
+          if (!items || !uploadRef.current) return false;
+          for (const item of Array.from(items)) {
+            if (item.type.startsWith("image/")) {
+              const file = item.getAsFile();
+              if (!file) continue;
+              event.preventDefault();
+              void insertUploadedImage(file, editor);
+              return true;
+            }
+          }
+          return false;
+        },
+        handleDrop: (_view, event) => {
+          const files = event.dataTransfer?.files;
+          if (!files?.length || !uploadRef.current) return false;
+          const image = Array.from(files).find((f) => f.type.startsWith("image/"));
+          if (!image) return false;
+          event.preventDefault();
+          const coords = editor.view.posAtCoords({
+            left: event.clientX,
+            top: event.clientY,
+          });
+          if (coords) {
+            editor.commands.setTextSelection(coords.pos);
+          }
+          void insertUploadedImage(image, editor);
+          return true;
+        },
+      },
+    });
+  }, [editor, insertUploadedImage]);
+
+  useEffect(() => {
+    if (!editor) return;
     if (mode === "visual" && value !== editor.getHTML()) {
       editor.commands.setContent(value || "", { emitUpdate: false });
       setHtmlDraft(value || "");
     }
   }, [value, editor, mode]);
 
-  const run = useCallback(
-    (fn: () => void) => {
-      if (!editor) return;
-      fn();
-      editor.chain().focus().run();
-    },
-    [editor]
-  );
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFullscreen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [fullscreen]);
 
   const addLink = () => {
     if (!editor) return;
@@ -146,6 +275,60 @@ export function ArticleRichEditor({
     if (url) editor.commands.setYoutubeVideo({ src: url });
   };
 
+  const handleFindNext = () => {
+    if (!editor) return;
+    const query = window.prompt("Find", findQuery) ?? "";
+    if (!query) return;
+    setFindQuery(query);
+    const from = editor.state.selection.to;
+    const found = findNextInEditor(editor, query, from);
+    if (!found) window.alert(`No matches for “${query}”`);
+  };
+
+  const handleReplace = () => {
+    if (!editor) return;
+    const query = window.prompt("Find", findQuery) ?? "";
+    if (!query) return;
+    setFindQuery(query);
+    const replacement = window.prompt("Replace with", "");
+    if (replacement === null) return;
+
+    const { from, to, empty } = editor.state.selection;
+    const selected = editor.state.doc.textBetween(from, to);
+    if (!empty && selected === query) {
+      editor.chain().focus().insertContentAt({ from, to }, replacement).run();
+      findNextInEditor(editor, query, from + replacement.length);
+      return;
+    }
+
+    const found = findNextInEditor(editor, query, editor.state.selection.from);
+    if (!found) {
+      window.alert(`No matches for “${query}”`);
+      return;
+    }
+    const sel = editor.state.selection;
+    editor
+      .chain()
+      .focus()
+      .insertContentAt({ from: sel.from, to: sel.to }, replacement)
+      .run();
+  };
+
+  const handleReplaceAll = () => {
+    if (!editor) return;
+    const query = window.prompt("Find", findQuery) ?? "";
+    if (!query) return;
+    setFindQuery(query);
+    const replacement = window.prompt("Replace all with", "");
+    if (replacement === null) return;
+    const count = replaceAllInEditor(editor, query, replacement);
+    window.alert(
+      count > 0
+        ? `Replaced ${count} occurrence${count === 1 ? "" : "s"}.`
+        : `No matches for “${query}”`
+    );
+  };
+
   const switchToHtml = () => {
     if (editor) setHtmlDraft(editor.getHTML());
     setMode("html");
@@ -157,6 +340,18 @@ export function ArticleRichEditor({
     setMode("visual");
   };
 
+  const plainFallback = htmlDraft.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const characters =
+    mode === "visual" && editor
+      ? editor.storage.characterCount.characters()
+      : plainFallback.length;
+  const words =
+    mode === "visual" && editor
+      ? editor.storage.characterCount.words()
+      : plainFallback
+        ? plainFallback.split(/\s+/).filter(Boolean).length
+        : 0;
+
   if (!editor) {
     return (
       <div className="rounded-xl border border-luxury-gold/20 bg-black/30 p-8 text-sm text-white/40">
@@ -166,7 +361,12 @@ export function ArticleRichEditor({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-luxury-gold/20 bg-[#0B1612]">
+    <div
+      className={cn(
+        "flex flex-col overflow-hidden rounded-xl border border-luxury-gold/20 bg-[#0B1612]",
+        fullscreen && "fixed inset-0 z-[80] rounded-none border-0"
+      )}
+    >
       <div className="space-y-1 border-b border-luxury-gold/15 bg-[#0F1C18] p-2">
         <div className="flex flex-wrap items-center gap-1">
           <ToolBtn onClick={() => editor.chain().focus().undo().run()} title="Undo">
@@ -377,7 +577,28 @@ export function ArticleRichEditor({
           >
             <Heading3 className="h-4 w-4" />
           </ToolBtn>
-          <div className="ml-auto">
+          <Sep />
+          <ToolBtn onClick={handleFindNext} title="Find">
+            <Search className="h-4 w-4" />
+          </ToolBtn>
+          <ToolBtn onClick={handleReplace} title="Replace">
+            <Replace className="h-4 w-4" />
+          </ToolBtn>
+          <ToolBtn onClick={handleReplaceAll} title="Replace all">
+            <span className="text-[9px] font-semibold tracking-tight">All</span>
+          </ToolBtn>
+          <div className="ml-auto flex items-center gap-1">
+            <ToolBtn
+              active={fullscreen}
+              onClick={() => setFullscreen((v) => !v)}
+              title={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+            >
+              {fullscreen ? (
+                <Minimize2 className="h-4 w-4" />
+              ) : (
+                <Maximize2 className="h-4 w-4" />
+              )}
+            </ToolBtn>
             <button
               type="button"
               onClick={() => (mode === "visual" ? switchToHtml() : switchToVisual())}
@@ -395,19 +616,33 @@ export function ArticleRichEditor({
         </div>
       </div>
 
-      {mode === "visual" ? (
-        <EditorContent editor={editor} />
-      ) : (
-        <textarea
-          value={htmlDraft}
-          onChange={(e) => {
-            setHtmlDraft(e.target.value);
-            onChange(e.target.value);
-          }}
-          className="min-h-[360px] w-full bg-black/40 px-4 py-3 font-mono text-xs text-white/85 outline-none"
-          spellCheck={false}
-        />
-      )}
+      <div className={cn("min-h-0 flex-1 overflow-auto", fullscreen && "flex-1")}>
+        {mode === "visual" ? (
+          <EditorContent editor={editor} />
+        ) : (
+          <textarea
+            value={htmlDraft}
+            onChange={(e) => {
+              setHtmlDraft(e.target.value);
+              onChange(e.target.value);
+            }}
+            className={cn(
+              "min-h-[360px] w-full bg-black/40 px-4 py-3 font-mono text-xs text-white/85 outline-none",
+              fullscreen && "h-full min-h-0"
+            )}
+            spellCheck={false}
+          />
+        )}
+      </div>
+
+      <div className="flex items-center justify-between border-t border-luxury-gold/15 bg-[#0F1C18] px-4 py-2 text-[10px] uppercase tracking-[0.18em] text-white/45">
+        <span>
+          {words} word{words === 1 ? "" : "s"}
+        </span>
+        <span>
+          {characters} character{characters === 1 ? "" : "s"}
+        </span>
+      </div>
     </div>
   );
 }

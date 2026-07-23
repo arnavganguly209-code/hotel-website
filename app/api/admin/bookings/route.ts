@@ -79,6 +79,7 @@ export async function POST(req: Request) {
       children?: number;
       roomQuantity?: number;
       roomSlug: string;
+      roomNumber?: string;
       breakfast?: string;
       specialRequests?: string;
       notes?: string;
@@ -104,9 +105,22 @@ export async function POST(req: Request) {
     const guests = Math.max(1, Math.min(20, Number(body.guests) || 1));
     const children = Math.max(0, Math.min(10, Number(body.children) || 0));
     const roomQuantity = Math.max(1, Math.min(20, Number(body.roomQuantity) || 1));
-    const breakfast = body.breakfast === "room-only" ? "room-only" : "with-breakfast";
+    const breakfast = "with-breakfast";
     const nights = calculateNights(body.checkIn, body.checkOut);
     const slug = roomPublicSlug(room);
+    const roomNumber = body.roomNumber?.trim() ?? "";
+
+    if (roomNumber) {
+      const unit = await db.roomUnit.findUnique({
+        where: { roomSlug_roomNumber: { roomSlug: slug, roomNumber } },
+      });
+      if (!unit) {
+        return NextResponse.json({ success: false, error: "Room number not found for this category." }, { status: 400 });
+      }
+      if (unit.status !== "available") {
+        return NextResponse.json({ success: false, error: "Selected room number is not available." }, { status: 400 });
+      }
+    }
 
     const availability = await assertBookingAvailability({
       roomSlug: slug,
@@ -130,6 +144,12 @@ export async function POST(req: Request) {
     const { findRoomIdBySlug } = await import("@/lib/cms/sync-rooms");
     const roomId = await findRoomIdBySlug(slug);
 
+    const remarksBase = body.remarks?.trim() ?? "";
+    const remarks =
+      roomNumber && !remarksBase.toLowerCase().includes(`room #${roomNumber}`.toLowerCase())
+        ? [remarksBase, `Room #${roomNumber}`].filter(Boolean).join(" · ")
+        : remarksBase;
+
     const booking = await db.booking.create({
       data: {
         name: body.name.trim(),
@@ -145,10 +165,11 @@ export async function POST(req: Request) {
         roomQuantity,
         roomSlug: slug,
         roomName: room.name,
+        roomNumber,
         breakfast,
         specialRequests: body.specialRequests?.trim() ?? "",
         notes: body.notes?.trim() ?? "",
-        remarks: body.remarks?.trim() ?? "",
+        remarks,
         source: "offline",
         paymentMethod: body.paymentMethod?.trim() || "hotel",
         totalAmount,
@@ -158,6 +179,17 @@ export async function POST(req: Request) {
         roomId,
       },
     });
+
+    if (roomNumber) {
+      try {
+        await db.roomUnit.update({
+          where: { roomSlug_roomNumber: { roomSlug: slug, roomNumber } },
+          data: { status: "occupied" },
+        });
+      } catch (unitError) {
+        console.error("[AdminBookingsCreate] unit occupy best-effort", unitError);
+      }
+    }
 
     return NextResponse.json({ success: true, booking });
   } catch (error) {
@@ -207,7 +239,30 @@ export async function PATCH(req: Request) {
       data.remarks = body.remarks;
     }
 
+    const existing = await db.booking.findUnique({ where: { id: Number(body.id) } });
     const booking = await db.booking.update({ where: { id: Number(body.id) }, data });
+
+    const releaseStatuses = new Set(["cancelled", "checked_out", "refunded"]);
+    if (
+      existing?.roomNumber &&
+      existing.roomSlug &&
+      body.status &&
+      releaseStatuses.has(body.status)
+    ) {
+      try {
+        await db.roomUnit.updateMany({
+          where: {
+            roomSlug: existing.roomSlug,
+            roomNumber: existing.roomNumber,
+            status: "occupied",
+          },
+          data: { status: "available" },
+        });
+      } catch (unitError) {
+        console.error("[AdminBookingsUpdate] unit release best-effort", unitError);
+      }
+    }
+
     return NextResponse.json({ success: true, booking });
   } catch (error) {
     console.error("[AdminBookingsUpdate]", error);
@@ -232,7 +287,22 @@ export async function DELETE(req: Request) {
     if (!Number.isFinite(id)) {
       return NextResponse.json({ success: false, error: "Invalid id" }, { status: 400 });
     }
+    const existing = await db.booking.findUnique({ where: { id } });
     await db.booking.delete({ where: { id } });
+    if (existing?.roomNumber && existing.roomSlug) {
+      try {
+        await db.roomUnit.updateMany({
+          where: {
+            roomSlug: existing.roomSlug,
+            roomNumber: existing.roomNumber,
+            status: "occupied",
+          },
+          data: { status: "available" },
+        });
+      } catch (unitError) {
+        console.error("[AdminBookingsDelete] unit release best-effort", unitError);
+      }
+    }
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[AdminBookingsDelete]", error);

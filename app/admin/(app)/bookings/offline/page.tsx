@@ -1,11 +1,18 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 interface RoomOption {
   slug: string;
   name: string;
+}
+
+interface RoomUnit {
+  id: string;
+  roomSlug: string;
+  roomNumber: string;
+  status: string;
 }
 
 interface Booking {
@@ -14,6 +21,7 @@ interface Booking {
   email: string;
   phone: string;
   roomName: string;
+  roomNumber?: string;
   checkIn: string;
   checkOut: string;
   totalAmount: number;
@@ -46,6 +54,7 @@ const emptyForm = {
   children: "0",
   roomQuantity: "1",
   roomSlug: "",
+  roomNumber: "",
   breakfast: "with-breakfast",
   notes: "",
   remarks: "",
@@ -57,6 +66,7 @@ const emptyForm = {
 
 export default function AdminOfflineBookingsPage() {
   const [rooms, setRooms] = useState<RoomOption[]>([]);
+  const [units, setUnits] = useState<RoomUnit[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -68,12 +78,14 @@ export default function AdminOfflineBookingsPage() {
     setLoading(true);
     setError("");
     try {
-      const [roomsRes, bookingsRes] = await Promise.all([
+      const [roomsRes, bookingsRes, unitsRes] = await Promise.all([
         fetch("/api/admin/rooms", { cache: "no-store" }),
         fetch("/api/admin/bookings?source=offline", { cache: "no-store" }),
+        fetch("/api/admin/units", { cache: "no-store" }),
       ]);
       const roomsData = await roomsRes.json();
       const bookingsData = await bookingsRes.json();
+      const unitsData = await unitsRes.json();
       if (!roomsRes.ok || !roomsData.success) throw new Error("Failed to load rooms");
       if (!bookingsRes.ok || !bookingsData.success) throw new Error("Failed to load bookings");
       const roomOptions = (roomsData.rooms ?? []).map((r: { slug: string; name: string }) => ({
@@ -81,6 +93,7 @@ export default function AdminOfflineBookingsPage() {
         name: r.name,
       }));
       setRooms(roomOptions);
+      setUnits(unitsData.success ? unitsData.units ?? [] : []);
       setForm((f) => (f.roomSlug ? f : { ...f, roomSlug: roomOptions[0]?.slug ?? "" }));
       setBookings(bookingsData.bookings ?? []);
     } catch (err) {
@@ -94,10 +107,27 @@ export default function AdminOfflineBookingsPage() {
     void load();
   }, [load]);
 
+  const availableUnits = useMemo(
+    () =>
+      units.filter(
+        (u) => u.roomSlug === form.roomSlug && u.status === "available"
+      ),
+    [units, form.roomSlug]
+  );
+
+  const categoryHasUnits = useMemo(
+    () => units.some((u) => u.roomSlug === form.roomSlug),
+    [units, form.roomSlug]
+  );
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!form.name.trim() || !form.roomSlug || !form.checkIn || !form.checkOut) {
       setNotice({ type: "err", text: "Guest name, room, and dates are required." });
+      return;
+    }
+    if (categoryHasUnits && !form.roomNumber) {
+      setNotice({ type: "err", text: "Select an available room number for this category." });
       return;
     }
     setSaving(true);
@@ -108,6 +138,7 @@ export default function AdminOfflineBookingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          breakfast: "with-breakfast",
           guests: Number(form.guests) || 1,
           children: Number(form.children) || 0,
           roomQuantity: Number(form.roomQuantity) || 1,
@@ -137,6 +168,9 @@ export default function AdminOfflineBookingsPage() {
     });
     if (res.ok) {
       setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } as Booking : b)));
+      if (patch.status === "cancelled" || patch.status === "checked_out" || patch.status === "refunded") {
+        void load();
+      }
     }
   }
 
@@ -164,15 +198,40 @@ export default function AdminOfflineBookingsPage() {
         <TextField label="Country" value={form.country} onChange={(v) => setForm({ ...form, country: v })} />
 
         <div>
-          <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-[#3d5a4c]">Room *</p>
+          <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-[#3d5a4c]">
+            Room Category *
+          </p>
           <select
             value={form.roomSlug}
-            onChange={(e) => setForm({ ...form, roomSlug: e.target.value })}
+            onChange={(e) => setForm({ ...form, roomSlug: e.target.value, roomNumber: "" })}
             className="w-full rounded-lg border border-[#c5a059]/35 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#c5a059]"
           >
             {rooms.map((r) => (
               <option key={r.slug} value={r.slug}>
                 {r.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-[#3d5a4c]">
+            Room Number {categoryHasUnits ? "*" : "(optional)"}
+          </p>
+          <select
+            value={form.roomNumber}
+            onChange={(e) => setForm({ ...form, roomNumber: e.target.value })}
+            className="w-full rounded-lg border border-[#c5a059]/35 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#c5a059]"
+          >
+            <option value="">
+              {categoryHasUnits
+                ? availableUnits.length
+                  ? "Select available unit"
+                  : "No available units"
+                : "No units configured"}
+            </option>
+            {availableUnits.map((u) => (
+              <option key={u.id} value={u.roomNumber}>
+                Room #{u.roomNumber}
               </option>
             ))}
           </select>
@@ -209,14 +268,9 @@ export default function AdminOfflineBookingsPage() {
         />
         <div>
           <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-[#3d5a4c]">Breakfast</p>
-          <select
-            value={form.breakfast}
-            onChange={(e) => setForm({ ...form, breakfast: e.target.value })}
-            className="w-full rounded-lg border border-[#c5a059]/35 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#c5a059]"
-          >
-            <option value="with-breakfast">With Breakfast</option>
-            <option value="room-only">Room Only</option>
-          </select>
+          <div className="rounded-lg border border-[#c5a059]/35 bg-[#f7f2e9] px-3 py-2.5 text-sm text-[#0f2420]">
+            Breakfast Included
+          </div>
         </div>
         <TextField
           type="number"
@@ -294,7 +348,9 @@ export default function AdminOfflineBookingsPage() {
                     {b.email || "—"} · {b.phone || "—"} · {new Date(b.createdAt).toLocaleString()}
                   </p>
                   <p className="mt-1 text-sm text-[#3d5a4c]">
-                    {b.roomName} · {new Date(b.checkIn).toLocaleDateString()} →{" "}
+                    {b.roomName}
+                    {b.roomNumber ? ` · Room #${b.roomNumber}` : ""} ·{" "}
+                    {new Date(b.checkIn).toLocaleDateString()} →{" "}
                     {new Date(b.checkOut).toLocaleDateString()}
                   </p>
                 </div>

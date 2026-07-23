@@ -21,11 +21,10 @@ import {
   buildBookUrl,
   calculateBookingTotal,
   calculateNights,
-  roomOnlyNightlyPrice,
   roomPublicSlug,
 } from "@/lib/booking/utils";
 import { roomDetailPath } from "@/lib/navigation";
-import type { BookingSearchParams, BreakfastOption } from "@/lib/booking/types";
+import type { BookingSearchParams } from "@/lib/booking/types";
 import type { SiteContent } from "@/lib/cms/types";
 
 interface RoomDetailPageProps {
@@ -64,7 +63,7 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
   const [adults, setAdults] = useState(search?.guests || "2");
   const [children, setChildren] = useState(search?.children || "0");
   const [roomQuantity, setRoomQuantity] = useState(search?.rooms || "1");
-  const [breakfast, setBreakfast] = useState<BreakfastOption>(search?.breakfast || "with-breakfast");
+  const breakfast = "with-breakfast" as const;
   const nights = calculateNights(checkIn, checkOut);
   const validDates = bookingDatesAreValid(checkIn, checkOut);
   const bookingSearch: BookingSearchParams = {
@@ -83,7 +82,7 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
         roomQuantity: Math.max(1, Number(roomQuantity) || 1),
         breakfast,
       }),
-    [room, nights, roomQuantity, breakfast]
+    [room, nights, roomQuantity]
   );
 
   return (
@@ -177,15 +176,9 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
                     <label key={String(label)} className="text-[10px] font-semibold uppercase tracking-wider text-[#68736d]">{String(label)}<input type="number" min={Number(min)} max={Number(max)} value={String(value)} onChange={(event) => (setter as (value: string) => void)(event.target.value)} className="mt-2 w-full rounded-xl border border-[#d7c49d]/50 bg-[#faf7f0] px-3 py-3 text-sm text-[#173a2b]" /></label>
                   ))}
                 </div>
-                <div className="grid gap-2">
-                  {[
-                    { id: "with-breakfast" as const, label: "Breakfast Included", price: room.price },
-                    { id: "room-only" as const, label: "Without Breakfast", price: roomOnlyNightlyPrice(room) },
-                  ].map((option) => (
-                    <button key={option.id} type="button" onClick={() => setBreakfast(option.id)} className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left text-sm transition ${breakfast === option.id ? "border-[#b18a49] bg-[#f4ecdc] text-[#173a2b]" : "border-[#d7c49d]/45 text-[#68736d]"}`}>
-                      <span>{option.label}</span><span className="font-semibold">${option.price}</span>
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between rounded-xl border border-[#b18a49] bg-[#f4ecdc] px-4 py-3 text-sm text-[#173a2b]">
+                  <span>Breakfast Included</span>
+                  <span className="font-semibold">${room.price}</span>
                 </div>
                 <div className="flex items-end justify-between border-t border-[#d7c49d]/40 pt-5"><span className="text-xs uppercase tracking-widest text-[#68736d]">Total · {nights} {nights === 1 ? "night" : "nights"}</span><span className="font-display text-3xl text-[#173a2b]">${total}</span></div>
                 {!validDates ? <p className="text-xs text-red-600">Choose a valid future check-in and check-out date.</p> : null}

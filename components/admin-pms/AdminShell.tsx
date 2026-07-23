@@ -20,6 +20,7 @@ import {
   X,
   ClipboardList,
   Bell,
+  Hash,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/rooms", label: "Rooms", icon: BedDouble },
+  { href: "/admin/units", label: "Room Numbers", icon: Hash },
   { href: "/admin/inventory", label: "Inventory", icon: Warehouse },
   { href: "/admin/blocks", label: "Date Blocking", icon: CalendarOff },
   { href: "/admin/bookings/online", label: "Online Bookings", icon: ClipboardList },

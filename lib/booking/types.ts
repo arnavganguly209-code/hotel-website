@@ -7,7 +7,7 @@ export interface BookingSearchParams {
   breakfast?: BreakfastOption;
 }
 
-export type BreakfastOption = "room-only" | "with-breakfast";
+export type BreakfastOption = "with-breakfast";
 export type PaymentMethod = "online" | "hotel";
 
 export interface BookingFormPayload {

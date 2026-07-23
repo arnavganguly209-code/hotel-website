@@ -2717,7 +2717,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                         rooms[i] = { ...room, price: Number(e.target.value) };
                         update("rooms", rooms);
                       }} />
-                      <AdminInput label="Without Breakfast Discount ($)" type="number" value={room.breakfastPrice ?? 5} onChange={(e) => {
+                      <AdminInput label="Legacy breakfast offset ($)" type="number" value={room.breakfastPrice ?? 5} onChange={(e) => {
                         const rooms = [...content.rooms];
                         rooms[i] = { ...room, breakfastPrice: Number(e.target.value) };
                         update("rooms", rooms);
@@ -2934,8 +2934,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   <AdminInput label="Pay At Hotel Label" value={content.roomBooking.payAtHotelLabel} onChange={(e) => update("roomBooking", { ...content.roomBooking, payAtHotelLabel: e.target.value })} />
                   <AdminInput label="Special Request Label" value={content.roomBooking.specialRequestLabel} onChange={(e) => update("roomBooking", { ...content.roomBooking, specialRequestLabel: e.target.value })} />
                   <AdminTextarea label="Availability Note" rows={2} value={content.roomBooking.availabilityNote} onChange={(e) => update("roomBooking", { ...content.roomBooking, availabilityNote: e.target.value })} />
-                  <AdminInput label="Breakfast Room Only Label" value={content.roomBooking.breakfastRoomOnlyLabel ?? "Room Only"} onChange={(e) => update("roomBooking", { ...content.roomBooking, breakfastRoomOnlyLabel: e.target.value })} />
-                  <AdminInput label="Breakfast With Label" value={content.roomBooking.breakfastWithLabel ?? "With Breakfast"} onChange={(e) => update("roomBooking", { ...content.roomBooking, breakfastWithLabel: e.target.value })} />
+                  <AdminInput label="Breakfast Included Label" value={content.roomBooking.breakfastWithLabel ?? "Breakfast Included"} onChange={(e) => update("roomBooking", { ...content.roomBooking, breakfastWithLabel: e.target.value })} />
                   <AdminTextarea label="Breakfast Note" rows={2} value={content.roomBooking.breakfastNote ?? ""} onChange={(e) => update("roomBooking", { ...content.roomBooking, breakfastNote: e.target.value })} />
                   <AdminInput label="Confirmation Title" value={content.roomBooking.confirmationTitle ?? ""} onChange={(e) => update("roomBooking", { ...content.roomBooking, confirmationTitle: e.target.value })} />
                   <AdminTextarea label="Confirmation Message" rows={2} value={content.roomBooking.confirmationMessage ?? ""} onChange={(e) => update("roomBooking", { ...content.roomBooking, confirmationMessage: e.target.value })} />
@@ -3588,7 +3587,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       }
                       className="accent-luxury-gold"
                     />
-                    Show mountain / pine background artwork
+                    Show mountain background artwork
                   </label>
                   <div className="grid grid-cols-2 gap-4">
                     <AdminInput label="Top Background" value={content.footer.colors.topBackground} onChange={(e) => update("footer", { ...content.footer, colors: { ...content.footer.colors, topBackground: e.target.value } })} />

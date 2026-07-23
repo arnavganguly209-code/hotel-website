@@ -19,7 +19,6 @@ import {
   buildRoomDetailUrl,
   formatBookingDate,
   isRoomAvailableForSearch,
-  roomOnlyNightlyPrice,
   roomPublicSlug,
 } from "@/lib/booking/utils";
 import { roomDetailPath } from "@/lib/navigation";
@@ -165,7 +164,9 @@ export function RoomsPage({ rooms, page, search, hasSearch }: RoomsPageProps) {
 
                       <div className="mt-7 flex flex-col gap-3 border-t border-[#d7c49d]/35 pt-6 sm:flex-row sm:items-center sm:justify-between">
                         <div className="text-sm text-[#68736d]">
-                          Without breakfast <span className="font-semibold text-[#183b2c]">${roomOnlyNightlyPrice(room)}</span>
+                          Breakfast Included{" "}
+                          <span className="font-semibold text-[#183b2c]">${room.price}</span>
+                          <span className="text-[#68736d]"> / night</span>
                         </div>
                         <div className="grid grid-cols-2 gap-3 sm:flex">
                           <Link

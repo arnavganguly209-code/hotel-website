@@ -46,7 +46,7 @@ export function FooterAtmosphere({ showMountains = true }: FooterAtmosphereProps
         }}
       />
 
-      {/* Full-width mountain + pine silhouette — very low opacity, behind content */}
+      {/* Full-width mountain silhouette — mountains only, no trees */}
       {showMountains !== false ? (
         <svg
           className="absolute inset-x-0 bottom-0 h-[55%] w-full opacity-[0.14]"
@@ -72,22 +72,6 @@ export function FooterAtmosphere({ showMountains = true }: FooterAtmosphereProps
             fill="#081A14"
             opacity="0.85"
           />
-          {/* Pine silhouettes — left */}
-          <g fill="#061510" opacity="0.95">
-            <path d="M80 280 L95 230 L110 280 Z" />
-            <path d="M92 280 V300 H98 V280" />
-            <path d="M140 285 L152 245 L164 285 Z" />
-            <path d="M149 285 V302 H155 V285" />
-            <path d="M200 278 L218 220 L236 278 Z" />
-            <path d="M214 278 V305 H222 V278" />
-            {/* right pines */}
-            <path d="M1220 275 L1238 225 L1256 275 Z" />
-            <path d="M1234 275 V302 H1242 V275" />
-            <path d="M1280 282 L1294 242 L1308 282 Z" />
-            <path d="M1291 282 V300 H1297 V282" />
-            <path d="M1340 270 L1362 210 L1384 270 Z" />
-            <path d="M1356 270 V305 H1368 V270" />
-          </g>
         </svg>
       ) : null}
 

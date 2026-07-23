@@ -83,7 +83,7 @@ export async function POST(req: Request) {
     if (guests + children > maxGuests * roomQuantity) {
       return NextResponse.json({ success: false, error: "Guest count exceeds room capacity." }, { status: 400 });
     }
-    const breakfast = body.breakfast === "room-only" ? "room-only" : "with-breakfast";
+    const breakfast = "with-breakfast";
     const nights = calculateNights(body.checkIn, body.checkOut);
 
     const availability = await assertBookingAvailability({
