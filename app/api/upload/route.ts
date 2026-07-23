@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/cms/auth";
+import { getContent, saveContent } from "@/lib/cms/store";
 import { revalidateSiteContent } from "@/lib/cms/revalidate";
 import {
   UploadError,
@@ -123,16 +124,32 @@ export async function POST(request: Request) {
     // window where the live site references a missing image.
     const deletedOld = false;
 
+    // Bump mediaRevision so open tabs + cache-bust query strings invalidate immediately.
+    let mediaRevision = String(Date.now());
+    try {
+      const content = await getContent();
+      mediaRevision = String(Date.now());
+      await saveContent({
+        ...content,
+        performanceSettings: {
+          ...content.performanceSettings,
+          mediaRevision,
+        },
+      });
+    } catch (error) {
+      console.warn("[Upload] Could not bump mediaRevision after upload:", error);
+    }
+
     revalidateSiteContent();
 
-    const cacheBust = Date.now();
-    const urlWithBust = `${result.url}?v=${cacheBust}`;
+    const urlWithBust = `${result.url}?v=${mediaRevision}`;
 
     console.info("[Upload] Upload completed", {
       folder,
       publicId: result.publicId,
       url: result.url,
       urlWithBust,
+      mediaRevision,
       bytes: result.bytes,
       absolutePath: result.absolutePath,
       diskVerified: true,
@@ -144,6 +161,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       url: result.url,
       urlWithBust,
+      mediaRevision,
       public_id: result.publicId,
       resource_type: mimeType.startsWith("video/") ? "video" : "image",
       bytes: result.bytes,

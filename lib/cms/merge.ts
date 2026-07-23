@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import type { SiteContent } from "./types";
 import { defaultContent } from "./default-content";
 import { enrichRoom } from "./room-helpers";
@@ -7,7 +6,6 @@ import {
   OFFICIAL_PAYMENT_LOGOS,
   PAYMENT_LOGO_CLEARED,
 } from "./payment-logos";
-import { resolveLocalUploadPath } from "@/lib/uploads";
 import { routes } from "@/lib/navigation";
 
 function ensureMeetingsNavItem(items: SiteContent["header"]["menuItems"]) {
@@ -90,10 +88,12 @@ function definedArray<T>(value: T[] | undefined, fallback: T[]): T[] {
 function existingMediaOrFallback(src: string | undefined, fallback: string): string {
   const value = src?.trim();
   if (!value) return fallback;
-  if (!value.includes("/uploads/")) return value;
-  const absolute = resolveLocalUploadPath(value);
-  // Missing Orbit upload → empty (elegant placeholder), never resurrect deleted media.
-  return absolute && existsSync(absolute) ? value : "";
+  // Trust Orbit/CMS URLs as the single source of truth.
+  // Do NOT wipe /uploads based on disk existsSync — that caused intermittent blank
+  // sections when path resolution raced or UPLOADS_ROOT differed across processes.
+  // Deletes already clear the CMS field; SafeImage handles missing files gracefully.
+  void fallback;
+  return value;
 }
 
 function normalizeRoomMedia(
@@ -144,18 +144,10 @@ function mergePaymentLogos(
 
     const trimmed = typeof incoming === "string" ? incoming.trim() : "";
 
-    // Keep Orbit uploads only when the file still exists on disk.
-    // Missing files (failed/orphaned uploads) fall back to official — never a broken placeholder.
+    // Trust Orbit CMS URLs. Disk existsSync wiped custom logos intermittently
+    // and could resurrect bundled defaults after a delete race — never do that.
     if (trimmed.includes("/uploads/")) {
-      const abs = resolveLocalUploadPath(trimmed);
-      if (abs && existsSync(abs)) {
-        return { id, src: trimmed };
-      }
-      console.warn(
-        "[CMS] Payment upload missing on disk — using official logo:",
-        trimmed
-      );
-      return { id, src: slot.src };
+      return { id, src: trimmed };
     }
 
     // Bundled official logo path

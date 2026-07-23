@@ -68,11 +68,12 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Short TTL so Orbit delete/replace never serves stale media from CDN/browser.
         source: "/uploads/:path*",
         headers: [
           {
             key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
+            value: "public, max-age=60, must-revalidate",
           },
         ],
       },

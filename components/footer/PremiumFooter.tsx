@@ -28,12 +28,8 @@ function stripSpaBrand(value: string) {
 export function PremiumFooter({ content }: PremiumFooterProps) {
   const { footer, header } = content;
   const paddingY = Math.max(footer.spacing.sectionPaddingY, 96);
-  const rawLogo = footer.logoSrc || header.logoSrc || "/media/logo/hotel-logo.png";
-  // Bust cache when clients still hold the old black-rectangle PNG
-  const logoSrc =
-    rawLogo.includes("hotel-logo.png") && !rawLogo.includes("v=")
-      ? `${rawLogo.split("?")[0]}?v=transparent`
-      : rawLogo;
+  // Orbit/header logo only — never invent demo media when Orbit is empty.
+  const logoSrc = (footer.logoSrc || header.logoSrc || "").trim();
   const legacyCream = /f8f5ee|faf6ee|fdfbf7|fff9f2/i.test(footer.colors.topBackground || "");
   const legacyTooDark = /^#0[Ff]2[Aa]22$/i.test(footer.colors.topBackground || "");
   const topBg = legacyCream || legacyTooDark

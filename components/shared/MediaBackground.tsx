@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { SafeImage } from "@/components/shared/SafeImage";
+import { SafeVideo } from "@/components/shared/SafeVideo";
+import { hasMediaSrc } from "@/lib/cms/media-url";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -26,9 +28,14 @@ export function MediaBackground({
   parallax = false,
   priority = false,
 }: MediaBackgroundProps) {
-  const [mediaError, setMediaError] = useState(false);
-  const showVideo = type === "video" && videoSrc && !mediaError;
-  const showImage = (type === "image" || mediaError) && imageSrc && !mediaError;
+  const [videoFailed, setVideoFailed] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
+
+  const hasVideo = type === "video" && hasMediaSrc(videoSrc);
+  const hasImage = hasMediaSrc(imageSrc);
+  const showVideo = hasVideo && !videoFailed;
+  // Video failure may fall back to poster/image when Orbit still has one — never to demo assets.
+  const showImage = hasImage && !imageFailed && (type === "image" || videoFailed);
 
   const overlayClass = {
     dark: "bg-gradient-to-b from-luxury-charcoal/70 via-luxury-charcoal/50 to-luxury-charcoal/80",
@@ -39,29 +46,29 @@ export function MediaBackground({
   return (
     <div className={cn("absolute inset-0 overflow-hidden", className)}>
       {showVideo ? (
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
+        <SafeVideo
+          src={videoSrc!}
           poster={poster}
-          className="h-full w-full object-cover"
-          onError={() => setMediaError(true)}
-        >
-          <source src={videoSrc} type="video/mp4" />
-        </video>
+          className="absolute inset-0"
+          preload={priority ? "auto" : "metadata"}
+          onError={() => setVideoFailed(true)}
+        />
       ) : showImage ? (
         <SafeImage
-          src={imageSrc}
+          src={imageSrc!}
           alt=""
           fill
           priority={priority}
+          objectFit="cover"
           className="object-cover"
-          onError={() => setMediaError(true)}
+          onError={() => setImageFailed(true)}
           sizes="100vw"
         />
       ) : (
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_30%,rgba(198,169,114,0.15)_0%,transparent_50%),radial-gradient(ellipse_at_80%_70%,rgba(214,185,140,0.1)_0%,transparent_50%),linear-gradient(160deg,#1a1a1a_0%,#2d2a26_40%,#1a1816_100%)]" />
+        <div
+          className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_30%,rgba(198,169,114,0.15)_0%,transparent_50%),radial-gradient(ellipse_at_80%_70%,rgba(214,185,140,0.1)_0%,transparent_50%),linear-gradient(160deg,#1a1a1a_0%,#2d2a26_40%,#1a1816_100%)]"
+          aria-hidden
+        />
       )}
 
       <div className={cn("absolute inset-0", overlayClass)} />

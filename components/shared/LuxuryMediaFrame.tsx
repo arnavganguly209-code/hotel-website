@@ -6,7 +6,9 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { luxuryEase } from "@/lib/animations";
 import type { CmsMedia } from "@/lib/cms/types";
+import { hasMediaSrc } from "@/lib/cms/media-url";
 import { SafeImage } from "@/components/shared/SafeImage";
+import { SafeVideo } from "@/components/shared/SafeVideo";
 
 interface LuxuryMediaFrameProps {
   media: CmsMedia;
@@ -86,9 +88,9 @@ export function LuxuryMediaFrame({
   const [imageError, setImageError] = useState(false);
   const [videoError, setVideoError] = useState(false);
 
-  const showVideo = media.type === "video" && media.videoSrc && !videoError;
+  const showVideo = media.type === "video" && hasMediaSrc(media.videoSrc) && !videoError;
   const imageSrc = media.imageSrc || "";
-  const showImage = !showVideo && imageSrc && !imageError;
+  const showImage = !showVideo && hasMediaSrc(imageSrc) && !imageError;
 
   const frame = (
     <motion.div
@@ -108,26 +110,20 @@ export function LuxuryMediaFrame({
       }}
     >
       {showVideo ? (
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster={media.poster || undefined}
-          className="absolute inset-0 h-full w-full object-cover"
+        <SafeVideo
+          src={media.videoSrc!}
+          poster={media.poster}
+          className="absolute inset-0"
+          preload={priority ? "auto" : "metadata"}
           onError={() => setVideoError(true)}
-        >
-          <source
-            src={media.videoSrc}
-            type={media.videoSrc.endsWith(".webm") ? "video/webm" : "video/mp4"}
-          />
-        </video>
+        />
       ) : showImage ? (
         <SafeImage
           src={imageSrc}
           alt={media.alt}
           fill
           priority={priority}
+          objectFit="cover"
           className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
           onError={() => setImageError(true)}
         />

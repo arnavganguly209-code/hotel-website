@@ -1,7 +1,11 @@
 import type { MetadataRoute } from "next";
+import { roomPublicSlug } from "@/lib/booking/utils";
 import { getContent } from "@/lib/cms/store";
 import { routes } from "@/lib/navigation";
 import { SITE_URL } from "@/lib/seo";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const content = await getContent();
@@ -28,30 +32,49 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: routes.legal, priority: 0.3, changeFrequency: "yearly" },
   ];
 
-  const roomEntries = content.rooms.map((room) => ({
-    url: `${SITE_URL}/rooms/${room.id}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.8,
-  }));
+  const seen = new Set<string>();
+  const pushUnique = (
+    entries: MetadataRoute.Sitemap,
+    entry: MetadataRoute.Sitemap[number]
+  ) => {
+    if (seen.has(entry.url)) return;
+    seen.add(entry.url);
+    entries.push(entry);
+  };
 
-  const articleEntries = content.articles
-    .filter((a) => a.status === "published" && a.slug)
-    .map((a) => ({
-      url: `${SITE_URL}/articles/${a.slug}`,
-      lastModified: a.updatedAt ? new Date(a.updatedAt) : new Date(a.publishedAt),
-      changeFrequency: "monthly" as const,
-      priority: a.featured ? 0.75 : 0.65,
-    }));
+  const out: MetadataRoute.Sitemap = [];
 
-  return [
-    ...staticEntries.map(({ path, priority, changeFrequency }) => ({
+  for (const { path, priority, changeFrequency } of staticEntries) {
+    pushUnique(out, {
       url: `${SITE_URL}${path === "/" ? "" : path}`,
       lastModified: new Date(),
       changeFrequency,
       priority,
-    })),
-    ...roomEntries,
-    ...articleEntries,
-  ];
+    });
+  }
+
+  for (const room of content.rooms) {
+    const slug = roomPublicSlug(room);
+    if (!slug) continue;
+    pushUnique(out, {
+      url: `${SITE_URL}/rooms/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    });
+  }
+
+  for (const article of content.articles) {
+    if (article.status !== "published" || !article.slug) continue;
+    pushUnique(out, {
+      url: `${SITE_URL}/articles/${article.slug}`,
+      lastModified: article.updatedAt
+        ? new Date(article.updatedAt)
+        : new Date(article.publishedAt),
+      changeFrequency: "monthly",
+      priority: article.featured ? 0.75 : 0.65,
+    });
+  }
+
+  return out;
 }

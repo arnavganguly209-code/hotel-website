@@ -11,6 +11,7 @@ import {
   ZoomOut,
 } from "lucide-react";
 import { SafeImage } from "@/components/shared/SafeImage";
+import { SafeVideo } from "@/components/shared/SafeVideo";
 
 export interface GalleryLightboxItem {
   id: string;
@@ -169,16 +170,15 @@ export function GalleryLightbox({
               style={{ border: `1px solid ${goldColor}66` }}
             >
               {isVideo ? (
-                <video
-                  key={current.src}
+                <SafeVideo
                   src={current.src}
-                  poster={current.poster || undefined}
-                  controls
+                  poster={current.poster}
                   autoPlay
-                  playsInline
+                  muted={false}
+                  loop={false}
+                  controls
                   className="max-h-[70vh] w-full bg-black object-contain"
-                  controlsList="nodownload"
-                  onContextMenu={(e) => e.preventDefault()}
+                  preload="auto"
                 />
               ) : (
                 <div

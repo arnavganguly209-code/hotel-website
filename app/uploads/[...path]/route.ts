@@ -82,7 +82,8 @@ async function handle(
   const headers = new Headers({
     "Content-Type": contentTypeFor(file.absolutePath),
     "Content-Length": String(file.size),
-    "Cache-Control": "public, max-age=31536000, immutable",
+    // Short TTL + ETag: deleted/replaced Orbit files must not stick for a year.
+    "Cache-Control": "public, max-age=60, must-revalidate",
     "Last-Modified": new Date(file.mtimeMs).toUTCString(),
     ETag: etag,
     "Accept-Ranges": "bytes",

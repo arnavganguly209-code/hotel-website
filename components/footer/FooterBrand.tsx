@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FooterLuxuryDivider } from "@/components/footer/FooterLuxuryDivider";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { FOOTER } from "@/components/footer/footer-theme";
 import { fadeUp } from "@/lib/animations";
+import { hasMediaSrc } from "@/lib/cms/media-url";
 import { routes } from "@/lib/navigation";
 
 interface FooterBrandProps {
@@ -14,26 +16,30 @@ interface FooterBrandProps {
 }
 
 export function FooterBrand({ logoSrc, brandName, description }: FooterBrandProps) {
+  const showLogo = hasMediaSrc(logoSrc);
+
   return (
     <motion.div
       variants={fadeUp}
       className="flex flex-col items-center text-center md:items-start md:text-left"
     >
-      {logoSrc ? (
+      {showLogo ? (
         <Link
           href={routes.home}
-          className="mb-7 inline-block transition-opacity duration-500 hover:opacity-90"
+          className="relative mb-7 inline-block h-24 w-[170px] transition-opacity duration-500 hover:opacity-90 md:w-[200px] lg:w-[240px]"
           aria-label={`${brandName} — Home`}
           style={{ background: "none", backgroundColor: "transparent" }}
         >
-          {/* Transparent PNG only — never wrap in a filled box */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <SafeImage
             src={logoSrc}
             alt={brandName}
-            width={240}
-            height={96}
-            className="block h-auto w-[170px] object-contain md:w-[200px] lg:w-[240px]"
+            fill
+            priority
+            fadeIn={false}
+            objectFit="contain"
+            skeleton={false}
+            className="object-contain object-left"
+            sizes="240px"
             style={{
               background: "none",
               backgroundColor: "transparent",
@@ -41,8 +47,6 @@ export function FooterBrand({ logoSrc, brandName, description }: FooterBrandProp
               border: "none",
               padding: 0,
             }}
-            decoding="async"
-            loading="eager"
           />
         </Link>
       ) : null}

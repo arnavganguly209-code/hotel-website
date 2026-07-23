@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -32,6 +31,9 @@ import {
 } from "lucide-react";
 import type { SiteContent } from "@/lib/cms/types";
 import { cn } from "@/lib/utils";
+import { SafeImage } from "@/components/shared/SafeImage";
+import { hasMediaSrc, mediaUrl } from "@/lib/cms/media-url";
+import { usePerformanceSettings } from "@/components/shared/PerformanceProvider";
 
 interface AboutPageProps {
   content: SiteContent["aboutPage"];
@@ -68,6 +70,8 @@ function Icon({ name, className }: { name: string; className?: string }) {
 
 export function AboutPage({ content }: AboutPageProps) {
   const page = content;
+  const perf = usePerformanceSettings();
+  const revision = perf.mediaRevision || "";
   const stats = page.stats.filter((s) => s.enabled !== false).sort((a, b) => a.order - b.order);
   const values = page.philosophy.values
     .filter((v) => v.enabled !== false)
@@ -104,13 +108,16 @@ export function AboutPage({ content }: AboutPageProps) {
             className="relative overflow-hidden rounded-2xl"
           >
             <div className="relative aspect-[4/5] w-full">
-              <Image
-                src={page.story.imageSrc}
-                alt={page.story.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
+              {hasMediaSrc(page.story.imageSrc) ? (
+                <SafeImage
+                  src={page.story.imageSrc}
+                  alt={page.story.title}
+                  fill
+                  objectFit="cover"
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              ) : null}
             </div>
             <div className="pointer-events-none absolute inset-0 border border-[#D4AF37]/30" />
           </motion.div>
@@ -267,10 +274,11 @@ export function AboutPage({ content }: AboutPageProps) {
                   i === 2 && "lg:-mt-10"
                 )}
               >
-                <Image
+                <SafeImage
                   src={img.src}
                   alt={img.alt}
                   fill
+                  objectFit="cover"
                   className="object-cover transition duration-700 hover:scale-105"
                   sizes="(max-width: 1024px) 50vw, 25vw"
                 />
@@ -374,13 +382,16 @@ export function AboutPage({ content }: AboutPageProps) {
                   </p>
                   <div className="mt-8 flex flex-col items-center gap-3">
                     <div className="relative h-14 w-14 overflow-hidden rounded-full border border-[#D4AF37]/30">
-                      <Image
-                        src={testimonials[slide].imageSrc}
-                        alt={testimonials[slide].name}
-                        fill
-                        className="object-cover"
-                        sizes="56px"
-                      />
+                      {hasMediaSrc(testimonials[slide].imageSrc) ? (
+                        <SafeImage
+                          src={testimonials[slide].imageSrc}
+                          alt={testimonials[slide].name}
+                          fill
+                          objectFit="cover"
+                          className="object-cover"
+                          sizes="56px"
+                        />
+                      ) : null}
                     </div>
                     <div>
                       <cite className="font-display text-lg not-italic text-[#1A2E26]">
@@ -438,10 +449,11 @@ export function AboutPage({ content }: AboutPageProps) {
                 transition={{ delay: i * 0.05 }}
                 className="group relative aspect-[4/5] overflow-hidden rounded-xl border-2 border-[#D4AF37]/35"
               >
-                <Image
+                <SafeImage
                   src={img.src}
                   alt={img.alt}
                   fill
+                  objectFit="cover"
                   className="object-cover transition duration-700 group-hover:scale-110"
                   sizes="(max-width: 1024px) 50vw, 25vw"
                 />
@@ -463,7 +475,11 @@ export function AboutPage({ content }: AboutPageProps) {
       <section className="relative overflow-hidden px-6 py-24 lg:px-10 lg:py-28">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${page.cta.backgroundImage})` }}
+          style={
+            hasMediaSrc(page.cta.backgroundImage)
+              ? { backgroundImage: `url(${mediaUrl(page.cta.backgroundImage, revision || undefined)})` }
+              : undefined
+          }
         />
         <div className="absolute inset-0 bg-[#0A1F19]/72" />
         <motion.div

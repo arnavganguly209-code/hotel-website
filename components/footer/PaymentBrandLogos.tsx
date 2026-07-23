@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { FOOTER } from "@/components/footer/footer-theme";
 import { normalizePaymentLogoSrc } from "@/lib/cms/payment-logos";
-import { mediaUrl } from "@/lib/cms/media-url";
+import { hasMediaSrc, mediaUrl } from "@/lib/cms/media-url";
+import { usePerformanceSettings } from "@/components/shared/PerformanceProvider";
 
 interface PaymentBrandLogosProps {
   logos: Array<{ id: string; src: string }>;
@@ -12,13 +13,15 @@ interface PaymentBrandLogosProps {
 }
 
 function PaymentSlot({ id, src, index }: { id: string; src: string; index: number }) {
+  const perf = usePerformanceSettings();
+  const revision = perf.mediaRevision || "";
   const clean = normalizePaymentLogoSrc(src);
-  const resolved = clean ? mediaUrl(clean, clean) : "";
+  const resolved = hasMediaSrc(clean) ? mediaUrl(clean, revision || clean) : "";
   const [broken, setBroken] = useState(false);
 
   useEffect(() => {
     setBroken(false);
-  }, [resolved]);
+  }, [resolved, revision]);
 
   const showImage = Boolean(resolved) && !broken;
 
@@ -37,14 +40,13 @@ function PaymentSlot({ id, src, index }: { id: string; src: string; index: numbe
           borderStyle: "solid",
           borderColor: `${FOOTER.gold}66`,
           backgroundColor: FOOTER.cream,
-          /* ~10% inset → logo fills ~80% of card */
           padding: "5px 6px",
         }}
       >
         {showImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            key={`${id}-${resolved}-${index}`}
+            key={`${id}-${resolved}-${index}-${revision}`}
             src={resolved}
             alt=""
             style={{

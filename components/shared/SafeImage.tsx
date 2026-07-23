@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { mediaUrl } from "@/lib/cms/media-url";
+import { mediaUrl, hasMediaSrc } from "@/lib/cms/media-url";
 import { usePerformanceSettings } from "@/components/shared/PerformanceProvider";
 
 interface SafeImageProps {
@@ -14,23 +14,27 @@ interface SafeImageProps {
   height?: number;
   priority?: boolean;
   sizes?: string;
-  /** contain = logos/badges; cover = hero/gallery photography (default when className sets it) */
   objectFit?: "contain" | "cover" | "none";
   onError?: () => void;
   style?: React.CSSProperties;
-  /** Soft fade-in when image loads (default follows Orbit performance setting) */
   fadeIn?: boolean;
   /**
-   * Optional same-asset retry sibling only. Never pass deleted/demo media here —
-   * empty Orbit fields must stay empty (elegant placeholder), not flash old files.
+   * Optional same-asset retry sibling only. Never pass deleted/demo media —
+   * empty Orbit fields must stay empty.
    */
   fallbackSrc?: string;
+  /** Soft skeleton while loading (default true for non-priority) */
+  skeleton?: boolean;
 }
 
+const MAX_RETRIES = 4;
+
 /**
- * Local-first image for Hostinger VPS.
- * Uses a native <img> so /uploads and /media never hit the Next.js image optimizer
- * (which often fails when a CMS path points at a missing or newly uploaded file).
+ * Enterprise-stable local image for Hostinger VPS.
+ * - Always cache-busts with Orbit mediaRevision
+ * - Retries failed loads automatically
+ * - Soft skeleton while loading; never flashes broken icons
+ * - Empty src → renders nothing (no demo fallback)
  */
 export function SafeImage({
   src,
@@ -46,71 +50,105 @@ export function SafeImage({
   style,
   fadeIn,
   fallbackSrc,
+  skeleton,
 }: SafeImageProps) {
   const perf = usePerformanceSettings();
   const revision = perf.mediaRevision || "";
-  const resolved = mediaUrl(src, revision || src);
-  const fallback = mediaUrl(fallbackSrc, revision || fallbackSrc);
-  const [errorState, setErrorState] = useState({
-    source: "",
-    attempt: 0,
-    token: 0,
-  });
-  const [loadedSrc, setLoadedSrc] = useState("");
+  const resolved = hasMediaSrc(src) ? mediaUrl(src, revision || undefined) : "";
+  const fallback =
+    hasMediaSrc(fallbackSrc) && fallbackSrc !== src
+      ? mediaUrl(fallbackSrc, revision || undefined)
+      : "";
+
+  const [attempt, setAttempt] = useState(0);
+  const [retryToken, setRetryToken] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  // Reset when Orbit src or revision changes (upload/replace/delete)
+  useEffect(() => {
+    setAttempt(0);
+    setRetryToken(0);
+    setLoaded(false);
+    setFailed(false);
+  }, [resolved, revision]);
+
   const enableFade = fadeIn ?? perf.imageFadeIn !== false;
   const lazy = perf.lazyLoadImages !== false;
-  const attempt = errorState.source === resolved ? errorState.attempt : 0;
-  const hasFallback = Boolean(fallback && fallback !== resolved);
-  const failed = attempt >= (hasFallback ? 3 : 2);
-  const baseSrc = attempt >= 2 && hasFallback ? fallback : resolved;
+  const showSkeleton = skeleton ?? !priority;
+
+  const useFallback = attempt >= 2 && Boolean(fallback);
+  const baseSrc = useFallback ? fallback : resolved;
   const displaySrc =
-    attempt === 1 && baseSrc
-      ? `${baseSrc}${baseSrc.includes("?") ? "&" : "?"}retry=${errorState.token}`
+    baseSrc && attempt > 0 && attempt < MAX_RETRIES
+      ? `${baseSrc}${baseSrc.includes("?") ? "&" : "?"}r=${retryToken}`
       : baseSrc;
 
-  if (!displaySrc || failed) return null;
+  const handleError = useCallback(() => {
+    setLoaded(false);
+    if (attempt + 1 >= MAX_RETRIES) {
+      setFailed(true);
+      onError?.();
+      return;
+    }
+    // Exponential backoff: 200ms, 400ms, 800ms…
+    const delay = Math.min(200 * 2 ** attempt, 1600);
+    window.setTimeout(() => {
+      setAttempt((a) => a + 1);
+      setRetryToken(Date.now());
+    }, delay);
+  }, [attempt, onError]);
+
+  if (!resolved || failed || !displaySrc) {
+    return null;
+  }
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      key={displaySrc}
-      src={displaySrc}
-      alt={alt}
-      width={fill ? undefined : width}
-      height={fill ? undefined : height}
-      sizes={sizes}
-      loading={priority || !lazy ? "eager" : "lazy"}
-      decoding="async"
-      fetchPriority={priority ? "high" : "auto"}
-      className={cn(
-        fill && "absolute inset-0 h-full w-full",
-        objectFit === "contain" && "object-contain object-center",
-        objectFit === "cover" && "object-cover object-center",
-        enableFade && "transition-opacity duration-500 ease-out",
-        enableFade && (loadedSrc === displaySrc || priority ? "opacity-100" : "opacity-0"),
-        className
-      )}
-      style={{
-        ...(objectFit
-          ? {
-              objectFit,
-              objectPosition: "center",
-              maxWidth: "100%",
-              maxHeight: "100%",
-            }
-          : null),
-        ...style,
-      }}
-      onLoad={() => setLoadedSrc(displaySrc)}
-      onError={() => {
-        const nextAttempt = attempt + 1;
-        setErrorState({
-          source: resolved,
-          attempt: nextAttempt,
-          token: Date.now(),
-        });
-        if (nextAttempt >= (hasFallback ? 3 : 2)) onError?.();
-      }}
-    />
+    <>
+      {showSkeleton && !loaded ? (
+        <span
+          aria-hidden
+          className={cn(
+            "pointer-events-none bg-gradient-to-br from-[#e8dfd0]/40 via-[#d4c4a8]/25 to-[#c9b896]/35 animate-pulse",
+            fill ? "absolute inset-0" : "absolute inset-0",
+            className
+          )}
+          style={fill ? undefined : { width, height }}
+        />
+      ) : null}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        key={`${displaySrc}-${attempt}`}
+        src={displaySrc}
+        alt={alt}
+        width={fill ? undefined : width}
+        height={fill ? undefined : height}
+        sizes={sizes}
+        loading={priority || !lazy ? "eager" : "lazy"}
+        decoding="async"
+        fetchPriority={priority ? "high" : "auto"}
+        className={cn(
+          fill && "absolute inset-0 h-full w-full",
+          objectFit === "contain" && "object-contain object-center",
+          objectFit === "cover" && "object-cover object-center",
+          enableFade && "transition-opacity duration-500 ease-out",
+          enableFade && (loaded || priority ? "opacity-100" : "opacity-0"),
+          className
+        )}
+        style={{
+          ...(objectFit
+            ? {
+                objectFit,
+                objectPosition: "center",
+                maxWidth: "100%",
+                maxHeight: "100%",
+              }
+            : null),
+          ...style,
+        }}
+        onLoad={() => setLoaded(true)}
+        onError={handleError}
+      />
+    </>
   );
 }

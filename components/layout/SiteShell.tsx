@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { PerformanceProvider } from "@/components/shared/PerformanceProvider";
+import { MediaLiveSync } from "@/components/shared/MediaLiveSync";
 import type { SiteContent } from "@/lib/cms/types";
 
 interface SiteShellProps {
@@ -38,6 +39,7 @@ export function SiteShell({ children, content }: SiteShellProps) {
   return (
     <ThemeProvider theme={content.theme}>
       <PerformanceProvider value={content.performanceSettings}>
+        <MediaLiveSync />
         <Header header={header} hotelName={hotelName} />
         <main className="pb-safe">{children}</main>
         <Footer content={content} />
