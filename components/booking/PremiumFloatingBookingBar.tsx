@@ -89,7 +89,7 @@ function FieldCell({
   return (
     <div
       className={cn(
-        "group flex min-h-0 min-w-0 flex-col justify-center px-3 py-2.5 transition-all duration-500 xl:px-3.5",
+        "group flex min-h-0 min-w-0 flex-col justify-center px-2.5 py-2 transition-all duration-500 xl:px-3",
         bordered && "border-r",
         className
       )}
@@ -97,14 +97,14 @@ function FieldCell({
     >
       <label
         htmlFor={id}
-        className="mb-1.5 flex items-center gap-1.5 text-[9px] font-semibold uppercase xl:text-[10px]"
+        className="mb-1 flex items-center gap-1.5 text-[9px] font-semibold uppercase xl:text-[10px]"
         style={{ color: labelColor || LABEL_GOLD, letterSpacing: "0.16em" }}
       >
         <Icon className="h-3.5 w-3.5 shrink-0 opacity-90" strokeWidth={1.5} />
         <span className="truncate">{label}</span>
       </label>
       <div
-        className="relative min-w-0 rounded-[12px] px-2.5 py-1.5 backdrop-blur-md transition-all duration-500 group-hover:border-[#D4B06A]/45"
+        className="relative min-w-0 rounded-[12px] px-2 py-1.5 backdrop-blur-md transition-all duration-500 group-hover:border-[#D4B06A]/45"
         style={{
           background: FIELD_GLASS,
           border: `1px solid ${FIELD_BORDER}`,
@@ -218,7 +218,7 @@ export function PremiumFloatingBookingBar({
       transition={{ duration: 0.4, ease: luxuryEase }}
       className={cn(
         "group relative flex w-full items-center justify-center gap-2 overflow-hidden text-[10px] font-bold uppercase tracking-[0.14em]",
-        opts.tall ? "h-[68px] min-w-[148px] px-3 xl:min-w-[160px]" : "min-h-[48px] px-4",
+        opts.tall ? "h-[62px] min-w-[136px] px-2.5 xl:min-w-[148px]" : "min-h-[48px] px-4",
         opts.className
       )}
       style={{
@@ -249,14 +249,14 @@ export function PremiumFloatingBookingBar({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.85, delay: 0.15, ease: luxuryEase }}
-      style={{ ...glassStyle, padding: "6px 8px" }}
+      style={{ ...glassStyle, padding: "5px 7px" }}
       className="hidden w-full lg:block"
     >
       <div
         className="grid w-full items-stretch"
         style={{
           gridTemplateColumns:
-            "minmax(0,1.15fr) minmax(0,1.15fr) minmax(0,0.85fr) minmax(0,0.75fr) minmax(0,0.85fr) minmax(148px,0.95fr)",
+            "minmax(0,1.1fr) minmax(0,1.1fr) minmax(0,0.8fr) minmax(0,0.7fr) minmax(0,0.8fr) minmax(136px,0.9fr)",
         }}
       >
         {show("checkIn") && (
