@@ -1,4 +1,5 @@
 import { getContent } from "@/lib/cms/store";
+import { mediaUrl, hasMediaSrc } from "@/lib/cms/media-url";
 import { Hero } from "@/sections/Hero";
 import { Overview } from "@/sections/Overview";
 import { RoomsSection } from "@/sections/RoomsSection";
@@ -22,9 +23,22 @@ function isEnabled(section: { enabled: boolean }) {
   return section.enabled !== false;
 }
 
+function heroVideoPreloadHref(
+  hero: SiteContent["hero"],
+  mediaRevision?: string
+): string {
+  const videoSrc = (hero.videoSrc || "").trim();
+  if (!hasMediaSrc(videoSrc)) return "";
+  if (hero.mediaMode === "image" || hero.mediaMode === "none") return "";
+  return mediaUrl(videoSrc, mediaRevision || videoSrc);
+}
+
 export default async function HomePage() {
   const content = await getContent();
   const { homeSections: hs } = content;
+  const videoPreload = isEnabled(hs.hero)
+    ? heroVideoPreloadHref(content.hero, content.performanceSettings?.mediaRevision)
+    : "";
 
   const sections: Array<{ key: string; order: number; node: React.ReactNode }> = [];
 
@@ -148,5 +162,14 @@ export default async function HomePage() {
 
   sections.sort((a, b) => a.order - b.order);
 
-  return <>{sections.map((s) => <div key={s.key}>{s.node}</div>)}</>;
+  return (
+    <>
+      {videoPreload ? (
+        <link rel="preload" as="video" href={videoPreload} fetchPriority="high" />
+      ) : null}
+      {sections.map((s) => (
+        <div key={s.key}>{s.node}</div>
+      ))}
+    </>
+  );
 }

@@ -22,57 +22,53 @@ function videoMime(src: string) {
 }
 
 /**
- * Homepage hero layout correction:
- * - Full-bleed Orbit media always fills the hero (no green empty plane)
- * - Desktop booking floats at the bottom, covering ~15–20% of the hero only
- * - Mobile: media first, booking card below with no overlap
+ * Homepage hero — when Orbit media mode is VIDEO, only the video is ever shown.
+ * No poster, no previous hero image, no image→video fade.
  */
 export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const perf = usePerformanceSettings();
   const revision = perf.mediaRevision || "";
-  const [videoReady, setVideoReady] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
 
   const imageSrc = (hero.image?.src || hero.imageSrc || "").trim();
   const videoSrc = (hero.videoSrc || "").trim();
-  const posterSrc = (hero.poster || "").trim();
   const hasImage = hasMediaSrc(imageSrc);
   const hasVideo = hasMediaSrc(videoSrc);
+
+  // Respect Orbit mediaMode explicitly — video mode never falls through to image.
   const mode =
     hero.mediaMode === "none"
       ? "none"
-      : hero.mediaMode === "image" && hasImage
-        ? "image"
-        : hasVideo
-          ? "video"
-          : hasImage
-            ? "image"
-            : "none";
+      : hero.mediaMode === "video" && hasVideo
+        ? "video"
+        : hero.mediaMode === "image" && hasImage
+          ? "image"
+          : hasVideo
+            ? "video"
+            : hasImage
+              ? "image"
+              : "none";
 
   const activeVideoUrl = mode === "video" ? mediaUrl(videoSrc, revision || videoSrc) : "";
-  const posterCandidate = hasMediaSrc(posterSrc)
-    ? posterSrc
-    : hasImage
-      ? imageSrc
-      : "";
-  const activePosterUrl = hasMediaSrc(posterCandidate)
-    ? mediaUrl(posterCandidate, revision || posterCandidate)
-    : "";
   const activeImageUrl =
     mode === "image" ? mediaUrl(imageSrc, revision || imageSrc) : "";
   const activeMediaKey =
     mode === "image"
       ? `image:${activeImageUrl}`
       : mode === "video"
-        ? `video:${activeVideoUrl}:${activePosterUrl}`
+        ? `video:${activeVideoUrl}`
         : "none";
 
   useEffect(() => {
-    setVideoReady(false);
+    setVideoFailed(false);
     const video = videoRef.current;
-    if (!video || mode !== "video") return;
+    if (!video || mode !== "video" || !activeVideoUrl) return;
+
+    // Force a fresh load whenever Orbit revises the asset.
     try {
+      video.setAttribute("src", activeVideoUrl);
       video.load();
       const play = video.play();
       if (play && typeof play.catch === "function") {
@@ -81,19 +77,17 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
     } catch {
       /* ignore abort while swapping Orbit media */
     }
-  }, [activeMediaKey, mode]);
+  }, [activeMediaKey, mode, activeVideoUrl]);
 
   const overlayOpacity = Math.min(Math.max(hero.overlayOpacity ?? 0.18, 0), 0.85);
   const overlayColor = hero.overlayColor || "#000000";
   const showBooking = hero.showBookingBar !== false && hero.bookingBar.enabled;
 
-  // Keep ~80–90vh desktop proportion (CMS height respected when set).
   const heroStyle = {
     "--hero-desktop-height": hero.desktopHeight?.trim() || "85vh",
     "--hero-mobile-height": hero.mobileHeight?.trim() || "70vh",
   } as CSSProperties;
 
-  // Size/position only — preserve Orbit color settings.
   const bookingSettings = {
     ...hero.bookingBar,
     borderRadius: hero.bookingBar.borderRadius || "18px",
@@ -105,6 +99,13 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
       mobilePadding: hero.bookingBar.responsive?.mobilePadding || "10px",
     },
   };
+
+  const gracefulVideoFallback = (
+    <div
+      className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(201,169,110,0.14)_0%,transparent_55%),linear-gradient(160deg,#162A20_0%,#0f1f18_100%)]"
+      aria-hidden
+    />
+  );
 
   const mediaLayer = (
     <>
@@ -123,51 +124,36 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
       ) : null}
 
       {mode === "video" && activeVideoUrl ? (
-        <>
-          {/* Poster stays visible until video is ready — prevents green flash */}
-          {activePosterUrl || hasImage ? (
-            <SafeImage
-              src={posterCandidate || imageSrc}
-              alt=""
-              fill
-              priority
-              fadeIn={false}
-              objectFit="cover"
-              sizes="100vw"
-              className="transform-gpu"
+        videoFailed ? (
+          gracefulVideoFallback
+        ) : (
+          <>
+            {/* Early fetch hint — no image/poster asset is ever requested in video mode */}
+            <link rel="preload" as="video" href={activeVideoUrl} />
+            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+            <video
+              ref={videoRef}
+              key={activeVideoUrl}
+              src={activeVideoUrl}
+              autoPlay={hero.videoAutoplay !== false}
+              loop={hero.videoLoop !== false}
+              muted={hero.videoMuted !== false}
+              playsInline
+              preload="auto"
+              // Intentionally NO poster — Orbit video mode must never flash an image
+              className="absolute inset-0 h-full w-full transform-gpu object-cover"
               style={{ objectPosition: hero.image?.position || "center" }}
-            />
-          ) : null}
-          <video
-            ref={videoRef}
-            key={activeVideoUrl}
-            autoPlay={hero.videoAutoplay !== false}
-            loop={hero.videoLoop !== false}
-            muted={hero.videoMuted !== false}
-            playsInline
-            preload="auto"
-            poster={activePosterUrl || undefined}
-            className={`absolute inset-0 h-full w-full transform-gpu object-cover transition-opacity duration-500 will-change-transform ${
-              videoReady ? "opacity-100" : "opacity-0"
-            }`}
-            style={{ objectPosition: hero.image?.position || "center" }}
-            aria-label="Hotel ambience"
-            onLoadedData={() => setVideoReady(true)}
-            onCanPlay={() => setVideoReady(true)}
-            onPlaying={() => setVideoReady(true)}
-            onError={() => setVideoReady(false)}
-          >
-            <source src={activeVideoUrl} type={videoMime(videoSrc)} />
-          </video>
-        </>
+              aria-label="Hotel ambience"
+              onError={() => setVideoFailed(true)}
+              {...({ fetchPriority: "high" } as Record<string, string>)}
+            >
+              <source src={activeVideoUrl} type={videoMime(videoSrc)} />
+            </video>
+          </>
+        )
       ) : null}
 
-      {mode === "none" ? (
-        <div
-          className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(201,169,110,0.14)_0%,transparent_55%),linear-gradient(160deg,#162A20_0%,#0f1f18_100%)]"
-          aria-hidden
-        />
-      ) : null}
+      {mode === "none" ? gracefulVideoFallback : null}
     </>
   );
 
@@ -179,11 +165,10 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
         className="relative isolate w-full overflow-visible bg-[#0f1f18] h-[var(--hero-mobile-height)] min-h-[460px] max-h-[720px] lg:h-[var(--hero-desktop-height)] lg:min-h-[680px] lg:max-h-none"
         style={heroStyle}
       >
-        {/* Full-bleed media — fills the entire hero, never pushed away */}
         <div
           key={activeMediaKey}
           data-active-hero-media={activeMediaKey}
-          className="absolute inset-0 z-0 overflow-hidden"
+          className="absolute inset-0 z-0 overflow-hidden bg-[#0f1f18]"
         >
           {mediaLayer}
         </div>
@@ -194,13 +179,11 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
           aria-hidden
         />
 
-        {/* Soft bottom vignette only — no cream wash that looks like a second section */}
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-[22%] bg-gradient-to-t from-black/45 via-black/15 to-transparent"
           aria-hidden
         />
 
-        {/* Desktop: nearly full-width slim bar with elegant page padding (~24px) */}
         {showBooking ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-[3.5%] z-20 hidden lg:block">
             <div className="pointer-events-auto mx-auto w-[calc(100%-40px)] max-w-none">
@@ -214,7 +197,6 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
         ) : null}
       </section>
 
-      {/* Mobile / tablet: media first, booking below — no overlap */}
       {showBooking ? (
         <div className="relative z-20 px-4 pb-6 pt-4 sm:px-6 lg:hidden">
           <PremiumFloatingBookingBar
