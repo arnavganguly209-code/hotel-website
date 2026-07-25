@@ -5,6 +5,8 @@ export interface BookingSearchParams {
   children: string;
   rooms: string;
   breakfast?: BreakfastOption;
+  /** Optional promo from hero search — passed through URL only when set. */
+  promoCode?: string;
 }
 
 export type BreakfastOption = "with-breakfast";

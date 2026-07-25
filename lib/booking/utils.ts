@@ -69,43 +69,59 @@ export function bookingSearchFromParams(
     children: get("children") || "0",
     rooms: get("rooms") || get("room") || "1",
     breakfast: "with-breakfast",
+    promoCode: get("promoCode") || get("promo") || "",
   };
 }
 
+function withPromo(params: URLSearchParams, promoCode?: string) {
+  const code = (promoCode || "").trim();
+  if (code) params.set("promoCode", code);
+  return params;
+}
+
 export function buildAvailabilityUrl(search: BookingSearchParams): string {
-  const params = new URLSearchParams({
-    checkIn: search.checkIn,
-    checkOut: search.checkOut,
-    guests: search.guests,
-    children: search.children,
-    rooms: search.rooms,
-    breakfast: "with-breakfast",
-  });
+  const params = withPromo(
+    new URLSearchParams({
+      checkIn: search.checkIn,
+      checkOut: search.checkOut,
+      guests: search.guests,
+      children: search.children,
+      rooms: search.rooms,
+      breakfast: "with-breakfast",
+    }),
+    search.promoCode
+  );
   return `${routes.rooms}?${params.toString()}`;
 }
 
 export function buildRoomDetailUrl(slug: string, search: BookingSearchParams): string {
-  const params = new URLSearchParams({
-    checkIn: search.checkIn,
-    checkOut: search.checkOut,
-    guests: search.guests,
-    children: search.children,
-    rooms: search.rooms,
-    breakfast: "with-breakfast",
-  });
+  const params = withPromo(
+    new URLSearchParams({
+      checkIn: search.checkIn,
+      checkOut: search.checkOut,
+      guests: search.guests,
+      children: search.children,
+      rooms: search.rooms,
+      breakfast: "with-breakfast",
+    }),
+    search.promoCode
+  );
   return `${roomDetailPath(slug)}?${params.toString()}`;
 }
 
 export function buildBookUrl(slug: string, search: BookingSearchParams): string {
-  const params = new URLSearchParams({
-    room: slug,
-    checkIn: search.checkIn,
-    checkOut: search.checkOut,
-    guests: search.guests,
-    children: search.children,
-    rooms: search.rooms,
-    breakfast: "with-breakfast",
-  });
+  const params = withPromo(
+    new URLSearchParams({
+      room: slug,
+      checkIn: search.checkIn,
+      checkOut: search.checkOut,
+      guests: search.guests,
+      children: search.children,
+      rooms: search.rooms,
+      breakfast: "with-breakfast",
+    }),
+    search.promoCode
+  );
   return `${routes.book}?${params.toString()}`;
 }
 

@@ -96,14 +96,13 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   // Size/position only — preserve Orbit color settings.
   const bookingSettings = {
     ...hero.bookingBar,
-    borderRadius: hero.bookingBar.borderRadius || "20px",
+    borderRadius: hero.bookingBar.borderRadius || "18px",
     responsive: {
       ...hero.bookingBar.responsive,
-      // ~8–10% narrower than full bleed, with generous side margins
-      desktopMaxWidth: "1080px",
-      desktopWidth: "calc(100% - 5.5rem)",
-      mobileRadius: hero.bookingBar.responsive?.mobileRadius || "20px",
-      mobilePadding: hero.bookingBar.responsive?.mobilePadding || "14px",
+      desktopMaxWidth: "none",
+      desktopWidth: "calc(100% - 48px)",
+      mobileRadius: hero.bookingBar.responsive?.mobileRadius || "16px",
+      mobilePadding: hero.bookingBar.responsive?.mobilePadding || "10px",
     },
   };
 
@@ -177,7 +176,7 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
       <section
         ref={sectionRef}
         id="hero"
-        className="relative isolate w-full overflow-hidden bg-[#0f1f18] h-[var(--hero-mobile-height)] min-h-[460px] max-h-[720px] lg:h-[var(--hero-desktop-height)] lg:min-h-[680px] lg:max-h-none"
+        className="relative isolate w-full overflow-visible bg-[#0f1f18] h-[var(--hero-mobile-height)] min-h-[460px] max-h-[720px] lg:h-[var(--hero-desktop-height)] lg:min-h-[680px] lg:max-h-none"
         style={heroStyle}
       >
         {/* Full-bleed media — fills the entire hero, never pushed away */}
@@ -201,10 +200,10 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
           aria-hidden
         />
 
-        {/* Desktop: integrated floating card at bottom (~15–20% of hero height) */}
+        {/* Desktop: nearly full-width slim bar with elegant page padding (~24px) */}
         {showBooking ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-[3.5%] z-20 hidden lg:block">
-            <div className="pointer-events-auto mx-auto w-[min(1080px,calc(100%-5.5rem))]">
+            <div className="pointer-events-auto mx-auto w-[calc(100%-48px)] max-w-none xl:w-[calc(100%-56px)]">
               <PremiumFloatingBookingBar
                 rooms={rooms}
                 bookingBar={bookingSettings}

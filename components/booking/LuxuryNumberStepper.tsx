@@ -80,26 +80,26 @@ export function LuxuryNumberStepper({
           }
         }}
         className={cn(
-          "min-w-0 flex-1 bg-transparent font-semibold tracking-wide text-white outline-none",
-          compact ? "text-[14px]" : "text-[15px] md:text-base"
-        )}
-      />
-      <div className="flex shrink-0 flex-col gap-0.5">
+            "min-w-0 flex-1 bg-transparent font-semibold tracking-wide text-white outline-none",
+            compact ? "text-[13px]" : "text-[13px] md:text-[14px]"
+          )}
+        />
+      <div className="flex shrink-0 flex-col gap-px">
         <button
           type="button"
           aria-label="Increase"
           onClick={() => commit(numeric + 1)}
-          className="flex h-5 w-6 items-center justify-center rounded-md border border-[#D4B06A]/35 transition hover:border-[#D4B06A] hover:bg-white/10 active:scale-95"
+          className="flex h-4 w-5 items-center justify-center rounded-[5px] border border-[#D4B06A]/35 transition hover:border-[#D4B06A] hover:bg-white/10 active:scale-95"
         >
-          <ChevronUp className="h-3.5 w-3.5" style={{ color: GOLD }} strokeWidth={2} />
+          <ChevronUp className="h-3 w-3" style={{ color: GOLD }} strokeWidth={2} />
         </button>
         <button
           type="button"
           aria-label="Decrease"
           onClick={() => commit(numeric - 1)}
-          className="flex h-5 w-6 items-center justify-center rounded-md border border-[#D4B06A]/35 transition hover:border-[#D4B06A] hover:bg-white/10 active:scale-95"
+          className="flex h-4 w-5 items-center justify-center rounded-[5px] border border-[#D4B06A]/35 transition hover:border-[#D4B06A] hover:bg-white/10 active:scale-95"
         >
-          <ChevronDown className="h-3.5 w-3.5" style={{ color: GOLD }} strokeWidth={2} />
+          <ChevronDown className="h-3 w-3" style={{ color: GOLD }} strokeWidth={2} />
         </button>
       </div>
     </div>
