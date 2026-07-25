@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -9,9 +9,10 @@ import {
   Baby,
   BedDouble,
   Calendar,
-  ChevronDown,
   Users,
 } from "lucide-react";
+import { LuxuryDatePicker } from "@/components/booking/LuxuryDatePicker";
+import { LuxuryNumberStepper } from "@/components/booking/LuxuryNumberStepper";
 import { buildAvailabilityUrl } from "@/lib/booking/utils";
 import { cn } from "@/lib/utils";
 import { luxuryEase } from "@/lib/animations";
@@ -34,21 +35,16 @@ const ICON_MAP: Record<string, LucideIcon> = {
 };
 
 const LABEL_GOLD = "#D4B06A";
-const VALUE_WHITE = "#FFFFFF";
-const PLACEHOLDER_IVORY = "rgba(255,249,240,0.65)";
-const FIELD_GLASS = "rgba(24,52,38,0.72)";
-const FIELD_BORDER = "rgba(212,176,106,0.28)";
+const FIELD_GLASS = "rgba(255,255,255,0.06)";
+const FIELD_BORDER = "rgba(212,176,106,0.22)";
 const FRAME_BG =
-  "linear-gradient(135deg, rgba(36,71,54,0.94) 0%, rgba(24,52,38,0.92) 42%, rgba(36,71,54,0.9) 100%)";
+  "linear-gradient(135deg, rgba(28,62,48,0.92) 0%, rgba(20,46,35,0.9) 48%, rgba(26,56,42,0.92) 100%)";
+
+/** Practical hotel booking ceiling — not a tiny dropdown limit. */
+const PRACTICAL_MAX = 999;
 
 function resolveIcon(name: string): LucideIcon {
   return ICON_MAP[name] ?? Calendar;
-}
-
-function formatDisplayDate(value: string) {
-  if (!value) return "Select date";
-  const date = new Date(`${value}T12:00:00`);
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 function mergeSettings(bookingBar?: HeroBookingBarSettings): HeroBookingBarSettings {
@@ -77,6 +73,7 @@ interface FieldCellProps {
   bordered?: boolean;
   labelColor?: string;
   dividerColor?: string;
+  className?: string;
 }
 
 function FieldCell({
@@ -87,29 +84,31 @@ function FieldCell({
   bordered = true,
   labelColor,
   dividerColor,
+  className,
 }: FieldCellProps) {
   return (
     <div
       className={cn(
-        "group flex min-h-[88px] min-w-0 flex-col justify-center px-4 py-3 transition-all duration-700",
-        bordered && "border-r"
+        "group flex min-h-0 min-w-0 flex-col justify-center px-3 py-2.5 transition-all duration-500 xl:px-3.5",
+        bordered && "border-r",
+        className
       )}
-      style={{ borderColor: bordered ? dividerColor || "rgba(201,164,76,0.3)" : undefined }}
+      style={{ borderColor: bordered ? dividerColor || "rgba(201,164,76,0.22)" : undefined }}
     >
       <label
         htmlFor={id}
-        className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase"
-        style={{ color: labelColor || LABEL_GOLD, letterSpacing: "2px" }}
+        className="mb-1.5 flex items-center gap-1.5 text-[9px] font-semibold uppercase xl:text-[10px]"
+        style={{ color: labelColor || LABEL_GOLD, letterSpacing: "0.16em" }}
       >
-        <Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+        <Icon className="h-3.5 w-3.5 shrink-0 opacity-90" strokeWidth={1.5} />
         <span className="truncate">{label}</span>
       </label>
       <div
-        className="relative min-w-0 rounded-[16px] px-3.5 py-2.5 backdrop-blur-md transition-all duration-500"
+        className="relative min-w-0 rounded-[12px] px-2.5 py-1.5 backdrop-blur-md transition-all duration-500 group-hover:border-[#D4B06A]/45"
         style={{
           background: FIELD_GLASS,
           border: `1px solid ${FIELD_BORDER}`,
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.45)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.28)",
         }}
       >
         {children}
@@ -118,124 +117,33 @@ function FieldCell({
   );
 }
 
-function DateValue({ id, value, onChange }: { id: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <div className="relative min-w-0">
-      <div className="pointer-events-none flex items-center justify-between gap-2">
-        <span className="flex min-w-0 items-center gap-2">
-          <Calendar className="h-3.5 w-3.5 shrink-0" style={{ color: LABEL_GOLD, opacity: 0.85 }} strokeWidth={1.75} />
-          <span
-            className="truncate text-base font-bold tracking-wide md:text-lg"
-            style={{ color: value ? VALUE_WHITE : PLACEHOLDER_IVORY }}
-          >
-            {value ? formatDisplayDate(value) : "mm / dd / yyyy"}
-          </span>
-        </span>
-        <ChevronDown className="h-4 w-4 shrink-0" style={{ color: LABEL_GOLD, opacity: 0.7 }} />
-      </div>
-      <input
-        id={id}
-        type="date"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required
-        className="absolute inset-0 cursor-pointer opacity-0"
-      />
-    </div>
-  );
-}
-
-function SelectValue({
-  id,
-  value,
-  onChange,
-  display,
-  children,
-}: {
-  id: string;
-  value: string;
-  onChange: (v: string) => void;
-  display: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="relative min-w-0">
-      <div className="pointer-events-none flex items-center justify-between gap-2">
-        <span className="truncate text-base font-bold tracking-wide md:text-lg" style={{ color: VALUE_WHITE }}>
-          {display}
-        </span>
-        <ChevronDown className="h-4 w-4 shrink-0" style={{ color: LABEL_GOLD, opacity: 0.7 }} />
-      </div>
-      <select
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="absolute inset-0 cursor-pointer opacity-0"
-      >
-        {children}
-      </select>
-    </div>
-  );
-}
-
-function MobileAccordionItem({
+function MobileField({
   id,
   label,
   icon: Icon,
-  summary,
-  open,
-  onToggle,
   children,
 }: {
   id: string;
   label: string;
   icon: LucideIcon;
-  summary: string;
-  open: boolean;
-  onToggle: () => void;
   children: React.ReactNode;
 }) {
   return (
-    <div className="overflow-hidden rounded-[18px] border border-luxury-gold/25 bg-luxury-green-dark/55 transition-colors duration-500 hover:border-luxury-gold/40">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex min-h-[58px] w-full items-center justify-between gap-3 px-4 py-3 text-left"
+    <div className="rounded-[14px] border border-[#D4B06A]/22 bg-white/[0.05] px-3 py-2.5 backdrop-blur-sm">
+      <label
+        htmlFor={id}
+        className="mb-1.5 flex items-center gap-1.5 text-[9px] font-semibold uppercase"
+        style={{ color: LABEL_GOLD, letterSpacing: "0.16em" }}
       >
-        <div className="flex min-w-0 items-center gap-2.5">
-          <Icon className="h-4 w-4 shrink-0" style={{ color: LABEL_GOLD }} strokeWidth={1.5} />
-          <div className="min-w-0">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.2em]" style={{ color: LABEL_GOLD }}>
-              {label}
-            </p>
-            <p className="truncate text-sm font-bold text-white">
-              {summary}
-            </p>
-          </div>
-        </div>
-        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.5, ease: luxuryEase }}>
-          <ChevronDown className="h-4 w-4" style={{ color: LABEL_GOLD }} />
-        </motion.span>
-      </button>
-      <AnimatePresence initial={false}>
-        {open ? (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.55, ease: luxuryEase }}
-            className="overflow-hidden border-t border-luxury-gold/15 px-4 pb-4 pt-1"
-          >
-            {children}
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+        <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
+        {label}
+      </label>
+      {children}
     </div>
   );
 }
 
 export function PremiumFloatingBookingBar({
-  rooms = [],
   bookingBar,
   className,
   variant = "hero",
@@ -247,9 +155,30 @@ export function PremiumFloatingBookingBar({
   const [guests, setGuests] = useState(settings.defaults?.guests || "2");
   const [childrenCount, setChildrenCount] = useState(settings.defaults?.children || "0");
   const [roomQuantity, setRoomQuantity] = useState(settings.defaults?.rooms || "1");
-  const [mobileOpen, setMobileOpen] = useState<string | null>(null);
 
   const show = (key: keyof HeroBookingBarSettings["fields"]) => settings.fields[key] !== false;
+
+  const checkoutMin = (() => {
+    if (!checkIn) return undefined;
+    const next = new Date(`${checkIn}T12:00:00`);
+    next.setDate(next.getDate() + 1);
+    const y = next.getFullYear();
+    const m = String(next.getMonth() + 1).padStart(2, "0");
+    const d = String(next.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  })();
+
+  const handleCheckIn = (value: string) => {
+    setCheckIn(value);
+    if (checkOut && checkOut <= value) {
+      const next = new Date(`${value}T12:00:00`);
+      next.setDate(next.getDate() + 1);
+      const y = next.getFullYear();
+      const m = String(next.getMonth() + 1).padStart(2, "0");
+      const d = String(next.getDate()).padStart(2, "0");
+      setCheckOut(`${y}-${m}-${d}`);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,134 +193,150 @@ export function PremiumFloatingBookingBar({
     );
   };
 
-  const roomLabel = `${roomQuantity} ${roomQuantity === "1" ? "Room" : "Rooms"}`;
-  const guestLabel = `${guests} ${guests === "1" ? "Guest" : "Guests"}`;
-
-  const visibleFieldCount = (
-    ["checkIn", "checkOut", "guests", "children", "room"] as const
-  ).filter((key) => show(key)).length;
-  const gridColumns = `repeat(${visibleFieldCount}, minmax(0, 1fr)) minmax(168px, 1.25fr)`;
-
   const glassStyle: React.CSSProperties = {
     background: settings.background || FRAME_BG,
-    backdropFilter: `blur(${settings.blur ?? 32}px)`,
-    WebkitBackdropFilter: `blur(${settings.blur ?? 32}px)`,
-    border: `1px solid ${settings.borderColor || "rgba(201,164,76,0.45)"}`,
-    borderRadius: settings.borderRadius || "20px",
+    backdropFilter: `blur(${Math.min(settings.blur ?? 24, 28)}px)`,
+    WebkitBackdropFilter: `blur(${Math.min(settings.blur ?? 24, 28)}px)`,
+    border: `1px solid ${settings.borderColor || "rgba(212,176,106,0.32)"}`,
+    borderRadius: settings.borderRadius || "18px",
     boxShadow:
       settings.shadow ||
-      "0 30px 80px rgba(8,20,14,0.45), inset 0 1px 0 rgba(255,255,255,0.08)",
+      "0 22px 56px rgba(8,20,14,0.32), 0 2px 0 rgba(255,255,255,0.06) inset",
     boxSizing: "border-box",
   };
 
-  const heroShellStyle: React.CSSProperties =
-    variant === "hero"
-      ? {
-          position: "absolute",
-          left: "50%",
-          bottom: settings.responsive.desktopBottom ?? "0px",
-          transform: "translateX(-50%)",
-          width: settings.responsive.desktopWidth || "95%",
-          maxWidth: settings.responsive.desktopMaxWidth || "1700px",
-          zIndex: 40,
-          boxSizing: "border-box",
-        }
-      : {};
-
-  const mobileShellStyle: React.CSSProperties =
-    variant === "hero"
-      ? {
-          position: "absolute",
-          left: settings.responsive.mobileHorizontalInset || "12px",
-          right: settings.responsive.mobileHorizontalInset || "12px",
-          bottom: settings.responsive.mobileBottom ?? "0px",
-          width: "auto",
-          zIndex: 40,
-          boxSizing: "border-box",
-        }
-      : {};
-
   const cellColors = {
-    labelColor: settings.colors.label,
-    dividerColor: settings.colors.divider,
+    labelColor: settings.colors.label || LABEL_GOLD,
+    dividerColor: settings.colors.divider || "rgba(201,164,76,0.22)",
   };
+
+  const submitButton = (opts: { tall?: boolean; className?: string }) => (
+    <motion.button
+      type="submit"
+      whileHover={{ scale: 1.02, y: -2, boxShadow: "0 22px 48px rgba(190,150,50,0.42)" }}
+      whileTap={{ scale: 0.985 }}
+      transition={{ duration: 0.4, ease: luxuryEase }}
+      className={cn(
+        "group relative flex w-full items-center justify-center gap-2 overflow-hidden text-[10px] font-bold uppercase tracking-[0.14em]",
+        opts.tall ? "h-[68px] min-w-[148px] px-3 xl:min-w-[160px]" : "min-h-[48px] px-4",
+        opts.className
+      )}
+      style={{
+        background:
+          settings.buttonGradient ||
+          "linear-gradient(180deg, #E8C878 0%, #C9A44C 48%, #B98B2C 100%)",
+        boxShadow:
+          settings.buttonShadow ||
+          "0 16px 40px rgba(201,164,76,0.35), inset 0 1px 0 rgba(255,255,255,0.35)",
+        color: settings.colors.buttonText || settings.buttonColor || "#1E4530",
+        borderRadius: settings.buttonBorderRadius || "12px",
+      }}
+    >
+      <motion.span
+        className="pointer-events-none absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+        initial={{ x: "-150%" }}
+        animate={{ x: "220%" }}
+        transition={{ duration: 2.6, repeat: Infinity, repeatDelay: 1.6, ease: luxuryEase }}
+      />
+      <span className="relative text-center leading-tight">{settings.buttonText}</span>
+      <ArrowRight className="relative h-3.5 w-3.5 shrink-0 transition-transform duration-500 group-hover:translate-x-1" />
+    </motion.button>
+  );
 
   const desktopForm = (
     <motion.form
       onSubmit={handleSubmit}
-      initial={{ opacity: 0, y: 28 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1, delay: 0.2, ease: luxuryEase }}
-      style={{ ...glassStyle, minHeight: "108px", height: "auto", padding: "8px 10px" }}
+      transition={{ duration: 0.85, delay: 0.15, ease: luxuryEase }}
+      style={{ ...glassStyle, padding: "6px 8px" }}
       className="hidden w-full lg:block"
     >
-      <div className="grid h-full w-full items-stretch" style={{ gridTemplateColumns: gridColumns }}>
+      <div
+        className="grid w-full items-stretch"
+        style={{
+          gridTemplateColumns:
+            "minmax(0,1.15fr) minmax(0,1.15fr) minmax(0,0.85fr) minmax(0,0.75fr) minmax(0,0.85fr) minmax(148px,0.95fr)",
+        }}
+      >
         {show("checkIn") && (
-          <FieldCell id="hero-check-in" label={settings.labels.checkIn} icon={resolveIcon(settings.icons.checkIn)} {...cellColors}>
-            <DateValue id="hero-check-in" value={checkIn} onChange={setCheckIn} />
+          <FieldCell
+            id="hero-check-in"
+            label={settings.labels.checkIn}
+            icon={resolveIcon(settings.icons.checkIn)}
+            {...cellColors}
+          >
+            <LuxuryDatePicker id="hero-check-in" value={checkIn} onChange={handleCheckIn} />
           </FieldCell>
         )}
         {show("checkOut") && (
-          <FieldCell id="hero-check-out" label={settings.labels.checkOut} icon={resolveIcon(settings.icons.checkOut)} {...cellColors}>
-            <DateValue id="hero-check-out" value={checkOut} onChange={setCheckOut} />
+          <FieldCell
+            id="hero-check-out"
+            label={settings.labels.checkOut}
+            icon={resolveIcon(settings.icons.checkOut)}
+            {...cellColors}
+          >
+            <LuxuryDatePicker
+              id="hero-check-out"
+              value={checkOut}
+              onChange={setCheckOut}
+              min={checkoutMin}
+            />
           </FieldCell>
         )}
         {show("guests") && (
-          <FieldCell id="hero-guests" label={settings.labels.guests} icon={resolveIcon(settings.icons.guests)} {...cellColors}>
-            <SelectValue id="hero-guests" value={guests} onChange={setGuests} display={guestLabel}>
-              {[1, 2, 3, 4, 5, 6].map((n) => (
-                <option key={n} value={n}>
-                  {n} {n === 1 ? "Guest" : "Guests"}
-                </option>
-              ))}
-            </SelectValue>
+          <FieldCell
+            id="hero-guests"
+            label={settings.labels.guests}
+            icon={resolveIcon(settings.icons.guests)}
+            {...cellColors}
+          >
+            <LuxuryNumberStepper
+              id="hero-guests"
+              value={guests}
+              onChange={setGuests}
+              min={1}
+              max={PRACTICAL_MAX}
+              suffix={(n) => (n === 1 ? "Guest" : "Guests")}
+            />
           </FieldCell>
         )}
         {show("children") && (
-          <FieldCell id="hero-children" label={settings.labels.children} icon={resolveIcon(settings.icons.children)} {...cellColors}>
-            <SelectValue id="hero-children" value={childrenCount} onChange={setChildrenCount} display={childrenCount}>
-              {[0, 1, 2, 3, 4].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </SelectValue>
+          <FieldCell
+            id="hero-children"
+            label={settings.labels.children}
+            icon={resolveIcon(settings.icons.children)}
+            {...cellColors}
+          >
+            <LuxuryNumberStepper
+              id="hero-children"
+              value={childrenCount}
+              onChange={setChildrenCount}
+              min={0}
+              max={PRACTICAL_MAX}
+            />
           </FieldCell>
         )}
         {show("room") && (
-          <FieldCell id="hero-room" label={settings.labels.room} icon={resolveIcon(settings.icons.room)} bordered={false} {...cellColors}>
-            <SelectValue id="hero-room" value={roomQuantity} onChange={setRoomQuantity} display={roomLabel}>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <option key={n} value={n}>
-                  {n} {n === 1 ? "Room" : "Rooms"}
-                </option>
-              ))}
-            </SelectValue>
+          <FieldCell
+            id="hero-room"
+            label={settings.labels.room}
+            icon={resolveIcon(settings.icons.room)}
+            bordered={false}
+            {...cellColors}
+          >
+            <LuxuryNumberStepper
+              id="hero-room"
+              value={roomQuantity}
+              onChange={setRoomQuantity}
+              min={1}
+              max={PRACTICAL_MAX}
+              suffix={(n) => (n === 1 ? "Room" : "Rooms")}
+            />
           </FieldCell>
         )}
-        <div className="flex min-w-[168px] items-center justify-center px-1.5">
-          <motion.button
-            type="submit"
-            whileHover={{ scale: 1.04, y: -3, boxShadow: "0 32px 70px rgba(190,150,50,0.5)" }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.5, ease: luxuryEase }}
-            className="group relative flex h-[80px] w-full min-w-[168px] items-center justify-center gap-2 overflow-hidden px-3 text-[10px] font-bold uppercase leading-tight tracking-[0.12em] xl:text-[11px] xl:tracking-[0.14em]"
-            style={{
-              background: settings.buttonGradient || "linear-gradient(180deg, #E8C878 0%, #C9A44C 45%, #B98B2C 100%)",
-              boxShadow: settings.buttonShadow || "0 24px 60px rgba(201,164,76,0.45), inset 0 1px 0 rgba(255,255,255,0.35)",
-              color: settings.colors.buttonText || settings.buttonColor || "#1E4530",
-              borderRadius: settings.buttonBorderRadius || "14px",
-            }}
-          >
-            <motion.span
-              className="pointer-events-none absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/35 to-transparent"
-              initial={{ x: "-150%" }}
-              animate={{ x: "250%" }}
-              transition={{ duration: 2.8, repeat: Infinity, repeatDelay: 1.2, ease: luxuryEase }}
-            />
-            <span className="relative text-center">{settings.buttonText}</span>
-            <ArrowRight className="relative h-4 w-4 shrink-0 transition-transform duration-500 group-hover:translate-x-1" />
-          </motion.button>
+        <div className="flex items-center justify-center px-1.5 py-1">
+          {submitButton({ tall: true })}
         </div>
       </div>
     </motion.form>
@@ -400,138 +345,87 @@ export function PremiumFloatingBookingBar({
   const mobileForm = (
     <motion.form
       onSubmit={handleSubmit}
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.9, delay: 0.15, ease: luxuryEase }}
+      transition={{ duration: 0.75, delay: 0.1, ease: luxuryEase }}
       style={{
         ...glassStyle,
-        borderRadius: settings.responsive.mobileRadius || "26px",
-        padding: settings.responsive.mobilePadding || "18px",
+        borderRadius: settings.responsive.mobileRadius || "18px",
+        padding: "14px",
       }}
       className="lg:hidden"
     >
-      <div className="flex flex-col gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5">
         {show("checkIn") && (
-          <MobileAccordionItem
-            id="m-check-in"
-            label={settings.labels.checkIn}
-            icon={Calendar}
-            summary={checkIn ? formatDisplayDate(checkIn) : "Select date"}
-            open={mobileOpen === "checkIn"}
-            onToggle={() => setMobileOpen((v) => (v === "checkIn" ? null : "checkIn"))}
-          >
-            <DateValue id="m-check-in" value={checkIn} onChange={setCheckIn} />
-          </MobileAccordionItem>
+          <MobileField id="m-check-in" label={settings.labels.checkIn} icon={Calendar}>
+            <LuxuryDatePicker
+              id="m-check-in"
+              value={checkIn}
+              onChange={handleCheckIn}
+              compact
+            />
+          </MobileField>
         )}
         {show("checkOut") && (
-          <MobileAccordionItem
-            id="m-check-out"
-            label={settings.labels.checkOut}
-            icon={Calendar}
-            summary={checkOut ? formatDisplayDate(checkOut) : "Select date"}
-            open={mobileOpen === "checkOut"}
-            onToggle={() => setMobileOpen((v) => (v === "checkOut" ? null : "checkOut"))}
-          >
-            <DateValue id="m-check-out" value={checkOut} onChange={setCheckOut} />
-          </MobileAccordionItem>
+          <MobileField id="m-check-out" label={settings.labels.checkOut} icon={Calendar}>
+            <LuxuryDatePicker
+              id="m-check-out"
+              value={checkOut}
+              onChange={setCheckOut}
+              min={checkoutMin}
+              compact
+            />
+          </MobileField>
         )}
         {show("guests") && (
-          <MobileAccordionItem
-            id="m-guests"
-            label={settings.labels.guests}
-            icon={Users}
-            summary={guestLabel}
-            open={mobileOpen === "guests"}
-            onToggle={() => setMobileOpen((v) => (v === "guests" ? null : "guests"))}
-          >
-            <SelectValue id="m-guests" value={guests} onChange={setGuests} display={guestLabel}>
-              {[1, 2, 3, 4, 5, 6].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </SelectValue>
-          </MobileAccordionItem>
+          <MobileField id="m-guests" label={settings.labels.guests} icon={Users}>
+            <LuxuryNumberStepper
+              id="m-guests"
+              value={guests}
+              onChange={setGuests}
+              min={1}
+              max={PRACTICAL_MAX}
+              compact
+              suffix={(n) => (n === 1 ? "Guest" : "Guests")}
+            />
+          </MobileField>
         )}
         {show("children") && (
-          <MobileAccordionItem
-            id="m-children"
-            label={settings.labels.children}
-            icon={Baby}
-            summary={childrenCount}
-            open={mobileOpen === "children"}
-            onToggle={() => setMobileOpen((v) => (v === "children" ? null : "children"))}
-          >
-            <SelectValue id="m-children" value={childrenCount} onChange={setChildrenCount} display={childrenCount}>
-              {[0, 1, 2, 3, 4].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </SelectValue>
-          </MobileAccordionItem>
+          <MobileField id="m-children" label={settings.labels.children} icon={Baby}>
+            <LuxuryNumberStepper
+              id="m-children"
+              value={childrenCount}
+              onChange={setChildrenCount}
+              min={0}
+              max={PRACTICAL_MAX}
+              compact
+            />
+          </MobileField>
         )}
         {show("room") && (
-          <MobileAccordionItem
-            id="m-room"
-            label={settings.labels.room}
-            icon={BedDouble}
-            summary={roomLabel}
-            open={mobileOpen === "room"}
-            onToggle={() => setMobileOpen((v) => (v === "room" ? null : "room"))}
-          >
-            <SelectValue id="m-room" value={roomQuantity} onChange={setRoomQuantity} display={roomLabel}>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </SelectValue>
-          </MobileAccordionItem>
+          <MobileField id="m-room" label={settings.labels.room} icon={BedDouble}>
+            <LuxuryNumberStepper
+              id="m-room"
+              value={roomQuantity}
+              onChange={setRoomQuantity}
+              min={1}
+              max={PRACTICAL_MAX}
+              compact
+              suffix={(n) => (n === 1 ? "Room" : "Rooms")}
+            />
+          </MobileField>
         )}
-        <motion.button
-          type="submit"
-          whileHover={{ scale: 1.03, y: -2, boxShadow: "0 28px 60px rgba(190,150,50,0.45)" }}
-          whileTap={{ scale: 0.98 }}
-          transition={{ duration: 0.5, ease: luxuryEase }}
-          className="group relative mt-2 flex min-h-[60px] w-full items-center justify-center gap-2 overflow-hidden text-xs font-bold uppercase tracking-[0.18em]"
-          style={{
-            background: settings.buttonGradient || "linear-gradient(180deg, #E8C878 0%, #C9A44C 45%, #B98B2C 100%)",
-            boxShadow: settings.buttonShadow || "0 24px 60px rgba(201,164,76,0.45), inset 0 1px 0 rgba(255,255,255,0.35)",
-            color: settings.colors.buttonText || settings.buttonColor || "#1E4530",
-            borderRadius: settings.buttonBorderRadius || "14px",
-          }}
-        >
-          <motion.span
-            className="pointer-events-none absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-            initial={{ x: "-150%" }}
-            animate={{ x: "250%" }}
-            transition={{ duration: 2.8, repeat: Infinity, repeatDelay: 1.2, ease: luxuryEase }}
-          />
-          <span className="relative">{settings.buttonText}</span>
-          <ArrowRight className="relative h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
-        </motion.button>
+        <div className={cn("col-span-2", !show("room") && "col-span-2")}>
+          {submitButton({ tall: false, className: "mt-0.5" })}
+        </div>
       </div>
     </motion.form>
   );
 
-  if (variant !== "hero") {
-    return (
-      <div className={cn("w-full", className)}>
-        {desktopForm}
-        {mobileForm}
-      </div>
-    );
-  }
-
   return (
-    <>
-      <div style={heroShellStyle} className={cn("pointer-events-none hidden lg:block", className)}>
-        <div className="pointer-events-auto">{desktopForm}</div>
-      </div>
-      <div style={mobileShellStyle} className={cn("pointer-events-none lg:hidden", className)}>
-        <div className="pointer-events-auto">{mobileForm}</div>
-      </div>
-    </>
+    <div className={cn("w-full", className)}>
+      {desktopForm}
+      {mobileForm}
+    </div>
   );
 }
