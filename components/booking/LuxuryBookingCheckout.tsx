@@ -70,7 +70,12 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
   });
   const breakfast = "with-breakfast" as const;
   const [guest, setGuest] = useState({ firstName: "", lastName: "", email: "", phone: "", whatsapp: "", countryCode: "+977", country: "" });
-  const [request, setRequest] = useState({ promoCode: "", arrivalTime: "", flightNumber: "", notes: "" });
+  const [request, setRequest] = useState({
+    promoCode: search.promoCode || "",
+    arrivalTime: "",
+    flightNumber: "",
+    notes: "",
+  });
   const [payment, setPayment] = useState<PaymentMethod | "">("");
   const [card, setCard] = useState({ holder: "", number: "", expiry: "", cvv: "", country: "", billingName: "" });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
