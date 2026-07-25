@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const GOLD = "#D4B06A";
+const GOLD = "#D4AF37";
 
 interface LuxuryNumberStepperProps {
   id: string;
@@ -80,16 +80,16 @@ export function LuxuryNumberStepper({
           }
         }}
         className={cn(
-            "min-w-0 flex-1 bg-transparent font-semibold tracking-wide text-white outline-none",
-            compact ? "text-[13px]" : "text-[13px] md:text-[14px]"
-          )}
-        />
+          "min-w-0 flex-1 bg-transparent font-bold tracking-wide text-white outline-none",
+          compact ? "text-[13px]" : "text-[13px] md:text-[14px]"
+        )}
+      />
       <div className="flex shrink-0 flex-col gap-px">
         <button
           type="button"
           aria-label="Increase"
           onClick={() => commit(numeric + 1)}
-          className="flex h-4 w-5 items-center justify-center rounded-[5px] border border-[#D4B06A]/35 transition hover:border-[#D4B06A] hover:bg-white/10 active:scale-95"
+          className="flex h-4 w-5 items-center justify-center rounded-[5px] border border-[#D4AF37]/40 transition hover:border-[#D4AF37] hover:bg-white/10 active:scale-95"
         >
           <ChevronUp className="h-3 w-3" style={{ color: GOLD }} strokeWidth={2} />
         </button>
@@ -97,7 +97,7 @@ export function LuxuryNumberStepper({
           type="button"
           aria-label="Decrease"
           onClick={() => commit(numeric - 1)}
-          className="flex h-4 w-5 items-center justify-center rounded-[5px] border border-[#D4B06A]/35 transition hover:border-[#D4B06A] hover:bg-white/10 active:scale-95"
+          className="flex h-4 w-5 items-center justify-center rounded-[5px] border border-[#D4AF37]/40 transition hover:border-[#D4AF37] hover:bg-white/10 active:scale-95"
         >
           <ChevronDown className="h-3 w-3" style={{ color: GOLD }} strokeWidth={2} />
         </button>

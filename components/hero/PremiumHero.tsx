@@ -100,7 +100,7 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
     responsive: {
       ...hero.bookingBar.responsive,
       desktopMaxWidth: "none",
-      desktopWidth: "calc(100% - 48px)",
+      desktopWidth: "calc(100% - 40px)",
       mobileRadius: hero.bookingBar.responsive?.mobileRadius || "16px",
       mobilePadding: hero.bookingBar.responsive?.mobilePadding || "10px",
     },
@@ -203,7 +203,7 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
         {/* Desktop: nearly full-width slim bar with elegant page padding (~24px) */}
         {showBooking ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-[3.5%] z-20 hidden lg:block">
-            <div className="pointer-events-auto mx-auto w-[calc(100%-48px)] max-w-none xl:w-[calc(100%-56px)]">
+            <div className="pointer-events-auto mx-auto w-[calc(100%-40px)] max-w-none">
               <PremiumFloatingBookingBar
                 rooms={rooms}
                 bookingBar={bookingSettings}

@@ -36,11 +36,12 @@ const ICON_MAP: Record<string, LucideIcon> = {
   tag: Tag,
 };
 
-const LABEL_GOLD = "#D4B06A";
+const LABEL_GOLD = "#D4AF37";
 const FIELD_GLASS = "rgba(255,255,255,0.06)";
-const FIELD_BORDER = "rgba(212,176,106,0.22)";
+const FIELD_BORDER = "rgba(212,175,55,0.28)";
 const FRAME_BG =
   "linear-gradient(135deg, rgba(28,62,48,0.92) 0%, rgba(20,46,35,0.9) 48%, rgba(26,56,42,0.92) 100%)";
+const VALUE_WHITE = "#FFFFFF";
 
 const PRACTICAL_MAX = 999;
 
@@ -98,14 +99,14 @@ function FieldCell({
     >
       <label
         htmlFor={id}
-        className="mb-0.5 flex items-center gap-1 text-[8px] font-semibold uppercase xl:text-[9px]"
-        style={{ color: labelColor || LABEL_GOLD, letterSpacing: "0.14em" }}
+        className="mb-0.5 flex items-center gap-1 text-[9px] font-bold uppercase xl:text-[10px]"
+        style={{ color: labelColor || LABEL_GOLD, letterSpacing: "0.18em", fontWeight: 700 }}
       >
-        <Icon className="h-3 w-3 shrink-0 opacity-90" strokeWidth={1.5} />
+        <Icon className="h-3 w-3 shrink-0 opacity-95" strokeWidth={2} />
         <span className="truncate">{label}</span>
       </label>
       <div
-        className="relative min-w-0 rounded-[10px] px-1.5 py-1 backdrop-blur-md transition-all duration-400 group-hover:border-[#D4B06A]/45"
+        className="relative min-w-0 rounded-[10px] px-1.5 py-1 backdrop-blur-md transition-all duration-400 group-hover:border-[#D4AF37]/50"
         style={{
           background: FIELD_GLASS,
           border: `1px solid ${FIELD_BORDER}`,
@@ -130,13 +131,13 @@ function MobileField({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[12px] border border-[#D4B06A]/22 bg-white/[0.05] px-2.5 py-2 backdrop-blur-sm">
+    <div className="rounded-[12px] border border-[#D4AF37]/28 bg-white/[0.05] px-2.5 py-2 backdrop-blur-sm">
       <label
         htmlFor={id}
-        className="mb-1 flex items-center gap-1 text-[8px] font-semibold uppercase"
-        style={{ color: LABEL_GOLD, letterSpacing: "0.14em" }}
+        className="mb-1 flex items-center gap-1 text-[9px] font-bold uppercase"
+        style={{ color: LABEL_GOLD, letterSpacing: "0.18em", fontWeight: 700 }}
       >
-        <Icon className="h-3 w-3 shrink-0" strokeWidth={1.5} />
+        <Icon className="h-3 w-3 shrink-0" strokeWidth={2} />
         {label}
       </label>
       {children}
@@ -208,8 +209,8 @@ export function PremiumFloatingBookingBar({
   };
 
   const cellColors = {
-    labelColor: settings.colors.label || LABEL_GOLD,
-    dividerColor: settings.colors.divider || "rgba(201,164,76,0.22)",
+    labelColor: LABEL_GOLD,
+    dividerColor: "rgba(212,175,55,0.28)",
   };
 
   const submitButton = (opts: { tall?: boolean; className?: string }) => (
@@ -255,9 +256,10 @@ export function PremiumFloatingBookingBar({
       autoComplete="off"
       spellCheck={false}
       className={cn(
-        "w-full bg-transparent font-semibold tracking-wide text-white outline-none placeholder:text-white/40",
+        "w-full bg-transparent font-bold tracking-wide outline-none placeholder:font-medium placeholder:text-[#FFF9F0]/70",
         compact ? "text-[13px]" : "text-[13px] md:text-[14px]"
       )}
+      style={{ color: VALUE_WHITE }}
     />
   );
 

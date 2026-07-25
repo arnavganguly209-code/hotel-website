@@ -7,11 +7,15 @@ import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { luxuryEase } from "@/lib/animations";
 
-const GOLD = "#D4B06A";
+/** Luxury hotel calendar palette — cream + emerald + gold */
+const GOLD = "#D4AF37";
 const EMERALD = "#184D3D";
+const EMERALD_DEEP = "#0F2A22";
 const CREAM = "#F8F3EA";
-const PANEL_W = 320;
-const PANEL_H = 360;
+const CREAM_SOFT = "#FFFDF8";
+const DISABLED = "#C9C0B0";
+const PANEL_W = 340;
+const PANEL_H = 400;
 
 function toISODate(d: Date) {
   const y = d.getFullYear();
@@ -73,7 +77,6 @@ interface LuxuryDatePickerProps {
   min?: string;
   placeholder?: string;
   compact?: boolean;
-  /** Prefer opening above the field (hero booking bar). */
   preferAbove?: boolean;
 }
 
@@ -111,7 +114,7 @@ export function LuxuryDatePicker({
     const trigger = triggerRef.current;
     if (!trigger) return;
     const rect = trigger.getBoundingClientRect();
-    const gap = 10;
+    const gap = 12;
     const spaceAbove = rect.top;
     const spaceBelow = window.innerHeight - rect.bottom;
     let placement: "above" | "below" = preferAbove ? "above" : "below";
@@ -193,7 +196,7 @@ export function LuxuryDatePicker({
   };
 
   const selectClass =
-    "appearance-none rounded-full border border-[#D4B06A]/45 bg-white/70 px-2.5 py-1 font-display text-[13px] font-medium text-[#184D3D] outline-none transition hover:border-[#D4B06A] focus:border-[#D4B06A]";
+    "appearance-none cursor-pointer rounded-full border px-3 py-1.5 font-display text-[15px] font-semibold outline-none transition-all duration-300";
 
   const panel = (
     <AnimatePresence>
@@ -204,50 +207,69 @@ export function LuxuryDatePicker({
           aria-label="Choose date"
           initial={{
             opacity: 0,
-            y: coords.placement === "above" ? 10 : -10,
-            scale: 0.97,
+            y: coords.placement === "above" ? 14 : -14,
+            scale: 0.94,
           }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{
             opacity: 0,
-            y: coords.placement === "above" ? 8 : -8,
-            scale: 0.98,
+            y: coords.placement === "above" ? 10 : -10,
+            scale: 0.96,
           }}
-          transition={{ duration: 0.28, ease: luxuryEase }}
-          className="fixed z-[9999] overflow-hidden rounded-[22px] border border-[#D4B06A]/40 p-4"
+          transition={{ duration: 0.32, ease: luxuryEase }}
+          className="fixed z-[9999] overflow-hidden rounded-[20px] border p-5 backdrop-blur-xl"
           style={{
             top: coords.top,
             left: coords.left,
             width: PANEL_W,
-            background: `linear-gradient(165deg, ${CREAM} 0%, #FFFDF8 42%, #F4ECDC 100%)`,
+            borderColor: "rgba(212,175,55,0.45)",
+            background: `linear-gradient(160deg, ${CREAM} 0%, ${CREAM_SOFT} 38%, #F0E6D2 72%, #E8F0EA 100%)`,
             boxShadow:
-              "0 28px 70px rgba(8,20,14,0.32), 0 2px 0 rgba(255,255,255,0.7) inset, 0 0 0 1px rgba(212,176,106,0.12)",
+              "0 32px 80px rgba(15,42,34,0.38), 0 2px 0 rgba(255,255,255,0.85) inset, 0 0 0 1px rgba(212,175,55,0.18)",
           }}
         >
-          <div className="mb-3.5 flex items-center justify-between gap-2">
+          {/* Header band */}
+          <div
+            className="-mx-5 -mt-5 mb-4 flex items-center justify-between gap-2 px-4 py-3.5"
+            style={{
+              background: `linear-gradient(135deg, ${EMERALD_DEEP} 0%, ${EMERALD} 55%, #1F5A48 100%)`,
+              boxShadow: "0 8px 24px rgba(15,42,34,0.25)",
+            }}
+          >
             <button
               type="button"
               aria-label="Previous month"
               onClick={() => setView(new Date(view.getFullYear(), view.getMonth() - 1, 1))}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D4B06A]/45 text-[#184D3D] transition hover:border-[#D4B06A] hover:bg-[#184D3D]/08 active:scale-95"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 hover:scale-105 hover:bg-white/10 active:scale-95"
+              style={{
+                border: `1.5px solid ${GOLD}`,
+                color: GOLD,
+                background: "rgba(255,255,255,0.06)",
+              }}
             >
-              <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
+              <ChevronLeft className="h-4 w-4" strokeWidth={2} />
             </button>
 
-            <div className="flex min-w-0 flex-1 items-center justify-center gap-1.5">
+            <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
               <label className="sr-only" htmlFor={`${id}-month`}>
                 Month
               </label>
               <select
                 id={`${id}-month`}
-                className={cn(selectClass, "max-w-[58%]")}
+                className={cn(selectClass, "max-w-[56%]")}
+                style={{
+                  color: GOLD,
+                  borderColor: "rgba(212,175,55,0.55)",
+                  background: "rgba(15,42,34,0.35)",
+                  letterSpacing: "0.04em",
+                }}
                 value={view.getMonth()}
                 onChange={(e) =>
                   setView(new Date(view.getFullYear(), Number(e.target.value), 1))
                 }
               >
                 {MONTHS.map((name, i) => (
-                  <option key={name} value={i}>
+                  <option key={name} value={i} style={{ color: EMERALD, background: CREAM }}>
                     {name}
                   </option>
                 ))}
@@ -257,14 +279,21 @@ export function LuxuryDatePicker({
               </label>
               <select
                 id={`${id}-year`}
-                className={cn(selectClass, "max-w-[38%]")}
+                className={cn(selectClass, "max-w-[40%]")}
+                style={{
+                  color: GOLD,
+                  borderColor: "rgba(212,175,55,0.55)",
+                  background: "rgba(15,42,34,0.35)",
+                  letterSpacing: "0.04em",
+                  fontWeight: 700,
+                }}
                 value={view.getFullYear()}
                 onChange={(e) =>
                   setView(new Date(Number(e.target.value), view.getMonth(), 1))
                 }
               >
                 {years.map((y) => (
-                  <option key={y} value={y}>
+                  <option key={y} value={y} style={{ color: EMERALD, background: CREAM }}>
                     {y}
                   </option>
                 ))}
@@ -275,27 +304,32 @@ export function LuxuryDatePicker({
               type="button"
               aria-label="Next month"
               onClick={() => setView(new Date(view.getFullYear(), view.getMonth() + 1, 1))}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D4B06A]/45 text-[#184D3D] transition hover:border-[#D4B06A] hover:bg-[#184D3D]/08 active:scale-95"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 hover:scale-105 hover:bg-white/10 active:scale-95"
+              style={{
+                border: `1.5px solid ${GOLD}`,
+                color: GOLD,
+                background: "rgba(255,255,255,0.06)",
+              }}
             >
-              <ChevronRight className="h-4 w-4" strokeWidth={1.75} />
+              <ChevronRight className="h-4 w-4" strokeWidth={2} />
             </button>
           </div>
 
-          <div className="mb-2 grid grid-cols-7 gap-1">
+          <div className="mb-2.5 grid grid-cols-7 gap-1.5">
             {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
               <span
                 key={d}
-                className="py-1.5 text-center font-body text-[11px] font-semibold uppercase tracking-[0.14em]"
-                style={{ color: "rgba(24,77,61,0.5)" }}
+                className="py-2 text-center font-body text-[11px] font-bold uppercase tracking-[0.16em]"
+                style={{ color: EMERALD }}
               >
                 {d}
               </span>
             ))}
           </div>
 
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-1.5">
             {days.map((cell, i) => {
-              if (!cell) return <span key={`empty-${i}`} className="h-10" />;
+              if (!cell) return <span key={`empty-${i}`} className="h-11" />;
               const disabled = startOfDay(cell.date) < startOfDay(minDate);
               const isToday = sameDay(cell.date, today);
               const isSelected = selected ? sameDay(cell.date, selected) : false;
@@ -306,18 +340,29 @@ export function LuxuryDatePicker({
                   disabled={disabled}
                   onClick={() => pick(cell.date)}
                   className={cn(
-                    "relative flex h-10 items-center justify-center rounded-full font-body text-[14px] transition-all duration-300",
-                    disabled && "cursor-not-allowed opacity-30",
-                    !disabled && !isSelected && "hover:bg-[#184D3D]/10 hover:scale-105",
-                    isSelected && "font-semibold text-[#1A2E26] shadow-[0_10px_22px_rgba(201,164,76,0.42)]",
-                    isToday && !isSelected && "font-semibold"
+                    "relative flex h-11 items-center justify-center rounded-full font-body text-[15px] font-semibold transition-all duration-300",
+                    disabled && "cursor-not-allowed",
+                    !disabled && !isSelected && "hover:scale-105",
+                    isSelected && "font-bold shadow-[0_10px_24px_rgba(212,175,55,0.45)]"
                   )}
                   style={{
-                    color: isSelected ? "#1A2E26" : EMERALD,
+                    color: disabled
+                      ? DISABLED
+                      : isSelected
+                        ? "#FFFFFF"
+                        : EMERALD,
                     background: isSelected
-                      ? "linear-gradient(160deg, #E8C878 0%, #D4B06A 55%, #C9A44C 100%)"
-                      : undefined,
-                    boxShadow: isToday && !isSelected ? `inset 0 0 0 1.5px ${GOLD}` : undefined,
+                      ? `linear-gradient(160deg, #E8C878 0%, ${GOLD} 48%, #B8962E 100%)`
+                      : "transparent",
+                    boxShadow: isToday && !isSelected ? `inset 0 0 0 2px ${EMERALD}` : undefined,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (disabled || isSelected) return;
+                    e.currentTarget.style.background = "rgba(212,175,55,0.22)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (disabled || isSelected) return;
+                    e.currentTarget.style.background = "transparent";
                   }}
                 >
                   {cell.date.getDate()}
@@ -348,15 +393,15 @@ export function LuxuryDatePicker({
         <span
           id={labelId}
           className={cn(
-            "truncate font-semibold tracking-wide",
+            "truncate font-bold tracking-wide",
             compact ? "text-[13px]" : "text-[13px] md:text-[14px]"
           )}
-          style={{ color: value ? "#FFFFFF" : "rgba(255,249,240,0.62)" }}
+          style={{ color: value ? "#FFFFFF" : "rgba(255,249,240,0.7)" }}
         >
           {value ? formatDisplayDate(value) : placeholder}
         </span>
         <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.3, ease: luxuryEase }}>
-          <ChevronDown className="h-3 w-3 shrink-0" style={{ color: GOLD, opacity: 0.85 }} />
+          <ChevronDown className="h-3 w-3 shrink-0" style={{ color: GOLD, opacity: 0.9 }} />
         </motion.span>
       </button>
 
