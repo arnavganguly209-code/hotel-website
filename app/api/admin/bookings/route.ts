@@ -7,6 +7,7 @@ import {
   bookingDatesAreValid,
   calculateBookingTotal,
   calculateNights,
+  roomFitsOccupancy,
   roomPublicSlug,
 } from "@/lib/booking/utils";
 
@@ -105,6 +106,12 @@ export async function POST(req: Request) {
     const guests = Math.max(1, Math.min(20, Number(body.guests) || 1));
     const children = Math.max(0, Math.min(10, Number(body.children) || 0));
     const roomQuantity = Math.max(1, Math.min(20, Number(body.roomQuantity) || 1));
+    if (!roomFitsOccupancy(room, guests, children, roomQuantity)) {
+      return NextResponse.json(
+        { success: false, error: "Guest count exceeds this room’s maximum occupancy." },
+        { status: 400 }
+      );
+    }
     const breakfast = "with-breakfast";
     const nights = calculateNights(body.checkIn, body.checkOut);
     const slug = roomPublicSlug(room);
@@ -135,7 +142,14 @@ export async function POST(req: Request) {
     const totalAmount =
       typeof body.totalAmount === "number" && Number.isFinite(body.totalAmount) && body.totalAmount >= 0
         ? Math.round(body.totalAmount)
-        : calculateBookingTotal({ room, nights, roomQuantity, breakfast });
+        : calculateBookingTotal({
+            room,
+            nights,
+            roomQuantity,
+            breakfast,
+            adults: guests,
+            children,
+          });
 
     const status = body.status && BOOKING_STATUSES.has(body.status) ? body.status : "confirmed";
     const paymentStatus =

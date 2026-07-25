@@ -1,6 +1,11 @@
 import { routes, roomDetailPath } from "@/lib/navigation";
 import type { SiteContent } from "@/lib/cms/types";
 import type { BookingSearchParams } from "./types";
+import {
+  calculateExtraGuestBreakdown,
+  getRoomOccupancyPolicy,
+  roomFitsOccupancy,
+} from "./occupancy";
 
 export function parseMaxGuests(guestsLabel: string): number {
   const match = guestsLabel.match(/\d+/g);
@@ -49,11 +54,23 @@ export function calculateBookingTotal(options: {
   nights: number;
   roomQuantity: number;
   breakfast?: "with-breakfast" | string;
+  adults?: number;
+  children?: number;
 }): number {
-  const { room, nights, roomQuantity } = options;
-  const nightly = breakfastIncludedNightlyPrice(room);
-  return nightly * nights * roomQuantity;
+  const adults = Math.max(1, Number(options.adults) || 1);
+  const children = Math.max(0, Number(options.children) || 0);
+  const breakdown = calculateExtraGuestBreakdown({
+    room: options.room,
+    adults,
+    children,
+    nights: options.nights,
+    roomQuantity: options.roomQuantity,
+  });
+  return breakdown.grandTotal;
 }
+
+export { calculateExtraGuestBreakdown, getRoomOccupancyPolicy, roomFitsOccupancy };
+export type { ExtraGuestBreakdown, RoomOccupancyPolicy } from "./occupancy";
 
 export function bookingSearchFromParams(
   params: URLSearchParams | Record<string, string | string[] | undefined>
@@ -135,6 +152,10 @@ export function formatBookingDate(value: string): string {
   });
 }
 
+/**
+ * Room remains visible when within Orbit max occupancy.
+ * Extra guests within max are allowed and priced — never hidden for allowed extras.
+ */
 export function isRoomAvailableForSearch(
   room: SiteContent["rooms"][number],
   search: BookingSearchParams
@@ -143,8 +164,8 @@ export function isRoomAvailableForSearch(
   if ((search.checkIn || search.checkOut) && !bookingDatesAreValid(search.checkIn, search.checkOut)) {
     return false;
   }
-  const guestCount = (Number(search.guests) || 1) + (Number(search.children) || 0);
+  const adults = Math.max(1, Number(search.guests) || 1);
+  const children = Math.max(0, Number(search.children) || 0);
   const roomCount = Math.max(1, Number(search.rooms) || 1);
-  const maxGuests = room.maxGuests ?? parseMaxGuests(room.guests);
-  return guestCount <= maxGuests * roomCount;
+  return roomFitsOccupancy(room, adults, children, roomCount);
 }

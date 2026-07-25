@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { usePerformanceSettings } from "@/components/shared/PerformanceProvider";
 
-const POLL_MS = 12_000;
+const POLL_MS = 8_000;
 
 /**
  * Keeps open public tabs in sync with Orbit mediaRevision.

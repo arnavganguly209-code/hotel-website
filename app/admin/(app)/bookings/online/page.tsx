@@ -232,8 +232,11 @@ export default function AdminOnlineBookingsPage() {
                         ))}
                       </select>
                     </td>
-                    <td className="px-4 py-3 font-[family-name:var(--font-cormorant)] text-lg">
-                      ${b.totalAmount}
+                    <td className="px-4 py-3">
+                      <p className="font-[family-name:var(--font-cormorant)] text-lg">${b.totalAmount}</p>
+                      <p className="text-xs text-[#7a8a82]">
+                        {b.guests} adults · {b.children} children
+                      </p>
                     </td>
                     <td className="px-4 py-3">
                       <button

@@ -19,8 +19,9 @@ import { LuxuryRoomGallery } from "@/components/booking/LuxuryRoomGallery";
 import {
   bookingDatesAreValid,
   buildBookUrl,
-  calculateBookingTotal,
+  calculateExtraGuestBreakdown,
   calculateNights,
+  roomFitsOccupancy,
   roomPublicSlug,
 } from "@/lib/booking/utils";
 import { roomDetailPath } from "@/lib/navigation";
@@ -74,16 +75,22 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
     rooms: roomQuantity,
     breakfast,
   };
-  const total = useMemo(
+  const adultCount = Math.max(1, Number(adults) || 1);
+  const childCount = Math.max(0, Number(children) || 0);
+  const roomsCount = Math.max(1, Number(roomQuantity) || 1);
+  const fitsOccupancy = roomFitsOccupancy(room, adultCount, childCount, roomsCount);
+  const breakdown = useMemo(
     () =>
-      calculateBookingTotal({
+      calculateExtraGuestBreakdown({
         room,
+        adults: adultCount,
+        children: childCount,
         nights,
-        roomQuantity: Math.max(1, Number(roomQuantity) || 1),
-        breakfast,
+        roomQuantity: roomsCount,
       }),
-    [room, nights, roomQuantity]
+    [room, adultCount, childCount, nights, roomsCount]
   );
+  const total = breakdown.grandTotal;
 
   return (
     <main className="overflow-x-clip bg-[#f8f4eb]">
@@ -180,10 +187,15 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
                   <span>Breakfast Included</span>
                   <span className="font-semibold">${room.price}</span>
                 </div>
-                <div className="flex items-end justify-between border-t border-[#d7c49d]/40 pt-5"><span className="text-xs uppercase tracking-widest text-[#68736d]">Total · {nights} {nights === 1 ? "night" : "nights"}</span><span className="font-display text-3xl text-[#173a2b]">${total}</span></div>
+                <dl className="space-y-2 border-t border-[#d7c49d]/40 pt-5 text-sm text-[#68736d]">
+                  <div className="flex justify-between gap-3"><dt>Room Price</dt><dd className="font-medium text-[#173a2b]">${breakdown.roomSubtotal}</dd></div>
+                  <div className="flex justify-between gap-3"><dt>Extra Guest Charge</dt><dd className="font-medium text-[#173a2b]">${breakdown.total}</dd></div>
+                  <div className="flex items-end justify-between gap-3 border-t border-[#d7c49d]/35 pt-3"><dt className="text-xs uppercase tracking-widest">Grand Total · {nights} {nights === 1 ? "night" : "nights"}</dt><dd className="font-display text-3xl text-[#173a2b]">${total}</dd></div>
+                </dl>
                 {!validDates ? <p className="text-xs text-red-600">Choose a valid future check-in and check-out date.</p> : null}
-                <Button asChild={validDates} type={validDates ? undefined : "button"} disabled={!validDates || room.available === false} variant="gold" size="lg" className="w-full gap-2 uppercase tracking-[0.14em]">
-                  {validDates ? <Link href={buildBookUrl(roomPublicSlug(room), bookingSearch)}>Continue to Book <ArrowRight className="h-4 w-4" /></Link> : <span>Continue to Book</span>}
+                {!fitsOccupancy ? <p className="text-xs text-red-600">Guest count exceeds this room’s maximum occupancy.</p> : null}
+                <Button asChild={validDates && fitsOccupancy} type={validDates && fitsOccupancy ? undefined : "button"} disabled={!validDates || !fitsOccupancy || room.available === false} variant="gold" size="lg" className="w-full gap-2 uppercase tracking-[0.14em]">
+                  {validDates && fitsOccupancy ? <Link href={buildBookUrl(roomPublicSlug(room), bookingSearch)}>Continue to Book <ArrowRight className="h-4 w-4" /></Link> : <span>Continue to Book</span>}
                 </Button>
                 <p className="text-center text-[11px] leading-5 text-[#758078]">No payment is charged until your request is reviewed. Pay online is a preview only.</p>
               </div>

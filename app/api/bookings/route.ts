@@ -5,7 +5,9 @@ import { assertBookingAvailability } from "@/lib/admin/availability";
 import {
   bookingDatesAreValid,
   calculateBookingTotal,
+  calculateExtraGuestBreakdown,
   calculateNights,
+  roomFitsOccupancy,
   roomPublicSlug,
 } from "@/lib/booking/utils";
 
@@ -76,12 +78,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const guests = Math.max(1, Math.min(8, Number(body.guests) || 1));
-    const children = Math.max(0, Math.min(6, Number(body.children) || 0));
-    const roomQuantity = Math.max(1, Math.min(4, Number(body.roomQuantity) || 1));
-    const maxGuests = room.maxGuests ?? 2;
-    if (guests + children > maxGuests * roomQuantity) {
-      return NextResponse.json({ success: false, error: "Guest count exceeds room capacity." }, { status: 400 });
+    const guests = Math.max(1, Math.min(20, Number(body.guests) || 1));
+    const children = Math.max(0, Math.min(20, Number(body.children) || 0));
+    const roomQuantity = Math.max(1, Math.min(20, Number(body.roomQuantity) || 1));
+    if (!roomFitsOccupancy(room, guests, children, roomQuantity)) {
+      return NextResponse.json(
+        { success: false, error: "Guest count exceeds this room’s maximum occupancy." },
+        { status: 400 }
+      );
     }
     const breakfast = "with-breakfast";
     const nights = calculateNights(body.checkIn, body.checkOut);
@@ -101,6 +105,8 @@ export async function POST(req: Request) {
       nights,
       roomQuantity,
       breakfast,
+      adults: guests,
+      children,
     });
 
     const slug = roomPublicSlug(room);
@@ -140,6 +146,38 @@ export async function POST(req: Request) {
       },
     });
 
+    const price = calculateExtraGuestBreakdown({
+      room,
+      adults: guests,
+      children,
+      nights,
+      roomQuantity,
+    });
+    const adminEmail =
+      content.settings.bookingEmail || content.contactPage?.email || content.hotel?.email || "";
+    void import("@/lib/mail").then(({ sendRoomBookingEmails }) =>
+      sendRoomBookingEmails(
+        {
+          id: booking.id,
+          name: body.name,
+          email: body.email,
+          phone: body.phone,
+          roomName: room.name,
+          checkIn: body.checkIn,
+          checkOut: body.checkOut,
+          nights,
+          adults: guests,
+          children,
+          roomQuantity,
+          roomSubtotal: price.roomSubtotal,
+          extraGuestCharge: price.total,
+          grandTotal: price.grandTotal,
+          paymentMethod: body.paymentMethod,
+        },
+        adminEmail
+      ).catch((err) => console.error("[Bookings] email failed:", err))
+    );
+
     return NextResponse.json({
       success: true,
       booking: {
@@ -147,6 +185,9 @@ export async function POST(req: Request) {
         status: booking.status,
         paymentStatus: booking.paymentStatus,
         transactionId: booking.transactionId,
+        roomSubtotal: price.roomSubtotal,
+        extraGuestCharge: price.total,
+        grandTotal: price.grandTotal,
       },
     });
   } catch (error) {

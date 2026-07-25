@@ -17,6 +17,8 @@ interface Booking {
   paymentStatus: string;
   source: string;
   totalAmount: number;
+  guests: number;
+  children: number;
   createdAt: string;
 }
 
@@ -131,7 +133,12 @@ export function OrbitBookingsPanel() {
                     </td>
                     <td className="px-3 py-3 capitalize">{b.source}</td>
                     <td className="px-3 py-3 capitalize">{b.status.replace(/_/g, " ")}</td>
-                    <td className="px-3 py-3">${b.totalAmount}</td>
+                    <td className="px-3 py-3">
+                      <div>${b.totalAmount}</div>
+                      <div className="text-xs text-white/45">
+                        {b.guests} adults · {b.children} children
+                      </div>
+                    </td>
                     <td className="px-3 py-3">
                       <Button
                         type="button"

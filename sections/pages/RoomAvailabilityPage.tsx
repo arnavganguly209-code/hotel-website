@@ -9,6 +9,7 @@ import { fadeUp, luxuryStagger } from "@/lib/animations";
 import {
   buildBookUrl,
   buildRoomDetailUrl,
+  calculateExtraGuestBreakdown,
   calculateNights,
   formatBookingDate,
   isRoomAvailableForSearch,
@@ -54,7 +55,15 @@ export function RoomAvailabilityPage({ rooms, search }: RoomAvailabilityPageProp
             className="grid gap-8 md:grid-cols-2"
           >
             {available.map((room) => {
-              const total = room.price * nights * Number(search.rooms || 1);
+              const roomsCount = Math.max(1, Number(search.rooms) || 1);
+              const breakdown = calculateExtraGuestBreakdown({
+                room,
+                adults: Math.max(1, Number(search.guests) || 1),
+                children: Math.max(0, Number(search.children) || 0),
+                nights,
+                roomQuantity: roomsCount,
+              });
+              const total = breakdown.grandTotal;
               return (
                 <motion.article
                   key={room.id}
@@ -112,6 +121,11 @@ export function RoomAvailabilityPage({ rooms, search }: RoomAvailabilityPageProp
                       <div>
                         <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-luxury-gold">Total from</p>
                         <p className="font-display text-2xl text-luxury-forest">${total}</p>
+                        {breakdown.total > 0 ? (
+                          <p className="mt-1 text-xs text-luxury-muted">
+                            Room ${breakdown.roomSubtotal} + extras ${breakdown.total}
+                          </p>
+                        ) : null}
                       </div>
                       <div className="flex flex-col gap-2 sm:flex-row">
                         <Button asChild variant="outline" className="border-luxury-gold/30 text-luxury-forest">

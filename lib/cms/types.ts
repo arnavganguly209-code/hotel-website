@@ -481,6 +481,18 @@ export interface SiteContent {
     price: number;
     guests: string;
     maxGuests?: number;
+    /** Adults included in base nightly rate (Orbit). */
+    baseAdults?: number;
+    /** Children included in base nightly rate (Orbit). */
+    baseChildren?: number;
+    /** Hard maximum adults for this room category (Orbit). */
+    maxAdults?: number;
+    /** Hard maximum children for this room category (Orbit). */
+    maxChildren?: number;
+    /** Extra adult surcharge per night (Orbit). */
+    extraAdultPrice?: number;
+    /** Extra child surcharge per night (Orbit). */
+    extraChildPrice?: number;
     size: string;
     bedType: string;
     features: string[];

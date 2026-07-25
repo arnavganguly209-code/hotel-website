@@ -2671,8 +2671,14 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                       id: `room-${Date.now()}`,
                       name: "New Room",
                       price: 50,
-                      guests: "2 Guests",
-                      maxGuests: 2,
+                      guests: "2 Adults + 1 Child",
+                      maxGuests: 4,
+                      baseAdults: 2,
+                      baseChildren: 1,
+                      maxAdults: 2,
+                      maxChildren: 2,
+                      extraAdultPrice: 5,
+                      extraChildPrice: 5,
                       size: "30 m²",
                       bedType: "Queen Bed",
                       features: ["Premium Comfort"],
@@ -2732,9 +2738,39 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                         rooms[i] = { ...room, guests: e.target.value };
                         update("rooms", rooms);
                       }} />
-                      <AdminInput label="Max guests" type="number" value={room.maxGuests ?? 2} onChange={(e) => {
+                      <AdminInput label="Max guests (legacy)" type="number" value={room.maxGuests ?? 2} onChange={(e) => {
                         const rooms = [...content.rooms];
                         rooms[i] = { ...room, maxGuests: Number(e.target.value) };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Base adults (included)" type="number" value={room.baseAdults ?? 2} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, baseAdults: Number(e.target.value) };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Base children (included)" type="number" value={room.baseChildren ?? 1} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, baseChildren: Number(e.target.value) };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Max adults" type="number" value={room.maxAdults ?? 2} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, maxAdults: Number(e.target.value) };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Max children" type="number" value={room.maxChildren ?? 1} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, maxChildren: Number(e.target.value) };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Extra adult $/night" type="number" value={room.extraAdultPrice ?? 0} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, extraAdultPrice: Number(e.target.value) };
+                        update("rooms", rooms);
+                      }} />
+                      <AdminInput label="Extra child $/night" type="number" value={room.extraChildPrice ?? 0} onChange={(e) => {
+                        const rooms = [...content.rooms];
+                        rooms[i] = { ...room, extraChildPrice: Number(e.target.value) };
                         update("rooms", rooms);
                       }} />
                       <AdminInput label="Size" value={room.size} onChange={(e) => {

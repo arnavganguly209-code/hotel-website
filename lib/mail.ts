@@ -217,3 +217,133 @@ export async function sendDiningReservationEmails(
 
   return { guestSent, adminSent };
 }
+
+export type RoomBookingMailPayload = {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  roomName: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  adults: number;
+  children: number;
+  roomQuantity: number;
+  roomSubtotal: number;
+  extraGuestCharge: number;
+  grandTotal: number;
+  paymentMethod?: string;
+};
+
+/** Guest + admin emails for room bookings, including clear price breakdown. */
+export async function sendRoomBookingEmails(
+  payload: RoomBookingMailPayload,
+  adminEmail: string
+): Promise<{ guestSent: boolean; adminSent: boolean }> {
+  if (!smtpConfigured()) {
+    console.info("[mail] SMTP not configured — room booking stored without email send.", payload.id);
+    return { guestSent: false, adminSent: false };
+  }
+
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@hotelthamelpark.com";
+  const hotelName = "Hotel Thamel Park";
+  const transport = createTransport();
+  let guestSent = false;
+  let adminSent = false;
+
+  const breakdownText = [
+    `Room Price: $${payload.roomSubtotal}`,
+    `Extra Guest Charge: $${payload.extraGuestCharge}`,
+    `Grand Total: $${payload.grandTotal}`,
+  ].join("\n");
+
+  const breakdownHtml = `<p><strong>Room Price:</strong> $${payload.roomSubtotal}<br/>
+<strong>Extra Guest Charge:</strong> $${payload.extraGuestCharge}<br/>
+<strong>Grand Total:</strong> $${payload.grandTotal}</p>`;
+
+  try {
+    await transport.sendMail({
+      from,
+      to: payload.email,
+      subject: `Booking request received #${payload.id} — ${hotelName}`,
+      text: [
+        `Dear ${payload.name},`,
+        "",
+        `Thank you for choosing ${hotelName}.`,
+        `We have received your booking request (reference #${payload.id}).`,
+        "",
+        `Room: ${payload.roomName}`,
+        `Check-in: ${payload.checkIn}`,
+        `Check-out: ${payload.checkOut}`,
+        `Nights: ${payload.nights}`,
+        `Guests: ${payload.adults} adult(s), ${payload.children} child(ren)`,
+        `Rooms: ${payload.roomQuantity}`,
+        "",
+        breakdownText,
+        "",
+        "Our reservations team will confirm availability shortly.",
+        "",
+        "Warm regards,",
+        hotelName,
+      ].join("\n"),
+      html: `<p>Dear ${payload.name},</p>
+<p>Thank you for choosing <strong>${hotelName}</strong>.</p>
+<p>We have received your booking request (reference <strong>#${payload.id}</strong>).</p>
+<p><strong>Room:</strong> ${payload.roomName}<br/>
+<strong>Check-in:</strong> ${payload.checkIn}<br/>
+<strong>Check-out:</strong> ${payload.checkOut}<br/>
+<strong>Nights:</strong> ${payload.nights}<br/>
+<strong>Guests:</strong> ${payload.adults} adult(s), ${payload.children} child(ren)<br/>
+<strong>Rooms:</strong> ${payload.roomQuantity}</p>
+${breakdownHtml}
+<p>Our reservations team will confirm availability shortly.</p>
+<p>Warm regards,<br/>${hotelName}</p>`,
+    });
+    guestSent = true;
+  } catch (err) {
+    console.error("[mail] Guest room booking confirmation failed:", err);
+  }
+
+  if (adminEmail) {
+    try {
+      await transport.sendMail({
+        from,
+        to: adminEmail,
+        subject: `New room booking #${payload.id} — ${payload.roomName}`,
+        text: [
+          `New room booking #${payload.id}`,
+          `Guest: ${payload.name}`,
+          `Email: ${payload.email}`,
+          `Phone: ${payload.phone || "—"}`,
+          `Room: ${payload.roomName}`,
+          `Check-in: ${payload.checkIn}`,
+          `Check-out: ${payload.checkOut}`,
+          `Nights: ${payload.nights}`,
+          `Guests: ${payload.adults} adults / ${payload.children} children`,
+          `Rooms: ${payload.roomQuantity}`,
+          `Payment: ${payload.paymentMethod || "—"}`,
+          "",
+          breakdownText,
+        ].join("\n"),
+        html: `<h2>New Room Booking #${payload.id}</h2>
+<p><strong>Guest:</strong> ${payload.name}<br/>
+<strong>Email:</strong> ${payload.email}<br/>
+<strong>Phone:</strong> ${payload.phone || "—"}<br/>
+<strong>Room:</strong> ${payload.roomName}<br/>
+<strong>Check-in:</strong> ${payload.checkIn}<br/>
+<strong>Check-out:</strong> ${payload.checkOut}<br/>
+<strong>Nights:</strong> ${payload.nights}<br/>
+<strong>Guests:</strong> ${payload.adults} adults / ${payload.children} children<br/>
+<strong>Rooms:</strong> ${payload.roomQuantity}<br/>
+<strong>Payment:</strong> ${payload.paymentMethod || "—"}</p>
+${breakdownHtml}`,
+      });
+      adminSent = true;
+    } catch (err) {
+      console.error("[mail] Admin room booking notification failed:", err);
+    }
+  }
+
+  return { guestSent, adminSent };
+}

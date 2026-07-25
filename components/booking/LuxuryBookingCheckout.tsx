@@ -6,9 +6,10 @@ import { ArrowLeft, ArrowRight, Check, CreditCard, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import {
   bookingDatesAreValid,
-  calculateBookingTotal,
+  calculateExtraGuestBreakdown,
   calculateNights,
   formatBookingDate,
+  roomFitsOccupancy,
   roomPublicSlug,
 } from "@/lib/booking/utils";
 import type { BookingSearchParams, PaymentMethod } from "@/lib/booking/types";
@@ -81,14 +82,31 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const nights = calculateNights(stay.checkIn, stay.checkOut);
   const roomQuantity = Math.max(1, Number(stay.rooms) || 1);
-  const total = useMemo(() => calculateBookingTotal({ room, nights, roomQuantity, breakfast }), [room, nights, roomQuantity]);
+  const adultCount = Math.max(1, Number(stay.adults) || 1);
+  const childCount = Math.max(0, Number(stay.children) || 0);
+  const breakdown = useMemo(
+    () =>
+      calculateExtraGuestBreakdown({
+        room,
+        adults: adultCount,
+        children: childCount,
+        nights,
+        roomQuantity,
+      }),
+    [room, adultCount, childCount, nights, roomQuantity]
+  );
+  const total = breakdown.grandTotal;
   const inputClass = (name: string) =>
     `${fieldClass} ${fieldErrors[name] ? "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-500/10" : ""}`;
 
   const validateStep = () => {
     const errors: Record<string, string> = {};
-    if (step === 1 && !bookingDatesAreValid(stay.checkIn, stay.checkOut)) {
-      errors.dates = "Choose valid future check-in and check-out dates.";
+    if (step === 1) {
+      if (!bookingDatesAreValid(stay.checkIn, stay.checkOut)) {
+        errors.dates = "Choose valid future check-in and check-out dates.";
+      } else if (!roomFitsOccupancy(room, adultCount, childCount, roomQuantity)) {
+        errors.dates = "Guest count exceeds this room’s maximum occupancy.";
+      }
     }
     if (step === 2) {
       if (!guest.firstName.trim()) errors.firstName = "First name is required.";
@@ -179,6 +197,14 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
         </div>
         <div className="space-y-4 px-8 py-10 text-sm leading-7 text-[#657169] sm:px-14">
           <p>Your booking request has been received successfully.</p>
+          <div className="mx-auto max-w-sm rounded-2xl border border-[#d7c49d]/40 bg-[#f8f4eb] px-5 py-4 text-left text-[#173a2b]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a47e3e]">Price summary</p>
+            <dl className="mt-3 space-y-2 text-sm">
+              <div className="flex justify-between gap-3"><dt className="text-[#68736d]">Room Price</dt><dd>${breakdown.roomSubtotal}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-[#68736d]">Extra Guest Charge</dt><dd>${breakdown.total}</dd></div>
+              <div className="flex justify-between gap-3 border-t border-[#d7c49d]/40 pt-2 font-semibold"><dt>Grand Total</dt><dd>${total}</dd></div>
+            </dl>
+          </div>
           <p>Our Reservations Team will contact you shortly.</p>
           <p>If you wish to modify your booking, please contact:</p>
           <a href="mailto:info@hotelthamelpark.com" className="font-semibold text-[#9e7738] underline underline-offset-4">info@hotelthamelpark.com</a>
@@ -339,8 +365,16 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
         <div className="rounded-[28px] bg-[#153a2a] p-7 text-white shadow-[0_24px_70px_rgba(17,52,36,0.20)]">
           <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#d9bb7c]">Stay summary</p>
           <h3 className="mt-3 font-display text-2xl">{room.name}</h3>
-          <dl className="mt-6 space-y-3 text-sm text-white/72"><div className="flex justify-between gap-3"><dt>Check-in</dt><dd className="text-right text-white">{formatBookingDate(stay.checkIn)}</dd></div><div className="flex justify-between gap-3"><dt>Check-out</dt><dd className="text-right text-white">{formatBookingDate(stay.checkOut)}</dd></div><div className="flex justify-between"><dt>Nights</dt><dd className="text-white">{nights}</dd></div><div className="flex justify-between"><dt>Guests</dt><dd className="text-white">{stay.adults} adults, {stay.children} children</dd></div><div className="flex justify-between"><dt>Rate</dt><dd className="text-white">Breakfast Included</dd></div></dl>
-          <div className="mt-6 flex items-end justify-between border-t border-white/12 pt-6"><span className="text-xs uppercase tracking-widest text-white/55">Total</span><span className="font-display text-4xl text-[#e0c184]">${total}</span></div>
+          <dl className="mt-6 space-y-3 text-sm text-white/72">
+            <div className="flex justify-between gap-3"><dt>Check-in</dt><dd className="text-right text-white">{formatBookingDate(stay.checkIn)}</dd></div>
+            <div className="flex justify-between gap-3"><dt>Check-out</dt><dd className="text-right text-white">{formatBookingDate(stay.checkOut)}</dd></div>
+            <div className="flex justify-between"><dt>Nights</dt><dd className="text-white">{nights}</dd></div>
+            <div className="flex justify-between"><dt>Guests</dt><dd className="text-white">{stay.adults} adults, {stay.children} children</dd></div>
+            <div className="flex justify-between"><dt>Rate</dt><dd className="text-white">Breakfast Included</dd></div>
+            <div className="flex justify-between"><dt>Room Price</dt><dd className="text-white">${breakdown.roomSubtotal}</dd></div>
+            <div className="flex justify-between"><dt>Extra Guest Charge</dt><dd className="text-white">${breakdown.total}</dd></div>
+          </dl>
+          <div className="mt-6 flex items-end justify-between border-t border-white/12 pt-6"><span className="text-xs uppercase tracking-widest text-white/55">Grand Total</span><span className="font-display text-4xl text-[#e0c184]">${total}</span></div>
         </div>
       </aside>
     </div>

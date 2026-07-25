@@ -24,6 +24,8 @@ interface Booking {
   roomNumber?: string;
   checkIn: string;
   checkOut: string;
+  guests: number;
+  children: number;
   totalAmount: number;
   status: string;
   paymentStatus: string;
@@ -352,6 +354,8 @@ export default function AdminOfflineBookingsPage() {
                     {b.roomNumber ? ` · Room #${b.roomNumber}` : ""} ·{" "}
                     {new Date(b.checkIn).toLocaleDateString()} →{" "}
                     {new Date(b.checkOut).toLocaleDateString()}
+                    {" · "}
+                    {b.guests} adults · {b.children} children
                   </p>
                 </div>
                 <p className="font-serif text-xl text-[#0f2420]">${b.totalAmount}</p>

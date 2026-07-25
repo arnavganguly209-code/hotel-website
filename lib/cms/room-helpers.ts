@@ -1,5 +1,8 @@
 import type { SiteContent } from "./types";
-import { parseMaxGuests } from "@/lib/booking/utils";
+import {
+  DEFAULT_OCCUPANCY_BY_ROOM_ID,
+  getRoomOccupancyPolicy,
+} from "@/lib/booking/occupancy";
 
 export const DEFAULT_ROOM_POLICIES = [
   "Check-in from 2:00 PM · Check-out by 12:00 PM",
@@ -35,6 +38,19 @@ const DEFAULT_NEARBY_ATTRACTIONS = [
 
 type Room = SiteContent["rooms"][number];
 
+function occupancySeed(roomId: string) {
+  return (
+    DEFAULT_OCCUPANCY_BY_ROOM_ID[roomId] || {
+      baseAdults: 2,
+      baseChildren: 1,
+      maxAdults: 2,
+      maxChildren: 1,
+      extraAdultPrice: 5,
+      extraChildPrice: 5,
+    }
+  );
+}
+
 export function enrichRoom(defaults: Room, partial: Partial<Room>): Room {
   const merged: Room = {
     ...defaults,
@@ -44,10 +60,30 @@ export function enrichRoom(defaults: Room, partial: Partial<Room>): Room {
     features: partial.features?.length ? partial.features : defaults.features,
   };
 
+  const seed = occupancySeed(merged.id);
+  const baseAdults = partial.baseAdults ?? defaults.baseAdults ?? seed.baseAdults;
+  const baseChildren = partial.baseChildren ?? defaults.baseChildren ?? seed.baseChildren;
+  const maxAdults = partial.maxAdults ?? defaults.maxAdults ?? seed.maxAdults;
+  const maxChildren = partial.maxChildren ?? defaults.maxChildren ?? seed.maxChildren;
+  const extraAdultPrice =
+    partial.extraAdultPrice ?? defaults.extraAdultPrice ?? seed.extraAdultPrice;
+  const extraChildPrice =
+    partial.extraChildPrice ?? defaults.extraChildPrice ?? seed.extraChildPrice;
+  const maxGuests =
+    partial.maxGuests ??
+    defaults.maxGuests ??
+    maxAdults + maxChildren;
+
   return {
     ...merged,
     slug: partial.slug?.trim() || defaults.slug || merged.id,
-    maxGuests: partial.maxGuests ?? defaults.maxGuests ?? parseMaxGuests(merged.guests),
+    baseAdults,
+    baseChildren,
+    maxAdults,
+    maxChildren,
+    extraAdultPrice,
+    extraChildPrice,
+    maxGuests,
     available: partial.available ?? defaults.available ?? true,
     visible: partial.visible !== undefined ? partial.visible : defaults.visible !== false,
     order: typeof partial.order === "number" ? partial.order : (defaults.order ?? 0),
@@ -57,43 +93,39 @@ export function enrichRoom(defaults: Room, partial: Partial<Room>): Room {
         ? 5
         : (partial.breakfastPrice ?? defaults.breakfastPrice ?? 5),
     longDescription:
-      partial.longDescription ?? defaults.longDescription ?? `${merged.description} Thoughtfully appointed with premium linens, refined furnishings, and the attentive service that defines Hotel Thamel Park.`,
-    gallery:
-      partial.gallery?.length
-        ? partial.gallery
-        : defaults.gallery?.length
-          ? defaults.gallery
-          : [merged.imageSrc],
-    amenities:
-      partial.amenities?.length
-        ? partial.amenities
-        : defaults.amenities?.length
-          ? defaults.amenities
-          : merged.features,
-    policies:
-      partial.policies?.length
-        ? partial.policies
-        : defaults.policies?.length
-          ? defaults.policies
-          : DEFAULT_ROOM_POLICIES,
-    facilities:
-      partial.facilities?.length
-        ? partial.facilities
-        : defaults.facilities?.length
-          ? defaults.facilities
-          : DEFAULT_ROOM_FACILITIES,
-    services:
-      partial.services?.length
-        ? partial.services
-        : defaults.services?.length
-          ? defaults.services
-          : DEFAULT_ROOM_SERVICES,
-    nearbyAttractions:
-      partial.nearbyAttractions?.length
-        ? partial.nearbyAttractions
-        : defaults.nearbyAttractions?.length
-          ? defaults.nearbyAttractions
-          : DEFAULT_NEARBY_ATTRACTIONS,
+      partial.longDescription ??
+      defaults.longDescription ??
+      `${merged.description} Thoughtfully appointed with premium linens, refined furnishings, and the attentive service that defines Hotel Thamel Park.`,
+    gallery: partial.gallery?.length
+      ? partial.gallery
+      : defaults.gallery?.length
+        ? defaults.gallery
+        : [merged.imageSrc],
+    amenities: partial.amenities?.length
+      ? partial.amenities
+      : defaults.amenities?.length
+        ? defaults.amenities
+        : merged.features,
+    policies: partial.policies?.length
+      ? partial.policies
+      : defaults.policies?.length
+        ? defaults.policies
+        : DEFAULT_ROOM_POLICIES,
+    facilities: partial.facilities?.length
+      ? partial.facilities
+      : defaults.facilities?.length
+        ? defaults.facilities
+        : DEFAULT_ROOM_FACILITIES,
+    services: partial.services?.length
+      ? partial.services
+      : defaults.services?.length
+        ? defaults.services
+        : DEFAULT_ROOM_SERVICES,
+    nearbyAttractions: partial.nearbyAttractions?.length
+      ? partial.nearbyAttractions
+      : defaults.nearbyAttractions?.length
+        ? defaults.nearbyAttractions
+        : DEFAULT_NEARBY_ATTRACTIONS,
     checkInTime: partial.checkInTime ?? defaults.checkInTime ?? "2:00 PM",
     checkOutTime: partial.checkOutTime ?? defaults.checkOutTime ?? "12:00 PM",
     cancellationLabel:
@@ -111,14 +143,9 @@ export function enrichRoom(defaults: Room, partial: Partial<Room>): Room {
         partial.seo?.canonical ||
         defaults.seo?.canonical ||
         `/rooms/${partial.slug?.trim() || defaults.slug || merged.id}`,
-      ogImage:
-        partial.seo?.ogImage ||
-        defaults.seo?.ogImage ||
-        merged.imageSrc,
+      ogImage: partial.seo?.ogImage || defaults.seo?.ogImage || merged.imageSrc,
       twitterImage:
-        partial.seo?.twitterImage ||
-        defaults.seo?.twitterImage ||
-        merged.imageSrc,
+        partial.seo?.twitterImage || defaults.seo?.twitterImage || merged.imageSrc,
       altText:
         partial.seo?.altText ||
         defaults.seo?.altText ||
@@ -126,3 +153,5 @@ export function enrichRoom(defaults: Room, partial: Partial<Room>): Room {
     },
   };
 }
+
+export { getRoomOccupancyPolicy };
