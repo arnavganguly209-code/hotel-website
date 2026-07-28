@@ -4,17 +4,18 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { usePerformanceSettings } from "@/components/shared/PerformanceProvider";
 
-const POLL_MS = 8_000;
+const POLL_MS = 15_000;
 
 /**
  * Keeps open public tabs in sync with Orbit mediaRevision.
- * When Orbit uploads/replaces/deletes (revision bumps), refreshes RSC tree
- * so deleted media never sticks in an open tab.
+ * - Updates revision in context immediately (cache-bust query strings).
+ * - Soft-refreshes RSC only when the revision actually changed (media path edits).
  */
 export function MediaLiveSync() {
   const router = useRouter();
   const perf = usePerformanceSettings();
   const known = useRef(perf.mediaRevision || "");
+  const setMediaRevision = perf.setMediaRevision;
 
   useEffect(() => {
     known.current = perf.mediaRevision || "";
@@ -41,6 +42,8 @@ export function MediaLiveSync() {
         const next = String(data.mediaRevision || "");
         if (next && next !== known.current) {
           known.current = next;
+          setMediaRevision?.(next);
+          // Soft RSC refresh so deleted/replaced Orbit paths update in props.
           router.refresh();
         }
       } catch {
@@ -64,7 +67,7 @@ export function MediaLiveSync() {
       window.removeEventListener("focus", onVisible);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [router]);
+  }, [router, setMediaRevision]);
 
   return null;
 }

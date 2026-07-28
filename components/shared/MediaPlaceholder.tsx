@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { cn } from "@/lib/utils";
+import { hasMediaSrc } from "@/lib/cms/media-url";
 
 interface MediaPlaceholderProps {
   src?: string;
@@ -43,19 +43,12 @@ export function MediaPlaceholder({
   className,
   priority = false,
   hoverScale = true,
-  fadeIn,
+  fadeIn = false,
 }: MediaPlaceholderProps) {
-  const [error, setError] = useState(false);
-  const showImage = src && !error;
+  const showImage = hasMediaSrc(src);
 
   return (
-    <div
-      className={cn(
-        "relative overflow-hidden",
-        aspectClasses[aspect],
-        className
-      )}
-    >
+    <div className={cn("relative overflow-hidden", aspectClasses[aspect], className)}>
       {showImage ? (
         <motion.div
           className="relative h-full w-full"
@@ -63,13 +56,12 @@ export function MediaPlaceholder({
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
           <SafeImage
-            src={src}
+            src={src!}
             alt={alt}
             fill
             priority={priority}
             fadeIn={fadeIn}
             className="object-cover"
-            onError={() => setError(true)}
           />
         </motion.div>
       ) : (
@@ -80,7 +72,7 @@ export function MediaPlaceholder({
           )}
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(198,169,114,0.12)_0%,transparent_70%)]" />
-          <div className="relative text-center px-6">
+          <div className="relative px-6 text-center">
             <div className="mx-auto mb-3 h-px w-12 bg-luxury-gold/50" />
             <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-luxury-gold/80">
               {label || alt}

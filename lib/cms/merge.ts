@@ -484,7 +484,7 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       lazyLoadImages: partial.performanceSettings?.lazyLoadImages !== false,
       reduceMotionOnMobile: partial.performanceSettings?.reduceMotionOnMobile !== false,
       pwaEnabled: partial.performanceSettings?.pwaEnabled !== false,
-      imageFadeIn: partial.performanceSettings?.imageFadeIn !== false,
+      imageFadeIn: partial.performanceSettings?.imageFadeIn === true,
       cacheStaticAssets: partial.performanceSettings?.cacheStaticAssets !== false,
       mediaRevision: partial.performanceSettings?.mediaRevision ?? "",
     },

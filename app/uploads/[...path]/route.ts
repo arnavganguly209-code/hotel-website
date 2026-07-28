@@ -82,8 +82,9 @@ async function handle(
   const headers = new Headers({
     "Content-Type": contentTypeFor(file.absolutePath),
     "Content-Length": String(file.size),
-    // Short TTL + ETag: deleted/replaced Orbit files must not stick for a year.
-    "Cache-Control": "public, max-age=60, must-revalidate",
+    // Soft TTL: browsers revalidate quickly; ?v=revision remains the hard bust.
+    // Deleted Orbit files must not stick; ETag still enables 304 when unchanged.
+    "Cache-Control": "public, max-age=30, stale-while-revalidate=60, must-revalidate",
     "Last-Modified": new Date(file.mtimeMs).toUTCString(),
     ETag: etag,
     "Accept-Ranges": "bytes",

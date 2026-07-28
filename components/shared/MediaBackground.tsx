@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { SafeVideo } from "@/components/shared/SafeVideo";
 import { hasMediaSrc } from "@/lib/cms/media-url";
+import { usePerformanceSettings } from "@/components/shared/PerformanceProvider";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -28,14 +29,30 @@ export function MediaBackground({
   parallax = false,
   priority = false,
 }: MediaBackgroundProps) {
+  const perf = usePerformanceSettings();
+  const revision = perf.mediaRevision || "";
   const [videoFailed, setVideoFailed] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setVideoFailed(false);
+    setImageFailed(false);
+  }, [videoSrc, imageSrc, type, revision]);
+
+  // Soft recover sticky failures so Orbit media never stays blank.
+  useEffect(() => {
+    if (!videoFailed && !imageFailed) return;
+    const id = window.setTimeout(() => {
+      setVideoFailed(false);
+      setImageFailed(false);
+    }, 3500);
+    return () => window.clearTimeout(id);
+  }, [videoFailed, imageFailed]);
 
   const hasVideo = type === "video" && hasMediaSrc(videoSrc);
   const hasImage = hasMediaSrc(imageSrc);
   const showVideo = hasVideo && !videoFailed;
-  // Video failure may fall back to poster/image when Orbit still has one — never to demo assets.
-  const showImage = hasImage && !imageFailed && (type === "image" || videoFailed);
+  const showImage = hasImage && !imageFailed && (type === "image" || videoFailed || !hasVideo);
 
   const overlayClass = {
     dark: "bg-gradient-to-b from-luxury-charcoal/70 via-luxury-charcoal/50 to-luxury-charcoal/80",
@@ -53,23 +70,26 @@ export function MediaBackground({
           preload={priority ? "auto" : "metadata"}
           onError={() => setVideoFailed(true)}
         />
-      ) : showImage ? (
+      ) : null}
+      {showImage ? (
         <SafeImage
           src={imageSrc!}
           alt=""
           fill
           priority={priority}
+          fadeIn={false}
           objectFit="cover"
           className="object-cover"
           onError={() => setImageFailed(true)}
           sizes="100vw"
         />
-      ) : (
+      ) : null}
+      {!showVideo && !showImage ? (
         <div
           className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_30%,rgba(198,169,114,0.15)_0%,transparent_50%),radial-gradient(ellipse_at_80%_70%,rgba(214,185,140,0.1)_0%,transparent_50%),linear-gradient(160deg,#1a1a1a_0%,#2d2a26_40%,#1a1816_100%)]"
           aria-hidden
         />
-      )}
+      ) : null}
 
       <div className={cn("absolute inset-0", overlayClass)} />
 

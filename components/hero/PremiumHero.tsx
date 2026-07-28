@@ -31,6 +31,7 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const perf = usePerformanceSettings();
   const revision = perf.mediaRevision || "";
   const [videoFailed, setVideoFailed] = useState(false);
+  const [videoAttempt, setVideoAttempt] = useState(0);
 
   const imageSrc = (hero.image?.src || hero.imageSrc || "").trim();
   const videoSrc = (hero.videoSrc || "").trim();
@@ -63,12 +64,20 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
 
   useEffect(() => {
     setVideoFailed(false);
-    const video = videoRef.current;
-    if (!video || mode !== "video" || !activeVideoUrl) return;
+    setVideoAttempt(0);
+  }, [activeMediaKey]);
 
-    // Force a fresh load whenever Orbit revises the asset.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || mode !== "video" || !activeVideoUrl || videoFailed) return;
+
+    const url =
+      videoAttempt > 0
+        ? `${activeVideoUrl}${activeVideoUrl.includes("?") ? "&" : "?"}r=${videoAttempt}`
+        : activeVideoUrl;
+
     try {
-      video.setAttribute("src", activeVideoUrl);
+      video.setAttribute("src", url);
       video.load();
       const play = video.play();
       if (play && typeof play.catch === "function") {
@@ -77,7 +86,17 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
     } catch {
       /* ignore abort while swapping Orbit media */
     }
-  }, [activeMediaKey, mode, activeVideoUrl]);
+  }, [activeMediaKey, mode, activeVideoUrl, videoAttempt, videoFailed]);
+
+  // Soft recover hero video forever while Orbit still has a video src.
+  useEffect(() => {
+    if (!videoFailed || mode !== "video" || !activeVideoUrl) return;
+    const id = window.setTimeout(() => {
+      setVideoFailed(false);
+      setVideoAttempt((n) => n + 1);
+    }, 2800);
+    return () => window.clearTimeout(id);
+  }, [videoFailed, mode, activeVideoUrl]);
 
   const overlayOpacity = Math.min(Math.max(hero.overlayOpacity ?? 0.18, 0), 0.85);
   const overlayColor = hero.overlayColor || "#000000";
@@ -133,8 +152,12 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
             {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
             <video
               ref={videoRef}
-              key={activeVideoUrl}
-              src={activeVideoUrl}
+              key={`${activeVideoUrl}-${videoAttempt}`}
+              src={
+                videoAttempt > 0
+                  ? `${activeVideoUrl}${activeVideoUrl.includes("?") ? "&" : "?"}r=${videoAttempt}`
+                  : activeVideoUrl
+              }
               autoPlay={hero.videoAutoplay !== false}
               loop={hero.videoLoop !== false}
               muted={hero.videoMuted !== false}
@@ -147,7 +170,14 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
               onError={() => setVideoFailed(true)}
               {...({ fetchPriority: "high" } as Record<string, string>)}
             >
-              <source src={activeVideoUrl} type={videoMime(videoSrc)} />
+              <source
+                src={
+                  videoAttempt > 0
+                    ? `${activeVideoUrl}${activeVideoUrl.includes("?") ? "&" : "?"}r=${videoAttempt}`
+                    : activeVideoUrl
+                }
+                type={videoMime(videoSrc)}
+              />
             </video>
           </>
         )

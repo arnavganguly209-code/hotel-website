@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { mediaUrl, hasMediaSrc } from "@/lib/cms/media-url";
+import { mediaUrl, hasMediaSrc, stripMediaQuery } from "@/lib/cms/media-url";
 import { usePerformanceSettings } from "@/components/shared/PerformanceProvider";
 
 interface SafeImageProps {
@@ -27,14 +27,15 @@ interface SafeImageProps {
   skeleton?: boolean;
 }
 
-const MAX_RETRIES = 4;
+const MAX_RETRIES = 6;
+const RECOVER_MS = 2500;
 
 /**
- * Enterprise-stable local image for Hostinger VPS.
- * - Always cache-busts with Orbit mediaRevision
- * - Retries failed loads automatically
- * - Soft skeleton while loading; never flashes broken icons
- * - Empty src → renders nothing (no demo fallback)
+ * Enterprise-stable local image for production.
+ * - Cache-busts with Orbit mediaRevision
+ * - Detects browser-cached loads (img.complete) so opacity never sticks at 0
+ * - Retries failures with backoff, then soft-recovers forever while src exists
+ * - Never shows broken-image icons; empty Orbit src renders nothing
  */
 export function SafeImage({
   src,
@@ -54,52 +55,100 @@ export function SafeImage({
 }: SafeImageProps) {
   const perf = usePerformanceSettings();
   const revision = perf.mediaRevision || "";
+  const pathKey = stripMediaQuery(src);
   const resolved = hasMediaSrc(src) ? mediaUrl(src, revision || undefined) : "";
   const fallback =
     hasMediaSrc(fallbackSrc) && fallbackSrc !== src
       ? mediaUrl(fallbackSrc, revision || undefined)
       : "";
 
+  const imgRef = useRef<HTMLImageElement>(null);
+  const genRef = useRef(0);
+  const timersRef = useRef<number[]>([]);
+
   const [attempt, setAttempt] = useState(0);
   const [retryToken, setRetryToken] = useState(0);
   const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
 
-  // Reset when Orbit src or revision changes (upload/replace/delete)
+  const clearTimers = useCallback(() => {
+    for (const id of timersRef.current) window.clearTimeout(id);
+    timersRef.current = [];
+  }, []);
+
+  const syncLoadedFromDom = useCallback(() => {
+    const el = imgRef.current;
+    if (el && el.complete && el.naturalWidth > 0) {
+      setLoaded(true);
+      return true;
+    }
+    return false;
+  }, []);
+
+  // Path change = new asset. Revision-only change keeps visibility if already painted.
   useEffect(() => {
+    genRef.current += 1;
+    clearTimers();
     setAttempt(0);
     setRetryToken(0);
     setLoaded(false);
-    setFailed(false);
-  }, [resolved, revision]);
+    const raf = window.requestAnimationFrame(() => {
+      syncLoadedFromDom();
+    });
+    return () => {
+      window.cancelAnimationFrame(raf);
+      clearTimers();
+    };
+  }, [pathKey, clearTimers, syncLoadedFromDom]);
 
-  const enableFade = fadeIn ?? perf.imageFadeIn !== false;
+  // Revision / URL query change — check complete immediately (cached loads often skip onLoad).
+  useEffect(() => {
+    const raf = window.requestAnimationFrame(() => {
+      syncLoadedFromDom();
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, [resolved, revision, retryToken, attempt, syncLoadedFromDom]);
+
+  const enableFade = fadeIn ?? false;
   const lazy = perf.lazyLoadImages !== false;
   const showSkeleton = skeleton ?? !priority;
 
   const useFallback = attempt >= 2 && Boolean(fallback);
   const baseSrc = useFallback ? fallback : resolved;
   const displaySrc =
-    baseSrc && attempt > 0 && attempt < MAX_RETRIES
+    baseSrc && attempt > 0
       ? `${baseSrc}${baseSrc.includes("?") ? "&" : "?"}r=${retryToken}`
       : baseSrc;
 
+  const handleLoad = useCallback(() => {
+    setLoaded(true);
+  }, []);
+
   const handleError = useCallback(() => {
+    const gen = genRef.current;
     setLoaded(false);
+
     if (attempt + 1 >= MAX_RETRIES) {
-      setFailed(true);
       onError?.();
+      // Soft recover forever — Orbit media must reappear after transient failures.
+      const id = window.setTimeout(() => {
+        if (genRef.current !== gen) return;
+        setAttempt(0);
+        setRetryToken(Date.now());
+      }, RECOVER_MS);
+      timersRef.current.push(id);
       return;
     }
-    // Exponential backoff: 200ms, 400ms, 800ms…
-    const delay = Math.min(200 * 2 ** attempt, 1600);
-    window.setTimeout(() => {
+
+    const delay = Math.min(200 * 2 ** attempt, 2000);
+    const id = window.setTimeout(() => {
+      if (genRef.current !== gen) return;
       setAttempt((a) => a + 1);
       setRetryToken(Date.now());
     }, delay);
+    timersRef.current.push(id);
   }, [attempt, onError]);
 
-  if (!resolved || failed || !displaySrc) {
+  if (!resolved || !displaySrc) {
     return null;
   }
 
@@ -110,7 +159,7 @@ export function SafeImage({
           aria-hidden
           className={cn(
             "pointer-events-none bg-gradient-to-br from-[#e8dfd0]/40 via-[#d4c4a8]/25 to-[#c9b896]/35 animate-pulse",
-            fill ? "absolute inset-0" : "absolute inset-0",
+            "absolute inset-0",
             className
           )}
           style={fill ? undefined : { width, height }}
@@ -118,7 +167,8 @@ export function SafeImage({
       ) : null}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        key={`${displaySrc}-${attempt}`}
+        ref={imgRef}
+        key={`${pathKey}-${attempt}-${retryToken || "0"}`}
         src={displaySrc}
         alt={alt}
         width={fill ? undefined : width}
@@ -133,6 +183,7 @@ export function SafeImage({
           objectFit === "cover" && "object-cover object-center",
           enableFade && "transition-opacity duration-500 ease-out",
           enableFade && (loaded || priority ? "opacity-100" : "opacity-0"),
+          !enableFade && "opacity-100",
           className
         )}
         style={{
@@ -146,7 +197,7 @@ export function SafeImage({
             : null),
           ...style,
         }}
-        onLoad={() => setLoaded(true)}
+        onLoad={handleLoad}
         onError={handleError}
       />
     </>

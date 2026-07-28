@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -87,17 +87,30 @@ export function LuxuryMediaFrame({
 }: LuxuryMediaFrameProps) {
   const [imageError, setImageError] = useState(false);
   const [videoError, setVideoError] = useState(false);
-
-  const showVideo = media.type === "video" && hasMediaSrc(media.videoSrc) && !videoError;
   const imageSrc = media.imageSrc || "";
-  const showImage = !showVideo && hasMediaSrc(imageSrc) && !imageError;
+  const videoSrc = media.videoSrc || "";
+
+  // Clear sticky errors so SoftImage/SafeVideo soft-recovery can remount.
+  useEffect(() => {
+    setImageError(false);
+    setVideoError(false);
+    const id = window.setInterval(() => {
+      setImageError(false);
+      setVideoError(false);
+    }, 4000);
+    return () => window.clearInterval(id);
+  }, [imageSrc, videoSrc, media.type]);
+
+  const preferVideo = media.type === "video" && hasMediaSrc(videoSrc) && !videoError;
+  const showImage = hasMediaSrc(imageSrc) && (!preferVideo || videoError) && !imageError;
+  const showVideo = preferVideo;
 
   const frame = (
     <motion.div
-      initial={{ opacity: 0, y: 32 }}
+      initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 1.1, ease: luxuryEase }}
+      viewport={{ once: true, amount: 0.05, margin: "0px" }}
+      transition={{ duration: 0.9, ease: luxuryEase }}
       className={cn(
         "group relative overflow-hidden border border-white/65 shadow-float",
         aspectClass,
@@ -111,25 +124,28 @@ export function LuxuryMediaFrame({
     >
       {showVideo ? (
         <SafeVideo
-          src={media.videoSrc!}
+          src={videoSrc}
           poster={media.poster}
           className="absolute inset-0"
           preload={priority ? "auto" : "metadata"}
           onError={() => setVideoError(true)}
         />
-      ) : showImage ? (
+      ) : null}
+      {showImage ? (
         <SafeImage
           src={imageSrc}
           alt={media.alt}
           fill
           priority={priority}
+          fadeIn={false}
           objectFit="cover"
           className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
           onError={() => setImageError(true)}
         />
-      ) : (
+      ) : null}
+      {!showVideo && !showImage ? (
         <LuxuryPlaceholder label={label || media.caption || media.alt || "Premium Media"} />
-      )}
+      ) : null}
 
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-luxury-forest/25 via-transparent to-white/10" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.12)_0%,transparent_40%,rgba(201,164,76,0.06)_100%)]" />

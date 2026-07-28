@@ -3,6 +3,7 @@ import { isAuthenticated } from "@/lib/cms/auth";
 import { verifyAllPaymentLogos } from "@/lib/cms/payment-logo-pipeline";
 import { getContent, saveContent } from "@/lib/cms/store";
 import { revalidateSiteContent } from "@/lib/cms/revalidate";
+import { mediaFingerprint } from "@/lib/cms/media-fingerprint";
 import type { SiteContent } from "@/lib/cms/types";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +44,24 @@ export async function PUT(request: Request) {
       );
     }
 
-    const mediaRevision = String(Date.now());
+    // Bump mediaRevision ONLY when media paths actually change.
+    // Text-only Orbit saves must not force every public tab to remount images.
+    let previousFp = "";
+    let previousRevision = content.performanceSettings?.mediaRevision || "";
+    try {
+      const previous = await getContent();
+      previousFp = mediaFingerprint(previous);
+      previousRevision = previous.performanceSettings?.mediaRevision || previousRevision;
+    } catch {
+      /* first save / read failure — bump revision */
+    }
+
+    const nextFp = mediaFingerprint(content);
+    const mediaChanged = !previousFp || previousFp !== nextFp;
+    const mediaRevision = mediaChanged
+      ? String(Date.now())
+      : previousRevision || String(Date.now());
+
     await saveContent({
       ...content,
       performanceSettings: {
@@ -52,12 +70,13 @@ export async function PUT(request: Request) {
       },
     });
     revalidateSiteContent();
-    console.info("[CMS] Database updated", { mediaRevision });
+    console.info("[CMS] Database updated", { mediaRevision, mediaChanged });
 
     return NextResponse.json({
       success: true,
       message: "Content saved successfully",
       mediaRevision,
+      mediaChanged,
       paymentLogos: content.footer?.paymentLogos ?? null,
     });
   } catch (error) {

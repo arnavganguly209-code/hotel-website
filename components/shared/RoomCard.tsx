@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Bed, Maximize2, Users } from "lucide-react";
 import { SafeImage } from "@/components/shared/SafeImage";
+import { hasMediaSrc } from "@/lib/cms/media-url";
 import { roomDetailPath } from "@/lib/navigation";
 import { luxuryEase } from "@/lib/animations";
 import type { SiteContent } from "@/lib/cms/types";
@@ -22,8 +22,8 @@ export function RoomCard({
   goldColor = "#C5A059",
   headingColor = "#062C24",
 }: RoomCardProps) {
-  const [imageError, setImageError] = useState(false);
   const explore = room.exploreText || "Explore Room";
+  const hasImage = hasMediaSrc(room.imageSrc);
 
   return (
     <motion.article
@@ -43,15 +43,15 @@ export function RoomCard({
       }}
     >
       <div className={`relative ${IMAGE_HEIGHT} w-full shrink-0 overflow-hidden`}>
-        {room.imageSrc && !imageError ? (
+        {hasImage ? (
           <SafeImage
             src={room.imageSrc}
             alt={room.name}
             fill
+            fadeIn={false}
             objectFit="cover"
             className="object-cover object-center transition-transform duration-[1.1s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
             sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 280px"
-            onError={() => setImageError(true)}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-[#EFE8DA]">

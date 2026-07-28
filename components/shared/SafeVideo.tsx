@@ -28,11 +28,12 @@ function videoMime(src: string) {
   return "video/mp4";
 }
 
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 5;
+const RECOVER_MS = 3000;
 
 /**
  * Orbit-aware video: cache-busts with mediaRevision, retries on failure,
- * never keeps playing a deleted asset after revision/src clears.
+ * soft-recovers forever while src exists, never permanently blanks Orbit media.
  */
 export function SafeVideo({
   src,
@@ -51,56 +52,82 @@ export function SafeVideo({
 }: SafeVideoProps) {
   const perf = usePerformanceSettings();
   const revision = perf.mediaRevision || "";
+  const pathKey = stripMediaQuery(src);
   const resolved = hasMediaSrc(src) ? mediaUrl(src, revision || undefined) : "";
+  // Poster only when Orbit provides one — never invent demo posters.
   const posterUrl = hasMediaSrc(poster) ? mediaUrl(poster, revision || undefined) : "";
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const genRef = useRef(0);
+  const timersRef = useRef<number[]>([]);
+
   const [attempt, setAttempt] = useState(0);
   const [retryToken, setRetryToken] = useState(0);
-  const [failed, setFailed] = useState(false);
+
+  const clearTimers = useCallback(() => {
+    for (const id of timersRef.current) window.clearTimeout(id);
+    timersRef.current = [];
+  }, []);
 
   useEffect(() => {
+    genRef.current += 1;
+    clearTimers();
     setAttempt(0);
     setRetryToken(0);
-    setFailed(false);
-    const el = videoRef.current;
-    if (el) {
-      try {
-        el.pause();
-        el.removeAttribute("src");
-        el.load();
-      } catch {
-        /* ignore */
-      }
-    }
-  }, [resolved, revision]);
+    return clearTimers;
+  }, [pathKey, clearTimers]);
 
   const displaySrc =
-    resolved && attempt > 0 && attempt < MAX_RETRIES
+    resolved && attempt > 0
       ? `${resolved}${resolved.includes("?") ? "&" : "?"}r=${retryToken}`
       : resolved;
 
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el || !displaySrc) return;
+    try {
+      if (el.getAttribute("src") !== displaySrc) {
+        el.setAttribute("src", displaySrc);
+        el.load();
+      }
+      if (autoPlay) {
+        const play = el.play();
+        if (play && typeof play.catch === "function") play.catch(() => undefined);
+      }
+    } catch {
+      /* ignore abort while swapping */
+    }
+  }, [displaySrc, autoPlay, attempt, retryToken]);
+
   const handleError = useCallback(() => {
+    const gen = genRef.current;
     if (attempt + 1 >= MAX_RETRIES) {
-      setFailed(true);
       onError?.();
+      const id = window.setTimeout(() => {
+        if (genRef.current !== gen) return;
+        setAttempt(0);
+        setRetryToken(Date.now());
+      }, RECOVER_MS);
+      timersRef.current.push(id);
       return;
     }
     const delay = Math.min(250 * 2 ** attempt, 2000);
-    window.setTimeout(() => {
+    const id = window.setTimeout(() => {
+      if (genRef.current !== gen) return;
       setAttempt((a) => a + 1);
       setRetryToken(Date.now());
     }, delay);
+    timersRef.current.push(id);
   }, [attempt, onError]);
 
-  if (!resolved || failed || !displaySrc) {
+  if (!resolved || !displaySrc) {
     return null;
   }
 
   return (
     <video
       ref={videoRef}
-      key={`${displaySrc}-${attempt}`}
+      key={`${pathKey}-${attempt}-${retryToken || "0"}`}
       autoPlay={autoPlay}
       muted={muted}
       loop={loop}
@@ -108,7 +135,10 @@ export function SafeVideo({
       controls={controls}
       preload={preload}
       poster={posterUrl || undefined}
-      className={cn(controls ? "max-h-[70vh] w-full object-contain" : "h-full w-full object-cover", className)}
+      className={cn(
+        controls ? "max-h-[70vh] w-full object-contain" : "h-full w-full object-cover",
+        className
+      )}
       style={style}
       aria-label={ariaLabel}
       controlsList={controls ? "nodownload" : undefined}

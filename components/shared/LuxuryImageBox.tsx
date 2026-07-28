@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { cn } from "@/lib/utils";
+import { hasMediaSrc } from "@/lib/cms/media-url";
 
 interface LuxuryImageBoxProps {
   src?: string;
@@ -30,14 +30,13 @@ export function LuxuryImageBox({
   variant = "dining",
   className,
 }: LuxuryImageBoxProps) {
-  const [error, setError] = useState(false);
-  const showImage = src && !error;
+  const showImage = hasMediaSrc(src);
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.96 }}
+      initial={{ opacity: 0, scale: 0.98 }}
       whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
+      viewport={{ once: true, amount: 0.05 }}
       transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
         "group relative aspect-[4/3] overflow-hidden border border-luxury-gold/20 shadow-luxury-lg lg:aspect-auto lg:min-h-[480px]",
@@ -50,13 +49,7 @@ export function LuxuryImageBox({
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
-          <SafeImage
-            src={src}
-            alt={alt}
-            fill
-            className="object-cover"
-            onError={() => setError(true)}
-          />
+          <SafeImage src={src!} alt={alt} fill fadeIn={false} className="object-cover" />
         </motion.div>
       ) : (
         <div
@@ -89,7 +82,7 @@ export function LuxuryImageBox({
             />
           ))}
 
-          <div className="relative z-10 text-center px-8">
+          <div className="relative z-10 px-8 text-center">
             <motion.div
               className="mx-auto mb-4 h-px w-16 bg-gradient-to-r from-transparent via-luxury-gold to-transparent"
               animate={{ scaleX: [0.5, 1, 0.5] }}
@@ -98,9 +91,7 @@ export function LuxuryImageBox({
             <p className="font-display text-xs font-medium uppercase tracking-[0.4em] text-luxury-gold-light">
               {label || alt}
             </p>
-            <p className="mt-3 font-accent text-lg italic text-white/40">
-              Luxury Experience
-            </p>
+            <p className="mt-3 font-accent text-lg italic text-white/40">Luxury Experience</p>
           </div>
 
           <div className="absolute inset-0 border border-luxury-gold/10 transition-colors duration-500 group-hover:border-luxury-gold/30" />
