@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Phone, Mail, Clock } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MotionSection } from "@/components/shared/MotionSection";
@@ -14,6 +15,36 @@ interface ContactHomeSectionProps {
 }
 
 export function ContactHomeSection({ contact, hotel }: ContactHomeSectionProps) {
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (status === "loading") return;
+    setStatus("loading");
+    setError("");
+
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    fd.set("bookingType", "General Inquiry");
+    fd.set("consent", "true");
+    fd.set("sourcePage", typeof window !== "undefined" ? window.location.href : "/#contact");
+    if (!fd.get("preferredContact")) fd.set("preferredContact", "Email");
+
+    try {
+      const res = await fetch("/api/contact-enquiries", { method: "POST", body: fd });
+      const data = (await res.json()) as { success?: boolean; error?: string };
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Unable to send your message. Please try again.");
+      }
+      form.reset();
+      setStatus("success");
+    } catch (err) {
+      setStatus("error");
+      setError(err instanceof Error ? err.message : "Unable to send your message. Please try again.");
+    }
+  }
+
   return (
     <MotionSection
       id="contact"
@@ -65,27 +96,63 @@ export function ContactHomeSection({ contact, hotel }: ContactHomeSectionProps) 
             </ul>
           </motion.div>
 
-          <motion.form
-            variants={fadeUp}
-            onSubmit={(e) => e.preventDefault()}
-            className="border border-luxury-gold/10 bg-luxury-cream/40 p-8 md:p-10"
-          >
-            <h3 className="font-display text-xl text-luxury-charcoal">Send a Message</h3>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <Input placeholder="Your Name" aria-label="Name" />
-              <Input type="email" placeholder="Email Address" aria-label="Email" />
-            </div>
-            <Input className="mt-4" placeholder="Subject" aria-label="Subject" />
-            <textarea
-              placeholder="Your Message"
-              rows={4}
-              aria-label="Message"
-              className="mt-4 w-full resize-none border border-luxury-gold/15 bg-white px-4 py-3 text-sm outline-none focus:border-luxury-gold/40"
-            />
-            <Button type="submit" variant="gold" className="mt-6 uppercase tracking-wider">
-              Send Message
-            </Button>
-          </motion.form>
+          <motion.div variants={fadeUp} className="border border-luxury-gold/10 bg-luxury-cream/40 p-8 md:p-10">
+            {status === "success" ? (
+              <div>
+                <h3 className="font-display text-xl text-luxury-charcoal">Thank you</h3>
+                <p className="mt-3 text-sm leading-relaxed text-luxury-muted">
+                  Thank you. Your message has been received successfully. Our team will contact you shortly.
+                </p>
+                <Button
+                  type="button"
+                  variant="gold"
+                  className="mt-6 uppercase tracking-wider"
+                  onClick={() => setStatus("idle")}
+                >
+                  Send Another Message
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} noValidate={false}>
+                <h3 className="font-display text-xl text-luxury-charcoal">Send a Message</h3>
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <Input name="fullName" required placeholder="Your Name" aria-label="Name" autoComplete="name" />
+                  <Input
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="Email Address"
+                    aria-label="Email"
+                    autoComplete="email"
+                  />
+                </div>
+                <Input className="mt-4" name="phone" type="tel" placeholder="Phone (optional)" aria-label="Phone" autoComplete="tel" />
+                <Input className="mt-4" name="subject" placeholder="Subject" aria-label="Subject" />
+                <textarea
+                  name="message"
+                  required
+                  placeholder="Your Message"
+                  rows={4}
+                  aria-label="Message"
+                  className="mt-4 w-full resize-none border border-luxury-gold/15 bg-white px-4 py-3 text-sm outline-none focus:border-luxury-gold/40"
+                />
+                {status === "error" ? (
+                  <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+                    {error}
+                  </p>
+                ) : null}
+                <Button
+                  type="submit"
+                  variant="gold"
+                  disabled={status === "loading"}
+                  className="mt-6 gap-2 uppercase tracking-wider disabled:opacity-60"
+                >
+                  {status === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  Send Message
+                </Button>
+              </form>
+            )}
+          </motion.div>
         </div>
       </div>
     </MotionSection>

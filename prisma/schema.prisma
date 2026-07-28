@@ -117,12 +117,25 @@ model ContactEnquiry {
   budget               String    @default("")
   specialRequest       String    @default("")
   message              String    @default("")
+  subject              String    @default("")
   attachmentUrl        String    @default("")
   consent              Boolean   @default(false)
-  status               String    @default("new")
+  /// inbox | archived | spam | trash
+  status               String    @default("inbox")
+  isRead               Boolean   @default(false)
+  starred              Boolean   @default(false)
+  replied              Boolean   @default(false)
+  sourcePage           String    @default("")
+  ipAddress            String    @default("")
+  userAgent            String    @default("")
   adminNotes           String    @default("")
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
+
+  @@index([status, createdAt])
+  @@index([isRead, createdAt])
+  @@index([starred])
+  @@index([email])
 }
 
 model DiningReservation {

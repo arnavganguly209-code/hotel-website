@@ -26,6 +26,7 @@ export function EventInquiryForm({
     setError("");
 
     const fd = new FormData(e.currentTarget);
+    const formEl = e.currentTarget;
 
     try {
       const res = await fetch("/api/event-inquiries", {
@@ -37,7 +38,7 @@ export function EventInquiryForm({
         throw new Error(data.error || "Submission failed");
       }
       setStatus("success");
-      e.currentTarget.reset();
+      formEl.reset();
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "Something went wrong");

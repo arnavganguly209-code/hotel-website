@@ -34,7 +34,7 @@ const NAV = [
   { href: "/admin/bookings/online", label: "Online Bookings", icon: ClipboardList },
   { href: "/admin/bookings/offline", label: "Offline Bookings", icon: Package },
   { href: "/admin/payments", label: "Payments", icon: CreditCard },
-  { href: "/admin/inquiries/contact", label: "Contact Inquiries", icon: MessageSquare },
+  { href: "/admin/inquiries/contact", label: "Contact Messages", icon: MessageSquare },
   { href: "/admin/inquiries/restaurant", label: "Restaurant", icon: Utensils },
   { href: "/admin/inquiries/spa", label: "Spa", icon: Sparkles },
   { href: "/admin/inquiries/meetings", label: "Meetings", icon: Users },

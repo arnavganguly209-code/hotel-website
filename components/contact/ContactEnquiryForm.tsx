@@ -19,9 +19,12 @@ export function ContactEnquiryForm({ form }: ContactEnquiryFormProps) {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (status === "loading") return;
     setStatus("loading");
     setError("");
-    const fd = new FormData(e.currentTarget);
+    const formEl = e.currentTarget;
+    const fd = new FormData(formEl);
+    fd.set("sourcePage", typeof window !== "undefined" ? window.location.href : "/contact");
 
     try {
       const res = await fetch("/api/contact-enquiries", { method: "POST", body: fd });
@@ -29,8 +32,8 @@ export function ContactEnquiryForm({ form }: ContactEnquiryFormProps) {
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Submission failed");
       }
+      formEl.reset();
       setStatus("success");
-      e.currentTarget.reset();
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -44,7 +47,10 @@ export function ContactEnquiryForm({ form }: ContactEnquiryFormProps) {
         className="rounded-2xl border border-[#D4AF37]/35 bg-[#FBF8F1] p-8 shadow-[0_24px_52px_rgba(15,42,34,0.1)] md:p-10"
       >
         <h3 className="font-display text-2xl font-light text-[#062C24]">{form.successTitle}</h3>
-        <p className="mt-3 font-body text-sm leading-relaxed text-[#5A635C]">{form.successMessage}</p>
+        <p className="mt-3 font-body text-sm leading-relaxed text-[#5A635C]">
+          {form.successMessage ||
+            "Thank you. Your message has been received successfully. Our team will contact you shortly."}
+        </p>
         <button
           type="button"
           onClick={() => setStatus("idle")}
@@ -77,6 +83,9 @@ export function ContactEnquiryForm({ form }: ContactEnquiryFormProps) {
           </Field>
           <Field label="Country">
             <input name="country" className={inputClass} autoComplete="country-name" />
+          </Field>
+          <Field label="Subject">
+            <input name="subject" className={inputClass} />
           </Field>
           <Field label="Arrival Date">
             <input name="arrivalDate" type="date" className={inputClass} />
@@ -145,7 +154,7 @@ export function ContactEnquiryForm({ form }: ContactEnquiryFormProps) {
         </label>
 
         {status === "error" ? (
-          <p className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
             {error}
           </p>
         ) : null}

@@ -30,6 +30,7 @@ export function DiningReservationForm({
     setError("");
 
     const fd = new FormData(e.currentTarget);
+    const formEl = e.currentTarget;
 
     try {
       const res = await fetch("/api/dining-reservations", {
@@ -47,7 +48,7 @@ export function DiningReservationForm({
       setReference(data.reservation?.referenceNumber || "");
       setShowSuccess(true);
       setStatus("idle");
-      e.currentTarget.reset();
+      formEl.reset();
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "Something went wrong");

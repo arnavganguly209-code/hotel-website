@@ -28,7 +28,7 @@ interface ContactEnquiry {
   createdAt: string;
 }
 
-const STATUSES = ["new", "pending", "contacted", "completed", "archived"] as const;
+const STATUSES = ["inbox", "archived", "spam", "trash"] as const;
 
 export function ContactEnquiriesPanel() {
   const [inquiries, setInquiries] = useState<ContactEnquiry[]>([]);

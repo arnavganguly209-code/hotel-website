@@ -75,6 +75,7 @@ export async function GET(req: Request) {
     "Full Name",
     "Email",
     "Phone",
+    "Subject",
     "Country",
     "Booking Type",
     "Preferred Contact",
@@ -88,6 +89,10 @@ export async function GET(req: Request) {
     "Special Request",
     "Message",
     "Status",
+    "Read",
+    "Starred",
+    "Source Page",
+    "IP",
     "Created At",
   ];
 
@@ -97,6 +102,7 @@ export async function GET(req: Request) {
       item.fullName,
       item.email,
       item.phone,
+      item.subject,
       item.country,
       item.bookingType,
       item.preferredContact,
@@ -110,6 +116,10 @@ export async function GET(req: Request) {
       item.specialRequest,
       item.message,
       item.status,
+      item.isRead,
+      item.starred,
+      item.sourcePage,
+      item.ipAddress,
       item.createdAt.toISOString(),
     ]
       .map(csvEscape)

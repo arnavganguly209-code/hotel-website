@@ -16,6 +16,36 @@ const ALLOWED_ATTACHMENT_MIME = new Set([
   "image/webp",
 ]);
 
+const FOLDER_STATUSES = new Set(["inbox", "archived", "spam", "trash"]);
+
+/** Simple in-memory rate limit: max 8 posts / IP / 10 minutes. */
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+const RATE_MAX = 8;
+const rateMap = new Map<string, number[]>();
+
+function clientIp(req: Request): string {
+  const forwarded = req.headers.get("x-forwarded-for") || "";
+  const real = req.headers.get("x-real-ip") || "";
+  return (forwarded.split(",")[0] || real || "").trim().slice(0, 120);
+}
+
+function rateLimited(ip: string): boolean {
+  if (!ip) return false;
+  const now = Date.now();
+  const prev = (rateMap.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
+  if (prev.length >= RATE_MAX) {
+    rateMap.set(ip, prev);
+    return true;
+  }
+  prev.push(now);
+  rateMap.set(ip, prev);
+  return false;
+}
+
+function sanitizeText(value: string, max = 5000): string {
+  return value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "").trim().slice(0, max);
+}
+
 export async function GET(req: Request) {
   if (!(await isAuthenticated())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -31,13 +61,20 @@ export async function GET(req: Request) {
   const bookingType = searchParams.get("bookingType")?.trim();
   const from = searchParams.get("from")?.trim();
   const to = searchParams.get("to")?.trim();
+  const folder = searchParams.get("folder")?.trim();
+  const unread = searchParams.get("unread");
+  const starred = searchParams.get("starred");
 
   const inquiries = await db.contactEnquiry.findMany({
     orderBy: { createdAt: "desc" },
   });
 
   const filtered = inquiries.filter((item) => {
+    const itemFolder = FOLDER_STATUSES.has(item.status) ? item.status : "inbox";
+    if (folder && folder !== "all" && itemFolder !== folder) return false;
     if (status && status !== "all" && item.status !== status) return false;
+    if (unread === "1" && item.isRead) return false;
+    if (starred === "1" && !item.starred) return false;
     if (bookingType && bookingType !== "all" && item.bookingType !== bookingType) return false;
     if (from) {
       const fromDate = new Date(from);
@@ -49,7 +86,8 @@ export async function GET(req: Request) {
       if (item.createdAt > toDate) return false;
     }
     if (q) {
-      const hay = `${item.fullName} ${item.email} ${item.phone} ${item.bookingType}`.toLowerCase();
+      const hay =
+        `${item.fullName} ${item.email} ${item.phone} ${item.bookingType} ${item.subject} ${item.message}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -67,28 +105,53 @@ export async function POST(req: Request) {
       );
     }
 
+    const ip = clientIp(req);
+    if (rateLimited(ip)) {
+      return NextResponse.json(
+        { success: false, error: "Too many submissions. Please try again in a few minutes." },
+        { status: 429 }
+      );
+    }
+
     const formData = await req.formData();
-    const fullName = String(formData.get("fullName") || "").trim();
-    const email = String(formData.get("email") || "").trim();
-    const phone = String(formData.get("phone") || "").trim();
-    const country = String(formData.get("country") || "").trim();
+    const fullName = sanitizeText(String(formData.get("fullName") || ""), 200);
+    const email = sanitizeText(String(formData.get("email") || ""), 320).toLowerCase();
+    const phone = sanitizeText(String(formData.get("phone") || ""), 80);
+    const country = sanitizeText(String(formData.get("country") || ""), 120);
+    const subject = sanitizeText(String(formData.get("subject") || ""), 300);
     const arrivalDateRaw = String(formData.get("arrivalDate") || "").trim();
     const departureDateRaw = String(formData.get("departureDate") || "").trim();
     const guestsRaw = String(formData.get("guests") || "").trim();
     const adultsRaw = String(formData.get("adults") || "").trim();
     const childrenRaw = String(formData.get("children") || "").trim();
-    const roomPreference = String(formData.get("roomPreference") || "").trim();
-    const bookingType = String(formData.get("bookingType") || "General Inquiry").trim();
-    const preferredContact = String(formData.get("preferredContact") || "Email").trim();
-    const budget = String(formData.get("budget") || "").trim();
-    const specialRequest = String(formData.get("specialRequest") || "").trim();
-    const message = String(formData.get("message") || "").trim();
-    const consent = String(formData.get("consent") || "") === "on" || formData.get("consent") === "true";
+    const roomPreference = sanitizeText(String(formData.get("roomPreference") || ""), 200);
+    const bookingType = sanitizeText(
+      String(formData.get("bookingType") || "General Inquiry"),
+      120
+    ) || "General Inquiry";
+    const preferredContact = sanitizeText(
+      String(formData.get("preferredContact") || "Email"),
+      80
+    ) || "Email";
+    const budget = sanitizeText(String(formData.get("budget") || ""), 120);
+    const specialRequest = sanitizeText(String(formData.get("specialRequest") || ""), 2000);
+    const message = sanitizeText(String(formData.get("message") || ""), 8000);
+    const sourcePage = sanitizeText(String(formData.get("sourcePage") || ""), 500);
+    const consent =
+      String(formData.get("consent") || "") === "on" || formData.get("consent") === "true";
     const attachment = formData.get("attachment");
+    const userAgent = sanitizeText(req.headers.get("user-agent") || "", 500);
 
-    if (!fullName || !email || !bookingType) {
+    if (!fullName || !email) {
       return NextResponse.json(
-        { success: false, error: "Full name, email, and booking type are required." },
+        { success: false, error: "Full name and email are required." },
+        { status: 400 }
+      );
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        { success: false, error: "Please enter a valid email address." },
         { status: 400 }
       );
     }
@@ -96,6 +159,13 @@ export async function POST(req: Request) {
     if (!consent) {
       return NextResponse.json(
         { success: false, error: "Please accept the consent checkbox to continue." },
+        { status: 400 }
+      );
+    }
+
+    if (!message && !specialRequest && !subject) {
+      return NextResponse.json(
+        { success: false, error: "Please include a message or subject." },
         { status: 400 }
       );
     }
@@ -129,6 +199,7 @@ export async function POST(req: Request) {
         email,
         phone,
         country,
+        subject,
         arrivalDate: arrivalDateRaw ? new Date(arrivalDateRaw) : null,
         departureDate: departureDateRaw ? new Date(departureDateRaw) : null,
         guests: Number.isFinite(guests) ? guests : 1,
@@ -139,29 +210,41 @@ export async function POST(req: Request) {
         preferredContact,
         budget,
         specialRequest,
-        message,
+        message: message || subject,
         attachmentUrl,
         consent,
-        status: "new",
+        status: "inbox",
+        isRead: false,
+        starred: false,
+        replied: false,
+        sourcePage,
+        ipAddress: ip,
+        userAgent,
       },
     });
 
-    const content = await getContent();
-    const adminEmail = content.settings.bookingEmail || content.contactPage.email || content.hotel.email;
-
-    const mail = await sendContactEnquiryEmails(
-      {
-        id: inquiry.id,
-        fullName,
-        email,
-        phone,
-        bookingType,
-        message: message || specialRequest,
-        arrivalDate: arrivalDateRaw || null,
-        departureDate: departureDateRaw || null,
-      },
-      adminEmail
-    );
+    // Email is best-effort — never fail the submission if SMTP is down.
+    let mail = { guestSent: false, adminSent: false };
+    try {
+      const content = await getContent();
+      const adminEmail =
+        content.settings.bookingEmail || content.contactPage.email || content.hotel.email;
+      mail = await sendContactEnquiryEmails(
+        {
+          id: inquiry.id,
+          fullName,
+          email,
+          phone,
+          bookingType: subject ? `${bookingType} · ${subject}` : bookingType,
+          message: message || specialRequest || subject,
+          arrivalDate: arrivalDateRaw || null,
+          departureDate: departureDateRaw || null,
+        },
+        adminEmail
+      );
+    } catch (mailError) {
+      console.error("[ContactEnquiries] email failed (message still saved):", mailError);
+    }
 
     return NextResponse.json({
       success: true,
