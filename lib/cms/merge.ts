@@ -1824,8 +1824,13 @@ function mergeAboutPage(
       ...(partial.promise ?? {}),
       items: definedArray(partial.promise?.items, defaults.promise.items),
     },
-    cta: { ...defaults.cta, ...(partial.cta ?? {}) },
-    seo: { ...defaults.seo, ...(partial.seo ?? {}) },
+    cta: isLegacyLuxuryCopy
+      ? {
+          ...defaults.cta,
+          backgroundImage: partial.cta?.backgroundImage || defaults.cta.backgroundImage,
+        }
+      : { ...defaults.cta, ...(partial.cta ?? {}) },
+    seo: isLegacyLuxuryCopy ? defaults.seo : { ...defaults.seo, ...(partial.seo ?? {}) },
   };
 }
 
