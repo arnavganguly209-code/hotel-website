@@ -1020,6 +1020,42 @@ export interface SiteContent {
       secondaryHref: string;
       backgroundImage: string;
     };
+    diningExperience: {
+      eyebrow: string;
+      title: string;
+      content: string;
+      imageSrc: string;
+    };
+    spaWellness: {
+      eyebrow: string;
+      title: string;
+      content: string;
+      imageSrc: string;
+    };
+    transport: {
+      eyebrow: string;
+      title: string;
+      content: string;
+      note: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        title: string;
+        description: string;
+        icon: string;
+      }>;
+    };
+    promise: {
+      eyebrow: string;
+      title: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        title: string;
+      }>;
+    };
     seo: PageSeo & { keywords: string };
     /** @deprecated legacy — merged into story/philosophy/services/awards */
     history?: { title: string; content: string };

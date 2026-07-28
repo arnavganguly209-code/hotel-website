@@ -1687,12 +1687,21 @@ function mergeAboutPage(
     Boolean(heroPartial) &&
     !("breadcrumbHome" in (heroPartial || {})) &&
     (heroPartial?.title === "Our Story" || heroPartial?.subtitle === "About");
+  const isLegacyLuxuryCopy =
+    heroPartial?.title === "ABOUT HOTEL THAMEL PARK & SPA" ||
+    partial.story?.eyebrow === "Our Heritage" ||
+    partial.cta?.title === "Experience Luxury Hospitality in Kathmandu";
 
   return {
     ...defaults,
     ...partial,
     hero: isLegacyHero
       ? defaults.hero
+      : isLegacyLuxuryCopy
+        ? {
+            ...defaults.hero,
+            imageSrc: heroPartial?.imageSrc || defaults.hero.imageSrc,
+          }
       : {
           ...defaults.hero,
           ...(heroPartial ?? {}),
@@ -1704,13 +1713,18 @@ function mergeAboutPage(
               ? Number(heroPartial.overlayOpacity) || defaults.hero.overlayOpacity
               : defaults.hero.overlayOpacity,
         },
-    story: {
-      ...defaults.story,
-      ...(partial.story ?? {}),
-      ...(legacyHistory && !partial.story
-        ? { title: legacyHistory.title, content: legacyHistory.content }
-        : {}),
-    },
+    story: isLegacyLuxuryCopy
+      ? {
+          ...defaults.story,
+          imageSrc: partial.story?.imageSrc || defaults.story.imageSrc,
+        }
+      : {
+          ...defaults.story,
+          ...(partial.story ?? {}),
+          ...(legacyHistory && !partial.story
+            ? { title: legacyHistory.title, content: legacyHistory.content }
+            : {}),
+        },
     stats: definedArray(partial.stats, defaults.stats),
     philosophy: {
       ...defaults.philosophy,
@@ -1734,7 +1748,14 @@ function mergeAboutPage(
     whyChoose: {
       ...defaults.whyChoose,
       ...(partial.whyChoose ?? {}),
-      items: definedArray(partial.whyChoose?.items, defaults.whyChoose.items),
+      items: (() => {
+        const items = partial.whyChoose?.items;
+        const looksLegacy =
+          !items?.length ||
+          items.length !== 6 ||
+          items.some((item) => item.title === "Luxury Accommodation");
+        return looksLegacy ? defaults.whyChoose.items : definedArray(items, defaults.whyChoose.items);
+      })(),
     },
     discover: {
       ...defaults.discover,
@@ -1744,7 +1765,14 @@ function mergeAboutPage(
     services: {
       ...defaults.services,
       ...(partial.services ?? {}),
-      items: definedArray(partial.services?.items, defaults.services.items),
+      items: (() => {
+        const items = partial.services?.items;
+        const looksLegacy =
+          !items?.length ||
+          items.length < 20 ||
+          items.some((item) => item.title === "Luxury Rooms" && item.order === 1);
+        return looksLegacy ? defaults.services.items : definedArray(items, defaults.services.items);
+      })(),
     },
     team: {
       ...defaults.team,
@@ -1777,6 +1805,24 @@ function mergeAboutPage(
       ...defaults.galleryPreview,
       ...(partial.galleryPreview ?? {}),
       images: definedArray(partial.galleryPreview?.images, defaults.galleryPreview.images),
+    },
+    diningExperience: {
+      ...defaults.diningExperience,
+      ...(partial.diningExperience ?? {}),
+    },
+    spaWellness: {
+      ...defaults.spaWellness,
+      ...(partial.spaWellness ?? {}),
+    },
+    transport: {
+      ...defaults.transport,
+      ...(partial.transport ?? {}),
+      items: definedArray(partial.transport?.items, defaults.transport.items),
+    },
+    promise: {
+      ...defaults.promise,
+      ...(partial.promise ?? {}),
+      items: definedArray(partial.promise?.items, defaults.promise.items),
     },
     cta: { ...defaults.cta, ...(partial.cta ?? {}) },
     seo: { ...defaults.seo, ...(partial.seo ?? {}) },
