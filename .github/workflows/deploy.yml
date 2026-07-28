@@ -2,6 +2,7 @@
 # Target: https://hotel.theglobalorbit.com (/var/www/hotel-website)
 #
 # Required secrets: VPS_HOST, VPS_USER, VPS_PORT, VPS_SSH_KEY
+# No public deploy-beacon / deploy-log files are written or requested.
 
 name: Deploy to Hostinger VPS
 
@@ -63,38 +64,50 @@ jobs:
             cd "$APP_DIR" || exit 1
 
             mkdir -p public/uploads/general
-            BEACON="public/uploads/general/deploy-beacon.txt"
-            echo "beacon $(date -u +%Y-%m-%dT%H:%M:%SZ) sha=${GITHUB_SHA:-none} user=$(id -un) pwd=$(pwd)" > "$BEACON"
-            chmod ug+rw "$BEACON" || true
+
+            # Purge any historical public diagnostic files (never recreate)
+            rm -f public/uploads/general/deploy-beacon.txt \
+              public/uploads/general/deploy-log.txt \
+              public/__deploy-beacon.txt \
+              public/__deploy-status.json \
+              public/__db-migrate-status.json \
+              public/__db-migrate-log.txt \
+              2>/dev/null || true
 
             if [ ! -d .git ]; then
-              echo "ERROR: not a git repo" > "$BEACON"
+              echo "ERROR: not a git repo"
               exit 1
             fi
             if [ ! -f .env ]; then
-              echo "ERROR: .env missing" > "$BEACON"
+              echo "ERROR: .env missing"
               exit 1
             fi
 
             export PATH="/usr/local/bin:/usr/bin:/bin:${HOME}/.local/bin:${PATH:-}"
 
             cp -a .env "/tmp/htp-env-preserve"
-            echo "env-preserved" >> "$BEACON"
+            echo "env preserved"
 
             git fetch origin
-            echo "fetch-ok" >> "$BEACON"
+            echo "fetch ok"
 
             git reset --hard origin/main
-            echo "reset-ok HEAD=$(git rev-parse --short HEAD)" >> "$BEACON"
+            echo "reset ok HEAD=$(git rev-parse --short HEAD)"
 
-            # Re-create beacon after reset (reset may wipe untracked? keep uploads)
             mkdir -p public/uploads/general
-            echo "post-reset $(date -u +%Y-%m-%dT%H:%M:%SZ) HEAD=$(git rev-parse --short HEAD)" > "$BEACON"
-
             cp -a /tmp/htp-env-preserve .env
             chmod 600 .env || true
             rm -f /tmp/htp-env-preserve
-            echo "env-restored" >> "$BEACON"
+            echo "env restored"
+
+            # Purge again after reset in case tracked leftovers returned
+            rm -f public/uploads/general/deploy-beacon.txt \
+              public/uploads/general/deploy-log.txt \
+              public/__deploy-beacon.txt \
+              public/__deploy-status.json \
+              public/__db-migrate-status.json \
+              public/__db-migrate-log.txt \
+              2>/dev/null || true
 
             touch public/uploads/.gitkeep
             chmod -R ug+rwX public/uploads || true
@@ -107,22 +120,25 @@ jobs:
             . "$APP_DIR/scripts/vps-env.sh"
             ENV_RC=$?
             set -e
-            echo "vps-env-rc=$ENV_RC" >> "$BEACON"
+            echo "vps-env-rc=$ENV_RC"
             if [ "$ENV_RC" -ne 0 ]; then
-              echo "ERROR: vps-env.sh failed" >> "$BEACON"
+              echo "ERROR: vps-env.sh failed"
               exit 1
             fi
 
             export GITHUB_SHA
             set +e
-            bash "$APP_DIR/scripts/vps-deploy.sh" > /tmp/htp-vps-deploy.log 2>&1
+            bash "$APP_DIR/scripts/vps-deploy.sh"
             DEPLOY_RC=$?
             set -e
-            echo "deploy-rc=$DEPLOY_RC HEAD=$(git rev-parse --short HEAD)" > "$BEACON"
-            # Remove obsolete public diagnostic logs; keep db-verify.txt (Room/Media counts)
-            rm -f public/uploads/general/deploy-log.txt \
+            echo "deploy-rc=$DEPLOY_RC HEAD=$(git rev-parse --short HEAD)"
+
+            rm -f public/uploads/general/deploy-beacon.txt \
+              public/uploads/general/deploy-log.txt \
+              public/__deploy-beacon.txt \
               public/__deploy-status.json \
               public/__db-migrate-status.json \
               public/__db-migrate-log.txt \
               2>/dev/null || true
+
             exit "$DEPLOY_RC"

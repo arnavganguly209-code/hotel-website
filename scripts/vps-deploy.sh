@@ -74,14 +74,16 @@ node scripts/assert-local-thamelpark-db.mjs
 echo "OK: DATABASE_URL uses local PostgreSQL thamelpark"
 
 # Remove obsolete public diagnostic artifacts if any remain on the VPS
+# (deploy-beacon / deploy-log must never be served in production)
 rm -f public/__deploy-status.json \
   public/__db-migrate-status.json \
   public/__db-migrate-log.txt \
   public/__deploy-beacon.txt \
   public/uploads/general/deploy-beacon.txt \
   public/uploads/general/deploy-log.txt \
+  public/uploads/general/deploy-probe-*.bin \
   2>/dev/null || true
-rm -f /tmp/htp-migrate.log /tmp/htp-vps-deploy.log 2>/dev/null || true
+rm -f /tmp/htp-migrate.log /tmp/htp-vps-deploy.log /tmp/htp-db-ensure.log 2>/dev/null || true
 echo "Cleaned obsolete deploy artifacts"
 rm -rf .npm-cache .node 2>/dev/null || true
 
@@ -168,9 +170,10 @@ if [ -n "$EXPECTED_SHA" ] && [ "$DEPLOYED_SHA" != "$EXPECTED_SHA" ]; then
 fi
 
 echo "========== UPLOADS RUNTIME PROBE =========="
+# Private temp file under uploads, deleted immediately — never deploy-beacon/deploy-log
 PROBE_DIR="$ROOT/public/uploads/general"
 mkdir -p "$PROBE_DIR"
-PROBE_NAME="deploy-probe-${DEPLOYED_SHA:0:8}.bin"
+PROBE_NAME=".uploads-health-${DEPLOYED_SHA:0:8}.bin"
 PROBE_PATH="$PROBE_DIR/$PROBE_NAME"
 printf 'HTP-UPLOAD-OK' > "$PROBE_PATH"
 chmod ug+rw "$PROBE_PATH" || true
@@ -182,12 +185,11 @@ PROBE_CODE="$(curl -sS -o /tmp/hotel-upload-probe-body.bin -w "%{http_code}" \
   "$PROBE_URL" || echo "000")"
 PROBE_BODY="$(cat /tmp/hotel-upload-probe-body.bin 2>/dev/null || true)"
 set -e
+rm -f "$PROBE_PATH" || true
 if [ "$PROBE_CODE" != "200" ] || [ "$PROBE_BODY" != "HTP-UPLOAD-OK" ]; then
   echo "ERROR: Runtime /uploads route failed"
-  rm -f "$PROBE_PATH" || true
   exit 1
 fi
-rm -f "$PROBE_PATH" || true
 echo "Uploads runtime probe OK"
 
 rm -rf .next.prev

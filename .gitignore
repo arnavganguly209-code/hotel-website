@@ -71,6 +71,10 @@ _diag_*
 public/__db-migrate-status.json
 public/__db-migrate-log.txt
 public/__deploy-status.json
+public/__deploy-beacon.txt
+public/uploads/general/deploy-beacon.txt
+public/uploads/general/deploy-log.txt
+public/uploads/general/deploy-probe-*.bin
 job-*.zip
 job-*-logs*
 job-logs-*/
