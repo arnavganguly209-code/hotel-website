@@ -19,8 +19,8 @@ export function AboutPageEditor({ content, update }: AboutPageEditorProps) {
   return (
     <div className="space-y-6">
       <p className="text-sm text-white/50">
-        About Page Management — hero, story, stats, philosophy, team, awards, testimonials, gallery,
-        CTA, SEO. Changes auto-save.
+        About Page — every cover image on the live page is editable here (Hero, Story, Dining, Spa,
+        CTA). Changes sync into the Media Library automatically.
       </p>
 
       {/* Hero */}
@@ -131,6 +131,269 @@ export function AboutPageEditor({ content, update }: AboutPageEditorProps) {
             }
           />
         </div>
+      </div>
+
+      {/* Dining Experience — live on public About */}
+      <div className="space-y-4 border border-luxury-gold/10 p-6">
+        <p className="font-display text-lg text-luxury-gold">Dining Experience Cover</p>
+        <p className="text-xs text-white/45">
+          Shown on the public About page. Replace this image in Orbit — it must stay visible in the
+          Media Library.
+        </p>
+        <ImagePicker
+          label="Dining Cover Image"
+          folder="dining"
+          category="Dining"
+          value={page.diningExperience?.imageSrc || ""}
+          library={content.mediaLibrary}
+          onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+          onChange={(url) =>
+            setPage({
+              ...page,
+              diningExperience: {
+                ...(page.diningExperience ?? {
+                  eyebrow: "Dining",
+                  title: "Culinary Journeys",
+                  content: "",
+                  imageSrc: "",
+                }),
+                imageSrc: url,
+              },
+            })
+          }
+          enableCrop
+        />
+        <AdminInput
+          label="Eyebrow"
+          value={page.diningExperience?.eyebrow || ""}
+          onChange={(e) =>
+            setPage({
+              ...page,
+              diningExperience: {
+                ...(page.diningExperience ?? {
+                  eyebrow: "",
+                  title: "",
+                  content: "",
+                  imageSrc: "",
+                }),
+                eyebrow: e.target.value,
+              },
+            })
+          }
+        />
+        <AdminInput
+          label="Title"
+          value={page.diningExperience?.title || ""}
+          onChange={(e) =>
+            setPage({
+              ...page,
+              diningExperience: {
+                ...(page.diningExperience ?? {
+                  eyebrow: "",
+                  title: "",
+                  content: "",
+                  imageSrc: "",
+                }),
+                title: e.target.value,
+              },
+            })
+          }
+        />
+        <AdminTextarea
+          label="Description"
+          rows={4}
+          value={page.diningExperience?.content || ""}
+          onChange={(e) =>
+            setPage({
+              ...page,
+              diningExperience: {
+                ...(page.diningExperience ?? {
+                  eyebrow: "",
+                  title: "",
+                  content: "",
+                  imageSrc: "",
+                }),
+                content: e.target.value,
+              },
+            })
+          }
+        />
+      </div>
+
+      {/* Spa & Wellness — live on public About */}
+      <div className="space-y-4 border border-luxury-gold/10 p-6">
+        <p className="font-display text-lg text-luxury-gold">Spa & Wellness Cover</p>
+        <p className="text-xs text-white/45">
+          Shown on the public About page. Fully manageable from Orbit.
+        </p>
+        <ImagePicker
+          label="Spa Cover Image"
+          folder="spa"
+          category="Spa"
+          value={page.spaWellness?.imageSrc || ""}
+          library={content.mediaLibrary}
+          onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+          onChange={(url) =>
+            setPage({
+              ...page,
+              spaWellness: {
+                ...(page.spaWellness ?? {
+                  eyebrow: "Wellness",
+                  title: "Spa & Wellness",
+                  content: "",
+                  imageSrc: "",
+                }),
+                imageSrc: url,
+              },
+            })
+          }
+          enableCrop
+        />
+        <AdminInput
+          label="Eyebrow"
+          value={page.spaWellness?.eyebrow || ""}
+          onChange={(e) =>
+            setPage({
+              ...page,
+              spaWellness: {
+                ...(page.spaWellness ?? {
+                  eyebrow: "",
+                  title: "",
+                  content: "",
+                  imageSrc: "",
+                }),
+                eyebrow: e.target.value,
+              },
+            })
+          }
+        />
+        <AdminInput
+          label="Title"
+          value={page.spaWellness?.title || ""}
+          onChange={(e) =>
+            setPage({
+              ...page,
+              spaWellness: {
+                ...(page.spaWellness ?? {
+                  eyebrow: "",
+                  title: "",
+                  content: "",
+                  imageSrc: "",
+                }),
+                title: e.target.value,
+              },
+            })
+          }
+        />
+        <AdminTextarea
+          label="Description"
+          rows={4}
+          value={page.spaWellness?.content || ""}
+          onChange={(e) =>
+            setPage({
+              ...page,
+              spaWellness: {
+                ...(page.spaWellness ?? {
+                  eyebrow: "",
+                  title: "",
+                  content: "",
+                  imageSrc: "",
+                }),
+                content: e.target.value,
+              },
+            })
+          }
+        />
+      </div>
+
+      {/* Transport copy */}
+      <div className="space-y-4 border border-luxury-gold/10 p-6">
+        <p className="font-display text-lg text-luxury-gold">Transportation & Travel</p>
+        <AdminInput
+          label="Eyebrow"
+          value={page.transport?.eyebrow || ""}
+          onChange={(e) =>
+            setPage({
+              ...page,
+              transport: {
+                ...(page.transport ?? { eyebrow: "", title: "", content: "", note: "", items: [] }),
+                eyebrow: e.target.value,
+              },
+            })
+          }
+        />
+        <AdminInput
+          label="Title"
+          value={page.transport?.title || ""}
+          onChange={(e) =>
+            setPage({
+              ...page,
+              transport: {
+                ...(page.transport ?? { eyebrow: "", title: "", content: "", note: "", items: [] }),
+                title: e.target.value,
+              },
+            })
+          }
+        />
+        <AdminTextarea
+          label="Description"
+          rows={3}
+          value={page.transport?.content || ""}
+          onChange={(e) =>
+            setPage({
+              ...page,
+              transport: {
+                ...(page.transport ?? { eyebrow: "", title: "", content: "", note: "", items: [] }),
+                content: e.target.value,
+              },
+            })
+          }
+        />
+        <AdminTextarea
+          label="Footer Note"
+          rows={2}
+          value={page.transport?.note || ""}
+          onChange={(e) =>
+            setPage({
+              ...page,
+              transport: {
+                ...(page.transport ?? { eyebrow: "", title: "", content: "", note: "", items: [] }),
+                note: e.target.value,
+              },
+            })
+          }
+        />
+      </div>
+
+      {/* Promise copy */}
+      <div className="space-y-4 border border-luxury-gold/10 p-6">
+        <p className="font-display text-lg text-luxury-gold">Our Promise</p>
+        <AdminInput
+          label="Eyebrow"
+          value={page.promise?.eyebrow || ""}
+          onChange={(e) =>
+            setPage({
+              ...page,
+              promise: {
+                ...(page.promise ?? { eyebrow: "", title: "", items: [] }),
+                eyebrow: e.target.value,
+              },
+            })
+          }
+        />
+        <AdminInput
+          label="Title"
+          value={page.promise?.title || ""}
+          onChange={(e) =>
+            setPage({
+              ...page,
+              promise: {
+                ...(page.promise ?? { eyebrow: "", title: "", items: [] }),
+                title: e.target.value,
+              },
+            })
+          }
+        />
       </div>
 
       {/* Stats */}

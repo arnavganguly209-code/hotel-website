@@ -278,6 +278,19 @@ export function AboutPage({ content }: AboutPageProps) {
 
       {/* Final CTA */}
       <section className="relative overflow-hidden border-t border-[#D4AF37]/15 px-6 py-24 sm:px-8 lg:px-10 lg:py-32">
+        {page.cta.backgroundImage ? (
+          <div className="absolute inset-0">
+            <SafeImage
+              src={page.cta.backgroundImage}
+              alt=""
+              fill
+              objectFit="cover"
+              className="object-cover opacity-[0.18]"
+              sizes="100vw"
+            />
+            <div className="absolute inset-0 bg-[#FBF8F1]/75" />
+          </div>
+        ) : null}
         <MountainBackdrop className="opacity-90" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(201,162,39,0.1),transparent_55%)]" />
         <motion.div

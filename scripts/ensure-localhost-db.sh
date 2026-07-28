@@ -52,15 +52,32 @@ for (const line of lines) {
     replaced = true;
     continue;
   }
-  const key = line.split("=")[0] || "";
-  // Drop legacy companion DB URL vars (anything ending in DATABASE_URL except DATABASE_URL)
-  if (key !== "DATABASE_URL" && /DATABASE_URL$/i.test(key)) continue;
-  if (/^DIRECT_URL=/.test(line)) continue;
+  const key = (line.split("=")[0] || "").trim();
+  // Keep a single DATABASE_URL only — drop companion / hosted DB URL vars
+  if (key && key !== "DATABASE_URL" && /DATABASE_URL$/i.test(key)) continue;
+  if (/^(DIRECT_URL|DATABASE_URL_UNPOOLED|POSTGRES_URL|POSTGRES_PRISMA_URL|POSTGRES_URL_NON_POOLING)=/i.test(line)) continue;
   out.push(line);
 }
 if (!replaced) out.push("DATABASE_URL=" + local);
 fs.writeFileSync(".env", out.join("\n").replace(/\n*$/, "\n"));
 console.log("Wrote localhost DATABASE_URL → thamelpark");
+NODE
+  chmod 600 .env || true
+}
+
+# Always drop companion DB URL vars so only DATABASE_URL remains
+sanitize_companion_db_env() {
+  node <<'NODE'
+const fs = require("fs");
+const lines = fs.readFileSync(".env", "utf8").split(/\r?\n/);
+const out = lines.filter((line) => {
+  const key = (line.split("=")[0] || "").trim();
+  if (!key || key.startsWith("#")) return true;
+  if (key !== "DATABASE_URL" && /DATABASE_URL$/i.test(key)) return false;
+  if (/^(DIRECT_URL|DATABASE_URL_UNPOOLED|POSTGRES_URL|POSTGRES_PRISMA_URL|POSTGRES_URL_NON_POOLING)$/i.test(key)) return false;
+  return true;
+});
+fs.writeFileSync(".env", out.join("\n").replace(/\n*$/, "\n"));
 NODE
   chmod 600 .env || true
 }
@@ -71,12 +88,16 @@ if [ -z "$CURRENT_URL" ]; then
   exit 1
 fi
 
+sanitize_companion_db_env
+CURRENT_URL="$(get_env DATABASE_URL)"
+
 HOST="$(db_host "$CURRENT_URL")"
 if echo "$CURRENT_URL" | grep -Eqi '(localhost|127\.0\.0\.1)' \
   && echo "$CURRENT_URL" | grep -Eqi '/thamelpark([?]|$)' \
   && echo "$HOST" | grep -Eqi '^(127\.0\.0\.1|localhost)$'; then
   echo "OK: DATABASE_URL already points at local thamelpark — ensure skipped"
   export DATABASE_URL="$CURRENT_URL"
+  node scripts/assert-local-thamelpark-db.mjs
   npx prisma generate
   npx prisma migrate deploy || npx prisma db push --accept-data-loss=false
   node scripts/ensure-thamelpark-bootstrap.mjs
@@ -219,9 +240,6 @@ if (!/^(127\.0\.0\.1|localhost)$/i.test(host) || !/thamelpark/i.test(url)) {
   process.exit(1);
 });
 NODE
-
-# Remove legacy env backup filenames that may contain old host strings in content
-rm -f "$BACKUP_DIR"/env-before-cutover* 2>/dev/null || true
 
 echo "========== LOCALHOST DB READY =========="
 echo "DATABASE_URL → 127.0.0.1/thamelpark"

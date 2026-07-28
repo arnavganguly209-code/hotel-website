@@ -173,8 +173,18 @@ async function ensureAdmin(client) {
 async function main() {
   const url = loadDatabaseUrl();
   const host = (url.match(/@([^/:?]+)/) || [])[1] || "";
-  if (!/^(127\.0\.0\.1|localhost)$/i.test(host) || !/thamelpark/i.test(url)) {
-    throw new Error("DATABASE_URL must target localhost thamelpark");
+  let dbName = "";
+  try {
+    dbName = decodeURIComponent((new URL(url).pathname || "").replace(/^\//, "").split("/")[0] || "");
+  } catch {
+    const pathPart = (url.split("?")[0] || "").split("@")[1] || "";
+    const slash = pathPart.indexOf("/");
+    dbName = slash >= 0 ? decodeURIComponent(pathPart.slice(slash + 1)) : "";
+  }
+  if (!/^(127\.0\.0\.1|localhost|::1)$/i.test(host) || !/^thamelpark$/i.test(dbName)) {
+    throw new Error(
+      'DATABASE_URL must use local PostgreSQL on 127.0.0.1 or localhost (database "thamelpark"). Remote database hosts are not supported.'
+    );
   }
 
   const client = new Client({ connectionString: url });

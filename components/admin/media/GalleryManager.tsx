@@ -460,52 +460,6 @@ export function GalleryManager({
         <label className="flex items-center gap-3 text-sm text-white/70">
           <input
             type="checkbox"
-            checked={page.videos.enabled !== false}
-            onChange={(e) =>
-              onPageChange({
-                ...page,
-                videos: { ...page.videos, enabled: e.target.checked },
-              })
-            }
-            className="accent-luxury-gold"
-          />
-          Enable Video Gallery
-        </label>
-        <AdminInput
-          label="Videos Eyebrow"
-          value={page.videos.eyebrow}
-          onChange={(e) =>
-            onPageChange({
-              ...page,
-              videos: { ...page.videos, eyebrow: e.target.value },
-            })
-          }
-        />
-        <AdminInput
-          label="Videos Title"
-          value={page.videos.title}
-          onChange={(e) =>
-            onPageChange({
-              ...page,
-              videos: { ...page.videos, title: e.target.value },
-            })
-          }
-        />
-        <AdminTextarea
-          label="Videos Description"
-          rows={2}
-          value={page.videos.description}
-          onChange={(e) =>
-            onPageChange({
-              ...page,
-              videos: { ...page.videos, description: e.target.value },
-            })
-          }
-        />
-
-        <label className="flex items-center gap-3 text-sm text-white/70">
-          <input
-            type="checkbox"
             checked={page.strip.enabled !== false}
             onChange={(e) =>
               onPageChange({
@@ -904,93 +858,16 @@ export function GalleryManager({
                   )}
                 </div>
                 <div className="space-y-3">
-                  <div className="flex flex-wrap gap-3">
-                    <label className="flex items-center gap-2 text-xs text-white/60">
-                      Type
-                      <select
-                        value={item.type || "image"}
-                        onChange={(e) =>
-                          patch(item.id, { type: e.target.value as "image" | "video" })
-                        }
-                        className="rounded-lg border border-luxury-gold/20 bg-black/30 px-2 py-1 text-sm text-white"
-                      >
-                        <option value="image">Image</option>
-                        <option value="video">Video</option>
-                      </select>
-                    </label>
-                  </div>
-
-                  {item.type === "video" ? (
-                    <>
-                      <AdminInput
-                        label="Video URL (upload path or external)"
-                        value={item.src}
-                        onChange={(e) => patch(item.id, { src: e.target.value })}
-                      />
-                      <div>
-                        <label className="mb-1 block text-[10px] font-medium uppercase tracking-[0.2em] text-luxury-gold/70">
-                          Upload Video File (MP4 / WEBM)
-                        </label>
-                        <input
-                          type="file"
-                          accept="video/mp4,video/webm,video/quicktime"
-                          className="block w-full text-xs text-white/60 file:mr-3 file:rounded-lg file:border-0 file:bg-luxury-gold/20 file:px-3 file:py-2 file:text-luxury-gold"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            const form = new FormData();
-                            form.append("file", file);
-                            form.append("folder", "gallery");
-                            if (item.src) form.append("oldUrl", item.src);
-                            const res = await fetch("/api/upload", { method: "POST", body: form });
-                            const data = await res.json().catch(() => ({}));
-                            if (res.ok && data.url) {
-                              patch(item.id, { src: data.url, type: "video" });
-                              onLibraryChange([
-                                {
-                                  id: data.publicId || data.url,
-                                  url: data.url,
-                                  publicId: data.publicId,
-                                  filename: file.name,
-                                  folder: "gallery",
-                                  category: "Gallery",
-                                  title: file.name,
-                                  mimeType: file.type,
-                                  size: file.size,
-                                  createdAt: new Date().toISOString(),
-                                },
-                                ...library,
-                              ]);
-                            } else {
-                              setBulkError(data.error || "Video upload failed");
-                            }
-                            e.target.value = "";
-                          }}
-                        />
-                      </div>
-                      <ImagePicker
-                        label="Video Thumbnail / Poster"
-                        value={item.poster || ""}
-                        category="Gallery"
-                        folder="gallery"
-                        enableCrop
-                        library={library}
-                        onLibraryChange={onLibraryChange}
-                        onChange={(url) => patch(item.id, { poster: url })}
-                      />
-                    </>
-                  ) : (
-                    <ImagePicker
-                      label="Gallery Image"
-                      value={item.src}
-                      category="Gallery"
-                      folder="gallery"
-                      enableCrop
-                      library={library}
-                      onLibraryChange={onLibraryChange}
-                      onChange={(url) => patch(item.id, { src: url })}
-                    />
-                  )}
+                  <ImagePicker
+                    label="Gallery Image"
+                    value={item.src}
+                    category="Gallery"
+                    folder="gallery"
+                    enableCrop
+                    library={library}
+                    onLibraryChange={onLibraryChange}
+                    onChange={(url) => patch(item.id, { src: url, type: "image" })}
+                  />
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     <AdminInput

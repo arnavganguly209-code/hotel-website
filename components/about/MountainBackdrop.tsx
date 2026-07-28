@@ -1,4 +1,4 @@
-/** Soft Himalayan mountain silhouette for cream About backgrounds. */
+/** Soft cream–emerald Himalayan silhouette for luxury About backgrounds. */
 export function MountainBackdrop({ className = "" }: { className?: string }) {
   return (
     <div
@@ -6,28 +6,31 @@ export function MountainBackdrop({ className = "" }: { className?: string }) {
       aria-hidden
     >
       <svg
-        className="absolute bottom-0 left-1/2 h-[42%] w-[140%] -translate-x-1/2 opacity-[0.14]"
+        className="absolute bottom-0 left-1/2 h-[48%] w-[150%] -translate-x-1/2 opacity-[0.11]"
         viewBox="0 0 1440 320"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         preserveAspectRatio="xMidYMax slice"
       >
+        {/* Far range — soft sage on cream */}
         <path
-          d="M0 320V210L180 120L320 190L480 70L640 160L800 40L960 150L1120 90L1280 170L1440 100V320H0Z"
-          fill="#14352C"
+          d="M0 320V205L160 130L300 185L460 85L620 165L780 55L940 155L1100 95L1260 165L1440 110V320H0Z"
+          fill="#B7D0C2"
         />
+        {/* Mid range — light emerald mist */}
         <path
-          d="M0 320V240L220 160L380 220L540 110L700 190L880 80L1040 180L1220 130L1440 200V320H0Z"
-          fill="#1A2E26"
-          opacity="0.55"
+          d="M0 320V235L200 170L360 220L520 130L700 195L880 105L1040 185L1220 145L1440 195V320H0Z"
+          fill="#9FBFB0"
+          opacity="0.65"
         />
+        {/* Near foothills — whisper of gold */}
         <path
-          d="M0 320V270L260 210L420 260L620 180L820 250L1020 190L1240 240L1440 210V320H0Z"
-          fill="#C9A227"
-          opacity="0.18"
+          d="M0 320V265L240 220L420 255L620 200L820 245L1020 210L1240 245L1440 220V320H0Z"
+          fill="#D4C49A"
+          opacity="0.35"
         />
       </svg>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(201,162,39,0.06),transparent_45%),radial-gradient(ellipse_at_80%_100%,rgba(20,53,44,0.05),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_18%_8%,rgba(201,162,39,0.045),transparent_42%),radial-gradient(ellipse_at_82%_92%,rgba(143,180,162,0.06),transparent_48%)]" />
     </div>
   );
 }

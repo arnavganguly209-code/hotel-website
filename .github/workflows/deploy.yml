@@ -119,12 +119,10 @@ jobs:
             DEPLOY_RC=$?
             set -e
             echo "deploy-rc=$DEPLOY_RC HEAD=$(git rev-parse --short HEAD)" > "$BEACON"
-            # Remove diagnostic logs; keep db-verify.txt (Room/Media counts)
+            # Remove obsolete public diagnostic logs; keep db-verify.txt (Room/Media counts)
             rm -f public/uploads/general/deploy-log.txt \
-              public/__cutover-log.txt \
               public/__deploy-status.json \
               public/__db-migrate-status.json \
               public/__db-migrate-log.txt \
-              backups/env-before-cutover* \
               2>/dev/null || true
             exit "$DEPLOY_RC"

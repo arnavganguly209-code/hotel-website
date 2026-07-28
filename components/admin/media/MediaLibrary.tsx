@@ -101,7 +101,9 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
           i.title?.toLowerCase().includes(q) ||
           i.filename.toLowerCase().includes(q) ||
           i.alt?.toLowerCase().includes(q) ||
-          i.url.toLowerCase().includes(q)
+          i.url.toLowerCase().includes(q) ||
+          i.pageName?.toLowerCase().includes(q) ||
+          i.sectionName?.toLowerCase().includes(q)
       );
     }
     items.sort((a, b) => {
@@ -118,7 +120,15 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
       const list = Array.from(files).filter((f) =>
-        ["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(f.type)
+        [
+          "image/jpeg",
+          "image/jpg",
+          "image/png",
+          "image/webp",
+          "video/mp4",
+          "video/webm",
+          "video/quicktime",
+        ].includes(f.type)
       );
       if (!list.length) return;
 
@@ -127,7 +137,7 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
       const nextProgress: UploadProgress[] = list.map((f) => ({
         name: f.name,
         percent: 0,
-        preview: URL.createObjectURL(f),
+        preview: f.type.startsWith("image/") ? URL.createObjectURL(f) : undefined,
       }));
       setProgress(nextProgress);
 
@@ -138,6 +148,7 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
           const result = await uploadFile(file, folder, (percent) => {
             setProgress((prev) => prev.map((p, idx) => (idx === i ? { ...p, percent } : p)));
           });
+          const isVideo = file.type.startsWith("video/");
           uploaded.push({
             id: `m-${Date.now()}-${i}`,
             filename: result.url.split("/").pop() ?? file.name,
@@ -150,6 +161,10 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
             title: file.name.replace(/\.[^.]+$/, ""),
             alt: file.name.replace(/\.[^.]+$/, ""),
             category: uploadCategory,
+            mediaType: isVideo ? "video" : "image",
+            visible: true,
+            pageName: "Media Library",
+            sectionName: "Uploaded",
           });
           setProgress((prev) => prev.map((p, idx) => (idx === i ? { ...p, percent: 100 } : p)));
         } catch (err) {
@@ -233,8 +248,10 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
         )}
       >
         <Upload className="mx-auto mb-3 h-8 w-8 text-luxury-gold" />
-        <p className="font-display text-lg text-white">Drag & drop images here</p>
-        <p className="mt-1 text-sm text-white/50">JPG, PNG, WEBP · max 10MB each · multiple files OK</p>
+        <p className="font-display text-lg text-white">Drag & drop images or videos</p>
+        <p className="mt-1 text-sm text-white/50">
+          JPG, PNG, WEBP, MP4, WEBM · max 10MB images / larger videos OK · multiple files
+        </p>
         <div className="mx-auto mt-4 flex max-w-md flex-wrap items-center justify-center gap-3">
           <select
             value={uploadCategory}
@@ -259,7 +276,7 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
           <input
             ref={inputRef}
             type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp"
+            accept="image/jpeg,image/jpg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
             multiple
             className="hidden"
             onChange={(e) => e.target.files && void handleFiles(e.target.files)}
@@ -299,7 +316,7 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search images…"
+            placeholder="Search media by filename, page, section, alt…"
             className="w-full rounded-lg border border-luxury-gold/20 bg-black/30 py-2.5 pl-10 pr-3 text-sm text-white"
           />
         </div>
@@ -337,7 +354,10 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
         </div>
       </div>
 
-      <p className="text-xs text-white/40">{filtered.length} image{filtered.length === 1 ? "" : "s"}</p>
+      <p className="text-xs text-white/40">
+        {filtered.length} media item{filtered.length === 1 ? "" : "s"} · synced from live website
+        sections
+      </p>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
         <div
@@ -347,7 +367,10 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
               : "flex flex-col gap-2"
           )}
         >
-          {filtered.map((item) => (
+          {filtered.map((item) => {
+            const isVideo =
+              item.mediaType === "video" || (item.mimeType || "").startsWith("video/");
+            return (
             <button
               key={item.id}
               type="button"
@@ -357,23 +380,37 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
                 selectedId === item.id
                   ? "border-luxury-gold shadow-[0_0_0_1px_rgba(201,164,76,0.5)]"
                   : "border-white/10 hover:border-luxury-gold/40",
+                item.visible === false && "opacity-50",
                 view === "list" && "flex items-center gap-3 p-2"
               )}
             >
               <div className={cn("relative bg-black/30", view === "grid" ? "aspect-square" : "h-16 w-16 shrink-0 rounded-lg")}>
-                <SafeImage src={item.url} alt={item.alt || item.title || item.filename} fill className="object-cover" />
+                {isVideo ? (
+                  <video
+                    src={item.url}
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                ) : (
+                  <SafeImage src={item.url} alt={item.alt || item.title || item.filename} fill className="object-cover" />
+                )}
               </div>
               <div className={cn(view === "grid" ? "p-2" : "min-w-0 flex-1")}>
                 <p className="truncate text-sm text-white">{item.title || item.filename}</p>
                 <p className="truncate text-[10px] uppercase tracking-wider text-white/40">
-                  {item.category || categoryFromFolder(item.folder)}
+                  {isVideo ? "Video · " : ""}
+                  {item.pageName ? `${item.pageName} · ` : ""}
+                  {item.sectionName || item.category || categoryFromFolder(item.folder)}
                 </p>
               </div>
             </button>
-          ))}
+            );
+          })}
           {!filtered.length && (
             <p className="col-span-full py-12 text-center text-sm text-white/40">
-              No images yet. Drag files above or choose files to upload.
+              No media yet. Drag files above or choose files to upload.
             </p>
           )}
         </div>
@@ -382,7 +419,34 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
           {selected ? (
             <div className="space-y-4">
               <div className="relative aspect-square overflow-hidden rounded-xl border border-white/10">
-                <SafeImage src={selected.url} alt={selected.alt || selected.title || ""} fill className="object-cover" />
+                {(selected.mediaType === "video" || (selected.mimeType || "").startsWith("video/")) ? (
+                  <video
+                    src={selected.url}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                ) : (
+                  <SafeImage src={selected.url} alt={selected.alt || selected.title || ""} fill className="object-cover" />
+                )}
+              </div>
+              <div className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-[11px] text-white/60">
+                <p>
+                  <span className="text-luxury-gold/80">Page:</span> {selected.pageName || "—"}
+                </p>
+                <p className="mt-1">
+                  <span className="text-luxury-gold/80">Section:</span> {selected.sectionName || "—"}
+                </p>
+                <p className="mt-1">
+                  <span className="text-luxury-gold/80">Type:</span>{" "}
+                  {selected.mediaType ||
+                    ((selected.mimeType || "").startsWith("video/") ? "video" : "image")}
+                  {selected.isBackground ? " · background" : ""}
+                </p>
+                <p className="mt-1 break-all">
+                  <span className="text-luxury-gold/80">File:</span> {selected.filename}
+                </p>
               </div>
               <AdminInput
                 label="Title"
@@ -394,6 +458,15 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
                 value={selected.alt || ""}
                 onChange={(e) => patchAsset(selected.id, { alt: e.target.value })}
               />
+              <label className="flex items-center gap-3 text-sm text-white/70">
+                <input
+                  type="checkbox"
+                  checked={selected.visible !== false}
+                  onChange={(e) => patchAsset(selected.id, { visible: e.target.checked })}
+                  className="accent-luxury-gold"
+                />
+                Visible in library
+              </label>
               <div>
                 <label className="mb-1 block text-[10px] font-medium uppercase tracking-[0.2em] text-luxury-gold/70">
                   Category
@@ -421,7 +494,7 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
                   Replace
                   <input
                     type="file"
-                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
@@ -436,7 +509,7 @@ export function MediaLibrary({ library, onChange }: MediaLibraryProps) {
               </div>
             </div>
           ) : (
-            <p className="py-10 text-center text-sm text-white/40">Select an image to edit details</p>
+            <p className="py-10 text-center text-sm text-white/40">Select media to edit details</p>
           )}
         </div>
       </div>

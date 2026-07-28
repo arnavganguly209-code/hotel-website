@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Hostinger VPS production deploy (GitHub Actions → /var/www/hotel-website)
-# Protects: public/uploads (never delete) | cut over DATABASE_URL to localhost thamelpark
+# Protects: public/uploads (never delete) | DATABASE_URL must be localhost thamelpark only
 
 set -euxo pipefail
 
@@ -70,20 +70,19 @@ if ! echo "$DB_HOST" | grep -Eqi '^(127\.0\.0\.1|localhost)$'; then
   echo "ERROR: DATABASE_URL host must be 127.0.0.1 or localhost (got non-local host)"
   exit 1
 fi
+node scripts/assert-local-thamelpark-db.mjs
 echo "OK: DATABASE_URL uses local PostgreSQL thamelpark"
 
-# Remove historical deploy/cutover artifacts from public + backups
+# Remove obsolete public diagnostic artifacts if any remain on the VPS
 rm -f public/__deploy-status.json \
   public/__db-migrate-status.json \
   public/__db-migrate-log.txt \
-  public/__cutover-log.txt \
   public/__deploy-beacon.txt \
   public/uploads/general/deploy-beacon.txt \
   public/uploads/general/deploy-log.txt \
   2>/dev/null || true
-rm -f backups/env-before-cutover* 2>/dev/null || true
-rm -f /tmp/htp-cutover.log /tmp/htp-migrate.log /tmp/htp-vps-deploy.log 2>/dev/null || true
-echo "Cleaned historical deploy artifacts"
+rm -f /tmp/htp-migrate.log /tmp/htp-vps-deploy.log 2>/dev/null || true
+echo "Cleaned obsolete deploy artifacts"
 rm -rf .npm-cache .node 2>/dev/null || true
 
 # shellcheck disable=SC1091

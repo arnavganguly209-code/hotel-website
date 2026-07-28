@@ -68,6 +68,14 @@ export interface MediaAsset {
   alt?: string;
   /** Gallery | Rooms | Spa | Dining | Culture | General | Hero | Blog | Other */
   category?: string;
+  /** Where this media appears on the public site */
+  pageName?: string;
+  sectionName?: string;
+  mediaType?: "image" | "video";
+  /** Orbit visibility toggle — hidden assets stay in library but are marked inactive */
+  visible?: boolean;
+  order?: number;
+  isBackground?: boolean;
 }
 
 export interface CmsMedia {

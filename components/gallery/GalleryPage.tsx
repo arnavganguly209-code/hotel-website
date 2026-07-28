@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Play } from "lucide-react";
 import { GalleryHero } from "@/components/gallery/GalleryHero";
 import { LuxuryGalleryGrid } from "@/components/shared/LuxuryGalleryGrid";
 import {
@@ -28,11 +27,11 @@ export function GalleryPage({ page, items, categories, hotelName }: GalleryPageP
   const bottomBg = page.backgroundBottom || "#E8F0E9";
 
   const featuredItems = useMemo(() => items.filter((i) => i.featured), [items]);
+  const imageItems = useMemo(
+    () => items.filter((i) => i.type !== "video"),
+    [items]
+  );
 
-  const videoItems = useMemo(() => items.filter((i) => i.type === "video"), [items]);
-  const imageItems = useMemo(() => items.filter((i) => i.type !== "video"), [items]);
-
-  const [videoLightbox, setVideoLightbox] = useState<number | null>(null);
   const [featuredLightbox, setFeaturedLightbox] = useState<number | null>(null);
 
   const stripItems = imageItems.length >= 4 ? imageItems : items;
@@ -188,86 +187,6 @@ export function GalleryPage({ page, items, categories, hotelName }: GalleryPageP
             index={featuredLightbox}
             onClose={() => setFeaturedLightbox(null)}
             onChangeIndex={setFeaturedLightbox}
-            goldColor={gold}
-          />
-        </section>
-      ) : null}
-
-      {/* Video gallery */}
-      {page.videos.enabled !== false && videoItems.length > 0 ? (
-        <section
-          className="px-6 py-20 lg:px-10 lg:py-24"
-          style={{ background: topBg }}
-        >
-          <div className="mx-auto max-w-7xl">
-            <div className="mx-auto mb-12 max-w-2xl text-center">
-              <p
-                className="font-body text-[11px] uppercase tracking-[0.34em]"
-                style={{ color: gold }}
-              >
-                {page.videos.eyebrow}
-              </p>
-              <h2
-                className="mt-3 font-display text-3xl font-light md:text-4xl"
-                style={{ color: heading }}
-              >
-                {page.videos.title}
-              </h2>
-              <p className="mt-4 font-body text-sm leading-relaxed" style={{ color: body }}>
-                {page.videos.description}
-              </p>
-            </div>
-
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {videoItems.map((item, i) => (
-                <motion.button
-                  key={item.id}
-                  type="button"
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.06 }}
-                  onClick={() => setVideoLightbox(i)}
-                  className="group relative aspect-video overflow-hidden text-left"
-                  style={{
-                    borderRadius: 18,
-                    border: `1.5px solid ${gold}66`,
-                    boxShadow: "0 18px 40px rgba(15, 42, 34, 0.1)",
-                  }}
-                >
-                  <SafeImage
-                    src={item.poster || item.src}
-                    alt={item.alt || item.title}
-                    fill
-                    objectFit="cover"
-                    className="object-cover transition duration-700 group-hover:scale-105"
-                    sizes="(max-width: 1024px) 50vw, 33vw"
-                  />
-                  <div className="absolute inset-0 bg-black/35 transition group-hover:bg-black/45" />
-                  <span
-                    className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 bg-black/40 backdrop-blur-sm transition group-hover:scale-110"
-                    style={{ borderColor: gold }}
-                  >
-                    <Play className="ml-1 h-7 w-7 text-white" fill="white" />
-                  </span>
-                  <div className="absolute inset-x-0 bottom-0 p-4">
-                    <p className="font-display text-lg text-white">{item.title}</p>
-                    {item.description ? (
-                      <p className="mt-0.5 line-clamp-1 font-body text-xs text-white/70">
-                        {item.description}
-                      </p>
-                    ) : null}
-                  </div>
-                </motion.button>
-              ))}
-            </div>
-          </div>
-
-          <GalleryLightbox
-            items={videoItems}
-            index={videoLightbox}
-            onClose={() => setVideoLightbox(null)}
-            onChangeIndex={setVideoLightbox}
             goldColor={gold}
           />
         </section>

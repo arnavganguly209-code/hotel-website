@@ -6,6 +6,7 @@ import {
   OFFICIAL_PAYMENT_LOGOS,
   PAYMENT_LOGO_CLEARED,
 } from "./payment-logos";
+import { syncMediaLibraryFromContent } from "./collect-media";
 import { routes } from "@/lib/navigation";
 
 function ensureMeetingsNavItem(items: SiteContent["header"]["menuItems"]) {
@@ -187,7 +188,7 @@ function mergeFooterSocial(
 }
 
 export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
-  return {
+  const merged: SiteContent = {
     hotel: { ...defaultContent.hotel, ...partial.hotel },
     header: {
       ...defaultContent.header,
@@ -288,44 +289,36 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     aboutPage: mergeAboutPage(defaultContent.aboutPage, partial.aboutPage),
     reviews: definedArray(partial.reviews, defaultContent.reviews),
     gallery: (() => {
-      const merged = definedArray(partial.gallery, defaultContent.gallery).map((item, i) => ({
-        ...(defaultContent.gallery[i] ?? defaultContent.gallery[0]),
-        ...item,
-        type: item.type ?? "image",
-        description: item.description ?? defaultContent.gallery[i]?.description ?? "",
-        alt: item.alt ?? item.title ?? "",
-        active: item.active !== false,
-        showOnHome: item.showOnHome !== false,
-        featured: item.featured === true,
-        poster: item.poster ?? "",
-        order: item.order ?? i,
-      }));
+      const DEMO_VIDEO =
+        /commondatastorage\.googleapis\.com\/gtv-videos-bucket|ForBigger(Escapes|Joyrides|Meltdowns)/i;
+
+      const merged = definedArray(partial.gallery, defaultContent.gallery)
+        .map((item, i) => ({
+          ...(defaultContent.gallery.find((d) => d.id === item.id) ??
+            defaultContent.gallery[i] ??
+            defaultContent.gallery[0]),
+          ...item,
+          type: (item.type ?? "image") as "image" | "video",
+          description: item.description ?? defaultContent.gallery[i]?.description ?? "",
+          alt: item.alt ?? item.title ?? "",
+          active: item.active !== false,
+          showOnHome: item.showOnHome !== false,
+          featured: item.featured === true,
+          poster: item.poster ?? "",
+          order: item.order ?? i,
+        }))
+        // Permanently remove demo / Moving Stories video gallery items
+        .filter(
+          (item) =>
+            item.type !== "video" &&
+            !DEMO_VIDEO.test(item.src || "") &&
+            !["v1", "v2", "v3"].includes(item.id)
+        );
 
       const hasFeatured = merged.some((item) => item.featured === true);
       if (!hasFeatured) {
         merged.slice(0, 4).forEach((item) => {
           item.featured = true;
-        });
-      }
-
-      const hasVideo = merged.some((item) => item.type === "video");
-      if (!hasVideo) {
-        const videos = defaultContent.gallery.filter((item) => item.type === "video");
-        const maxOrder = merged.reduce((m, item) => Math.max(m, item.order ?? 0), 0);
-        videos.forEach((video, i) => {
-          if (!merged.some((item) => item.id === video.id)) {
-            merged.push({
-              ...video,
-              alt: video.alt ?? video.title,
-              active: video.active !== false,
-              showOnHome: video.showOnHome !== false,
-              featured: video.featured === true,
-              poster: video.poster ?? "",
-              description: video.description ?? "",
-              type: "video" as const,
-              order: maxOrder + 1 + i,
-            });
-          }
         });
       }
 
@@ -516,6 +509,9 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     },
     mediaLibrary: definedArray(partial.mediaLibrary, defaultContent.mediaLibrary),
   };
+
+  merged.mediaLibrary = syncMediaLibraryFromContent(merged, merged.mediaLibrary);
+  return merged;
 }
 
 const LEGACY_HERO_VIDEO_SRC =
@@ -1619,7 +1615,11 @@ function mergeGalleryPage(
   defaults: SiteContent["galleryPage"],
   partial?: Partial<SiteContent["galleryPage"]>
 ): SiteContent["galleryPage"] {
-  if (!partial) return defaults;
+  const withVideosOff = {
+    ...defaults,
+    videos: { ...defaults.videos, enabled: false },
+  };
+  if (!partial) return withVideosOff;
   const heroPartial = partial.hero as Partial<SiteContent["galleryPage"]["hero"]> | undefined;
   const isLegacyHero =
     Boolean(heroPartial) &&
@@ -1627,42 +1627,47 @@ function mergeGalleryPage(
     (heroPartial?.title === "Gallery" || heroPartial?.subtitle === "Visual Journey");
 
   return {
-    ...defaults,
+    ...withVideosOff,
     ...partial,
     hero: isLegacyHero
-      ? defaults.hero
+      ? withVideosOff.hero
       : {
-          ...defaults.hero,
+          ...withVideosOff.hero,
           ...(heroPartial ?? {}),
           media: {
-            ...defaults.hero.media,
+            ...withVideosOff.hero.media,
             ...(heroPartial?.media ?? {}),
             imageSrc:
               heroPartial?.media?.imageSrc?.trim() ||
               heroPartial?.imageSrc?.trim() ||
-              defaults.hero.media.imageSrc ||
-              defaults.hero.imageSrc,
+              withVideosOff.hero.media.imageSrc ||
+              withVideosOff.hero.imageSrc,
           },
           imageSrc:
             heroPartial?.imageSrc?.trim() ||
             heroPartial?.media?.imageSrc?.trim() ||
-            defaults.hero.imageSrc,
-          breadcrumbHome: heroPartial?.breadcrumbHome ?? defaults.hero.breadcrumbHome,
-          breadcrumbCurrent: heroPartial?.breadcrumbCurrent ?? defaults.hero.breadcrumbCurrent,
+            withVideosOff.hero.imageSrc,
+          breadcrumbHome: heroPartial?.breadcrumbHome ?? withVideosOff.hero.breadcrumbHome,
+          breadcrumbCurrent:
+            heroPartial?.breadcrumbCurrent ?? withVideosOff.hero.breadcrumbCurrent,
           overlayOpacity:
             heroPartial?.overlayOpacity != null
-              ? Number(heroPartial.overlayOpacity) || defaults.hero.overlayOpacity
-              : defaults.hero.overlayOpacity,
+              ? Number(heroPartial.overlayOpacity) || withVideosOff.hero.overlayOpacity
+              : withVideosOff.hero.overlayOpacity,
         },
-    seo: { ...defaults.seo, ...(partial.seo ?? {}) },
+    seo: { ...withVideosOff.seo, ...(partial.seo ?? {}) },
     showFilters: partial.showFilters !== false,
-    gridColumns: (partial.gridColumns ?? defaults.gridColumns) as 2 | 3 | 4,
-    initialVisible: partial.initialVisible ?? defaults.initialVisible,
-    loadMoreCount: partial.loadMoreCount ?? defaults.loadMoreCount,
-    featured: { ...defaults.featured, ...(partial.featured ?? {}) },
-    videos: { ...defaults.videos, ...(partial.videos ?? {}) },
-    strip: { ...defaults.strip, ...(partial.strip ?? {}) },
-    cta: { ...defaults.cta, ...(partial.cta ?? {}) },
+    gridColumns: (partial.gridColumns ?? withVideosOff.gridColumns) as 2 | 3 | 4,
+    initialVisible: partial.initialVisible ?? withVideosOff.initialVisible,
+    loadMoreCount: partial.loadMoreCount ?? withVideosOff.loadMoreCount,
+    featured: { ...withVideosOff.featured, ...(partial.featured ?? {}) },
+    videos: {
+      ...withVideosOff.videos,
+      ...(partial.videos ?? {}),
+      enabled: false,
+    },
+    strip: { ...withVideosOff.strip, ...(partial.strip ?? {}) },
+    cta: { ...withVideosOff.cta, ...(partial.cta ?? {}) },
   };
 }
 

@@ -37,7 +37,7 @@ export default async function GalleryRoute() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hotel.theglobalorbit.com";
 
   const items = content.gallery
-    .filter((g) => g.active !== false && Boolean(g.src))
+    .filter((g) => g.active !== false && Boolean(g.src) && g.type !== "video")
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     .map((g) => ({
       id: g.id,
@@ -46,7 +46,7 @@ export default async function GalleryRoute() {
       description: g.description,
       category: g.category,
       alt: g.alt,
-      type: g.type || "image",
+      type: "image" as const,
       poster: g.poster,
       featured: g.featured === true,
     }));
@@ -62,7 +62,7 @@ export default async function GalleryRoute() {
     name: `${content.hotel.name} Gallery`,
     description: page.seo.description,
     url: `${siteUrl}/gallery`,
-    image: items.filter((i) => i.type !== "video").slice(0, 8).map((item) => ({
+    image: items.slice(0, 8).map((item) => ({
       "@type": "ImageObject",
       contentUrl: item.src.startsWith("http") ? item.src : `${siteUrl}${item.src}`,
       name: item.title,

@@ -54,7 +54,7 @@ next-env.d.ts
 *.dump
 *-url-*.secret
 
-# never commit hosted-platform leftovers (Hostinger VPS is the only deploy target)
+# Hostinger VPS is the only deploy target — ignore other platform leftovers
 .vercel
 .vercel/
 .open-next
@@ -62,6 +62,10 @@ next-env.d.ts
 wrangler.toml
 wrangler.jsonc
 vercel.json
+
+# Scratch diagnostics (never commit)
+_diag_*.txt
+_diag_*
 
 # local deploy / CI debug artifacts (never commit)
 public/__db-migrate-status.json
