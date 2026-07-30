@@ -28,9 +28,13 @@ type SendPayload = {
   replyTo?: string;
 };
 
-// Nodemailer pool vs transport typings conflict across @types versions.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let pool: any = null;
+type SmtpPool = {
+  verify(): Promise<void>;
+  sendMail(mail: Record<string, unknown>): Promise<{ messageId?: string; response?: string }>;
+  close(): void;
+};
+
+let pool: SmtpPool | null = null;
 let lastVerify: SmtpVerifyResult | null = null;
 let lastFailureAt: string | null = null;
 let lastFailureMessage = "";
@@ -49,7 +53,7 @@ export function getLastSmtpFailure(): { at: string; message: string } | null {
 }
 
 /** Create / reuse a pooled SMTP transport. Password never logged. */
-export function getSmtpTransport() {
+export function getSmtpTransport(): SmtpPool | null {
   const cfg = getSmtpConfig();
   if (!cfg) return null;
   if (pool) return pool;
@@ -68,7 +72,7 @@ export function getSmtpTransport() {
     connectionTimeout: 20_000,
     greetingTimeout: 20_000,
     socketTimeout: 30_000,
-  });
+  }) as unknown as SmtpPool;
 
   return pool;
 }
