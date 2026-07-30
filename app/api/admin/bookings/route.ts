@@ -285,6 +285,17 @@ export async function PATCH(req: Request) {
       }
     }
 
+    // Email module only — does not change booking totals / inventory.
+    void import("@/lib/email/booking-notifications").then(({ notifyBookingStatusChange }) =>
+      notifyBookingStatusChange({
+        bookingId: booking.id,
+        previousStatus: existing?.status,
+        nextStatus: body.status,
+        previousPaymentStatus: existing?.paymentStatus,
+        nextPaymentStatus: body.paymentStatus,
+      }).catch((err) => console.error("[AdminBookingsUpdate] email notify failed:", err))
+    );
+
     return NextResponse.json({ success: true, booking });
   } catch (error) {
     console.error("[AdminBookingsUpdate]", error);

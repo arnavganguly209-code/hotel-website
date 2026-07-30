@@ -86,11 +86,39 @@ model Booking {
   updatedAt       DateTime  @updatedAt
   roomId          Int?
   room            Room?     @relation(fields: [roomId], references: [id])
+  emailLogs       EmailLog[]
 
   @@index([roomSlug, checkIn, checkOut])
   @@index([status])
   @@index([source])
   @@index([createdAt])
+}
+
+/** Outbound email delivery history (SMTP module). */
+model EmailLog {
+  id           String    @id @default(cuid())
+  bookingId    Int?
+  booking      Booking?  @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  recipient    String
+  subject      String
+  template     String
+  /** queued | sending | sent | failed | retrying */
+  status       String    @default("queued")
+  smtpResponse String    @default("")
+  error        String    @default("")
+  sentAt       DateTime?
+  /** When SMTP accepted the message (delivery acknowledgement). */
+  deliveredAt  DateTime?
+  retryCount   Int       @default(0)
+  meta         Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([bookingId])
+  @@index([status])
+  @@index([template])
+  @@index([createdAt])
+  @@index([recipient])
 }
 
 model EventInquiry {

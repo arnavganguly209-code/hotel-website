@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { AdminBookingMoney } from "@/components/admin/AdminBookingMoney";
+import { AdminBookingEmailActions } from "@/components/admin/AdminBookingEmailActions";
 
 interface RoomOption {
   slug: string;
@@ -378,6 +379,7 @@ export default function AdminOfflineBookingsPage() {
                 >
                   Print voucher / invoice
                 </a>
+                <AdminBookingEmailActions bookingId={b.id} />
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-3">
                 <select

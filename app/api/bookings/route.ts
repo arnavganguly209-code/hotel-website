@@ -154,6 +154,9 @@ export async function POST(req: Request) {
 
     const adminEmail =
       content.settings.bookingEmail || content.contactPage?.email || content.hotel?.email || "";
+    const forwarded = req.headers.get("x-forwarded-for") || "";
+    const ipAddress = forwarded.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "";
+    const userAgent = req.headers.get("user-agent") || "";
     void import("@/lib/mail").then(({ sendRoomBookingEmails }) =>
       sendRoomBookingEmails(
         {
@@ -161,6 +164,8 @@ export async function POST(req: Request) {
           name: body.name,
           email: body.email,
           phone: body.phone,
+          country: body.country,
+          specialRequests: body.specialRequests ?? "",
           roomName: room.name,
           checkIn: body.checkIn,
           checkOut: body.checkOut,
@@ -177,6 +182,12 @@ export async function POST(req: Request) {
           grandTotal: tax.grandTotal,
           currency: tax.currency,
           paymentMethod: body.paymentMethod,
+          bookingStatus: booking.status,
+          paymentStatus: booking.paymentStatus,
+          bookingDate: booking.createdAt.toISOString().slice(0, 10),
+          bookingTime: booking.createdAt.toISOString(),
+          ipAddress,
+          userAgent,
           voucherUrl: `${process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || ""}/api/bookings/${booking.id}/voucher?email=${encodeURIComponent(body.email)}`,
         },
         adminEmail

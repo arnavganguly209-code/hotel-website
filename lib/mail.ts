@@ -12,20 +12,40 @@ export type EnquiryMailPayload = {
 };
 
 function smtpConfigured(): boolean {
-  return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+  return Boolean(
+    process.env.SMTP_HOST &&
+      process.env.SMTP_USER &&
+      (process.env.SMTP_PASSWORD || process.env.SMTP_PASS)
+  );
 }
 
 function createTransport() {
   const port = Number(process.env.SMTP_PORT || 587);
+  const secureEnv = process.env.SMTP_SECURE;
+  const secure =
+    secureEnv != null && secureEnv !== ""
+      ? ["1", "true", "yes", "on"].includes(secureEnv.toLowerCase())
+      : port === 465;
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port,
-    secure: port === 465,
+    secure,
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      pass: process.env.SMTP_PASSWORD || process.env.SMTP_PASS,
     },
   });
+}
+
+function mailFromHeader(): string {
+  const address =
+    process.env.MAIL_FROM_ADDRESS ||
+    process.env.SMTP_FROM ||
+    process.env.SMTP_USER ||
+    "booking@hotelthamelpark.com";
+  const name = process.env.MAIL_FROM_NAME || process.env.HOTEL_NAME || "Hotel Thamel Park";
+  if (address.includes("<")) return address;
+  return `"${name}" <${address}>`;
 }
 
 /** Sends guest confirmation + admin notification. No-ops gracefully if SMTP is unset. */
@@ -38,8 +58,8 @@ export async function sendContactEnquiryEmails(
     return { guestSent: false, adminSent: false };
   }
 
-  const from = process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@hotelthamelpark.com";
-  const hotelName = "Hotel Thamel Park";
+  const from = mailFromHeader();
+  const hotelName = process.env.HOTEL_NAME || "Hotel Thamel Park";
   const transport = createTransport();
   let guestSent = false;
   let adminSent = false;
@@ -131,8 +151,8 @@ export async function sendDiningReservationEmails(
     return { guestSent: false, adminSent: false };
   }
 
-  const from = process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@hotelthamelpark.com";
-  const hotelName = "Hotel Thamel Park";
+  const from = mailFromHeader();
+  const hotelName = process.env.HOTEL_NAME || "Hotel Thamel Park";
   const transport = createTransport();
   let guestSent = false;
   let adminSent = false;
@@ -240,126 +260,33 @@ export type RoomBookingMailPayload = {
   currency: string;
   paymentMethod?: string;
   voucherUrl?: string;
+  country?: string;
+  specialRequests?: string;
+  bookingStatus?: string;
+  paymentStatus?: string;
+  bookingDate?: string;
+  bookingTime?: string;
+  ipAddress?: string;
+  userAgent?: string;
 };
 
-/** Guest + admin emails for room bookings, including VAT-inclusive tax breakdown. */
+/**
+ * Guest confirmation + hotel notification via Email Notification System.
+ * Keeps this export stable for the booking API (no booking-calc changes).
+ */
 export async function sendRoomBookingEmails(
   payload: RoomBookingMailPayload,
-  adminEmail: string
+  _adminEmail: string
 ): Promise<{ guestSent: boolean; adminSent: boolean }> {
-  if (!smtpConfigured()) {
-    console.info("[mail] SMTP not configured — room booking stored without email send.", payload.id);
+  try {
+    const { notifyNewRoomBooking } = await import("@/lib/email/booking-notifications");
+    const result = await notifyNewRoomBooking(payload);
+    return {
+      guestSent: Boolean(result.guest.ok),
+      adminSent: Boolean(result.hotel.ok),
+    };
+  } catch (err) {
+    console.error("[mail] Room booking email module failed:", err);
     return { guestSent: false, adminSent: false };
   }
-
-  const from = process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@hotelthamelpark.com";
-  const hotelName = "Hotel Thamel Park";
-  const transport = createTransport();
-  let guestSent = false;
-  let adminSent = false;
-  const currency = payload.currency || "USD";
-  const vatPct = `${Math.round((payload.vatRate || 0.13) * 100)}%`;
-
-  const breakdownText = [
-    `Room Rate (VAT Included): $${payload.displayPrice.toFixed(2)}`,
-    "",
-    "Tax Breakdown",
-    `Room Charge (Excl. VAT): $${payload.basePrice.toFixed(2)}`,
-    `VAT (${vatPct}): $${payload.vatAmount.toFixed(2)}`,
-    `Grand Total: $${payload.grandTotal.toFixed(2)} ${currency}`,
-  ].join("\n");
-
-  const breakdownHtml = `<p><strong>Room Rate (VAT Included):</strong> $${payload.displayPrice.toFixed(2)}</p>
-<p style="margin-top:12px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#a47e3e;"><strong>Tax Breakdown</strong></p>
-<p><strong>Room Charge (Excl. VAT):</strong> $${payload.basePrice.toFixed(2)}<br/>
-<strong>VAT (${vatPct}):</strong> $${payload.vatAmount.toFixed(2)}<br/>
-<strong>Grand Total:</strong> $${payload.grandTotal.toFixed(2)} ${currency}</p>
-<p style="font-size:12px;color:#5a635c;">Website rates are VAT inclusive — VAT is not added again.</p>`;
-
-  try {
-    await transport.sendMail({
-      from,
-      to: payload.email,
-      subject: `Booking request received #${payload.id} — ${hotelName}`,
-      text: [
-        `Dear ${payload.name},`,
-        "",
-        `Thank you for choosing ${hotelName}.`,
-        `We have received your booking request (reference #${payload.id}).`,
-        "",
-        `Room: ${payload.roomName}`,
-        `Check-in: ${payload.checkIn}`,
-        `Check-out: ${payload.checkOut}`,
-        `Nights: ${payload.nights}`,
-        `Guests: ${payload.adults} adult(s), ${payload.children} child(ren)`,
-        `Rooms: ${payload.roomQuantity}`,
-        "",
-        breakdownText,
-        payload.voucherUrl ? `\nReservation voucher: ${payload.voucherUrl}` : "",
-        "",
-        "Our reservations team will confirm availability shortly.",
-        "",
-        "Warm regards,",
-        hotelName,
-      ].join("\n"),
-      html: `<p>Dear ${payload.name},</p>
-<p>Thank you for choosing <strong>${hotelName}</strong>.</p>
-<p>We have received your booking request (reference <strong>#${payload.id}</strong>).</p>
-<p><strong>Room:</strong> ${payload.roomName}<br/>
-<strong>Check-in:</strong> ${payload.checkIn}<br/>
-<strong>Check-out:</strong> ${payload.checkOut}<br/>
-<strong>Nights:</strong> ${payload.nights}<br/>
-<strong>Guests:</strong> ${payload.adults} adult(s), ${payload.children} child(ren)<br/>
-<strong>Rooms:</strong> ${payload.roomQuantity}</p>
-${breakdownHtml}
-${payload.voucherUrl ? `<p><a href="${payload.voucherUrl}">View / print reservation voucher</a></p>` : ""}
-<p>Our reservations team will confirm availability shortly.</p>
-<p>Warm regards,<br/>${hotelName}</p>`,
-    });
-    guestSent = true;
-  } catch (err) {
-    console.error("[mail] Guest room booking confirmation failed:", err);
-  }
-
-  if (adminEmail) {
-    try {
-      await transport.sendMail({
-        from,
-        to: adminEmail,
-        subject: `New room booking #${payload.id} — ${payload.roomName}`,
-        text: [
-          `New room booking #${payload.id}`,
-          `Guest: ${payload.name}`,
-          `Email: ${payload.email}`,
-          `Phone: ${payload.phone || "—"}`,
-          `Room: ${payload.roomName}`,
-          `Check-in: ${payload.checkIn}`,
-          `Check-out: ${payload.checkOut}`,
-          `Nights: ${payload.nights}`,
-          `Guests: ${payload.adults} adults / ${payload.children} children`,
-          `Rooms: ${payload.roomQuantity}`,
-          `Payment: ${payload.paymentMethod || "—"}`,
-          "",
-          breakdownText,
-        ].join("\n"),
-        html: `<h2>New Room Booking #${payload.id}</h2>
-<p><strong>Guest:</strong> ${payload.name}<br/>
-<strong>Email:</strong> ${payload.email}<br/>
-<strong>Phone:</strong> ${payload.phone || "—"}<br/>
-<strong>Room:</strong> ${payload.roomName}<br/>
-<strong>Check-in:</strong> ${payload.checkIn}<br/>
-<strong>Check-out:</strong> ${payload.checkOut}<br/>
-<strong>Nights:</strong> ${payload.nights}<br/>
-<strong>Guests:</strong> ${payload.adults} adults / ${payload.children} children<br/>
-<strong>Rooms:</strong> ${payload.roomQuantity}<br/>
-<strong>Payment:</strong> ${payload.paymentMethod || "—"}</p>
-${breakdownHtml}`,
-      });
-      adminSent = true;
-    } catch (err) {
-      console.error("[mail] Admin room booking notification failed:", err);
-    }
-  }
-
-  return { guestSent, adminSent };
 }

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2, Trash2 } from "lucide-react";
 import { AdminBookingMoney } from "@/components/admin/AdminBookingMoney";
+import { AdminBookingEmailActions } from "@/components/admin/AdminBookingEmailActions";
 
 interface Booking {
   id: number;
@@ -252,6 +253,7 @@ export default function AdminOnlineBookingsPage() {
                       >
                         Print voucher
                       </a>
+                      <AdminBookingEmailActions bookingId={b.id} />
                     </td>
                     <td className="px-4 py-3">
                       <button
