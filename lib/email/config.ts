@@ -13,6 +13,23 @@ function envBool(name: string, fallback: boolean): boolean {
   return ["1", "true", "yes", "on"].includes(raw.trim().toLowerCase());
 }
 
+/** Canonical public origin that hosts this Next.js app (API + /brand assets). */
+export function getPublicAppUrl(): string {
+  const raw =
+    env("NEXT_PUBLIC_SITE_URL") ||
+    env("SITE_URL") ||
+    env("HOTEL_APP_URL") ||
+    // Prefer the live app host over a marketing domain that may not proxy /api.
+    "https://hotel.theglobalorbit.com";
+  return raw.replace(/\/+$/, "");
+}
+
+/** Public marketing / guest-facing website link (footer, Visit Website). */
+export function getPublicWebsiteUrl(): string {
+  const raw = env("HOTEL_WEBSITE") || getPublicAppUrl();
+  return raw.replace(/\/+$/, "");
+}
+
 /** SMTP password: prefer SMTP_PASSWORD, fall back to legacy SMTP_PASS. */
 export function getSmtpPassword(): string {
   return env("SMTP_PASSWORD") || env("SMTP_PASS");
@@ -88,27 +105,22 @@ export function getMailFromHeader(): string {
 }
 
 export function getHotelMailConfig(): HotelMailConfig {
-  const site =
-    env("HOTEL_WEBSITE") ||
-    env("NEXT_PUBLIC_SITE_URL") ||
-    env("SITE_URL") ||
-    "https://hotel.theglobalorbit.com";
-  const base = site.replace(/\/$/, "").replace(/\/$/, "");
-  // Absolute HTTPS URL only — never localhost. Cache-bust for email clients.
-  // Prefer compact email-logo.png for remote <img> loads; CID uses the same file on disk.
+  const appBase = getPublicAppUrl();
+  const website = getPublicWebsiteUrl();
+  // Absolute HTTPS URL only — never localhost. Served from the app host so email clients can load it.
   const logoPath = env("HOTEL_LOGO_PATH") || "/brand/email-logo.png";
   const logoAbsolute =
     env("HOTEL_LOGO_URL") ||
-    `${base}${logoPath.startsWith("/") ? logoPath : `/${logoPath}`}?v=email-20260730b`;
+    `${appBase}${logoPath.startsWith("/") ? logoPath : `/${logoPath}`}?v=email-20260730c`;
   const heroAbsolute =
-    env("HOTEL_EMAIL_HERO_URL") || `${base}/brand/og-image.png?v=email-20260730`;
+    env("HOTEL_EMAIL_HERO_URL") || `${appBase}/brand/og-image.png?v=email-20260730c`;
 
   return {
     name: env("HOTEL_NAME") || "Hotel Thamel Park",
     phone: env("HOTEL_PHONE") || "+977-1-4412345",
     email: env("HOTEL_EMAIL") || getMailFrom().address,
     address: env("HOTEL_ADDRESS") || "Thamel, Kathmandu 44600, Nepal",
-    website: base,
+    website,
     googleMap:
       env("HOTEL_GOOGLE_MAP") ||
       "https://maps.google.com/?q=Hotel+Thamel+Park+Kathmandu",
@@ -132,16 +144,15 @@ export function getHotelMailConfig(): HotelMailConfig {
   };
 }
 
-/** Absolute guest PDF download URL (email-authenticated). */
+/** Absolute guest PDF download URL (email-authenticated) — always on the app host. */
 export function getBookingPdfUrl(bookingId: number, guestEmail: string): string {
-  const hotel = getHotelMailConfig();
-  return `${hotel.website}/api/bookings/${bookingId}/pdf?email=${encodeURIComponent(guestEmail)}&download=1`;
+  const base = getPublicAppUrl();
+  return `${base}/api/bookings/${bookingId}/pdf?email=${encodeURIComponent(guestEmail)}&download=1`;
 }
 
-/** Absolute admin dashboard URL. */
+/** Absolute admin dashboard URL — always on the app host. */
 export function getAdminDashboardUrl(): string {
-  const hotel = getHotelMailConfig();
-  return `${hotel.website}/admin`;
+  return `${getPublicAppUrl()}/admin`;
 }
 
 /** Hotel inbox for new-booking notifications — always prefer booking@ inbox. */

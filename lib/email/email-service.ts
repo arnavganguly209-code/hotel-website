@@ -14,7 +14,6 @@ import {
 import { buildReservationPdf } from "./pdf-service";
 import { smtpSend, verifySmtpConnection } from "./smtp-service";
 import {
-  EMAIL_LOGO_CID,
   renderBookingEmail,
   type BookingEmailContext,
 } from "./template-service";
@@ -169,10 +168,10 @@ export class EmailService {
     const ctxWithLogo: BookingEmailContext = {
       ...opts.ctx,
       pdfUrl:
-        opts.ctx.pdfUrl ||
-        getBookingPdfUrl(opts.ctx.bookingId, opts.ctx.guestEmail),
-      // Prefer CID when logo file is on disk; otherwise absolute HTTPS URL.
-      useCidLogo: Boolean(logoBuf),
+        opts.ctx.pdfUrl && /^https?:\/\//i.test(opts.ctx.pdfUrl)
+          ? opts.ctx.pdfUrl
+          : getBookingPdfUrl(opts.ctx.bookingId, opts.ctx.guestEmail),
+      useCidLogo: false,
     };
 
     let rendered;
@@ -195,7 +194,12 @@ export class EmailService {
       subject: rendered.subject,
       template: opts.template,
       status: "sending",
-      meta: { attachPdf: Boolean(opts.attachPdf), cidLogo: Boolean(logoBuf) },
+      meta: {
+        attachPdf: Boolean(opts.attachPdf),
+        logoUrl: getHotelMailConfig().logoUrl,
+        pdfUrl: ctxWithLogo.pdfUrl,
+        logoOnDisk: Boolean(logoBuf),
+      },
     });
 
     let attempts = 0;
@@ -215,18 +219,7 @@ export class EmailService {
         };
         const attachments: MailAttachment[] = [];
 
-        // Inline logo for Gmail/Outlook/Apple Mail (CID). Absolute URL is HTML fallback.
-        if (logoBuf) {
-          attachments.push({
-            filename: "hotel-logo.png",
-            content: logoBuf,
-            contentType: "image/png",
-            cid: EMAIL_LOGO_CID,
-            contentDisposition: "inline",
-          });
-        }
-
-        // PDF is optional — never block the email if generation fails.
+        // PDF only — logo is loaded via absolute HTTPS URL in HTML (avoids CID/PDF multipart issues).
         if (opts.attachPdf) {
           logStep("Generating PDF attachment", { bookingId, attempt: attempts });
           try {
@@ -255,7 +248,8 @@ export class EmailService {
           to: opts.to,
           subject: rendered.subject,
           hasPdf: attachments.some((a) => a.contentType === "application/pdf"),
-          hasCidLogo: Boolean(logoBuf),
+          logoUrl: hotel.logoUrl,
+          pdfUrl: ctxWithLogo.pdfUrl,
           attempt: attempts,
         });
 

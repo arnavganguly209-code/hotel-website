@@ -175,13 +175,20 @@ export async function smtpSend(
     html: payload.html,
     text: payload.text,
     replyTo: payload.replyTo,
-    attachments: payload.attachments?.map((a) => ({
-      filename: a.filename,
-      content: a.content,
-      contentType: a.contentType,
-      cid: a.cid,
-      contentDisposition: a.contentDisposition || (a.cid ? "inline" : "attachment"),
-    })),
+    attachments: payload.attachments?.map((a) => {
+      const mapped: Record<string, unknown> = {
+        filename: a.filename,
+        content: a.content,
+        contentType: a.contentType,
+      };
+      if (a.cid) {
+        mapped.cid = a.cid;
+        mapped.contentDisposition = "inline";
+      } else {
+        mapped.contentDisposition = a.contentDisposition || "attachment";
+      }
+      return mapped;
+    }),
   });
   console.info("[smtp] sendMail accepted", {
     to: payload.to,

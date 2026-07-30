@@ -53,7 +53,7 @@ export type RenderedEmail = {
   template: EmailTemplateId;
 };
 
-export const EMAIL_LOGO_CID = "htp-logo";
+export const EMAIL_LOGO_CID = "htp-logo@hotelthamelpark";
 
 function esc(value: string): string {
   return String(value || "")
@@ -119,14 +119,14 @@ function btn(href: string, label: string, style: "gold" | "green" | "outline" | 
   return `<a href="${esc(href)}" style="display:inline-block;margin:0 8px 8px 0;padding:12px 18px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:0.06em;${styles}">${esc(label)}</a>`;
 }
 
-function logoSrc(useCid?: boolean): string {
+function logoMarkup(_useCid?: boolean): string {
   const hotel = getHotelMailConfig();
-  if (useCid) return `cid:${EMAIL_LOGO_CID}`;
-  return hotel.logoUrl;
+  // Always use absolute HTTPS on the app host (never relative, never marketing-only domain).
+  return `<img src="${esc(hotel.logoUrl)}" alt="${esc(hotel.name)} Logo" width="120" style="width:120px;max-width:120px;height:auto;display:block;margin:0 auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;" />`;
 }
 
 function pdfDownloadUrl(ctx: BookingEmailContext): string {
-  if (ctx.pdfUrl) return ctx.pdfUrl;
+  if (ctx.pdfUrl && /^https?:\/\//i.test(ctx.pdfUrl)) return ctx.pdfUrl;
   return getBookingPdfUrl(ctx.bookingId, ctx.guestEmail);
 }
 
@@ -139,7 +139,7 @@ function luxuryShell(opts: {
 }): string {
   const hotel = getHotelMailConfig();
   const year = new Date().getFullYear();
-  const logo = logoSrc(opts.useCidLogo);
+  const logo = logoMarkup(opts.useCidLogo);
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -154,10 +154,10 @@ function luxuryShell(opts: {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#efe9dc;padding:28px 12px;">
     <tr><td align="center">
       <table role="presentation" width="640" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;background:#fffdf8;border-radius:18px;overflow:hidden;border:1px solid #d4af37;box-shadow:0 18px 50px rgba(21,58,42,0.12);">
-        <!-- White logo band so dark logo marks remain visible in Gmail/Outlook -->
+        <!-- Logo: absolute HTTPS URL (never relative / localhost) + optional CID -->
         <tr>
           <td align="center" style="background:#ffffff;padding:28px 24px 18px;border-bottom:3px solid #c5a059;">
-            <img src="${esc(logo)}" alt="${esc(hotel.name)} Logo" width="140" height="140" style="width:140px;max-width:140px;height:auto;display:block;margin:0 auto;border:0;outline:none;text-decoration:none;" />
+            ${logo}
             <p style="margin:14px 0 0;font-size:12px;letter-spacing:0.28em;text-transform:uppercase;color:#153a2a;font-weight:700;">${esc(hotel.name)}</p>
           </td>
         </tr>
@@ -245,8 +245,14 @@ function guestCards(ctx: BookingEmailContext): string {
   );
 
   const buttons = `
-    <div style="margin:8px 0 20px;text-align:center;">
-      ${btn(pdfHref, "Download Booking Voucher (PDF)", "gold")}
+    <div style="margin:8px 0 12px;text-align:center;">
+      ${btn(pdfHref, "Download Booking PDF", "gold")}
+    </div>
+    <p style="margin:0 0 18px;font-size:13px;line-height:1.6;color:#5a635c;text-align:center;">
+      Your voucher is also attached as <strong>Booking-${ctx.bookingId}.pdf</strong>.<br/>
+      Open that attachment to save the PDF — do not use the website homepage.
+    </p>
+    <div style="margin:0 0 20px;text-align:center;">
       ${btn(hotel.website, "Visit Website", "outline")}
       ${btn(`mailto:${hotel.email}`, "Contact Hotel", "green")}
     </div>`;
@@ -347,8 +353,12 @@ export function renderBookingEmail(
   const hotel = getHotelMailConfig();
   const withPdf = {
     ...ctx,
-    pdfUrl: ctx.pdfUrl || getBookingPdfUrl(ctx.bookingId, ctx.guestEmail),
-    useCidLogo: ctx.useCidLogo !== false,
+    pdfUrl:
+      ctx.pdfUrl && /^https?:\/\//i.test(ctx.pdfUrl)
+        ? ctx.pdfUrl
+        : getBookingPdfUrl(ctx.bookingId, ctx.guestEmail),
+    // Honor sender: CID when logo file was embedded; otherwise absolute HTTPS.
+    useCidLogo: Boolean(ctx.useCidLogo),
   };
 
   if (template === "hotel_new_booking") {
