@@ -6,15 +6,16 @@ import { formatUsd, formatVatPercent } from "@/lib/booking/vat";
 import { getHotelMailConfig } from "./config";
 import type { BookingEmailContext } from "./template-service";
 
-const MM = 2.834645669; // points per mm
-const MARGIN = 20 * MM; // 20mm
+/** A4 = 210×297mm. Tight margins so one page holds the full bill. */
+const MM = 2.834645669;
+const MARGIN = 12 * MM; // 12mm — use more of the A4 sheet
 const GREEN = "#153a2a";
 const GOLD = "#c5a059";
 const GOLD_SOFT = "#e8d5a0";
 const INK = "#14352c";
 const MUTED = "#5a635c";
-const RULE = "#e2d2a8";
 const CREAM = "#fffdf8";
+const LINE = "#e2d2a8";
 
 function loadLogoFromDisk(): Buffer | null {
   const candidates = [
@@ -26,7 +27,10 @@ function loadLogoFromDisk(): Buffer | null {
     try {
       if (fs.existsSync(file)) {
         const buf = fs.readFileSync(file);
-        if (buf.length > 0) return buf;
+        if (buf.length > 0) {
+          console.info("[pdf] Logo loaded from disk", { file, bytes: buf.length });
+          return buf;
+        }
       }
     } catch {
       /* try next */
@@ -35,60 +39,62 @@ function loadLogoFromDisk(): Buffer | null {
   return null;
 }
 
-async function fetchLogoBuffer(url: string): Promise<Buffer | null> {
+async function resolveLogoBuffer(url: string): Promise<Buffer | null> {
   const fromDisk = loadLogoFromDisk();
   if (fromDisk) return fromDisk;
   try {
     if (!url) return null;
-    // Strip cache-bust query for fetch reliability
     const clean = url.split("?")[0];
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8_000);
     const res = await fetch(clean, { signal: controller.signal });
     clearTimeout(timer);
     if (!res.ok) return null;
-    return Buffer.from(await res.arrayBuffer());
+    const buf = Buffer.from(await res.arrayBuffer());
+    console.info("[pdf] Logo fetched from URL", { url: clean, bytes: buf.length });
+    return buf;
   } catch (err) {
-    console.error(
-      "[pdf] Logo fetch skipped:",
-      err instanceof Error ? err.message : err
-    );
+    console.error("[pdf] Logo missing:", err instanceof Error ? err.message : err);
     return null;
   }
 }
+
 function statusLabel(value: string) {
   return (value || "—").replace(/_/g, " ");
 }
 
+function clip(value: string, max: number) {
+  const v = (value || "—").trim();
+  if (v.length <= max) return v;
+  return `${v.slice(0, max - 1)}…`;
+}
+
 /**
- * Luxury A4 portrait reservation voucher (20mm margins).
- * Server-side only. Uses stored VAT-inclusive amounts — never adds VAT again.
+ * Single-page A4 reservation bill / voucher.
+ * Logo at top (no hotel name text when logo is present). Never adds a second page.
  */
 export async function buildReservationPdf(ctx: BookingEmailContext): Promise<Buffer> {
   const hotel = getHotelMailConfig();
   const issueDate = ctx.issueDate || new Date().toISOString().slice(0, 10);
 
-  const qrPayload = [
-    `Booking #${ctx.bookingId}`,
-    `Guest: ${ctx.guestName}`,
-    `Arrival: ${ctx.checkIn}`,
-    `Departure: ${ctx.checkOut}`,
-  ].join("\n");
-
-  const qrDataUrl = await QRCode.toDataURL(qrPayload, {
-    width: 180,
-    margin: 1,
-    color: { dark: GREEN, light: "#FFFFFF" },
-    errorCorrectionLevel: "M",
-  });
+  const qrDataUrl = await QRCode.toDataURL(
+    [`#${ctx.bookingId}`, ctx.guestName, ctx.checkIn, ctx.checkOut].join("|"),
+    {
+      width: 140,
+      margin: 1,
+      color: { dark: GREEN, light: "#FFFFFF" },
+      errorCorrectionLevel: "M",
+    }
+  );
   const qrBuf = Buffer.from(qrDataUrl.split(",")[1] || "", "base64");
-  const logoBuf = await fetchLogoBuffer(hotel.logoUrl);
+  const logoBuf = await resolveLogoBuffer(hotel.logoUrl);
 
   const doc = new PDFDocument({
     size: "A4",
+    autoFirstPage: true,
     margins: { top: MARGIN, bottom: MARGIN, left: MARGIN, right: MARGIN },
     info: {
-      Title: `Reservation #${ctx.bookingId} — ${hotel.name}`,
+      Title: `Booking-${ctx.bookingId}`,
       Author: hotel.name,
       Subject: "Booking Confirmation Voucher",
     },
@@ -101,239 +107,197 @@ export async function buildReservationPdf(ctx: BookingEmailContext): Promise<Buf
     doc.on("error", reject);
   });
 
-  const pageW = doc.page.width;
-  const pageH = doc.page.height;
+  const pageW = doc.page.width; // 595.28
+  const pageH = doc.page.height; // 841.89
   const contentW = pageW - MARGIN * 2;
   const left = MARGIN;
   const right = pageW - MARGIN;
+  const colGap = 10;
+  const colW = (contentW - colGap) / 2;
 
-  // Cream page base
+  // Full-bleed cream background on the single A4 page
   doc.rect(0, 0, pageW, pageH).fill(CREAM);
 
-  // White logo band (dark circular logos remain visible)
-  doc.rect(0, 0, pageW, 78).fill("#ffffff");
-  doc.rect(0, 78, pageW, 3).fill(GOLD);
+  // —— Header: logo only (no hotel name when logo exists) ——
+  doc.rect(0, 0, pageW, 72).fill("#ffffff");
+  doc.rect(0, 72, pageW, 2.5).fill(GOLD);
 
   if (logoBuf) {
     try {
-      const logoH = 52;
-      const logoW = 120;
-      doc.image(logoBuf, (pageW - logoW) / 2, 12, {
-        height: logoH,
-        fit: [logoW, logoH],
+      const logoBox = 56;
+      doc.image(logoBuf, (pageW - logoBox) / 2, 8, {
+        fit: [logoBox, logoBox],
         align: "center",
+        valign: "center",
       });
-    } catch {
-      doc.fillColor(GREEN).fontSize(14).text(hotel.name, left, 28, {
+    } catch (err) {
+      console.error("[pdf] Logo draw failed:", err instanceof Error ? err.message : err);
+      doc.fillColor(GREEN).fontSize(16).text(hotel.name, left, 28, {
         width: contentW,
         align: "center",
       });
     }
   } else {
-    doc.fillColor(GREEN).fontSize(14).text(hotel.name, left, 28, {
+    doc.fillColor(GREEN).fontSize(16).text(hotel.name, left, 28, {
       width: contentW,
       align: "center",
     });
   }
 
-  // Dark green title band
-  doc.rect(0, 81, pageW, 52).fill(GREEN);
+  // Title strip
+  doc.rect(0, 74.5, pageW, 36).fill(GREEN);
   doc
     .fillColor("#ffffff")
-    .fontSize(18)
-    .text("Booking Confirmation", left, 92, { width: contentW, align: "center" });
+    .fontSize(15)
+    .text("BOOKING CONFIRMATION", left, 82, { width: contentW, align: "center" });
   doc
     .fillColor(GOLD_SOFT)
-    .fontSize(9)
-    .text("RESERVATION VOUCHER", left, 116, {
+    .fontSize(8)
+    .text("RESERVATION VOUCHER  ·  A4", left, 98, {
       width: contentW,
       align: "center",
-      characterSpacing: 2,
+      characterSpacing: 1.4,
     });
 
-  let y = 150;
+  let y = 122;
 
-  // Meta + QR row
-  const qrSize = 78;
-  doc.image(qrBuf, right - qrSize, y, { width: qrSize, height: qrSize });
-
-  doc.fillColor(INK).fontSize(11).text(`Reservation No.  #${ctx.bookingId}`, left, y + 8);
-  doc.fillColor(MUTED).fontSize(9).text(`Issue Date  ${issueDate}`, left, y + 28);
-  doc.text(`Status  ${statusLabel(ctx.bookingStatus)}  ·  Payment  ${statusLabel(ctx.paymentStatus)}`, left, y + 44);
+  // —— Booking meta + QR (compact) ——
+  const qrSize = 58;
+  doc.roundedRect(left, y, contentW - qrSize - 12, qrSize + 4, 4).fill("#ffffff");
   doc
-    .fillColor(GOLD)
+    .roundedRect(left, y, contentW - qrSize - 12, qrSize + 4, 4)
+    .lineWidth(0.8)
+    .strokeColor(LINE)
+    .stroke();
+
+  doc.fillColor(INK).fontSize(12).text(`Booking #${ctx.bookingId}`, left + 10, y + 8);
+  doc
+    .fillColor(MUTED)
     .fontSize(8)
-    .text("Scan QR for booking verification", right - qrSize, y + qrSize + 4, {
-      width: qrSize,
-      align: "center",
+    .text(
+      `Status: ${statusLabel(ctx.bookingStatus)}   ·   Payment: ${statusLabel(ctx.paymentStatus)}`,
+      left + 10,
+      y + 26
+    );
+  doc.text(`Issued: ${issueDate}   ·   Booked: ${ctx.bookingDate}`, left + 10, y + 40);
+
+  doc.image(qrBuf, right - qrSize, y, { width: qrSize, height: qrSize });
+  y += qrSize + 14;
+
+  const section = (title: string) => {
+    doc.fillColor(GREEN).fontSize(9).text(title.toUpperCase(), left, y, { characterSpacing: 1 });
+    y += 11;
+    doc.moveTo(left, y).lineTo(right, y).lineWidth(0.9).strokeColor(GOLD).stroke();
+    y += 8;
+  };
+
+  const cell = (label: string, value: string, x: number, rowY: number, width: number) => {
+    doc.fillColor(MUTED).fontSize(6.5).text(label.toUpperCase(), x, rowY, {
+      width,
+      characterSpacing: 0.4,
     });
-
-  y = Math.max(y + qrSize + 22, y + 72);
-
-  const sectionTitle = (title: string) => {
-    if (y > pageH - MARGIN - 80) {
-      doc.addPage();
-      doc.rect(0, 0, pageW, pageH).fill(CREAM);
-      y = MARGIN;
-    }
-    doc.fillColor(GREEN).fontSize(10).text(title.toUpperCase(), left, y, { characterSpacing: 1.2 });
-    y += 14;
-    doc.moveTo(left, y).lineTo(right, y).lineWidth(1).strokeColor(GOLD).stroke();
-    y += 12;
+    doc.fillColor(INK).fontSize(9).text(clip(value, 48), x, rowY + 9, { width });
   };
 
-  const row = (label: string, value: string, col = 0) => {
-    const colW = contentW / 2 - 8;
-    const x = col === 0 ? left : left + contentW / 2 + 8;
-    doc.fillColor(MUTED).fontSize(8).text(label.toUpperCase(), x, y, { width: colW, characterSpacing: 0.6 });
-    doc.fillColor(INK).fontSize(10).text(value || "—", x, y + 11, { width: colW });
+  const pair = (a: [string, string], b: [string, string]) => {
+    cell(a[0], a[1], left, y, colW);
+    cell(b[0], b[1], left + colW + colGap, y, colW);
+    y += 24;
   };
 
-  const twoCol = (a: [string, string], b: [string, string]) => {
-    row(a[0], a[1], 0);
-    row(b[0], b[1], 1);
-    y += 32;
-  };
-
-  // SECTION 1 — Hotel
-  sectionTitle("1 · Hotel Information");
-  twoCol(["Hotel Name", hotel.name], ["Phone", hotel.phone]);
-  twoCol(["Email", hotel.email], ["Website", hotel.website]);
-  doc.fillColor(MUTED).fontSize(8).text("ADDRESS", left, y, { characterSpacing: 0.6 });
-  doc.fillColor(INK).fontSize(10).text(hotel.address, left, y + 11, { width: contentW });
-  y += 34;
-  doc.fillColor(MUTED).fontSize(8).text("GOOGLE MAPS", left, y, { characterSpacing: 0.6 });
-  doc.fillColor(GOLD).fontSize(9).text(hotel.googleMap || "—", left, y + 11, { width: contentW });
-  y += 34;
-
-  // SECTION 2 — Booking
-  sectionTitle("2 · Booking Information");
-  twoCol(["Booking Number", `#${ctx.bookingId}`], ["Booking Date", ctx.bookingDate]);
-  twoCol(
-    ["Booking Status", statusLabel(ctx.bookingStatus)],
-    ["Payment Status", statusLabel(ctx.paymentStatus)]
+  // —— Guest ——
+  section("Guest");
+  pair(["Guest Name", ctx.guestName], ["Email", ctx.guestEmail]);
+  pair(
+    ["Phone", ctx.guestPhone || "—"],
+    ["Nationality", ctx.nationality || ctx.guestCountry || "—"]
   );
-  twoCol(["Reservation Source", statusLabel(ctx.reservationSource || "online")], ["Issue Date", issueDate]);
 
-  // SECTION 3 — Guest
-  sectionTitle("3 · Guest Information");
-  twoCol(["Guest Name", ctx.guestName], ["Email", ctx.guestEmail]);
-  twoCol(["Phone", ctx.guestPhone || "—"], ["Country", ctx.guestCountry || "—"]);
-  twoCol(["Nationality", ctx.nationality || ctx.guestCountry || "—"], ["Passport Number", ctx.passportNumber || "—"]);
-  doc.fillColor(MUTED).fontSize(8).text("SPECIAL REQUEST", left, y, { characterSpacing: 0.6 });
-  doc.fillColor(INK).fontSize(10).text(ctx.specialRequests || "—", left, y + 11, { width: contentW });
-  y += 36;
+  // —— Stay ——
+  section("Stay");
+  pair(["Room Type", ctx.roomName], ["Rooms", String(ctx.roomQuantity || 1)]);
+  pair(["Check-in", ctx.checkIn], ["Check-out", ctx.checkOut]);
+  pair(["Nights", String(ctx.nights)], ["Meal Plan", ctx.mealPlan || "Breakfast Included"]);
+  pair(["Adults", String(ctx.adults)], ["Children", String(ctx.children)]);
+  cell("Special Requests", clip(ctx.specialRequests || "—", 90), left, y, contentW);
+  y += 26;
 
-  // SECTION 4 — Stay
-  sectionTitle("4 · Stay Information");
-  twoCol(["Room Type", ctx.roomName], ["Room Number", ctx.roomNumber || "To be assigned"]);
-  twoCol(["Check In", ctx.checkIn], ["Check Out", ctx.checkOut]);
-  twoCol(["Total Nights", String(ctx.nights)], ["Meal Plan", ctx.mealPlan || "Breakfast Included"]);
-  twoCol(["Adults", String(ctx.adults)], ["Children", String(ctx.children)]);
+  // —— Payment ——
+  section("Payment");
+  const payH = 78;
+  doc.roundedRect(left, y, contentW, payH, 5).fillAndStroke("#fbf7ef", GOLD);
 
-  // SECTION 5 — Payment (VAT inclusive)
-  sectionTitle("5 · Payment Summary");
+  const payY = y + 10;
   doc
-    .roundedRect(left, y, contentW, 108, 6)
-    .lineWidth(1)
-    .strokeColor(GOLD)
-    .fillAndStroke("#fbf7ef", GOLD);
-
-  const payY = y + 14;
-  doc.fillColor(MUTED).fontSize(8).text("WEBSITE PRICE (VAT INCLUDED)", left + 16, payY, { characterSpacing: 0.6 });
-  doc.fillColor(GREEN).fontSize(16).text(formatUsd(ctx.displayPrice), left + 16, payY + 12);
-
-  doc.fillColor(MUTED).fontSize(8).text("BREAKDOWN", left + contentW / 2, payY, { characterSpacing: 0.6 });
-  doc
-    .fillColor(INK)
-    .fontSize(10)
-    .text(`Room Charge          ${formatUsd(ctx.basePrice)}`, left + contentW / 2, payY + 14);
-  doc.text(
-    `VAT (${formatVatPercent(ctx.vatRate || 0.13)})                  ${formatUsd(ctx.vatAmount)}`,
-    left + contentW / 2,
-    payY + 30
-  );
+    .fillColor(MUTED)
+    .fontSize(6.5)
+    .text("TOTAL (VAT INCLUDED)", left + 12, payY, { characterSpacing: 0.4 });
   doc
     .fillColor(GREEN)
-    .fontSize(11)
-    .text(
-      `Grand Total           ${formatUsd(ctx.grandTotal)} ${ctx.currency || "USD"}`,
-      left + contentW / 2,
-      payY + 50
-    );
+    .fontSize(18)
+    .text(`${formatUsd(ctx.grandTotal)} ${ctx.currency || "USD"}`, left + 12, payY + 12);
+
+  doc.fillColor(MUTED).fontSize(6.5).text("BREAKDOWN", left + contentW / 2, payY, {
+    characterSpacing: 0.4,
+  });
+  doc
+    .fillColor(INK)
+    .fontSize(8.5)
+    .text(`Room charge     ${formatUsd(ctx.basePrice)}`, left + contentW / 2, payY + 14);
+  doc.text(
+    `VAT (${formatVatPercent(ctx.vatRate || 0.13)})              ${formatUsd(ctx.vatAmount)}`,
+    left + contentW / 2,
+    payY + 28
+  );
   doc
     .fillColor(MUTED)
-    .fontSize(8)
-    .text(
-      "Website rates are VAT inclusive. VAT is shown for accounting only and is never added again.",
-      left + 16,
-      payY + 78,
-      { width: contentW - 32 }
-    );
-  y += 124;
+    .fontSize(7)
+    .text("Rates are VAT-inclusive — VAT is not added again.", left + 12, payY + 54, {
+      width: contentW - 24,
+    });
+  y += payH + 12;
 
-  // SECTION 6 — Policies
-  sectionTitle("6 · Hotel Policies");
-  const policies: [string, string][] = [
-    ["Check In Time", hotel.checkInTime],
-    ["Check Out Time", hotel.checkOutTime],
-    ["Smoking Policy", hotel.smokingPolicy],
-    ["Cancellation Policy", hotel.cancellationPolicy],
-    ["Children Policy", hotel.childrenPolicy],
-    ["Extra Bed Policy", hotel.extraBedPolicy],
-  ];
-  for (const [label, value] of policies) {
-    if (y > pageH - MARGIN - 50) {
-      doc.addPage();
-      doc.rect(0, 0, pageW, pageH).fill(CREAM);
-      y = MARGIN;
-    }
-    doc.fillColor(GOLD).fontSize(8).text(label.toUpperCase(), left, y, { characterSpacing: 0.6 });
-    doc.fillColor(INK).fontSize(9).text(value, left, y + 11, { width: contentW });
-    y += 28;
-  }
-
-  // SECTION 7 — QR note
-  sectionTitle("7 · Verification QR Code");
+  // —— Hotel contact (compact, no long policies) ——
+  section("Hotel");
+  pair(["Phone", hotel.phone], ["Email", hotel.email]);
+  cell("Address", hotel.address, left, y, contentW);
+  y += 22;
+  cell("Website", hotel.website, left, y, contentW);
+  y += 22;
   doc
     .fillColor(MUTED)
-    .fontSize(9)
+    .fontSize(7.5)
     .text(
-      "The QR code on this voucher encodes Booking Number, Guest Name, Arrival and Departure for front-desk verification.",
+      `Check-in ${hotel.checkInTime}  ·  Check-out ${hotel.checkOutTime}  ·  Free cancellation up to 24h before arrival`,
       left,
       y,
       { width: contentW }
     );
-  y += 28;
+  y += 18;
 
-  // SECTION 8 — Footer
-  if (y > pageH - MARGIN - 70) {
-    doc.addPage();
-    doc.rect(0, 0, pageW, pageH).fill(CREAM);
-    y = MARGIN;
-  }
-  doc.moveTo(left, y).lineTo(right, y).strokeColor(GOLD).stroke();
-  y += 14;
+  // —— Footer (pinned near bottom of the same A4 page) ——
+  const footerTop = Math.max(y + 8, pageH - MARGIN - 42);
+  doc.moveTo(left, footerTop).lineTo(right, footerTop).strokeColor(GOLD).stroke();
   doc
     .fillColor(GREEN)
-    .fontSize(11)
-    .text("Thank you for choosing Hotel Thamel Park.", left, y, { width: contentW, align: "center" });
+    .fontSize(9)
+    .text("Thank you for choosing Hotel Thamel Park.", left, footerTop + 8, {
+      width: contentW,
+      align: "center",
+    });
   doc
     .fillColor(MUTED)
-    .fontSize(9)
-    .text("We look forward to welcoming you.", left, y + 16, { width: contentW, align: "center" });
-  doc
-    .fillColor(GOLD)
-    .fontSize(8)
-    .text("Automatically Generated Reservation Voucher.  No Signature Required.", left, y + 34, {
+    .fontSize(7)
+    .text("We look forward to welcoming you.  ·  Auto-generated voucher — no signature required.", left, footerTop + 22, {
       width: contentW,
       align: "center",
     });
 
-  // Bottom gold rule
-  doc.rect(0, pageH - 6, pageW, 6).fill(GREEN);
-  doc.rect(0, pageH - 8, pageW, 2).fill(GOLD);
+  // Bottom accent on the same page
+  doc.rect(0, pageH - 5, pageW, 5).fill(GREEN);
+  doc.rect(0, pageH - 7, pageW, 2).fill(GOLD);
 
+  // Never call addPage() — this voucher is always exactly one A4 sheet.
   doc.end();
   return done;
 }
