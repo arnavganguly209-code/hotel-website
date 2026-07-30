@@ -15,6 +15,8 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
+    console.info("[Bookings] Booking request received");
+
     if (!isDatabaseAvailable()) {
       return NextResponse.json(
         { success: false, error: "Database not configured" },
@@ -58,6 +60,13 @@ export async function POST(req: Request) {
     ) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
     }
+
+    console.info("[Bookings] Booking validated", {
+      email: body.email,
+      roomSlug: body.roomSlug,
+      checkIn: body.checkIn,
+      checkOut: body.checkOut,
+    });
 
     const content = await getContent();
     const room = content.rooms.find(
@@ -152,13 +161,17 @@ export async function POST(req: Request) {
       },
     });
 
-    const adminEmail =
-      content.settings.bookingEmail || content.contactPage?.email || content.hotel?.email || "";
+    console.info("[Bookings] Booking saved to database", { bookingId: booking.id });
+
     const forwarded = req.headers.get("x-forwarded-for") || "";
     const ipAddress = forwarded.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "";
     const userAgent = req.headers.get("user-agent") || "";
-    void import("@/lib/mail").then(({ sendRoomBookingEmails }) =>
-      sendRoomBookingEmails(
+
+    let emailResult = { guestSent: false, adminSent: false };
+    try {
+      console.info("[Bookings] Preparing booking emails", { bookingId: booking.id });
+      const { sendRoomBookingEmails } = await import("@/lib/mail");
+      emailResult = await sendRoomBookingEmails(
         {
           id: booking.id,
           name: body.name,
@@ -190,9 +203,19 @@ export async function POST(req: Request) {
           userAgent,
           voucherUrl: `${process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || ""}/api/bookings/${booking.id}/voucher?email=${encodeURIComponent(body.email)}`,
         },
-        adminEmail
-      ).catch((err) => console.error("[Bookings] email failed:", err))
-    );
+        "booking@hotelthamelpark.com"
+      );
+      console.info("[Bookings] Booking email workflow completed", {
+        bookingId: booking.id,
+        guestSent: emailResult.guestSent,
+        adminSent: emailResult.adminSent,
+      });
+    } catch (err) {
+      console.error(
+        "[Bookings] email workflow crashed (booking still saved):",
+        err instanceof Error ? err.stack || err.message : err
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -210,6 +233,7 @@ export async function POST(req: Request) {
         grandTotal: tax.grandTotal,
         currency: tax.currency,
         voucherUrl: `/api/bookings/${booking.id}/voucher?email=${encodeURIComponent(body.email)}`,
+        email: emailResult,
       },
     });
   } catch (error) {

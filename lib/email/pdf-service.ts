@@ -17,10 +17,17 @@ const CREAM = "#fffdf8";
 async function fetchLogoBuffer(url: string): Promise<Buffer | null> {
   try {
     if (!url) return null;
-    const res = await fetch(url);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8_000);
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
     if (!res.ok) return null;
     return Buffer.from(await res.arrayBuffer());
-  } catch {
+  } catch (err) {
+    console.error(
+      "[pdf] Logo fetch skipped:",
+      err instanceof Error ? err.message : err
+    );
     return null;
   }
 }

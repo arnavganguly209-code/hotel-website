@@ -25,7 +25,6 @@ export async function sendBookingLifecycleEmail(
     ctx,
     to: booking.email,
     attachPdf: true,
-    queue: true,
   });
 }
 
@@ -42,6 +41,11 @@ export async function notifyNewRoomBooking(
     userAgent?: string;
   }
 ) {
+  console.info("[email] notifyNewRoomBooking start", {
+    bookingId: payload.id,
+    guestEmail: payload.email,
+  });
+
   const ctx: BookingEmailContext = {
     bookingId: payload.id,
     bookingDate: payload.bookingDate || new Date().toISOString().slice(0, 10),
@@ -83,7 +87,23 @@ export async function notifyNewRoomBooking(
     voucherUrl: payload.voucherUrl,
   };
 
-  return emailService.sendNewBookingPair(ctx);
+  try {
+    const result = await emailService.sendNewBookingPair(ctx);
+    console.info("[email] notifyNewRoomBooking done", {
+      bookingId: payload.id,
+      guestOk: result.guest.ok,
+      hotelOk: result.hotel.ok,
+      guestError: result.guest.error,
+      hotelError: result.hotel.error,
+    });
+    return result;
+  } catch (err) {
+    console.error(
+      "[email] notifyNewRoomBooking crashed:",
+      err instanceof Error ? err.stack || err.message : err
+    );
+    throw err;
+  }
 }
 
 /**

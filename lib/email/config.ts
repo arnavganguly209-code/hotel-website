@@ -124,12 +124,12 @@ export function getHotelMailConfig(): HotelMailConfig {
   };
 }
 
-/** Hotel inbox for new-booking notifications. */
+/** Hotel inbox for new-booking notifications — always prefer booking@ inbox. */
 export function getBookingNotifyEmail(): string {
   return (
     env("BOOKING_NOTIFY_EMAIL") ||
-    env("HOTEL_EMAIL") ||
-    getMailFrom().address ||
+    env("MAIL_FROM_ADDRESS") ||
+    env("SMTP_USER") ||
     "booking@hotelthamelpark.com"
   );
 }

@@ -161,6 +161,11 @@ export async function smtpSend(
   if (!transport) {
     throw new Error("SMTP not configured");
   }
+  console.info("[smtp] sendMail start", {
+    to: payload.to,
+    subject: payload.subject,
+    attachments: payload.attachments?.length || 0,
+  });
   const info = await transport.sendMail({
     from: payload.from,
     to: payload.to,
@@ -173,6 +178,11 @@ export async function smtpSend(
       content: a.content,
       contentType: a.contentType,
     })),
+  });
+  console.info("[smtp] sendMail accepted", {
+    to: payload.to,
+    messageId: info.messageId,
+    response: info.response,
   });
   return {
     messageId: String(info.messageId || ""),

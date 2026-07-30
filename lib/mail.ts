@@ -278,15 +278,29 @@ export async function sendRoomBookingEmails(
   payload: RoomBookingMailPayload,
   _adminEmail: string
 ): Promise<{ guestSent: boolean; adminSent: boolean }> {
+  console.info("[mail] sendRoomBookingEmails invoked", {
+    bookingId: payload.id,
+    guestEmail: payload.email,
+  });
   try {
     const { notifyNewRoomBooking } = await import("@/lib/email/booking-notifications");
     const result = await notifyNewRoomBooking(payload);
+    console.info("[mail] sendRoomBookingEmails finished", {
+      bookingId: payload.id,
+      guestSent: Boolean(result.guest.ok),
+      adminSent: Boolean(result.hotel.ok),
+      guestError: result.guest.error,
+      hotelError: result.hotel.error,
+    });
     return {
       guestSent: Boolean(result.guest.ok),
       adminSent: Boolean(result.hotel.ok),
     };
   } catch (err) {
-    console.error("[mail] Room booking email module failed:", err);
+    console.error(
+      "[mail] Room booking email module failed:",
+      err instanceof Error ? err.stack || err.message : err
+    );
     return { guestSent: false, adminSent: false };
   }
 }
