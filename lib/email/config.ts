@@ -111,9 +111,9 @@ export function getHotelMailConfig(): HotelMailConfig {
   const logoPath = env("HOTEL_LOGO_PATH") || "/brand/email-logo.png";
   const logoAbsolute =
     env("HOTEL_LOGO_URL") ||
-    `${appBase}${logoPath.startsWith("/") ? logoPath : `/${logoPath}`}?v=email-20260730c`;
+    `${appBase}${logoPath.startsWith("/") ? logoPath : `/${logoPath}`}?v=email-20260730d`;
   const heroAbsolute =
-    env("HOTEL_EMAIL_HERO_URL") || `${appBase}/brand/og-image.png?v=email-20260730c`;
+    env("HOTEL_EMAIL_HERO_URL") || `${appBase}/brand/og-image.png?v=email-20260730d`;
 
   return {
     name: env("HOTEL_NAME") || "Hotel Thamel Park",
@@ -127,7 +127,7 @@ export function getHotelMailConfig(): HotelMailConfig {
     whatsapp: env("HOTEL_WHATSAPP") || env("HOTEL_PHONE") || "+9779841234567",
     logoUrl: logoAbsolute,
     heroImageUrl: heroAbsolute,
-    checkInTime: env("HOTEL_CHECKIN_TIME") || "14:00",
+    checkInTime: env("HOTEL_CHECKIN_TIME") || "12:00",
     checkOutTime: env("HOTEL_CHECKOUT_TIME") || "12:00",
     smokingPolicy:
       env("HOTEL_SMOKING_POLICY") ||

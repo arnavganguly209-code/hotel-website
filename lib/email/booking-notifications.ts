@@ -1,5 +1,11 @@
 import { db, isDatabaseAvailable } from "@/lib/db";
-import { EMAIL_TEMPLATES, getBookingPdfUrl, type EmailTemplateId } from "./config";
+import { formatBookingNumber } from "@/lib/booking/booking-number";
+import {
+  EMAIL_TEMPLATES,
+  getBookingNotifyEmail,
+  getBookingPdfUrl,
+  type EmailTemplateId,
+} from "./config";
 import { emailService } from "./email-service";
 import { bookingToEmailContext } from "./booking-context";
 import type { BookingEmailContext } from "./template-service";
@@ -48,6 +54,7 @@ export async function notifyNewRoomBooking(
 
   const ctx: BookingEmailContext = {
     bookingId: payload.id,
+    bookingNumber: formatBookingNumber(payload.id),
     bookingDate: payload.bookingDate || new Date().toISOString().slice(0, 10),
     issueDate: new Date().toISOString().slice(0, 10),
     bookingStatus: payload.bookingStatus || "pending",
@@ -89,7 +96,24 @@ export async function notifyNewRoomBooking(
   };
 
   try {
-    const result = await emailService.sendNewBookingPair(ctx);
+    const guestTemplate =
+      (payload.bookingStatus || "").toLowerCase() === "confirmed"
+        ? EMAIL_TEMPLATES.BOOKING_CONFIRMED
+        : EMAIL_TEMPLATES.BOOKING_CONFIRMATION;
+
+    const guest = await emailService.sendBookingEmail({
+      template: guestTemplate,
+      ctx,
+      to: ctx.guestEmail,
+      attachPdf: true,
+    });
+    const hotel = await emailService.sendBookingEmail({
+      template: EMAIL_TEMPLATES.HOTEL_NEW_BOOKING,
+      ctx,
+      to: getBookingNotifyEmail(),
+      attachPdf: true,
+    });
+    const result = { guest, hotel };
     console.info("[email] notifyNewRoomBooking done", {
       bookingId: payload.id,
       guestOk: result.guest.ok,
@@ -109,7 +133,7 @@ export async function notifyNewRoomBooking(
 
 /**
  * Trigger lifecycle email from booking/payment status transitions.
- * Safe no-op when statuses unchanged.
+ * Admin /admin changes always notify the guest when status or payment changes.
  */
 export async function notifyBookingStatusChange(opts: {
   bookingId: number;
@@ -117,21 +141,36 @@ export async function notifyBookingStatusChange(opts: {
   nextStatus?: string;
   previousPaymentStatus?: string;
   nextPaymentStatus?: string;
+  forceModified?: boolean;
 }) {
-  const { bookingId, previousStatus, nextStatus, previousPaymentStatus, nextPaymentStatus } =
-    opts;
+  const {
+    bookingId,
+    previousStatus,
+    nextStatus,
+    previousPaymentStatus,
+    nextPaymentStatus,
+    forceModified,
+  } = opts;
+
+  let sent = false;
 
   if (nextStatus && nextStatus !== previousStatus) {
     if (nextStatus === "pending") {
       await sendBookingLifecycleEmail(bookingId, EMAIL_TEMPLATES.BOOKING_PENDING);
+      sent = true;
     } else if (nextStatus === "confirmed") {
       await sendBookingLifecycleEmail(bookingId, EMAIL_TEMPLATES.BOOKING_CONFIRMED);
+      sent = true;
     } else if (nextStatus === "cancelled" || nextStatus === "refunded") {
       await sendBookingLifecycleEmail(bookingId, EMAIL_TEMPLATES.BOOKING_CANCELLED);
+      sent = true;
     } else if (nextStatus === "checked_out") {
       await sendBookingLifecycleEmail(bookingId, EMAIL_TEMPLATES.CHECKOUT_THANKYOU);
-      // Follow-up review request (queued separately)
       await sendBookingLifecycleEmail(bookingId, EMAIL_TEMPLATES.REVIEW_REQUEST);
+      sent = true;
+    } else if (nextStatus === "checked_in" || nextStatus === "modified") {
+      await sendBookingLifecycleEmail(bookingId, EMAIL_TEMPLATES.BOOKING_MODIFIED);
+      sent = true;
     }
   }
 
@@ -141,6 +180,22 @@ export async function notifyBookingStatusChange(opts: {
     ["paid", "offline"].includes(nextPaymentStatus)
   ) {
     await sendBookingLifecycleEmail(bookingId, EMAIL_TEMPLATES.PAYMENT_RECEIVED);
+    // Online / paid payment also confirms the booking email if status wasn't already handled.
+    if (!sent && nextStatus !== "confirmed" && previousStatus !== "confirmed") {
+      const booking = isDatabaseAvailable()
+        ? await db.booking.findUnique({ where: { id: bookingId } })
+        : null;
+      if (booking?.status === "confirmed") {
+        await sendBookingLifecycleEmail(bookingId, EMAIL_TEMPLATES.BOOKING_CONFIRMED);
+        sent = true;
+      }
+    }
+    sent = true;
+  }
+
+  // Any other admin change (remarks, etc.) still notifies the guest.
+  if (!sent && forceModified) {
+    await sendBookingLifecycleEmail(bookingId, EMAIL_TEMPLATES.BOOKING_MODIFIED);
   }
 }
 

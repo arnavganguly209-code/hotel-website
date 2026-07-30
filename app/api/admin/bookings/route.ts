@@ -285,16 +285,26 @@ export async function PATCH(req: Request) {
       }
     }
 
-    // Email module only — does not change booking totals / inventory.
-    void import("@/lib/email/booking-notifications").then(({ notifyBookingStatusChange }) =>
-      notifyBookingStatusChange({
+    // Await guest notification so /admin changes reliably email the customer.
+    try {
+      const { notifyBookingStatusChange } = await import("@/lib/email/booking-notifications");
+      const statusChanged = Boolean(body.status && body.status !== existing?.status);
+      const paymentChanged = Boolean(
+        body.paymentStatus && body.paymentStatus !== existing?.paymentStatus
+      );
+      const remarksChanged =
+        typeof body.remarks === "string" && body.remarks !== (existing?.remarks || "");
+      await notifyBookingStatusChange({
         bookingId: booking.id,
         previousStatus: existing?.status,
-        nextStatus: body.status,
+        nextStatus: body.status || existing?.status,
         previousPaymentStatus: existing?.paymentStatus,
-        nextPaymentStatus: body.paymentStatus,
-      }).catch((err) => console.error("[AdminBookingsUpdate] email notify failed:", err))
-    );
+        nextPaymentStatus: body.paymentStatus || existing?.paymentStatus,
+        forceModified: !statusChanged && !paymentChanged && remarksChanged,
+      });
+    } catch (err) {
+      console.error("[AdminBookingsUpdate] email notify failed:", err);
+    }
 
     return NextResponse.json({ success: true, booking });
   } catch (error) {

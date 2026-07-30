@@ -1,6 +1,7 @@
 import { db, isDatabaseAvailable } from "@/lib/db";
 import fs from "fs";
 import path from "path";
+import { formatBookingNumber } from "@/lib/booking/booking-number";
 import {
   EMAIL_TEMPLATES,
   SMTP_MAX_RETRIES,
@@ -36,8 +37,9 @@ function logStep(step: string, detail?: Record<string, unknown>) {
 function loadEmailLogoBuffer(): Buffer | null {
   const candidates = [
     path.join(process.cwd(), "public", "brand", "email-logo.png"),
+    path.join(process.cwd(), "public", "brand", "admin-login-logo.png"),
+    path.join(process.cwd(), "public", "brand", "pdf-logo.png"),
     path.join(process.cwd(), "public", "brand", "thamelpark-logo.png"),
-    path.join(process.cwd(), "public", "brand", "og-logo.png"),
   ];
   for (const file of candidates) {
     try {
@@ -225,7 +227,7 @@ export class EmailService {
           try {
             const pdf = await buildReservationPdf(ctxWithLogo);
             attachments.push({
-              filename: `Booking-${bookingId}.pdf`,
+              filename: `Booking-${ctxWithLogo.bookingNumber || formatBookingNumber(bookingId)}.pdf`,
               content: pdf,
               contentType: "application/pdf",
               contentDisposition: "attachment",

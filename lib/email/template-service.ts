@@ -1,4 +1,5 @@
 import { formatUsd, formatVatPercent } from "@/lib/booking/vat";
+import { formatBookingNumber } from "@/lib/booking/booking-number";
 import {
   getAdminDashboardUrl,
   getBookingPdfUrl,
@@ -8,6 +9,8 @@ import {
 
 export type BookingEmailContext = {
   bookingId: number;
+  /** Display code e.g. HTP01001 */
+  bookingNumber?: string;
   bookingDate: string;
   issueDate?: string;
   bookingStatus: string;
@@ -119,10 +122,14 @@ function btn(href: string, label: string, style: "gold" | "green" | "outline" | 
   return `<a href="${esc(href)}" style="display:inline-block;margin:0 8px 8px 0;padding:12px 18px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:0.06em;${styles}">${esc(label)}</a>`;
 }
 
+function bookingNo(ctx: BookingEmailContext): string {
+  return ctx.bookingNumber || formatBookingNumber(ctx.bookingId);
+}
+
 function logoMarkup(_useCid?: boolean): string {
   const hotel = getHotelMailConfig();
-  // Always use absolute HTTPS on the app host (never relative, never marketing-only domain).
-  return `<img src="${esc(hotel.logoUrl)}" alt="${esc(hotel.name)} Logo" width="120" style="width:120px;max-width:120px;height:auto;display:block;margin:0 auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;" />`;
+  // Full Hotel Thamel Park & Spa mark (name is inside the logo).
+  return `<img src="${esc(hotel.logoUrl)}" alt="${esc(hotel.name)}" width="220" style="width:220px;max-width:88%;height:auto;display:block;margin:0 auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;" />`;
 }
 
 function pdfDownloadUrl(ctx: BookingEmailContext): string {
@@ -158,7 +165,6 @@ function luxuryShell(opts: {
         <tr>
           <td align="center" style="background:#ffffff;padding:28px 24px 18px;border-bottom:3px solid #c5a059;">
             ${logo}
-            <p style="margin:14px 0 0;font-size:12px;letter-spacing:0.28em;text-transform:uppercase;color:#153a2a;font-weight:700;">${esc(hotel.name)}</p>
           </td>
         </tr>
         <tr>
@@ -199,7 +205,7 @@ function guestCards(ctx: BookingEmailContext): string {
   const bookingCard = card(
     "Booking Details",
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-      ${kv("Booking Number", `#${ctx.bookingId}`)}
+      ${kv("Booking No", esc(bookingNo(ctx)))}
       ${kv("Booking Date", esc(ctx.bookingDate))}
       ${kv("Booking Status", statusBadge(ctx.bookingStatus))}
       ${kv("Payment Status", statusBadge(ctx.paymentStatus))}
@@ -249,7 +255,7 @@ function guestCards(ctx: BookingEmailContext): string {
       ${btn(pdfHref, "Download Booking PDF", "gold")}
     </div>
     <p style="margin:0 0 18px;font-size:13px;line-height:1.6;color:#5a635c;text-align:center;">
-      Your voucher is also attached as <strong>Booking-${ctx.bookingId}.pdf</strong>.<br/>
+    Your voucher is also attached as <strong>Booking-${bookingNo(ctx)}.pdf</strong>.<br/>
       Open that attachment to save the PDF — do not use the website homepage.
     </p>
     <div style="margin:0 0 20px;text-align:center;">
@@ -288,7 +294,7 @@ function guestText(ctx: BookingEmailContext, message: string, hotelName: string)
     `Thank you for choosing ${hotelName}.`,
     message,
     "",
-    `Booking Number: #${ctx.bookingId}`,
+    `Booking No: ${bookingNo(ctx)}`,
     `Download PDF: ${pdfDownloadUrl(ctx)}`,
     "",
     paymentSummaryText(ctx),
@@ -302,7 +308,7 @@ function adminDashboardHtml(ctx: BookingEmailContext): string {
   const adminUrl = getAdminDashboardUrl();
   const pdfHref = pdfDownloadUrl(ctx);
   return luxuryShell({
-    preheader: `New booking #${ctx.bookingId} — ${ctx.guestName}`,
+    preheader: `New booking ${bookingNo(ctx)} — ${ctx.guestName}`,
     eyebrow: "Reservations Desk",
     title: "New Booking Received",
     useCidLogo: ctx.useCidLogo,
@@ -311,7 +317,7 @@ function adminDashboardHtml(ctx: BookingEmailContext): string {
       ${card(
         "Reservation Snapshot",
         `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-          ${kv("Booking Number", `#${ctx.bookingId}`)}
+          ${kv("Booking No", esc(bookingNo(ctx)))}
           ${kv("Booking Status", statusBadge(ctx.bookingStatus))}
           ${kv("Payment Status", statusBadge(ctx.paymentStatus))}
           ${kv("Guest Name", esc(ctx.guestName))}
@@ -361,13 +367,15 @@ export function renderBookingEmail(
     useCidLogo: Boolean(ctx.useCidLogo),
   };
 
+  const code = bookingNo(withPdf);
+
   if (template === "hotel_new_booking") {
     return {
       template,
-      subject: `New Booking Received | #${ctx.bookingId}`,
+      subject: `New Booking Received | ${code}`,
       html: adminDashboardHtml(withPdf),
       text: [
-        `New Booking #${ctx.bookingId}`,
+        `New Booking ${code}`,
         `Guest: ${ctx.guestName}`,
         `Download PDF: ${pdfDownloadUrl(withPdf)}`,
         `Admin: ${getAdminDashboardUrl()}`,
@@ -378,33 +386,33 @@ export function renderBookingEmail(
 
   const map: Record<string, { subject: string; message: string; title?: string }> = {
     booking_confirmation: {
-      subject: `Booking Confirmation | ${hotel.name}`,
+      subject: `Booking Confirmation | ${code} | ${hotel.name}`,
       title: "Booking Confirmed",
       message: "Your reservation has been successfully received.",
     },
     booking_pending: {
-      subject: `Booking Pending | ${hotel.name}`,
-      message: `Your booking #${ctx.bookingId} is currently pending confirmation.`,
+      subject: `Booking Pending | ${code} | ${hotel.name}`,
+      message: `Your booking ${code} is currently pending confirmation.`,
     },
     booking_confirmed: {
-      subject: `Booking Confirmed | ${hotel.name}`,
-      message: `Your reservation #${ctx.bookingId} is confirmed. We look forward to hosting you.`,
+      subject: `Booking Confirmed | ${code} | ${hotel.name}`,
+      message: `Your reservation ${code} is confirmed. We look forward to hosting you.`,
     },
     booking_modified: {
-      subject: `Booking Updated | ${hotel.name}`,
-      message: `Your booking #${ctx.bookingId} has been updated. Please review the details below.`,
+      subject: `Booking Updated | ${code} | ${hotel.name}`,
+      message: `Your booking ${code} has been updated. Please review the details below.`,
     },
     booking_cancelled: {
-      subject: `Booking Cancelled | ${hotel.name}`,
-      message: `Your booking #${ctx.bookingId} has been cancelled. Contact us if this was unexpected.`,
+      subject: `Booking Cancelled | ${code} | ${hotel.name}`,
+      message: `Your booking ${code} has been cancelled. Contact us if this was unexpected.`,
     },
     payment_received: {
-      subject: `Payment Received | ${hotel.name}`,
-      message: `We have received payment for booking #${ctx.bookingId}. Thank you.`,
+      subject: `Payment Received | ${code} | ${hotel.name}`,
+      message: `We have received payment for booking ${code}. Thank you.`,
     },
     checkin_reminder: {
-      subject: `Check-in Reminder | ${hotel.name}`,
-      message: `This is a friendly reminder that your check-in is on ${ctx.checkIn}.`,
+      subject: `Check-in Reminder | ${code} | ${hotel.name}`,
+      message: `This is a friendly reminder that your check-in is on ${ctx.checkIn} at ${hotel.checkInTime}.`,
     },
     checkout_thankyou: {
       subject: `Thank You for Staying | ${hotel.name}`,

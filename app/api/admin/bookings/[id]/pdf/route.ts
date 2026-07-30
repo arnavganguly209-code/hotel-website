@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db, isDatabaseAvailable } from "@/lib/db";
 import { getAdminSessionUser } from "@/lib/admin/auth";
+import { formatBookingNumber } from "@/lib/booking/booking-number";
 import { bookingToEmailContext } from "@/lib/email/booking-context";
 import { buildReservationPdf } from "@/lib/email/pdf-service";
 
@@ -47,7 +48,7 @@ export async function GET(req: Request, { params }: Params) {
     headers: {
       "Content-Type": "application/pdf",
       "Cache-Control": "no-store",
-      "Content-Disposition": `${inline ? "inline" : "attachment"}; filename="reservation-${booking.id}.pdf"`,
+      "Content-Disposition": `${inline ? "inline" : "attachment"}; filename="Booking-${formatBookingNumber(booking.id)}.pdf"`,
     },
   });
 }

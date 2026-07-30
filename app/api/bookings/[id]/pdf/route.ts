@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db, isDatabaseAvailable } from "@/lib/db";
 import { getAdminSessionUser } from "@/lib/admin/auth";
+import { formatBookingNumber } from "@/lib/booking/booking-number";
 import { bookingToEmailContext } from "@/lib/email/booking-context";
 import { buildReservationPdf } from "@/lib/email/pdf-service";
 
@@ -43,7 +44,7 @@ export async function GET(req: Request, { params }: Params) {
       issueDate: new Date().toISOString().slice(0, 10),
     });
     const pdf = await buildReservationPdf(ctx);
-    const filename = `Booking-${booking.id}.pdf`;
+    const filename = `Booking-${formatBookingNumber(booking.id)}.pdf`;
 
     return new NextResponse(new Uint8Array(pdf), {
       status: 200,

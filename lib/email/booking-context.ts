@@ -1,4 +1,5 @@
 import type { Booking } from "@prisma/client";
+import { formatBookingNumber } from "@/lib/booking/booking-number";
 import { DEFAULT_CURRENCY, DEFAULT_VAT_RATE, splitVatInclusive } from "@/lib/booking/vat";
 import { getBookingPdfUrl, getHotelMailConfig } from "./config";
 import type { BookingEmailContext } from "./template-service";
@@ -56,6 +57,7 @@ export function bookingToEmailContext(
 
   return {
     bookingId: booking.id,
+    bookingNumber: formatBookingNumber(booking.id),
     bookingDate: booking.createdAt.toISOString().slice(0, 10),
     issueDate: new Date().toISOString().slice(0, 10),
     bookingStatus: booking.status,
