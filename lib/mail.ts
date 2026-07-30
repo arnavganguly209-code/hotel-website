@@ -232,11 +232,17 @@ export type RoomBookingMailPayload = {
   roomQuantity: number;
   roomSubtotal: number;
   extraGuestCharge: number;
+  displayPrice: number;
+  basePrice: number;
+  vatRate: number;
+  vatAmount: number;
   grandTotal: number;
+  currency: string;
   paymentMethod?: string;
+  voucherUrl?: string;
 };
 
-/** Guest + admin emails for room bookings, including clear price breakdown. */
+/** Guest + admin emails for room bookings, including VAT-inclusive tax breakdown. */
 export async function sendRoomBookingEmails(
   payload: RoomBookingMailPayload,
   adminEmail: string
@@ -251,16 +257,24 @@ export async function sendRoomBookingEmails(
   const transport = createTransport();
   let guestSent = false;
   let adminSent = false;
+  const currency = payload.currency || "USD";
+  const vatPct = `${Math.round((payload.vatRate || 0.13) * 100)}%`;
 
   const breakdownText = [
-    `Room Price: $${payload.roomSubtotal}`,
-    `Extra Guest Charge: $${payload.extraGuestCharge}`,
-    `Grand Total: $${payload.grandTotal}`,
+    `Room Rate (VAT Included): $${payload.displayPrice.toFixed(2)}`,
+    "",
+    "Tax Breakdown",
+    `Room Charge (Excl. VAT): $${payload.basePrice.toFixed(2)}`,
+    `VAT (${vatPct}): $${payload.vatAmount.toFixed(2)}`,
+    `Grand Total: $${payload.grandTotal.toFixed(2)} ${currency}`,
   ].join("\n");
 
-  const breakdownHtml = `<p><strong>Room Price:</strong> $${payload.roomSubtotal}<br/>
-<strong>Extra Guest Charge:</strong> $${payload.extraGuestCharge}<br/>
-<strong>Grand Total:</strong> $${payload.grandTotal}</p>`;
+  const breakdownHtml = `<p><strong>Room Rate (VAT Included):</strong> $${payload.displayPrice.toFixed(2)}</p>
+<p style="margin-top:12px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#a47e3e;"><strong>Tax Breakdown</strong></p>
+<p><strong>Room Charge (Excl. VAT):</strong> $${payload.basePrice.toFixed(2)}<br/>
+<strong>VAT (${vatPct}):</strong> $${payload.vatAmount.toFixed(2)}<br/>
+<strong>Grand Total:</strong> $${payload.grandTotal.toFixed(2)} ${currency}</p>
+<p style="font-size:12px;color:#5a635c;">Website rates are VAT inclusive — VAT is not added again.</p>`;
 
   try {
     await transport.sendMail({
@@ -281,6 +295,7 @@ export async function sendRoomBookingEmails(
         `Rooms: ${payload.roomQuantity}`,
         "",
         breakdownText,
+        payload.voucherUrl ? `\nReservation voucher: ${payload.voucherUrl}` : "",
         "",
         "Our reservations team will confirm availability shortly.",
         "",
@@ -297,6 +312,7 @@ export async function sendRoomBookingEmails(
 <strong>Guests:</strong> ${payload.adults} adult(s), ${payload.children} child(ren)<br/>
 <strong>Rooms:</strong> ${payload.roomQuantity}</p>
 ${breakdownHtml}
+${payload.voucherUrl ? `<p><a href="${payload.voucherUrl}">View / print reservation voucher</a></p>` : ""}
 <p>Our reservations team will confirm availability shortly.</p>
 <p>Warm regards,<br/>${hotelName}</p>`,
     });

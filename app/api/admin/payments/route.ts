@@ -29,6 +29,12 @@ export async function GET(req: Request) {
       paymentStatus: true,
       status: true,
       totalAmount: true,
+      displayPrice: true,
+      basePrice: true,
+      vatRate: true,
+      vatAmount: true,
+      grandTotal: true,
+      currency: true,
       transactionId: true,
       cardLast4: true,
       checkIn: true,
@@ -49,13 +55,13 @@ export async function GET(req: Request) {
   const totals = {
     paid: filtered
       .filter((b) => ["paid", "offline"].includes(b.paymentStatus))
-      .reduce((sum, b) => sum + b.totalAmount, 0),
+      .reduce((sum, b) => sum + (Number(b.grandTotal) || b.totalAmount), 0),
     unpaid: filtered
-      .filter((b) => ["unpaid", "pending"].includes(b.paymentStatus))
-      .reduce((sum, b) => sum + b.totalAmount, 0),
+      .filter((b) => ["unpaid", "pending", "awaiting_payment", "pay_at_hotel"].includes(b.paymentStatus))
+      .reduce((sum, b) => sum + (Number(b.grandTotal) || b.totalAmount), 0),
     refunded: filtered
       .filter((b) => b.paymentStatus === "refunded")
-      .reduce((sum, b) => sum + b.totalAmount, 0),
+      .reduce((sum, b) => sum + (Number(b.grandTotal) || b.totalAmount), 0),
   };
 
   return NextResponse.json({ success: true, bookings: filtered, totals });

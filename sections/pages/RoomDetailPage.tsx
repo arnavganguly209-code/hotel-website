@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { LuxuryRoomGallery } from "@/components/booking/LuxuryRoomGallery";
+import { VatInclusivePriceSummary } from "@/components/booking/VatInclusivePriceSummary";
 import {
   bookingDatesAreValid,
   buildBookUrl,
@@ -171,7 +172,7 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
               <div className="bg-[#153a2a] px-6 py-6 text-white">
                 <p className="text-[10px] uppercase tracking-[0.24em] text-[#dabb7d]">Reserve this room</p>
                 <p className="mt-2 font-display text-3xl">${room.price}<span className="text-sm text-white/60"> / night</span></p>
-                <p className="mt-1 text-xs text-white/55">Breakfast included</p>
+                <p className="mt-1 text-xs text-white/55">Breakfast included · VAT inclusive</p>
               </div>
               <div className="space-y-5 p-6">
                 <div className="grid grid-cols-2 gap-3">
@@ -187,11 +188,15 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
                   <span>Breakfast Included</span>
                   <span className="font-semibold">${room.price}</span>
                 </div>
-                <dl className="space-y-2 border-t border-[#d7c49d]/40 pt-5 text-sm text-[#68736d]">
-                  <div className="flex justify-between gap-3"><dt>Room Price</dt><dd className="font-medium text-[#173a2b]">${breakdown.roomSubtotal}</dd></div>
-                  <div className="flex justify-between gap-3"><dt>Extra Guest Charge</dt><dd className="font-medium text-[#173a2b]">${breakdown.total}</dd></div>
-                  <div className="flex items-end justify-between gap-3 border-t border-[#d7c49d]/35 pt-3"><dt className="text-xs uppercase tracking-widest">Grand Total · {nights} {nights === 1 ? "night" : "nights"}</dt><dd className="font-display text-3xl text-[#173a2b]">${total}</dd></div>
-                </dl>
+                <VatInclusivePriceSummary
+                  className="space-y-2 border-t border-[#d7c49d]/40 pt-5 text-sm text-[#173a2b]"
+                  roomSubtotal={breakdown.roomSubtotal}
+                  extraGuestCharge={breakdown.total}
+                  vat={breakdown.vat}
+                />
+                <p className="text-[11px] leading-5 text-[#758078]">
+                  {nights} {nights === 1 ? "night" : "nights"} · you pay exactly ${total} (VAT inclusive)
+                </p>
                 {!validDates ? <p className="text-xs text-red-600">Choose a valid future check-in and check-out date.</p> : null}
                 {!fitsOccupancy ? <p className="text-xs text-red-600">Guest count exceeds this room’s maximum occupancy.</p> : null}
                 <Button asChild={validDates && fitsOccupancy} type={validDates && fitsOccupancy ? undefined : "button"} disabled={!validDates || !fitsOccupancy || room.available === false} variant="gold" size="lg" className="w-full gap-2 uppercase tracking-[0.14em]">

@@ -10,6 +10,7 @@ import {
   roomFitsOccupancy,
   roomPublicSlug,
 } from "@/lib/booking/utils";
+import { taxFieldsFromInclusiveTotal } from "@/lib/booking/tax-snapshot";
 
 export const dynamic = "force-dynamic";
 
@@ -141,7 +142,7 @@ export async function POST(req: Request) {
 
     const totalAmount =
       typeof body.totalAmount === "number" && Number.isFinite(body.totalAmount) && body.totalAmount >= 0
-        ? Math.round(body.totalAmount)
+        ? body.totalAmount
         : calculateBookingTotal({
             room,
             nights,
@@ -150,6 +151,7 @@ export async function POST(req: Request) {
             adults: guests,
             children,
           });
+    const tax = taxFieldsFromInclusiveTotal(totalAmount);
 
     const status = body.status && BOOKING_STATUSES.has(body.status) ? body.status : "confirmed";
     const paymentStatus =
@@ -186,7 +188,13 @@ export async function POST(req: Request) {
         remarks,
         source: "offline",
         paymentMethod: body.paymentMethod?.trim() || "hotel",
-        totalAmount,
+        totalAmount: tax.totalAmount,
+        displayPrice: tax.displayPrice,
+        basePrice: tax.basePrice,
+        vatRate: tax.vatRate,
+        vatAmount: tax.vatAmount,
+        grandTotal: tax.grandTotal,
+        currency: tax.currency,
         nights,
         status,
         paymentStatus,

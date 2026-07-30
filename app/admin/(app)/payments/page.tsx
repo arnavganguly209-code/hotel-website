@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { AdminBookingMoney } from "@/components/admin/AdminBookingMoney";
 
 interface PaymentRow {
   id: number;
@@ -13,6 +14,12 @@ interface PaymentRow {
   paymentStatus: string;
   status: string;
   totalAmount: number;
+  displayPrice?: number;
+  basePrice?: number;
+  vatRate?: number;
+  vatAmount?: number;
+  grandTotal?: number;
+  currency?: string;
   transactionId: string | null;
   cardLast4: string;
   checkIn: string;
@@ -151,7 +158,9 @@ export default function AdminPaymentsPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 capitalize">{r.status.replace(/_/g, " ")}</td>
-                  <td className="px-4 py-3 font-medium text-[#0f2420]">${r.totalAmount}</td>
+                  <td className="px-4 py-3">
+                    <AdminBookingMoney booking={r} />
+                  </td>
                 </tr>
               ))}
               {rows.length === 0 ? (

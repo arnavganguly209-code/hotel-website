@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2, Trash2 } from "lucide-react";
+import { AdminBookingMoney } from "@/components/admin/AdminBookingMoney";
 
 interface Booking {
   id: number;
@@ -15,6 +16,12 @@ interface Booking {
   children: number;
   roomQuantity: number;
   totalAmount: number;
+  displayPrice?: number;
+  basePrice?: number;
+  vatRate?: number;
+  vatAmount?: number;
+  grandTotal?: number;
+  currency?: string;
   status: string;
   paymentStatus: string;
   source: string;
@@ -233,10 +240,18 @@ export default function AdminOnlineBookingsPage() {
                       </select>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="font-[family-name:var(--font-cormorant)] text-lg">${b.totalAmount}</p>
-                      <p className="text-xs text-[#7a8a82]">
+                      <AdminBookingMoney booking={b} />
+                      <p className="mt-1 text-xs text-[#7a8a82]">
                         {b.guests} adults · {b.children} children
                       </p>
+                      <a
+                        href={`/api/bookings/${b.id}/voucher`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-1 inline-block text-[10px] font-medium uppercase tracking-wide text-[#9e7738] underline"
+                      >
+                        Print voucher
+                      </a>
                     </td>
                     <td className="px-4 py-3">
                       <button

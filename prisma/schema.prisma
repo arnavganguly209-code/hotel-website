@@ -65,7 +65,19 @@ model Booking {
   source          String    @default("online")
   paymentMethod   String    @default("hotel")
   cardLast4       String    @default("")
+  /** Legacy whole-dollar grand total (VAT-inclusive). Prefer grandTotal. */
   totalAmount     Int       @default(0)
+  /** Website / selling price shown to guest (VAT-inclusive). */
+  displayPrice    Float     @default(0)
+  /** Room charge excluding VAT (displayPrice / 1.13). */
+  basePrice       Float     @default(0)
+  /** VAT rate as decimal, e.g. 0.13 for 13%. */
+  vatRate         Float     @default(0.13)
+  /** VAT amount (displayPrice − basePrice). Never added on top of displayPrice. */
+  vatAmount       Float     @default(0)
+  /** Final payable amount — always equals displayPrice (VAT-inclusive). */
+  grandTotal      Float     @default(0)
+  currency        String    @default("USD")
   nights          Int       @default(1)
   status          String    @default("pending")
   paymentStatus   String    @default("unpaid")

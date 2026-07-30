@@ -4,12 +4,12 @@ import { getContent } from "@/lib/cms/store";
 import { assertBookingAvailability } from "@/lib/admin/availability";
 import {
   bookingDatesAreValid,
-  calculateBookingTotal,
   calculateExtraGuestBreakdown,
   calculateNights,
   roomFitsOccupancy,
   roomPublicSlug,
 } from "@/lib/booking/utils";
+import { taxFieldsFromInclusiveTotal } from "@/lib/booking/tax-snapshot";
 
 export const dynamic = "force-dynamic";
 
@@ -100,14 +100,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: availability.error }, { status: 400 });
     }
 
-    const totalAmount = calculateBookingTotal({
+    const price = calculateExtraGuestBreakdown({
       room,
-      nights,
-      roomQuantity,
-      breakfast,
       adults: guests,
       children,
+      nights,
+      roomQuantity,
     });
+    const tax = taxFieldsFromInclusiveTotal(price.grandTotal);
 
     const slug = roomPublicSlug(room);
     const { findRoomIdBySlug } = await import("@/lib/cms/sync-rooms");
@@ -136,7 +136,13 @@ export async function POST(req: Request) {
         notes: body.notes ?? "",
         paymentMethod: body.paymentMethod,
         cardLast4: /^\d{4}$/.test(body.cardLast4 || "") ? body.cardLast4! : "",
-        totalAmount,
+        totalAmount: tax.totalAmount,
+        displayPrice: tax.displayPrice,
+        basePrice: tax.basePrice,
+        vatRate: tax.vatRate,
+        vatAmount: tax.vatAmount,
+        grandTotal: tax.grandTotal,
+        currency: tax.currency,
         nights,
         status: "pending",
         paymentStatus: body.paymentMethod === "online" ? "awaiting_payment" : "pay_at_hotel",
@@ -146,13 +152,6 @@ export async function POST(req: Request) {
       },
     });
 
-    const price = calculateExtraGuestBreakdown({
-      room,
-      adults: guests,
-      children,
-      nights,
-      roomQuantity,
-    });
     const adminEmail =
       content.settings.bookingEmail || content.contactPage?.email || content.hotel?.email || "";
     void import("@/lib/mail").then(({ sendRoomBookingEmails }) =>
@@ -171,8 +170,14 @@ export async function POST(req: Request) {
           roomQuantity,
           roomSubtotal: price.roomSubtotal,
           extraGuestCharge: price.total,
-          grandTotal: price.grandTotal,
+          displayPrice: tax.displayPrice,
+          basePrice: tax.basePrice,
+          vatRate: tax.vatRate,
+          vatAmount: tax.vatAmount,
+          grandTotal: tax.grandTotal,
+          currency: tax.currency,
           paymentMethod: body.paymentMethod,
+          voucherUrl: `${process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || ""}/api/bookings/${booking.id}/voucher?email=${encodeURIComponent(body.email)}`,
         },
         adminEmail
       ).catch((err) => console.error("[Bookings] email failed:", err))
@@ -187,7 +192,13 @@ export async function POST(req: Request) {
         transactionId: booking.transactionId,
         roomSubtotal: price.roomSubtotal,
         extraGuestCharge: price.total,
-        grandTotal: price.grandTotal,
+        displayPrice: tax.displayPrice,
+        basePrice: tax.basePrice,
+        vatRate: tax.vatRate,
+        vatAmount: tax.vatAmount,
+        grandTotal: tax.grandTotal,
+        currency: tax.currency,
+        voucherUrl: `/api/bookings/${booking.id}/voucher?email=${encodeURIComponent(body.email)}`,
       },
     });
   } catch (error) {

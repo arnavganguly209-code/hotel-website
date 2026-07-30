@@ -86,6 +86,7 @@ export function RoomAvailabilityPage({ rooms, search }: RoomAvailabilityPageProp
                           ${room.price}
                           <span className="text-sm font-normal text-white/75"> / night</span>
                         </p>
+                        <p className="mt-0.5 text-[10px] text-white/70">VAT inclusive</p>
                       </div>
                       <span className="rounded-full border border-luxury-gold/40 bg-luxury-green-dark/70 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-luxury-gold">
                         Available
@@ -119,8 +120,13 @@ export function RoomAvailabilityPage({ rooms, search }: RoomAvailabilityPageProp
 
                     <div className="flex flex-col gap-3 border-t border-luxury-gold/15 pt-5 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-luxury-gold">Total from</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-luxury-gold">
+                          Total from (VAT inclusive)
+                        </p>
                         <p className="font-display text-2xl text-luxury-forest">${total}</p>
+                        <p className="mt-1 text-xs text-luxury-muted">
+                          Excl. VAT ${breakdown.vat.basePrice.toFixed(2)} · VAT ${breakdown.vat.vatAmount.toFixed(2)}
+                        </p>
                         {breakdown.total > 0 ? (
                           <p className="mt-1 text-xs text-luxury-muted">
                             Room ${breakdown.roomSubtotal} + extras ${breakdown.total}

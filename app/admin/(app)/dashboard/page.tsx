@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AdminBookingMoney } from "@/components/admin/AdminBookingMoney";
 
 type Stats = Record<string, number>;
 
@@ -36,6 +37,12 @@ export default function AdminDashboardPage() {
       status: string;
       source: string;
       totalAmount: number;
+      displayPrice?: number;
+      basePrice?: number;
+      vatRate?: number;
+      vatAmount?: number;
+      grandTotal?: number;
+      currency?: string;
       createdAt: string;
     }>
   >([]);
@@ -131,7 +138,9 @@ export default function AdminDashboardPage() {
                     <td className="py-3 pr-4">{row.roomName || "—"}</td>
                     <td className="py-3 pr-4 capitalize">{row.status.replace(/_/g, " ")}</td>
                     <td className="py-3 pr-4 capitalize">{row.source}</td>
-                    <td className="py-3">${row.totalAmount}</td>
+                    <td className="py-3">
+                      <AdminBookingMoney booking={row} />
+                    </td>
                   </tr>
                 ))
               )}

@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { AdminBookingMoney } from "@/components/admin/AdminBookingMoney";
 
 interface RoomOption {
   slug: string;
@@ -27,6 +28,12 @@ interface Booking {
   guests: number;
   children: number;
   totalAmount: number;
+  displayPrice?: number;
+  basePrice?: number;
+  vatRate?: number;
+  vatAmount?: number;
+  grandTotal?: number;
+  currency?: string;
   status: string;
   paymentStatus: string;
   remarks: string;
@@ -276,11 +283,13 @@ export default function AdminOfflineBookingsPage() {
         </div>
         <TextField
           type="number"
-          label="Total Amount ($, optional)"
+          label="Total Amount ($, VAT inclusive)"
           value={form.totalAmount}
           onChange={(v) => setForm({ ...form, totalAmount: v })}
         />
-        <div>
+        <p className="-mt-2 text-[10px] text-[#7a8a82] sm:col-span-2">
+          Enter the website selling price. VAT (13%) is split internally — do not add tax on top.
+        </p>        <div>
           <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-[#3d5a4c]">Status</p>
           <select
             value={form.status}
@@ -358,7 +367,17 @@ export default function AdminOfflineBookingsPage() {
                     {b.guests} adults · {b.children} children
                   </p>
                 </div>
-                <p className="font-serif text-xl text-[#0f2420]">${b.totalAmount}</p>
+                <AdminBookingMoney booking={b} />
+              </div>
+              <div className="mt-2">
+                <a
+                  href={`/api/bookings/${b.id}/voucher`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] font-medium uppercase tracking-wide text-[#9e7738] underline"
+                >
+                  Print voucher / invoice
+                </a>
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-3">
                 <select

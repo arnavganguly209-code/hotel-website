@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminInput } from "@/components/admin/AdminFields";
+import { AdminBookingMoney } from "@/components/admin/AdminBookingMoney";
 
 interface Booking {
   id: number;
@@ -17,6 +18,12 @@ interface Booking {
   paymentStatus: string;
   source: string;
   totalAmount: number;
+  displayPrice?: number;
+  basePrice?: number;
+  vatRate?: number;
+  vatAmount?: number;
+  grandTotal?: number;
+  currency?: string;
   guests: number;
   children: number;
   createdAt: string;
@@ -134,8 +141,8 @@ export function OrbitBookingsPanel() {
                     <td className="px-3 py-3 capitalize">{b.source}</td>
                     <td className="px-3 py-3 capitalize">{b.status.replace(/_/g, " ")}</td>
                     <td className="px-3 py-3">
-                      <div>${b.totalAmount}</div>
-                      <div className="text-xs text-white/45">
+                      <AdminBookingMoney booking={b} tone="dark" />
+                      <div className="mt-1 text-xs text-white/45">
                         {b.guests} adults · {b.children} children
                       </div>
                     </td>

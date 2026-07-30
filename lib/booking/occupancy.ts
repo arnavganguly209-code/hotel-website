@@ -1,4 +1,10 @@
 import type { SiteContent } from "@/lib/cms/types";
+import {
+  DEFAULT_CURRENCY,
+  DEFAULT_VAT_RATE,
+  splitVatInclusive,
+  type VatInclusiveBreakdown,
+} from "./vat";
 
 export type RoomRecord = SiteContent["rooms"][number];
 
@@ -110,10 +116,18 @@ export interface ExtraGuestBreakdown {
   extraChildren: number;
   perNight: number;
   nights: number;
+  /** Extra guest charges (VAT-inclusive, part of displayed total). */
   total: number;
   baseNightly: number;
+  /** Room subtotal before extras (VAT-inclusive website rate × nights × rooms). */
   roomSubtotal: number;
+  /**
+   * Final amount the guest pays — website rates are VAT-inclusive.
+   * Never add VAT on top of this figure.
+   */
   grandTotal: number;
+  /** Accounting split of grandTotal (does not change what the guest pays). */
+  vat: VatInclusiveBreakdown;
   policy: RoomOccupancyPolicy;
 }
 
@@ -140,6 +154,7 @@ export function calculateExtraGuestBreakdown(options: {
   const roomSubtotal = baseNightly * nights * rooms;
   const extrasTotal = perNight * nights;
 
+  const grandTotal = roomSubtotal + extrasTotal;
   return {
     extraAdults,
     extraChildren,
@@ -148,7 +163,8 @@ export function calculateExtraGuestBreakdown(options: {
     total: extrasTotal,
     baseNightly,
     roomSubtotal,
-    grandTotal: roomSubtotal + extrasTotal,
+    grandTotal,
+    vat: splitVatInclusive(grandTotal, DEFAULT_VAT_RATE, DEFAULT_CURRENCY),
     policy,
   };
 }

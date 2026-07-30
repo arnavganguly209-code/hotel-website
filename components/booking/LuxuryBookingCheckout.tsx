@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, CreditCard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { VatInclusivePriceSummary } from "@/components/booking/VatInclusivePriceSummary";
 import {
   bookingDatesAreValid,
   calculateExtraGuestBreakdown,
@@ -12,6 +13,7 @@ import {
   roomFitsOccupancy,
   roomPublicSlug,
 } from "@/lib/booking/utils";
+import { formatUsd } from "@/lib/booking/vat";
 import type { BookingSearchParams, PaymentMethod } from "@/lib/booking/types";
 import type { SiteContent } from "@/lib/cms/types";
 
@@ -61,7 +63,18 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [confirmed, setConfirmed] = useState<{ id: number } | null>(null);
+  const [confirmed, setConfirmed] = useState<{
+    id: number;
+    voucherUrl?: string;
+    vat?: {
+      displayPrice: number;
+      basePrice: number;
+      vatRate: number;
+      vatAmount: number;
+      grandTotal: number;
+      currency: string;
+    };
+  } | null>(null);
   const [stay, setStay] = useState({
     checkIn: search.checkIn,
     checkOut: search.checkOut,
@@ -180,7 +193,18 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
       });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || "Booking failed. Please try again.");
-      setConfirmed({ id: data.booking.id });
+      setConfirmed({
+        id: data.booking.id,
+        voucherUrl: data.booking.voucherUrl,
+        vat: {
+          displayPrice: data.booking.displayPrice ?? breakdown.vat.displayPrice,
+          basePrice: data.booking.basePrice ?? breakdown.vat.basePrice,
+          vatRate: data.booking.vatRate ?? breakdown.vat.vatRate,
+          vatAmount: data.booking.vatAmount ?? breakdown.vat.vatAmount,
+          grandTotal: data.booking.grandTotal ?? breakdown.vat.grandTotal,
+          currency: data.booking.currency ?? breakdown.vat.currency,
+        },
+      });
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Unable to submit booking. Please try again.");
     } finally {
@@ -189,6 +213,7 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
   };
 
   if (confirmed) {
+    const vat = confirmed.vat ?? breakdown.vat;
     return (
       <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="mx-auto max-w-2xl overflow-hidden rounded-[32px] border border-[#d4b676]/35 bg-white/92 text-center shadow-[0_30px_90px_rgba(17,54,37,0.16)]">
         <div className="bg-[#153a2a] px-8 py-10 text-white">
@@ -198,14 +223,27 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
         <div className="space-y-4 px-8 py-10 text-sm leading-7 text-[#657169] sm:px-14">
           <p>Your booking request has been received successfully.</p>
           <div className="mx-auto max-w-sm rounded-2xl border border-[#d7c49d]/40 bg-[#f8f4eb] px-5 py-4 text-left text-[#173a2b]">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a47e3e]">Price summary</p>
-            <dl className="mt-3 space-y-2 text-sm">
-              <div className="flex justify-between gap-3"><dt className="text-[#68736d]">Room Price</dt><dd>${breakdown.roomSubtotal}</dd></div>
-              <div className="flex justify-between gap-3"><dt className="text-[#68736d]">Extra Guest Charge</dt><dd>${breakdown.total}</dd></div>
-              <div className="flex justify-between gap-3 border-t border-[#d7c49d]/40 pt-2 font-semibold"><dt>Grand Total</dt><dd>${total}</dd></div>
-            </dl>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#a47e3e]">Booking confirmation</p>
+            <VatInclusivePriceSummary
+              className="mt-3 space-y-2 text-sm"
+              roomSubtotal={breakdown.roomSubtotal}
+              extraGuestCharge={breakdown.total}
+              vat={vat}
+            />
           </div>
           <p>Our Reservations Team will contact you shortly.</p>
+          {confirmed.voucherUrl ? (
+            <p>
+              <a
+                href={confirmed.voucherUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-[#9e7738] underline underline-offset-4"
+              >
+                View / print reservation voucher
+              </a>
+            </p>
+          ) : null}
           <p>If you wish to modify your booking, please contact:</p>
           <a href="mailto:info@hotelthamelpark.com" className="font-semibold text-[#9e7738] underline underline-offset-4">info@hotelthamelpark.com</a>
           <p>We look forward to welcoming you.</p>
@@ -239,8 +277,8 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
                 </div>
                 <FieldError message={fieldErrors.dates} />
                 <div className="mt-5 flex justify-between rounded-2xl border border-[#ae8645] bg-[#f5edde] p-4 text-sm text-[#173a2b]">
-                  <span>Breakfast Included</span>
-                  <strong>${room.price}</strong>
+                  <span>Breakfast Included · VAT inclusive</span>
+                  <strong>${room.price} / night</strong>
                 </div>
               </div>
             ) : null}
@@ -371,10 +409,17 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
             <div className="flex justify-between"><dt>Nights</dt><dd className="text-white">{nights}</dd></div>
             <div className="flex justify-between"><dt>Guests</dt><dd className="text-white">{stay.adults} adults, {stay.children} children</dd></div>
             <div className="flex justify-between"><dt>Rate</dt><dd className="text-white">Breakfast Included</dd></div>
-            <div className="flex justify-between"><dt>Room Price</dt><dd className="text-white">${breakdown.roomSubtotal}</dd></div>
-            <div className="flex justify-between"><dt>Extra Guest Charge</dt><dd className="text-white">${breakdown.total}</dd></div>
           </dl>
-          <div className="mt-6 flex items-end justify-between border-t border-white/12 pt-6"><span className="text-xs uppercase tracking-widest text-white/55">Grand Total</span><span className="font-display text-4xl text-[#e0c184]">${total}</span></div>
+          <VatInclusivePriceSummary
+            className="mt-6 space-y-2 text-sm text-white"
+            compact
+            roomSubtotal={breakdown.roomSubtotal}
+            extraGuestCharge={breakdown.total}
+            vat={breakdown.vat}
+          />
+          <p className="mt-4 text-[11px] leading-relaxed text-white/50">
+            Website rates are VAT inclusive. You pay exactly {formatUsd(breakdown.vat.grandTotal)} — VAT is not added again.
+          </p>
         </div>
       </aside>
     </div>
