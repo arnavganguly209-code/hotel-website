@@ -117,13 +117,13 @@ export async function buildReservationPdf(ctx: BookingEmailContext): Promise<Buf
 
   doc.rect(0, 0, pageW, pageH).fill(CREAM);
 
-  // Header — full brand logo only (name is inside the logo artwork)
-  doc.rect(0, 0, pageW, 78).fill("#000000");
+  // Header — cream white so green logo wordmark stays readable
+  doc.rect(0, 0, pageW, 78).fill(CREAM);
   doc.rect(0, 78, pageW, 2.5).fill(GOLD);
 
   if (logoBuf) {
     try {
-      const maxW = 260;
+      const maxW = 280;
       const maxH = 58;
       doc.image(logoBuf, (pageW - maxW) / 2, 10, {
         fit: [maxW, maxH],
@@ -132,13 +132,13 @@ export async function buildReservationPdf(ctx: BookingEmailContext): Promise<Buf
       });
     } catch (err) {
       console.error("[pdf] Logo draw failed:", err instanceof Error ? err.message : err);
-      doc.fillColor("#ffffff").fontSize(14).text(hotel.name, left, 30, {
+      doc.fillColor(GREEN).fontSize(14).text(hotel.name, left, 30, {
         width: contentW,
         align: "center",
       });
     }
   } else {
-    doc.fillColor("#ffffff").fontSize(14).text(hotel.name, left, 30, {
+    doc.fillColor(GREEN).fontSize(14).text(hotel.name, left, 30, {
       width: contentW,
       align: "center",
     });
@@ -214,34 +214,48 @@ export async function buildReservationPdf(ctx: BookingEmailContext): Promise<Buf
   y += 26;
 
   section("Payment");
-  const payH = 78;
+  const payH = 84;
+  const payPad = 12;
   doc.roundedRect(left, y, contentW, payH, 5).fillAndStroke("#fbf7ef", GOLD);
   const payY = y + 10;
+  const leftColW = contentW * 0.48;
+  const rightColX = left + leftColW + 8;
+  const rightColW = contentW - leftColW - payPad * 2 - 8;
+
   doc
     .fillColor(MUTED)
     .fontSize(6.5)
-    .text("TOTAL (VAT INCLUDED)", left + 12, payY, { characterSpacing: 0.4 });
+    .text("TOTAL (VAT INCLUDED)", left + payPad, payY, { characterSpacing: 0.4 });
   doc
     .fillColor(GREEN)
-    .fontSize(18)
-    .text(`${formatUsd(ctx.grandTotal)} ${ctx.currency || "USD"}`, left + 12, payY + 12);
-  doc.fillColor(MUTED).fontSize(6.5).text("BREAKDOWN", left + contentW / 2, payY, {
-    characterSpacing: 0.4,
-  });
+    .fontSize(16)
+    .text(`${formatUsd(ctx.grandTotal)} ${ctx.currency || "USD"}`, left + payPad, payY + 12, {
+      width: leftColW - payPad,
+    });
+
   doc
-    .fillColor(INK)
-    .fontSize(8.5)
-    .text(`Room charge     ${formatUsd(ctx.basePrice)}`, left + contentW / 2, payY + 14);
-  doc.text(
-    `VAT (${formatVatPercent(ctx.vatRate || 0.13)})              ${formatUsd(ctx.vatAmount)}`,
-    left + contentW / 2,
-    payY + 28
+    .fillColor(MUTED)
+    .fontSize(6.5)
+    .text("BREAKDOWN", rightColX, payY, { width: rightColW, characterSpacing: 0.4 });
+
+  const rowLabelW = rightColW * 0.58;
+  const rowAmountW = rightColW * 0.42;
+  const drawBreakRow = (label: string, amount: string, rowY: number) => {
+    doc.fillColor(INK).fontSize(8.5).text(label, rightColX, rowY, { width: rowLabelW });
+    doc.text(amount, rightColX + rowLabelW, rowY, { width: rowAmountW, align: "right" });
+  };
+  drawBreakRow("Room charge", formatUsd(ctx.basePrice), payY + 16);
+  drawBreakRow(
+    `VAT (${formatVatPercent(ctx.vatRate || 0.13)})`,
+    formatUsd(ctx.vatAmount),
+    payY + 30
   );
+
   doc
     .fillColor(MUTED)
     .fontSize(7)
-    .text("Rates are VAT-inclusive — VAT is not added again.", left + 12, payY + 54, {
-      width: contentW - 24,
+    .text("Rates are VAT-inclusive — VAT is not added again.", left + payPad, payY + 58, {
+      width: contentW - payPad * 2,
     });
   y += payH + 12;
 

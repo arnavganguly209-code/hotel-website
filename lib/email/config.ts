@@ -111,9 +111,9 @@ export function getHotelMailConfig(): HotelMailConfig {
   const logoPath = env("HOTEL_LOGO_PATH") || "/brand/email-logo.png";
   const logoAbsolute =
     env("HOTEL_LOGO_URL") ||
-    `${appBase}${logoPath.startsWith("/") ? logoPath : `/${logoPath}`}?v=email-20260730d`;
+    `${appBase}${logoPath.startsWith("/") ? logoPath : `/${logoPath}`}?v=email-20260731a`;
   const heroAbsolute =
-    env("HOTEL_EMAIL_HERO_URL") || `${appBase}/brand/og-image.png?v=email-20260730d`;
+    env("HOTEL_EMAIL_HERO_URL") || `${appBase}/brand/og-image.png?v=email-20260731a`;
 
   return {
     name: env("HOTEL_NAME") || "Hotel Thamel Park",
