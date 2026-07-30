@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "10mb",
     },
   },
+  // Keep pdfkit/qrcode outside the bundler so AFM font data files resolve in production.
+  serverExternalPackages: ["pdfkit", "qrcode"],
   async redirects() {
     return [
       {

@@ -233,6 +233,7 @@ export async function POST(req: Request) {
         grandTotal: tax.grandTotal,
         currency: tax.currency,
         voucherUrl: `/api/bookings/${booking.id}/voucher?email=${encodeURIComponent(body.email)}`,
+        pdfUrl: `/api/bookings/${booking.id}/pdf?email=${encodeURIComponent(body.email)}&download=1`,
         email: emailResult,
       },
     });

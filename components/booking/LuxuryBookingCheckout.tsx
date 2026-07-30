@@ -66,6 +66,8 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
   const [confirmed, setConfirmed] = useState<{
     id: number;
     voucherUrl?: string;
+    pdfUrl?: string;
+    guestEmail?: string;
     vat?: {
       displayPrice: number;
       basePrice: number;
@@ -196,6 +198,8 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
       setConfirmed({
         id: data.booking.id,
         voucherUrl: data.booking.voucherUrl,
+        pdfUrl: data.booking.pdfUrl,
+        guestEmail: guest.email,
         vat: {
           displayPrice: data.booking.displayPrice ?? breakdown.vat.displayPrice,
           basePrice: data.booking.basePrice ?? breakdown.vat.basePrice,
@@ -232,18 +236,27 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
             />
           </div>
           <p>Our Reservations Team will contact you shortly.</p>
-          {confirmed.voucherUrl ? (
-            <p>
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            {confirmed.pdfUrl ? (
+              <a
+                href={confirmed.pdfUrl}
+                download={`Booking-${confirmed.id}.pdf`}
+                className="inline-flex items-center justify-center rounded-lg bg-[#c5a059] px-5 py-2.5 text-sm font-semibold text-white no-underline shadow-sm transition hover:bg-[#b08d45]"
+              >
+                Download Booking Voucher (PDF)
+              </a>
+            ) : null}
+            {confirmed.voucherUrl ? (
               <a
                 href={confirmed.voucherUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-semibold text-[#9e7738] underline underline-offset-4"
+                className="inline-flex items-center justify-center rounded-lg border border-[#c5a059] bg-white px-5 py-2.5 text-sm font-semibold text-[#153a2a] no-underline"
               >
-                View / print reservation voucher
+                View printable voucher
               </a>
-            </p>
-          ) : null}
+            ) : null}
+          </div>
           <p>If you wish to modify your booking, please contact:</p>
           <a href="mailto:info@hotelthamelpark.com" className="font-semibold text-[#9e7738] underline underline-offset-4">info@hotelthamelpark.com</a>
           <p>We look forward to welcoming you.</p>

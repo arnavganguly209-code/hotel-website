@@ -1,5 +1,7 @@
 import PDFDocument from "pdfkit";
 import QRCode from "qrcode";
+import fs from "fs";
+import path from "path";
 import { formatUsd, formatVatPercent } from "@/lib/booking/vat";
 import { getHotelMailConfig } from "./config";
 import type { BookingEmailContext } from "./template-service";
@@ -14,12 +16,35 @@ const MUTED = "#5a635c";
 const RULE = "#e2d2a8";
 const CREAM = "#fffdf8";
 
+function loadLogoFromDisk(): Buffer | null {
+  const candidates = [
+    path.join(process.cwd(), "public", "brand", "email-logo.png"),
+    path.join(process.cwd(), "public", "brand", "thamelpark-logo.png"),
+    path.join(process.cwd(), "public", "brand", "og-logo.png"),
+  ];
+  for (const file of candidates) {
+    try {
+      if (fs.existsSync(file)) {
+        const buf = fs.readFileSync(file);
+        if (buf.length > 0) return buf;
+      }
+    } catch {
+      /* try next */
+    }
+  }
+  return null;
+}
+
 async function fetchLogoBuffer(url: string): Promise<Buffer | null> {
+  const fromDisk = loadLogoFromDisk();
+  if (fromDisk) return fromDisk;
   try {
     if (!url) return null;
+    // Strip cache-bust query for fetch reliability
+    const clean = url.split("?")[0];
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8_000);
-    const res = await fetch(url, { signal: controller.signal });
+    const res = await fetch(clean, { signal: controller.signal });
     clearTimeout(timer);
     if (!res.ok) return null;
     return Buffer.from(await res.arrayBuffer());
@@ -31,7 +56,6 @@ async function fetchLogoBuffer(url: string): Promise<Buffer | null> {
     return null;
   }
 }
-
 function statusLabel(value: string) {
   return (value || "—").replace(/_/g, " ");
 }
@@ -83,35 +107,51 @@ export async function buildReservationPdf(ctx: BookingEmailContext): Promise<Buf
   const left = MARGIN;
   const right = pageW - MARGIN;
 
-  // White / cream page base
+  // Cream page base
   doc.rect(0, 0, pageW, pageH).fill(CREAM);
 
-  // Dark green header
-  doc.rect(0, 0, pageW, 118).fill(GREEN);
-  doc.rect(0, 118, pageW, 3).fill(GOLD);
+  // White logo band (dark circular logos remain visible)
+  doc.rect(0, 0, pageW, 78).fill("#ffffff");
+  doc.rect(0, 78, pageW, 3).fill(GOLD);
 
   if (logoBuf) {
     try {
-      const logoH = 48;
+      const logoH = 52;
       const logoW = 120;
-      doc.image(logoBuf, (pageW - logoW) / 2, 18, { height: logoH, fit: [logoW, logoH], align: "center" });
+      doc.image(logoBuf, (pageW - logoW) / 2, 12, {
+        height: logoH,
+        fit: [logoW, logoH],
+        align: "center",
+      });
     } catch {
-      doc.fillColor(GOLD_SOFT).fontSize(14).text(hotel.name, left, 28, { width: contentW, align: "center" });
+      doc.fillColor(GREEN).fontSize(14).text(hotel.name, left, 28, {
+        width: contentW,
+        align: "center",
+      });
     }
   } else {
-    doc.fillColor(GOLD_SOFT).fontSize(14).text(hotel.name, left, 28, { width: contentW, align: "center" });
+    doc.fillColor(GREEN).fontSize(14).text(hotel.name, left, 28, {
+      width: contentW,
+      align: "center",
+    });
   }
 
+  // Dark green title band
+  doc.rect(0, 81, pageW, 52).fill(GREEN);
   doc
     .fillColor("#ffffff")
     .fontSize(18)
-    .text("Booking Confirmation", left, 72, { width: contentW, align: "center" });
+    .text("Booking Confirmation", left, 92, { width: contentW, align: "center" });
   doc
     .fillColor(GOLD_SOFT)
     .fontSize(9)
-    .text("RESERVATION VOUCHER", left, 96, { width: contentW, align: "center", characterSpacing: 2 });
+    .text("RESERVATION VOUCHER", left, 116, {
+      width: contentW,
+      align: "center",
+      characterSpacing: 2,
+    });
 
-  let y = 138;
+  let y = 150;
 
   // Meta + QR row
   const qrSize = 78;
@@ -163,7 +203,7 @@ export async function buildReservationPdf(ctx: BookingEmailContext): Promise<Buf
   doc.fillColor(INK).fontSize(10).text(hotel.address, left, y + 11, { width: contentW });
   y += 34;
   doc.fillColor(MUTED).fontSize(8).text("GOOGLE MAPS", left, y, { characterSpacing: 0.6 });
-  doc.fillColor(GOLD).fontSize(9).text(hotel.googleMap, left, y + 11, { width: contentW, link: hotel.googleMap });
+  doc.fillColor(GOLD).fontSize(9).text(hotel.googleMap || "—", left, y + 11, { width: contentW });
   y += 34;
 
   // SECTION 2 — Booking

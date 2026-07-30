@@ -1,5 +1,5 @@
 import { db, isDatabaseAvailable } from "@/lib/db";
-import { EMAIL_TEMPLATES, type EmailTemplateId } from "./config";
+import { EMAIL_TEMPLATES, getBookingPdfUrl, type EmailTemplateId } from "./config";
 import { emailService } from "./email-service";
 import { bookingToEmailContext } from "./booking-context";
 import type { BookingEmailContext } from "./template-service";
@@ -85,6 +85,7 @@ export async function notifyNewRoomBooking(
       return "Desktop";
     })(),
     voucherUrl: payload.voucherUrl,
+    pdfUrl: getBookingPdfUrl(payload.id, payload.email),
   };
 
   try {

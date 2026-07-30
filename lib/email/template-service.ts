@@ -1,5 +1,10 @@
 import { formatUsd, formatVatPercent } from "@/lib/booking/vat";
-import { getHotelMailConfig, type EmailTemplateId } from "./config";
+import {
+  getAdminDashboardUrl,
+  getBookingPdfUrl,
+  getHotelMailConfig,
+  type EmailTemplateId,
+} from "./config";
 
 export type BookingEmailContext = {
   bookingId: number;
@@ -24,7 +29,6 @@ export type BookingEmailContext = {
   roomQuantity: number;
   mealPlan?: string;
   specialRequests: string;
-  /** VAT-inclusive website total */
   displayPrice: number;
   basePrice: number;
   vatRate: number;
@@ -38,6 +42,8 @@ export type BookingEmailContext = {
   device?: string;
   voucherUrl?: string;
   pdfUrl?: string;
+  /** When true, templates use cid:htp-logo (inline attachment). */
+  useCidLogo?: boolean;
 };
 
 export type RenderedEmail = {
@@ -46,6 +52,8 @@ export type RenderedEmail = {
   text: string;
   template: EmailTemplateId;
 };
+
+export const EMAIL_LOGO_CID = "htp-logo";
 
 function esc(value: string): string {
   return String(value || "")
@@ -111,16 +119,29 @@ function btn(href: string, label: string, style: "gold" | "green" | "outline" | 
   return `<a href="${esc(href)}" style="display:inline-block;margin:0 8px 8px 0;padding:12px 18px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:0.06em;${styles}">${esc(label)}</a>`;
 }
 
+function logoSrc(useCid?: boolean): string {
+  const hotel = getHotelMailConfig();
+  if (useCid) return `cid:${EMAIL_LOGO_CID}`;
+  return hotel.logoUrl;
+}
+
+function pdfDownloadUrl(ctx: BookingEmailContext): string {
+  if (ctx.pdfUrl) return ctx.pdfUrl;
+  return getBookingPdfUrl(ctx.bookingId, ctx.guestEmail);
+}
+
 function luxuryShell(opts: {
   preheader: string;
   eyebrow: string;
   title: string;
   bodyHtml: string;
+  useCidLogo?: boolean;
 }): string {
   const hotel = getHotelMailConfig();
   const year = new Date().getFullYear();
+  const logo = logoSrc(opts.useCidLogo);
   return `<!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -133,21 +154,21 @@ function luxuryShell(opts: {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#efe9dc;padding:28px 12px;">
     <tr><td align="center">
       <table role="presentation" width="640" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;background:#fffdf8;border-radius:18px;overflow:hidden;border:1px solid #d4af37;box-shadow:0 18px 50px rgba(21,58,42,0.12);">
+        <!-- White logo band so dark logo marks remain visible in Gmail/Outlook -->
         <tr>
-          <td style="background:#153a2a;padding:28px 24px 22px;text-align:center;">
-            <img src="${esc(hotel.logoUrl)}" alt="${esc(hotel.name)}" width="150" style="max-width:150px;height:auto;display:inline-block;border:0;" />
-            <p style="margin:14px 0 0;font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#e0c184;">${esc(hotel.name)}</p>
+          <td align="center" style="background:#ffffff;padding:28px 24px 18px;border-bottom:3px solid #c5a059;">
+            <img src="${esc(logo)}" alt="${esc(hotel.name)} Logo" width="140" height="140" style="width:140px;max-width:140px;height:auto;display:block;margin:0 auto;border:0;outline:none;text-decoration:none;" />
+            <p style="margin:14px 0 0;font-size:12px;letter-spacing:0.28em;text-transform:uppercase;color:#153a2a;font-weight:700;">${esc(hotel.name)}</p>
           </td>
         </tr>
         <tr>
-          <td style="padding:0;line-height:0;font-size:0;">
-            <img src="${esc(hotel.heroImageUrl)}" alt="" width="640" style="width:100%;max-width:640px;height:auto;display:block;border:0;" />
+          <td style="background:#153a2a;padding:18px 24px;text-align:center;">
+            <p style="margin:0;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#e0c184;">${esc(opts.eyebrow)}</p>
+            <h1 style="margin:10px 0 0;font-size:26px;line-height:1.3;font-weight:400;color:#ffffff;">${esc(opts.title)}</h1>
           </td>
         </tr>
         <tr>
           <td style="padding:28px 24px 8px;">
-            <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#c5a059;font-weight:700;">${esc(opts.eyebrow)}</p>
-            <h1 style="margin:0 0 18px;font-size:28px;line-height:1.25;font-weight:400;color:#153a2a;">${esc(opts.title)}</h1>
             ${opts.bodyHtml}
           </td>
         </tr>
@@ -173,9 +194,7 @@ function luxuryShell(opts: {
 function guestCards(ctx: BookingEmailContext): string {
   const hotel = getHotelMailConfig();
   const wa = whatsappLink(hotel.whatsapp);
-  const pdfHref =
-    ctx.voucherUrl ||
-    `${hotel.website}/api/bookings/${ctx.bookingId}/voucher?email=${encodeURIComponent(ctx.guestEmail)}`;
+  const pdfHref = pdfDownloadUrl(ctx);
 
   const bookingCard = card(
     "Booking Details",
@@ -197,6 +216,7 @@ function guestCards(ctx: BookingEmailContext): string {
       ${kv("Adults", String(ctx.adults))}
       ${kv("Children", String(ctx.children))}
       ${kv("Meal Plan", esc(ctx.mealPlan || "Breakfast Included"))}
+      ${kv("Special Requests", esc(ctx.specialRequests || "—"))}
     </table>`
   );
 
@@ -225,11 +245,10 @@ function guestCards(ctx: BookingEmailContext): string {
   );
 
   const buttons = `
-    <div style="margin:8px 0 20px;">
-      ${btn(pdfHref, "Download Reservation PDF", "gold")}
+    <div style="margin:8px 0 20px;text-align:center;">
+      ${btn(pdfHref, "Download Booking Voucher (PDF)", "gold")}
       ${btn(hotel.website, "Visit Website", "outline")}
       ${btn(`mailto:${hotel.email}`, "Contact Hotel", "green")}
-      ${btn(hotel.googleMap, "Open Google Maps", "outline")}
     </div>`;
 
   return bookingCard + stayCard + paymentCard + contactCard + buttons;
@@ -264,30 +283,23 @@ function guestText(ctx: BookingEmailContext, message: string, hotelName: string)
     message,
     "",
     `Booking Number: #${ctx.bookingId}`,
-    `Booking Date: ${ctx.bookingDate}`,
-    `Booking Status: ${ctx.bookingStatus}`,
-    `Payment Status: ${ctx.paymentStatus}`,
-    "",
-    `Room: ${ctx.roomName}`,
-    `Check-in: ${ctx.checkIn}`,
-    `Check-out: ${ctx.checkOut}`,
-    `Nights: ${ctx.nights}`,
-    `Adults: ${ctx.adults}`,
-    `Children: ${ctx.children}`,
+    `Download PDF: ${pdfDownloadUrl(ctx)}`,
     "",
     paymentSummaryText(ctx),
     "",
     `Thank you for choosing ${hotelName}.`,
-    "We look forward to welcoming you.",
   ].join("\n");
 }
 
 function adminDashboardHtml(ctx: BookingEmailContext): string {
   const hotel = getHotelMailConfig();
+  const adminUrl = getAdminDashboardUrl();
+  const pdfHref = pdfDownloadUrl(ctx);
   return luxuryShell({
     preheader: `New booking #${ctx.bookingId} — ${ctx.guestName}`,
     eyebrow: "Reservations Desk",
     title: "New Booking Received",
+    useCidLogo: ctx.useCidLogo,
     bodyHtml: `
       <p style="margin:0 0 18px;font-size:14px;color:#5a635c;">Internal hotel notification — review and confirm this reservation.</p>
       ${card(
@@ -315,11 +327,14 @@ function adminDashboardHtml(ctx: BookingEmailContext): string {
           ${kv("Device", esc(ctx.device || "—"))}
         </table>`
       )}
-      <div style="margin-top:8px;">
-        ${btn(`${hotel.website}/admin/bookings/online`, "Open Admin Bookings", "green")}
-        ${btn(ctx.voucherUrl || hotel.website, "View Voucher", "gold")}
+      <div style="margin-top:8px;text-align:center;">
+        ${btn(adminUrl, "Open Admin Bookings", "green")}
+        ${btn(pdfHref, "Download Booking PDF", "gold")}
       </div>
-      <p style="margin:16px 0 0;font-size:12px;color:#6b746e;">Reservation PDF is attached to this message.</p>
+      <p style="margin:16px 0 0;font-size:12px;color:#6b746e;text-align:center;">
+        Reservation PDF is also attached to this message when available.<br/>
+        ${esc(hotel.website)}
+      </p>
     `,
   });
 }
@@ -330,40 +345,31 @@ export function renderBookingEmail(
   ctx: BookingEmailContext
 ): RenderedEmail {
   const hotel = getHotelMailConfig();
+  const withPdf = {
+    ...ctx,
+    pdfUrl: ctx.pdfUrl || getBookingPdfUrl(ctx.bookingId, ctx.guestEmail),
+    useCidLogo: ctx.useCidLogo !== false,
+  };
 
   if (template === "hotel_new_booking") {
     return {
       template,
       subject: `New Booking Received | #${ctx.bookingId}`,
-      html: adminDashboardHtml(ctx),
+      html: adminDashboardHtml(withPdf),
       text: [
         `New Booking #${ctx.bookingId}`,
         `Guest: ${ctx.guestName}`,
-        `Phone: ${ctx.guestPhone}`,
-        `Email: ${ctx.guestEmail}`,
-        `Country: ${ctx.guestCountry}`,
-        `Room: ${ctx.roomName}`,
-        `Arrival: ${ctx.checkIn}`,
-        `Departure: ${ctx.checkOut}`,
-        `Adults: ${ctx.adults}`,
-        `Children: ${ctx.children}`,
-        `Special Request: ${ctx.specialRequests || "—"}`,
-        `Room Charge: ${money(ctx.basePrice)}`,
-        `VAT: ${money(ctx.vatAmount)}`,
+        `Download PDF: ${pdfDownloadUrl(withPdf)}`,
+        `Admin: ${getAdminDashboardUrl()}`,
         `Grand Total: ${money(ctx.grandTotal)} ${ctx.currency || "USD"}`,
-        `Payment: ${ctx.paymentStatus}`,
-        `Status: ${ctx.bookingStatus}`,
-        `Time: ${ctx.bookingTime || ctx.bookingDate}`,
-        `IP: ${ctx.ipAddress || "—"}`,
-        `Browser: ${ctx.userAgent || "—"}`,
-        `Device: ${ctx.device || "—"}`,
       ].join("\n"),
     };
   }
 
-  const map: Record<string, { subject: string; message: string }> = {
+  const map: Record<string, { subject: string; message: string; title?: string }> = {
     booking_confirmation: {
       subject: `Booking Confirmation | ${hotel.name}`,
+      title: "Booking Confirmed",
       message: "Your reservation has been successfully received.",
     },
     booking_pending: {
@@ -407,10 +413,11 @@ export function renderBookingEmail(
     html: luxuryShell({
       preheader: entry.subject,
       eyebrow: "Booking Confirmation",
-      title: entry.subject.split("|")[0].trim(),
-      bodyHtml: guestIntro(ctx, entry.message),
+      title: entry.title || entry.subject.split("|")[0].trim(),
+      bodyHtml: guestIntro(withPdf, entry.message),
+      useCidLogo: withPdf.useCidLogo,
     }),
-    text: guestText(ctx, entry.message, hotel.name),
+    text: guestText(withPdf, entry.message, hotel.name),
   };
 }
 
@@ -418,5 +425,5 @@ export function previewBookingEmailHtml(
   template: EmailTemplateId,
   ctx: BookingEmailContext
 ): string {
-  return renderBookingEmail(template, ctx).html;
+  return renderBookingEmail(template, { ...ctx, useCidLogo: false }).html;
 }

@@ -1,8 +1,11 @@
 import { db, isDatabaseAvailable } from "@/lib/db";
+import fs from "fs";
+import path from "path";
 import {
   EMAIL_TEMPLATES,
   SMTP_MAX_RETRIES,
   getBookingNotifyEmail,
+  getBookingPdfUrl,
   getMailFromHeader,
   getHotelMailConfig,
   isSmtpConfigured,
@@ -11,6 +14,7 @@ import {
 import { buildReservationPdf } from "./pdf-service";
 import { smtpSend, verifySmtpConnection } from "./smtp-service";
 import {
+  EMAIL_LOGO_CID,
   renderBookingEmail,
   type BookingEmailContext,
 } from "./template-service";
@@ -28,6 +32,33 @@ function logStep(step: string, detail?: Record<string, unknown>) {
   } else {
     console.info(`[email] ${step}`);
   }
+}
+
+function loadEmailLogoBuffer(): Buffer | null {
+  const candidates = [
+    path.join(process.cwd(), "public", "brand", "email-logo.png"),
+    path.join(process.cwd(), "public", "brand", "thamelpark-logo.png"),
+    path.join(process.cwd(), "public", "brand", "og-logo.png"),
+  ];
+  for (const file of candidates) {
+    try {
+      if (fs.existsSync(file)) {
+        const buf = fs.readFileSync(file);
+        if (buf.length > 0) {
+          console.info("[email] Loaded logo for CID embed", { file, bytes: buf.length });
+          return buf;
+        }
+      }
+    } catch (err) {
+      console.error(
+        "[email] Logo read failed:",
+        file,
+        err instanceof Error ? err.message : err
+      );
+    }
+  }
+  console.error("[email] No logo file found for CID embed — falling back to absolute URL");
+  return null;
 }
 
 async function createLog(input: {
@@ -134,9 +165,19 @@ export class EmailService {
       return { ok: false, error };
     }
 
+    const logoBuf = loadEmailLogoBuffer();
+    const ctxWithLogo: BookingEmailContext = {
+      ...opts.ctx,
+      pdfUrl:
+        opts.ctx.pdfUrl ||
+        getBookingPdfUrl(opts.ctx.bookingId, opts.ctx.guestEmail),
+      // Prefer CID when logo file is on disk; otherwise absolute HTTPS URL.
+      useCidLogo: Boolean(logoBuf),
+    };
+
     let rendered;
     try {
-      rendered = renderBookingEmail(opts.template, opts.ctx);
+      rendered = renderBookingEmail(opts.template, ctxWithLogo);
     } catch (err) {
       console.error(
         "[email] Template render failed:",
@@ -154,7 +195,7 @@ export class EmailService {
       subject: rendered.subject,
       template: opts.template,
       status: "sending",
-      meta: { attachPdf: Boolean(opts.attachPdf) },
+      meta: { attachPdf: Boolean(opts.attachPdf), cidLogo: Boolean(logoBuf) },
     });
 
     let attempts = 0;
@@ -165,22 +206,37 @@ export class EmailService {
       try {
         await updateLog(log?.id, { status: "sending", retryCount: attempts });
 
-        // PDF is optional — never block the email if generation fails.
-        let attachments:
-          | Array<{ filename: string; content: Buffer; contentType?: string }>
-          | undefined;
+        type MailAttachment = {
+          filename: string;
+          content: Buffer;
+          contentType?: string;
+          cid?: string;
+          contentDisposition?: "attachment" | "inline";
+        };
+        const attachments: MailAttachment[] = [];
 
+        // Inline logo for Gmail/Outlook/Apple Mail (CID). Absolute URL is HTML fallback.
+        if (logoBuf) {
+          attachments.push({
+            filename: "hotel-logo.png",
+            content: logoBuf,
+            contentType: "image/png",
+            cid: EMAIL_LOGO_CID,
+            contentDisposition: "inline",
+          });
+        }
+
+        // PDF is optional — never block the email if generation fails.
         if (opts.attachPdf) {
           logStep("Generating PDF attachment", { bookingId, attempt: attempts });
           try {
-            const pdf = await buildReservationPdf(opts.ctx);
-            attachments = [
-              {
-                filename: `reservation-${bookingId}.pdf`,
-                content: pdf,
-                contentType: "application/pdf",
-              },
-            ];
+            const pdf = await buildReservationPdf(ctxWithLogo);
+            attachments.push({
+              filename: `Booking-${bookingId}.pdf`,
+              content: pdf,
+              contentType: "application/pdf",
+              contentDisposition: "attachment",
+            });
             logStep("PDF generated successfully", {
               bookingId,
               bytes: pdf.length,
@@ -190,7 +246,6 @@ export class EmailService {
               "[email] PDF generation failed — sending email without attachment:",
               pdfErr instanceof Error ? pdfErr.stack || pdfErr.message : pdfErr
             );
-            attachments = undefined;
           }
         }
 
@@ -199,7 +254,8 @@ export class EmailService {
           bookingId,
           to: opts.to,
           subject: rendered.subject,
-          hasPdf: Boolean(attachments?.length),
+          hasPdf: attachments.some((a) => a.contentType === "application/pdf"),
+          hasCidLogo: Boolean(logoBuf),
           attempt: attempts,
         });
 
@@ -210,7 +266,7 @@ export class EmailService {
           html: rendered.html,
           text: rendered.text,
           replyTo: hotel.email,
-          attachments,
+          attachments: attachments.length ? attachments : undefined,
         });
 
         await updateLog(log?.id, {

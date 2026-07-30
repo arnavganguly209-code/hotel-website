@@ -24,6 +24,8 @@ type SendPayload = {
     filename: string;
     content: Buffer;
     contentType?: string;
+    cid?: string;
+    contentDisposition?: "attachment" | "inline";
   }>;
   replyTo?: string;
 };
@@ -177,6 +179,8 @@ export async function smtpSend(
       filename: a.filename,
       content: a.content,
       contentType: a.contentType,
+      cid: a.cid,
+      contentDisposition: a.contentDisposition || (a.cid ? "inline" : "attachment"),
     })),
   });
   console.info("[smtp] sendMail accepted", {

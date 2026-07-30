@@ -93,7 +93,16 @@ export function getHotelMailConfig(): HotelMailConfig {
     env("NEXT_PUBLIC_SITE_URL") ||
     env("SITE_URL") ||
     "https://hotel.theglobalorbit.com";
-  const base = site.replace(/\/$/, "");
+  const base = site.replace(/\/$/, "").replace(/\/$/, "");
+  // Absolute HTTPS URL only — never localhost. Cache-bust for email clients.
+  // Prefer compact email-logo.png for remote <img> loads; CID uses the same file on disk.
+  const logoPath = env("HOTEL_LOGO_PATH") || "/brand/email-logo.png";
+  const logoAbsolute =
+    env("HOTEL_LOGO_URL") ||
+    `${base}${logoPath.startsWith("/") ? logoPath : `/${logoPath}`}?v=email-20260730b`;
+  const heroAbsolute =
+    env("HOTEL_EMAIL_HERO_URL") || `${base}/brand/og-image.png?v=email-20260730`;
+
   return {
     name: env("HOTEL_NAME") || "Hotel Thamel Park",
     phone: env("HOTEL_PHONE") || "+977-1-4412345",
@@ -104,9 +113,8 @@ export function getHotelMailConfig(): HotelMailConfig {
       env("HOTEL_GOOGLE_MAP") ||
       "https://maps.google.com/?q=Hotel+Thamel+Park+Kathmandu",
     whatsapp: env("HOTEL_WHATSAPP") || env("HOTEL_PHONE") || "+9779841234567",
-    logoUrl: env("HOTEL_LOGO_URL") || `${base}/brand/thamelpark-logo.png`,
-    heroImageUrl:
-      env("HOTEL_EMAIL_HERO_URL") || `${base}/brand/og-logo.png`,
+    logoUrl: logoAbsolute,
+    heroImageUrl: heroAbsolute,
     checkInTime: env("HOTEL_CHECKIN_TIME") || "14:00",
     checkOutTime: env("HOTEL_CHECKOUT_TIME") || "12:00",
     smokingPolicy:
@@ -122,6 +130,18 @@ export function getHotelMailConfig(): HotelMailConfig {
       env("HOTEL_EXTRA_BED_POLICY") ||
       "Extra beds are subject to availability and may incur an additional charge.",
   };
+}
+
+/** Absolute guest PDF download URL (email-authenticated). */
+export function getBookingPdfUrl(bookingId: number, guestEmail: string): string {
+  const hotel = getHotelMailConfig();
+  return `${hotel.website}/api/bookings/${bookingId}/pdf?email=${encodeURIComponent(guestEmail)}&download=1`;
+}
+
+/** Absolute admin dashboard URL. */
+export function getAdminDashboardUrl(): string {
+  const hotel = getHotelMailConfig();
+  return `${hotel.website}/admin`;
 }
 
 /** Hotel inbox for new-booking notifications — always prefer booking@ inbox. */

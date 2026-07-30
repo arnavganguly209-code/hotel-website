@@ -1,6 +1,6 @@
 import type { Booking } from "@prisma/client";
 import { DEFAULT_CURRENCY, DEFAULT_VAT_RATE, splitVatInclusive } from "@/lib/booking/vat";
-import { getHotelMailConfig } from "./config";
+import { getBookingPdfUrl, getHotelMailConfig } from "./config";
 import type { BookingEmailContext } from "./template-service";
 
 function isoDate(value: Date | string): string {
@@ -86,7 +86,7 @@ export function bookingToEmailContext(
     paymentMethod: booking.paymentMethod,
     bookingTime: booking.createdAt.toISOString(),
     voucherUrl: `${hotel.website}/api/bookings/${booking.id}/voucher?email=${encodeURIComponent(booking.email)}`,
-    pdfUrl: `${hotel.website}/api/admin/bookings/${booking.id}/pdf`,
+    pdfUrl: getBookingPdfUrl(booking.id, booking.email),
     ...extras,
     device: extras?.device || detectDevice(extras?.userAgent || ""),
   };
