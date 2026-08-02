@@ -94,7 +94,7 @@ function CoverSectionEditor({
               />
             ) : (
               <div className="flex h-full min-h-[200px] items-center justify-center px-4 text-center text-sm text-[#8a7340]">
-                No image yet — upload or select below
+                Image cleared — will not show on /about after save
               </div>
             )}
           </div>

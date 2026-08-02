@@ -1705,9 +1705,9 @@ function mergeAboutPage(
       : isLegacyLuxuryCopy
         ? {
             ...defaults.hero,
-            imageSrc: heroPartial?.imageSrc || defaults.hero.imageSrc,
+            imageSrc: definedString(heroPartial?.imageSrc, defaults.hero.imageSrc),
           }
-      : {
+        : {
           ...defaults.hero,
           ...(heroPartial ?? {}),
           breadcrumbHome: heroPartial?.breadcrumbHome ?? defaults.hero.breadcrumbHome,
@@ -1717,11 +1717,13 @@ function mergeAboutPage(
             heroPartial?.overlayOpacity != null
               ? Number(heroPartial.overlayOpacity) || defaults.hero.overlayOpacity
               : defaults.hero.overlayOpacity,
+          // Explicit "" clear from Orbit must stick — never resurrect defaults.
+          imageSrc: definedString(heroPartial?.imageSrc, defaults.hero.imageSrc),
         },
     story: isLegacyLuxuryCopy
       ? {
           ...defaults.story,
-          imageSrc: partial.story?.imageSrc || defaults.story.imageSrc,
+          imageSrc: definedString(partial.story?.imageSrc, defaults.story.imageSrc),
         }
       : {
           ...defaults.story,
@@ -1729,6 +1731,7 @@ function mergeAboutPage(
           ...(legacyHistory && !partial.story
             ? { title: legacyHistory.title, content: legacyHistory.content }
             : {}),
+          imageSrc: definedString(partial.story?.imageSrc, defaults.story.imageSrc),
         },
     stats: definedArray(partial.stats, defaults.stats),
     philosophy: {
@@ -1814,15 +1817,19 @@ function mergeAboutPage(
     diningExperience: {
       ...defaults.diningExperience,
       ...(partial.diningExperience ?? {}),
-      imageSrc:
-        (partial.diningExperience?.imageSrc || "").trim() ||
-        defaults.diningExperience.imageSrc,
+      // "" = Orbit clear — keep blank on /about (do not restore default stock photo).
+      imageSrc: definedString(
+        partial.diningExperience?.imageSrc,
+        defaults.diningExperience.imageSrc
+      ),
     },
     spaWellness: {
       ...defaults.spaWellness,
       ...(partial.spaWellness ?? {}),
-      imageSrc:
-        (partial.spaWellness?.imageSrc || "").trim() || defaults.spaWellness.imageSrc,
+      imageSrc: definedString(
+        partial.spaWellness?.imageSrc,
+        defaults.spaWellness.imageSrc
+      ),
     },
     transport: {
       ...defaults.transport,
@@ -1837,9 +1844,19 @@ function mergeAboutPage(
     cta: isLegacyLuxuryCopy
       ? {
           ...defaults.cta,
-          backgroundImage: partial.cta?.backgroundImage || defaults.cta.backgroundImage,
+          backgroundImage: definedString(
+            partial.cta?.backgroundImage,
+            defaults.cta.backgroundImage
+          ),
         }
-      : { ...defaults.cta, ...(partial.cta ?? {}) },
+      : {
+          ...defaults.cta,
+          ...(partial.cta ?? {}),
+          backgroundImage: definedString(
+            partial.cta?.backgroundImage,
+            defaults.cta.backgroundImage
+          ),
+        },
     seo: isLegacyLuxuryCopy ? defaults.seo : { ...defaults.seo, ...(partial.seo ?? {}) },
   };
 }

@@ -373,6 +373,7 @@ function CoverStory({
   linkLabel: string;
   invert?: boolean;
 }) {
+  const showImage = hasMediaSrc(imageSrc);
   return (
     <section
       className={cn(
@@ -380,12 +381,17 @@ function CoverStory({
         invert ? "bg-[#FBF8F1]" : "bg-[#F7F4EF]"
       )}
     >
-      <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
+      <div
+        className={cn(
+          "mx-auto grid max-w-7xl items-center gap-10 lg:gap-16",
+          showImage ? "lg:grid-cols-2" : "lg:grid-cols-1"
+        )}
+      >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className={cn(invert && "lg:order-2")}
+          className={cn(showImage && invert && "lg:order-2")}
         >
           <SectionHeader eyebrow={eyebrow} title={title} description={content} />
           <Link
@@ -395,15 +401,15 @@ function CoverStory({
             {linkLabel} →
           </Link>
         </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
-          className={cn("relative overflow-hidden", invert && "lg:order-1")}
-        >
-          <div className="relative aspect-[16/11] w-full">
-            {hasMediaSrc(imageSrc) ? (
+        {showImage ? (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className={cn("relative overflow-hidden", invert && "lg:order-1")}
+          >
+            <div className="relative aspect-[16/11] w-full">
               <SafeImage
                 src={imageSrc}
                 alt={alt}
@@ -413,9 +419,9 @@ function CoverStory({
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
               />
-            ) : null}
-          </div>
-        </motion.div>
+            </div>
+          </motion.div>
+        ) : null}
       </div>
     </section>
   );
