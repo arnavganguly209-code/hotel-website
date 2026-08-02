@@ -424,6 +424,16 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
               ...(article.seo ?? {}),
               focusKeyword:
                 article.seo?.focusKeyword ?? base.seo?.focusKeyword ?? "",
+              ogTitle: article.seo?.ogTitle ?? base.seo?.ogTitle ?? "",
+              ogDescription:
+                article.seo?.ogDescription ?? base.seo?.ogDescription ?? "",
+              twitterImage:
+                article.seo?.twitterImage ?? base.seo?.twitterImage ?? "",
+              robots: article.seo?.robots ?? base.seo?.robots ?? "index,follow",
+              schemaType:
+                article.seo?.schemaType ?? base.seo?.schemaType ?? "Article",
+              breadcrumbTitle:
+                article.seo?.breadcrumbTitle ?? base.seo?.breadcrumbTitle ?? "",
             },
             faq: definedArray(article.faq, base.faq ?? []),
             toc: definedArray(article.toc, base.toc ?? []),
@@ -432,6 +442,9 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
             featured: article.featured === true,
             pinned: article.pinned === true,
             allowComments: article.allowComments !== false,
+            views: typeof article.views === "number" ? article.views : base.views ?? 0,
+            internalNotes: article.internalNotes ?? base.internalNotes ?? "",
+            scheduledAt: article.scheduledAt ?? base.scheduledAt ?? "",
             order: typeof article.order === "number" ? article.order : i,
           };
         }
@@ -446,8 +459,17 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
             seo: {
               ...def.seo,
               focusKeyword: def.seo?.focusKeyword ?? "",
+              ogTitle: def.seo?.ogTitle ?? "",
+              ogDescription: def.seo?.ogDescription ?? "",
+              twitterImage: def.seo?.twitterImage ?? "",
+              robots: def.seo?.robots ?? "index,follow",
+              schemaType: def.seo?.schemaType ?? "Article",
+              breadcrumbTitle: def.seo?.breadcrumbTitle ?? "",
             },
             revisions: def.revisions ?? [],
+            views: def.views ?? 0,
+            internalNotes: def.internalNotes ?? "",
+            scheduledAt: def.scheduledAt ?? "",
           });
         }
       }

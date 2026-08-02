@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/cms/auth";
+import { getAdminSessionUser } from "@/lib/admin/auth";
 import { getContent, saveContent } from "@/lib/cms/store";
 import { revalidateSiteContent } from "@/lib/cms/revalidate";
 import { deleteLocalUpload, toPublicId } from "@/lib/uploads";
@@ -7,8 +8,14 @@ import { deleteLocalUpload, toPublicId } from "@/lib/uploads";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+async function canManageMedia() {
+  if (await isAuthenticated()) return true;
+  if (await getAdminSessionUser()) return true;
+  return false;
+}
+
 export async function DELETE(request: Request) {
-  if (!(await isAuthenticated())) {
+  if (!(await canManageMedia())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

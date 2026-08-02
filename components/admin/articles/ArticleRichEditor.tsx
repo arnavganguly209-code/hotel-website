@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, createContext, useContext } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -49,10 +49,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const EditorThemeCtx = createContext(false);
+
 interface ArticleRichEditorProps {
   value: string;
   onChange: (html: string) => void;
   onUploadImage?: (file: File) => Promise<string | null>;
+  /** Orbit uses dark; admin PMS uses light cream theme. */
+  theme?: "orbit" | "admin";
 }
 
 function findNextInEditor(editor: Editor, query: string, fromPos: number): boolean {
@@ -123,8 +127,10 @@ export function ArticleRichEditor({
   value,
   onChange,
   onUploadImage,
+  theme = "orbit",
 }: ArticleRichEditorProps) {
-  const [mode, setMode] = useState<"visual" | "html">("visual");
+  const isAdmin = theme === "admin";
+  const [mode, setMode] = useState<"visual" | "html" | "preview">("visual");
   const [htmlDraft, setHtmlDraft] = useState(value);
   const [fullscreen, setFullscreen] = useState(false);
   const [findQuery, setFindQuery] = useState("");
@@ -147,14 +153,19 @@ export function ArticleRichEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: { levels: [1, 2, 3, 4] },
+        heading: { levels: [1, 2, 3, 4, 5, 6] },
       }),
       Underline,
       TextStyle,
       Color,
       Highlight.configure({ multicolor: true }),
       Link.configure({ openOnClick: false, HTMLAttributes: { rel: "noopener" } }),
-      Image.configure({ HTMLAttributes: { class: "rounded-xl" } }),
+      Image.configure({
+        HTMLAttributes: {
+          class: "rounded-xl",
+          loading: "lazy",
+        },
+      }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Placeholder.configure({ placeholder: "Write your article…" }),
       Table.configure({ resizable: true }),
@@ -173,8 +184,9 @@ export function ArticleRichEditor({
     },
     editorProps: {
       attributes: {
-        class:
-          "prose prose-sm max-w-none min-h-[360px] px-5 py-4 focus:outline-none text-white/90",
+        class: isAdmin
+          ? "prose prose-sm max-w-none min-h-[420px] px-5 py-4 focus:outline-none text-[#0f2420]"
+          : "prose prose-sm max-w-none min-h-[360px] px-5 py-4 focus:outline-none text-white/90",
       },
     },
   });
@@ -184,8 +196,9 @@ export function ArticleRichEditor({
     editor.setOptions({
       editorProps: {
         attributes: {
-          class:
-            "prose prose-sm max-w-none min-h-[360px] px-5 py-4 focus:outline-none text-white/90",
+          class: isAdmin
+            ? "prose prose-sm max-w-none min-h-[420px] px-5 py-4 focus:outline-none text-[#0f2420]"
+            : "prose prose-sm max-w-none min-h-[360px] px-5 py-4 focus:outline-none text-white/90",
         },
         handlePaste: (_view, event) => {
           const items = event.clipboardData?.items;
@@ -219,7 +232,7 @@ export function ArticleRichEditor({
         },
       },
     });
-  }, [editor, insertUploadedImage]);
+  }, [editor, insertUploadedImage, isAdmin]);
 
   useEffect(() => {
     if (!editor) return;
@@ -354,20 +367,36 @@ export function ArticleRichEditor({
 
   if (!editor) {
     return (
-      <div className="rounded-xl border border-luxury-gold/20 bg-black/30 p-8 text-sm text-white/40">
+      <div
+        className={cn(
+          "rounded-xl border p-8 text-sm",
+          isAdmin
+            ? "border-[#c5a059]/25 bg-[#fbf8f1] text-[#7a8a82]"
+            : "border-luxury-gold/20 bg-black/30 text-white/40"
+        )}
+      >
         Loading editor…
       </div>
     );
   }
 
   return (
+    <EditorThemeCtx.Provider value={isAdmin}>
     <div
       className={cn(
-        "flex flex-col overflow-hidden rounded-xl border border-luxury-gold/20 bg-[#0B1612]",
+        "flex flex-col overflow-hidden rounded-xl border",
+        isAdmin
+          ? "border-[#c5a059]/25 bg-white"
+          : "border-luxury-gold/20 bg-[#0B1612]",
         fullscreen && "fixed inset-0 z-[80] rounded-none border-0"
       )}
     >
-      <div className="space-y-1 border-b border-luxury-gold/15 bg-[#0F1C18] p-2">
+      <div
+        className={cn(
+          "space-y-1 border-b p-2",
+          isAdmin ? "border-[#c5a059]/15 bg-[#fbf8f1]" : "border-luxury-gold/15 bg-[#0F1C18]"
+        )}
+      >
         <div className="flex flex-wrap items-center gap-1">
           <ToolBtn onClick={() => editor.chain().focus().undo().run()} title="Undo">
             <Undo2 className="h-4 w-4" />
@@ -601,16 +630,55 @@ export function ArticleRichEditor({
             </ToolBtn>
             <button
               type="button"
-              onClick={() => (mode === "visual" ? switchToHtml() : switchToVisual())}
+              onClick={() => setMode("visual")}
               className={cn(
-                "flex h-8 items-center gap-1.5 rounded border px-3 text-[10px] font-semibold uppercase tracking-wider",
+                "flex h-8 items-center rounded border px-2.5 text-[10px] font-semibold uppercase tracking-wider",
+                mode === "visual"
+                  ? isAdmin
+                    ? "border-[#c5a059] bg-[#c5a059]/15 text-[#0f2420]"
+                    : "border-luxury-gold bg-luxury-gold/20 text-luxury-gold"
+                  : isAdmin
+                    ? "border-[#c5a059]/30 text-[#5a635c]"
+                    : "border-luxury-gold/30 text-white/70"
+              )}
+            >
+              Visual
+            </button>
+            <button
+              type="button"
+              onClick={switchToHtml}
+              className={cn(
+                "flex h-8 items-center gap-1.5 rounded border px-2.5 text-[10px] font-semibold uppercase tracking-wider",
                 mode === "html"
-                  ? "border-luxury-gold bg-luxury-gold/20 text-luxury-gold"
-                  : "border-luxury-gold/30 text-white/70 hover:border-luxury-gold/60"
+                  ? isAdmin
+                    ? "border-[#c5a059] bg-[#c5a059]/15 text-[#0f2420]"
+                    : "border-luxury-gold bg-luxury-gold/20 text-luxury-gold"
+                  : isAdmin
+                    ? "border-[#c5a059]/30 text-[#5a635c]"
+                    : "border-luxury-gold/30 text-white/70"
               )}
             >
               <Code2 className="h-3.5 w-3.5" />
-              Source
+              HTML
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (editor) setHtmlDraft(editor.getHTML());
+                setMode("preview");
+              }}
+              className={cn(
+                "flex h-8 items-center rounded border px-2.5 text-[10px] font-semibold uppercase tracking-wider",
+                mode === "preview"
+                  ? isAdmin
+                    ? "border-[#c5a059] bg-[#c5a059]/15 text-[#0f2420]"
+                    : "border-luxury-gold bg-luxury-gold/20 text-luxury-gold"
+                  : isAdmin
+                    ? "border-[#c5a059]/30 text-[#5a635c]"
+                    : "border-luxury-gold/30 text-white/70"
+              )}
+            >
+              Preview
             </button>
           </div>
         </div>
@@ -619,7 +687,7 @@ export function ArticleRichEditor({
       <div className={cn("min-h-0 flex-1 overflow-auto", fullscreen && "flex-1")}>
         {mode === "visual" ? (
           <EditorContent editor={editor} />
-        ) : (
+        ) : mode === "html" ? (
           <textarea
             value={htmlDraft}
             onChange={(e) => {
@@ -627,15 +695,33 @@ export function ArticleRichEditor({
               onChange(e.target.value);
             }}
             className={cn(
-              "min-h-[360px] w-full bg-black/40 px-4 py-3 font-mono text-xs text-white/85 outline-none",
+              "min-h-[360px] w-full px-4 py-3 font-mono text-xs outline-none",
+              isAdmin
+                ? "bg-[#f7f2e9] text-[#0f2420]"
+                : "bg-black/40 text-white/85",
               fullscreen && "h-full min-h-0"
             )}
             spellCheck={false}
           />
+        ) : (
+          <div
+            className={cn(
+              "prose prose-sm max-w-none min-h-[360px] px-5 py-4",
+              isAdmin ? "text-[#0f2420]" : "text-white/90"
+            )}
+            dangerouslySetInnerHTML={{ __html: htmlDraft || editor.getHTML() }}
+          />
         )}
       </div>
 
-      <div className="flex items-center justify-between border-t border-luxury-gold/15 bg-[#0F1C18] px-4 py-2 text-[10px] uppercase tracking-[0.18em] text-white/45">
+      <div
+        className={cn(
+          "flex items-center justify-between border-t px-4 py-2 text-[10px] uppercase tracking-[0.18em]",
+          isAdmin
+            ? "border-[#c5a059]/15 bg-[#fbf8f1] text-[#7a8a82]"
+            : "border-luxury-gold/15 bg-[#0F1C18] text-white/45"
+        )}
+      >
         <span>
           {words} word{words === 1 ? "" : "s"}
         </span>
@@ -644,6 +730,7 @@ export function ArticleRichEditor({
         </span>
       </div>
     </div>
+    </EditorThemeCtx.Provider>
   );
 }
 
@@ -657,17 +744,23 @@ function ToolBtn({
   onClick: () => void;
   active?: boolean;
   title?: string;
+  admin?: boolean;
 }) {
+  const admin = useContext(EditorThemeCtx);
   return (
     <button
       type="button"
       title={title}
       onClick={onClick}
       className={cn(
-        "flex h-8 w-8 items-center justify-center rounded border text-white/75 transition",
-        active
-          ? "border-luxury-gold bg-luxury-gold/25 text-luxury-gold"
-          : "border-transparent hover:border-luxury-gold/30 hover:bg-white/5"
+        "flex h-8 w-8 items-center justify-center rounded border transition",
+        admin
+          ? active
+            ? "border-[#c5a059] bg-[#c5a059]/20 text-[#0f2420]"
+            : "border-transparent text-[#3d5a4c] hover:border-[#c5a059]/30 hover:bg-[#c5a059]/10"
+          : active
+            ? "border-luxury-gold bg-luxury-gold/25 text-luxury-gold"
+            : "border-transparent text-white/75 hover:border-luxury-gold/30 hover:bg-white/5"
       )}
     >
       {children}
@@ -676,5 +769,11 @@ function ToolBtn({
 }
 
 function Sep() {
-  return <span className="mx-1 h-5 w-px bg-luxury-gold/20" aria-hidden />;
+  const admin = useContext(EditorThemeCtx);
+  return (
+    <span
+      className={cn("mx-1 h-5 w-px", admin ? "bg-[#c5a059]/25" : "bg-luxury-gold/20")}
+      aria-hidden
+    />
+  );
 }

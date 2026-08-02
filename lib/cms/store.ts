@@ -23,7 +23,21 @@ export async function getContent(): Promise<SiteContent> {
     if (!record?.content) {
       throw new Error("Failed to load site content from database");
     }
-    return mergeWithDefaults(record.content as Partial<SiteContent>);
+    const merged = mergeWithDefaults(record.content as Partial<SiteContent>);
+
+    // Auto-publish due scheduled articles (Admin Articles CMS).
+    try {
+      const { applyScheduledPublishes } = await import("@/lib/admin/articles");
+      const { content: next, changed } = applyScheduledPublishes(merged);
+      if (changed) {
+        await saveContent(next);
+        return next;
+      }
+    } catch (err) {
+      console.error("[CMS] Scheduled publish check failed:", err);
+    }
+
+    return merged;
   } catch (error) {
     if (error instanceof Error && error.message === "Failed to load site content from database") {
       throw error;

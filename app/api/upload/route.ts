@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/cms/auth";
+import { getAdminSessionUser } from "@/lib/admin/auth";
 import { getContent, saveContent } from "@/lib/cms/store";
 import { revalidateSiteContent } from "@/lib/cms/revalidate";
 import {
@@ -14,9 +15,15 @@ import {
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+async function canManageUploads() {
+  if (await isAuthenticated()) return true;
+  if (await getAdminSessionUser()) return true;
+  return false;
+}
+
 /** Authenticated local-storage health check. */
 export async function GET() {
-  if (!(await isAuthenticated())) {
+  if (!(await canManageUploads())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -36,7 +43,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!(await isAuthenticated())) {
+  if (!(await canManageUploads())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

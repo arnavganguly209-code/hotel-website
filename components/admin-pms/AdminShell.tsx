@@ -23,6 +23,7 @@ import {
   Hash,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ArticlesNavGroup } from "@/components/admin-pms/ArticlesNavGroup";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -109,7 +110,28 @@ export function AdminShell({
             </button>
           </div>
           <nav className="flex-1 space-y-0.5 overflow-y-auto p-3 pb-24">
-            {NAV.map((item) => {
+            {NAV.slice(0, 8).map((item) => {
+              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] transition",
+                    active
+                      ? "bg-gradient-to-r from-[#c5a059]/25 to-transparent text-[#f0dfb0]"
+                      : "text-white/70 hover:bg-white/5 hover:text-white"
+                  )}
+                >
+                  <Icon className={cn("h-4 w-4 shrink-0", active && "text-[#c5a059]")} />
+                  {item.label}
+                </Link>
+              );
+            })}
+            <ArticlesNavGroup onNavigate={() => setOpen(false)} />
+            {NAV.slice(8).map((item) => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
               const Icon = item.icon;
               return (

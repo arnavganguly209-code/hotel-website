@@ -923,6 +923,8 @@ export function ArticlesManager({ content, update }: ArticlesManagerProps) {
                   <option value="draft">Draft</option>
                   <option value="published">Publish</option>
                   <option value="scheduled">Scheduled</option>
+                  <option value="private">Private</option>
+                  <option value="archived">Archived</option>
                   <option value="trash">Trash</option>
                 </select>
               </div>

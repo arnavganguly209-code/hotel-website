@@ -1448,7 +1448,7 @@ export interface SiteContent {
     readingTime: number;
     publishedAt: string;
     updatedAt?: string;
-    status: "draft" | "published" | "scheduled" | "trash";
+    status: "draft" | "published" | "scheduled" | "private" | "archived" | "trash";
     featured: boolean;
     pinned: boolean;
     allowComments: boolean;
@@ -1462,6 +1462,12 @@ export interface SiteContent {
       focusKeyword?: string;
       twitterTitle?: string;
       twitterDescription?: string;
+      ogTitle?: string;
+      ogDescription?: string;
+      twitterImage?: string;
+      robots?: string;
+      schemaType?: string;
+      breadcrumbTitle?: string;
     };
     faq: Array<{ question: string; answer: string }>;
     toc: Array<{ id: string; label: string; level: 2 | 3 }>;
@@ -1472,6 +1478,8 @@ export interface SiteContent {
       body: string;
     }>;
     scheduledAt?: string;
+    views?: number;
+    internalNotes?: string;
     order: number;
   }>;
   mediaLibrary: MediaAsset[];

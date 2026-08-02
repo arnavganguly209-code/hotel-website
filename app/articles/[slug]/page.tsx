@@ -19,19 +19,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   );
   if (!article) return { title: "Article" };
 
-  const metaTitle = article.seo.title || article.title;
-  const metaDescription = article.seo.description || article.excerpt;
+  const metaTitle = article.seo.ogTitle || article.seo.title || article.title;
+  const metaDescription =
+    article.seo.ogDescription || article.seo.description || article.excerpt;
   const keywords = article.seo.keywords
     ? article.seo.keywords
         .split(",")
         .map((k) => k.trim())
         .filter(Boolean)
     : undefined;
+  const robots = (article.seo.robots || "index,follow").toLowerCase();
+  const noindex = robots.includes("noindex");
+  const nofollow = robots.includes("nofollow");
 
   return {
-    title: metaTitle,
-    description: metaDescription,
+    title: article.seo.title || article.title,
+    description: article.seo.description || article.excerpt,
     keywords,
+    robots: {
+      index: !noindex,
+      follow: !nofollow,
+    },
     alternates: {
       canonical: article.seo.canonical || articleDetailPath(article.slug),
     },
@@ -52,7 +60,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: article.seo.twitterTitle || metaTitle,
       description: article.seo.twitterDescription || metaDescription,
-      images: [article.seo.ogImage || article.coverImage],
+      images: [article.seo.twitterImage || article.seo.ogImage || article.coverImage],
     },
   };
 }
@@ -161,6 +169,11 @@ export default async function ArticleDetailRoute({ params }: Props) {
         prev={prev}
         next={next}
         siteUrl={siteUrl}
+      />
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `fetch(${JSON.stringify(`/api/articles/${article.slug}/view`)},{method:"POST",keepalive:true}).catch(()=>{});`,
+        }}
       />
     </>
   );
