@@ -6,6 +6,8 @@ import { SITE_URL } from "@/lib/seo";
 import { buildBreadcrumbSchema } from "@/lib/seo/page-metadata";
 import { siteConfig } from "@/lib/config";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getContent();
   const { seo, hero } = content.aboutPage;

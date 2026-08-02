@@ -4,9 +4,36 @@ import { verifyAllPaymentLogos } from "@/lib/cms/payment-logo-pipeline";
 import { getContent, saveContent } from "@/lib/cms/store";
 import { revalidateSiteContent } from "@/lib/cms/revalidate";
 import { mediaFingerprint } from "@/lib/cms/media-fingerprint";
+import { persistMediaSrc } from "@/lib/cms/media-url";
 import type { SiteContent } from "@/lib/cms/types";
 
 export const dynamic = "force-dynamic";
+
+/** Keep Orbit-cleared About images blank in DB (never leave stock paths after clear). */
+function normalizeAboutMedia(content: SiteContent): SiteContent {
+  const about = content.aboutPage;
+  if (!about) return content;
+  return {
+    ...content,
+    aboutPage: {
+      ...about,
+      hero: { ...about.hero, imageSrc: persistMediaSrc(about.hero?.imageSrc) },
+      story: { ...about.story, imageSrc: persistMediaSrc(about.story?.imageSrc) },
+      diningExperience: {
+        ...about.diningExperience,
+        imageSrc: persistMediaSrc(about.diningExperience?.imageSrc),
+      },
+      spaWellness: {
+        ...about.spaWellness,
+        imageSrc: persistMediaSrc(about.spaWellness?.imageSrc),
+      },
+      cta: {
+        ...about.cta,
+        backgroundImage: persistMediaSrc(about.cta?.backgroundImage),
+      },
+    },
+  };
+}
 
 export async function GET() {
   const content = await getContent();
@@ -21,7 +48,7 @@ export async function PUT(request: Request) {
   }
 
   try {
-    const content = (await request.json()) as SiteContent;
+    const content = normalizeAboutMedia((await request.json()) as SiteContent);
 
     // Hard-verify payment logo filesystem paths before writing DB
     if (content.footer?.paymentLogos) {

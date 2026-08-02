@@ -1,5 +1,13 @@
 import { isPaymentLogoCleared } from "@/lib/cms/payment-logos";
 
+/** Explicit Orbit clear/delete — never merge back to a default stock image. */
+export const CMS_MEDIA_CLEARED = "__cleared__";
+
+export function isCmsMediaCleared(src: string | undefined | null): boolean {
+  const value = (src || "").trim();
+  return !value || value === CMS_MEDIA_CLEARED || isPaymentLogoCleared(value);
+}
+
 /**
  * Strip query/hash so callers can compare or re-bust media paths safely.
  */
@@ -16,7 +24,7 @@ export function stripMediaQuery(src: string | undefined | null): string {
  * cached response even when a path briefly overlaps.
  */
 export function mediaUrl(src: string | undefined | null, bust?: string | number): string {
-  if (!src || !String(src).trim() || isPaymentLogoCleared(src)) return "";
+  if (isCmsMediaCleared(src)) return "";
   const clean = stripMediaQuery(src);
   if (!clean) return "";
 
@@ -31,6 +39,21 @@ export function mediaUrl(src: string | undefined | null, bust?: string | number)
 
 /** True when a CMS image field should render an <img>. */
 export function hasMediaSrc(src: string | undefined | null): boolean {
-  if (!src || !String(src).trim() || isPaymentLogoCleared(src)) return false;
+  if (isCmsMediaCleared(src)) return false;
   return true;
+}
+
+/**
+ * Merge helper: undefined → fallback; "" / __cleared__ → permanently blank.
+ */
+export function mergeMediaSrc(value: string | undefined, fallback: string): string {
+  if (value === undefined) return fallback;
+  if (isCmsMediaCleared(value)) return "";
+  return value.trim();
+}
+
+/** Persist cleared slots as empty string in the database. */
+export function persistMediaSrc(value: string | undefined | null): string {
+  if (isCmsMediaCleared(value)) return "";
+  return (value || "").trim();
 }

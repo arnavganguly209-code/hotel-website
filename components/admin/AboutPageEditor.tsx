@@ -6,13 +6,16 @@ import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
 import { SafeImage } from "@/components/shared/SafeImage";
-import { hasMediaSrc } from "@/lib/cms/media-url";
+import { CMS_MEDIA_CLEARED, hasMediaSrc } from "@/lib/cms/media-url";
 import type { SiteContent } from "@/lib/cms/types";
 import { cn } from "@/lib/utils";
 
 interface AboutPageEditorProps {
   content: SiteContent;
-  update: <K extends keyof SiteContent>(key: K, value: SiteContent[K]) => void;
+  update: <K extends keyof SiteContent>(
+    key: K,
+    value: SiteContent[K] | ((prev: SiteContent[K]) => SiteContent[K])
+  ) => void;
 }
 
 type CoverBlock = {
@@ -105,10 +108,16 @@ function CoverSectionEditor({
         label={`${heading} Image`}
         folder={folder}
         category={category}
-        value={value.imageSrc || ""}
+        value={hasMediaSrc(value.imageSrc) ? value.imageSrc : ""}
         library={library}
         onLibraryChange={onLibraryChange}
-        onChange={(url) => onChange({ ...value, imageSrc: url })}
+        onChange={(url) =>
+          onChange({
+            ...value,
+            // Explicit clear marker so merge/save never restore default stock art.
+            imageSrc: url && url.trim() ? url : CMS_MEDIA_CLEARED,
+          })
+        }
         enableCrop
       />
       <AdminInput
@@ -133,7 +142,14 @@ function CoverSectionEditor({
 
 export function AboutPageEditor({ content, update }: AboutPageEditorProps) {
   const page = content.aboutPage;
-  const setPage = (next: SiteContent["aboutPage"]) => update("aboutPage", next);
+  /** Functional update so rapid Dining/Spa clears don't overwrite each other. */
+  const setPage = (
+    next:
+      | SiteContent["aboutPage"]
+      | ((prev: SiteContent["aboutPage"]) => SiteContent["aboutPage"])
+  ) => update("aboutPage", next);
+  const patchPage = (patch: Partial<SiteContent["aboutPage"]>) =>
+    update("aboutPage", (prev) => ({ ...prev, ...patch }));
 
   return (
     <div className="space-y-6">
@@ -152,7 +168,15 @@ export function AboutPageEditor({ content, update }: AboutPageEditorProps) {
           value={page.hero.imageSrc}
           library={content.mediaLibrary}
           onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
-          onChange={(url) => setPage({ ...page, hero: { ...page.hero, imageSrc: url } })}
+        onChange={(url) =>
+          setPage((prev) => ({
+            ...prev,
+            hero: {
+              ...prev.hero,
+              imageSrc: url && url.trim() ? url : CMS_MEDIA_CLEARED,
+            },
+          }))
+        }
           enableCrop
         />
         <AdminInput
@@ -215,7 +239,15 @@ export function AboutPageEditor({ content, update }: AboutPageEditorProps) {
           value={page.story.imageSrc}
           library={content.mediaLibrary}
           onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
-          onChange={(url) => setPage({ ...page, story: { ...page.story, imageSrc: url } })}
+          onChange={(url) =>
+            setPage((prev) => ({
+              ...prev,
+              story: {
+                ...prev.story,
+                imageSrc: url && url.trim() ? url : CMS_MEDIA_CLEARED,
+              },
+            }))
+          }
           enableCrop
         />
         <AdminInput
@@ -260,7 +292,7 @@ export function AboutPageEditor({ content, update }: AboutPageEditorProps) {
             eyebrow: "Culinary Journey",
             title: "Dining Experience",
             content: "",
-            imageSrc: "/media/dining/skyz-lounge.jpg",
+            imageSrc: "",
           }
         }
         linkLabel="Explore Dining"
@@ -268,7 +300,7 @@ export function AboutPageEditor({ content, update }: AboutPageEditorProps) {
         category="Dining"
         library={content.mediaLibrary}
         onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
-        onChange={(diningExperience) => setPage({ ...page, diningExperience })}
+        onChange={(diningExperience) => patchPage({ diningExperience })}
       />
 
       <CoverSectionEditor
@@ -279,7 +311,7 @@ export function AboutPageEditor({ content, update }: AboutPageEditorProps) {
             eyebrow: "Restore & Renew",
             title: "Spa & Wellness",
             content: "",
-            imageSrc: "/media/spa/wellness.jpg",
+            imageSrc: "",
           }
         }
         invert
@@ -288,7 +320,7 @@ export function AboutPageEditor({ content, update }: AboutPageEditorProps) {
         category="Spa"
         library={content.mediaLibrary}
         onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
-        onChange={(spaWellness) => setPage({ ...page, spaWellness })}
+        onChange={(spaWellness) => patchPage({ spaWellness })}
       />
 
       {/* Transport copy */}

@@ -6,6 +6,7 @@ import {
   OFFICIAL_PAYMENT_LOGOS,
   PAYMENT_LOGO_CLEARED,
 } from "./payment-logos";
+import { mergeMediaSrc } from "./media-url";
 import { syncMediaLibraryFromContent } from "./collect-media";
 import { routes } from "@/lib/navigation";
 
@@ -1705,7 +1706,7 @@ function mergeAboutPage(
       : isLegacyLuxuryCopy
         ? {
             ...defaults.hero,
-            imageSrc: definedString(heroPartial?.imageSrc, defaults.hero.imageSrc),
+            imageSrc: mergeMediaSrc(heroPartial?.imageSrc, defaults.hero.imageSrc),
           }
         : {
           ...defaults.hero,
@@ -1717,13 +1718,13 @@ function mergeAboutPage(
             heroPartial?.overlayOpacity != null
               ? Number(heroPartial.overlayOpacity) || defaults.hero.overlayOpacity
               : defaults.hero.overlayOpacity,
-          // Explicit "" clear from Orbit must stick — never resurrect defaults.
-          imageSrc: definedString(heroPartial?.imageSrc, defaults.hero.imageSrc),
+          // Explicit "" / __cleared__ from Orbit must stick — never resurrect defaults.
+          imageSrc: mergeMediaSrc(heroPartial?.imageSrc, defaults.hero.imageSrc),
         },
     story: isLegacyLuxuryCopy
       ? {
           ...defaults.story,
-          imageSrc: definedString(partial.story?.imageSrc, defaults.story.imageSrc),
+          imageSrc: mergeMediaSrc(partial.story?.imageSrc, defaults.story.imageSrc),
         }
       : {
           ...defaults.story,
@@ -1731,7 +1732,7 @@ function mergeAboutPage(
           ...(legacyHistory && !partial.story
             ? { title: legacyHistory.title, content: legacyHistory.content }
             : {}),
-          imageSrc: definedString(partial.story?.imageSrc, defaults.story.imageSrc),
+          imageSrc: mergeMediaSrc(partial.story?.imageSrc, defaults.story.imageSrc),
         },
     stats: definedArray(partial.stats, defaults.stats),
     philosophy: {
@@ -1817,8 +1818,8 @@ function mergeAboutPage(
     diningExperience: {
       ...defaults.diningExperience,
       ...(partial.diningExperience ?? {}),
-      // "" = Orbit clear — keep blank on /about (do not restore default stock photo).
-      imageSrc: definedString(
+      // "" / __cleared__ = Orbit clear — keep blank on /about (never restore stock photo).
+      imageSrc: mergeMediaSrc(
         partial.diningExperience?.imageSrc,
         defaults.diningExperience.imageSrc
       ),
@@ -1826,7 +1827,7 @@ function mergeAboutPage(
     spaWellness: {
       ...defaults.spaWellness,
       ...(partial.spaWellness ?? {}),
-      imageSrc: definedString(
+      imageSrc: mergeMediaSrc(
         partial.spaWellness?.imageSrc,
         defaults.spaWellness.imageSrc
       ),
@@ -1844,7 +1845,7 @@ function mergeAboutPage(
     cta: isLegacyLuxuryCopy
       ? {
           ...defaults.cta,
-          backgroundImage: definedString(
+          backgroundImage: mergeMediaSrc(
             partial.cta?.backgroundImage,
             defaults.cta.backgroundImage
           ),
@@ -1852,7 +1853,7 @@ function mergeAboutPage(
       : {
           ...defaults.cta,
           ...(partial.cta ?? {}),
-          backgroundImage: definedString(
+          backgroundImage: mergeMediaSrc(
             partial.cta?.backgroundImage,
             defaults.cta.backgroundImage
           ),

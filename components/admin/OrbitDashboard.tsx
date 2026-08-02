@@ -127,9 +127,19 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
   const update = <K extends keyof SiteContent>(
     key: K,
-    value: SiteContent[K]
+    value:
+      | SiteContent[K]
+      | ((prev: SiteContent[K]) => SiteContent[K])
   ) => {
-    setContent((prev) => ({ ...prev, [key]: value }));
+    setContent((prev) => {
+      const nextValue =
+        typeof value === "function"
+          ? (value as (p: SiteContent[K]) => SiteContent[K])(prev[key])
+          : value;
+      const next = { ...prev, [key]: nextValue };
+      contentRef.current = next;
+      return next;
+    });
     setSaved(false);
     setAutoSaveError(false);
   };
