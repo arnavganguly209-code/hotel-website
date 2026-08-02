@@ -1,5 +1,4 @@
 import PDFDocument from "pdfkit";
-import QRCode from "qrcode";
 import fs from "fs";
 import path from "path";
 import { formatBookingNumber } from "@/lib/booking/booking-number";
@@ -77,16 +76,6 @@ export async function buildReservationPdf(ctx: BookingEmailContext): Promise<Buf
   const issueDate = ctx.issueDate || new Date().toISOString().slice(0, 10);
   const bookingCode = ctx.bookingNumber || formatBookingNumber(ctx.bookingId);
 
-  const qrDataUrl = await QRCode.toDataURL(
-    [bookingCode, ctx.guestName, ctx.checkIn, ctx.checkOut].join("|"),
-    {
-      width: 140,
-      margin: 1,
-      color: { dark: GREEN, light: "#FFFFFF" },
-      errorCorrectionLevel: "M",
-    }
-  );
-  const qrBuf = Buffer.from(qrDataUrl.split(",")[1] || "", "base64");
   const logoBuf = await resolveLogoBuffer(hotel.logoUrl);
 
   const doc = new PDFDocument({
@@ -152,10 +141,10 @@ export async function buildReservationPdf(ctx: BookingEmailContext): Promise<Buf
 
   let y = 124;
 
-  const qrSize = 56;
-  doc.roundedRect(left, y, contentW - qrSize - 12, qrSize + 4, 4).fill("#ffffff");
+  const metaH = 52;
+  doc.roundedRect(left, y, contentW, metaH, 4).fill("#ffffff");
   doc
-    .roundedRect(left, y, contentW - qrSize - 12, qrSize + 4, 4)
+    .roundedRect(left, y, contentW, metaH, 4)
     .lineWidth(0.8)
     .strokeColor(LINE)
     .stroke();
@@ -171,8 +160,7 @@ export async function buildReservationPdf(ctx: BookingEmailContext): Promise<Buf
     );
   doc.text(`Issued: ${issueDate}   ·   Booked: ${ctx.bookingDate}`, left + 10, y + 40);
 
-  doc.image(qrBuf, right - qrSize, y, { width: qrSize, height: qrSize });
-  y += qrSize + 14;
+  y += metaH + 14;
 
   const section = (title: string) => {
     doc.fillColor(GREEN).fontSize(9).text(title.toUpperCase(), left, y, { characterSpacing: 1 });
