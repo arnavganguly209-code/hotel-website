@@ -1814,10 +1814,15 @@ function mergeAboutPage(
     diningExperience: {
       ...defaults.diningExperience,
       ...(partial.diningExperience ?? {}),
+      imageSrc:
+        (partial.diningExperience?.imageSrc || "").trim() ||
+        defaults.diningExperience.imageSrc,
     },
     spaWellness: {
       ...defaults.spaWellness,
       ...(partial.spaWellness ?? {}),
+      imageSrc:
+        (partial.spaWellness?.imageSrc || "").trim() || defaults.spaWellness.imageSrc,
     },
     transport: {
       ...defaults.transport,

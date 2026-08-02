@@ -5,11 +5,130 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
+import { SafeImage } from "@/components/shared/SafeImage";
+import { hasMediaSrc } from "@/lib/cms/media-url";
 import type { SiteContent } from "@/lib/cms/types";
+import { cn } from "@/lib/utils";
 
 interface AboutPageEditorProps {
   content: SiteContent;
   update: <K extends keyof SiteContent>(key: K, value: SiteContent[K]) => void;
+}
+
+type CoverBlock = {
+  eyebrow: string;
+  title: string;
+  content: string;
+  imageSrc: string;
+};
+
+function CoverSectionEditor({
+  heading,
+  hint,
+  block,
+  invert,
+  linkLabel,
+  folder,
+  category,
+  library,
+  onLibraryChange,
+  onChange,
+}: {
+  heading: string;
+  hint: string;
+  block: CoverBlock;
+  invert?: boolean;
+  linkLabel: string;
+  folder: string;
+  category: string;
+  library: SiteContent["mediaLibrary"];
+  onLibraryChange: (library: SiteContent["mediaLibrary"]) => void;
+  onChange: (next: CoverBlock) => void;
+}) {
+  const empty: CoverBlock = { eyebrow: "", title: "", content: "", imageSrc: "" };
+  const value = block ?? empty;
+
+  return (
+    <div className="space-y-4 border border-luxury-gold/20 bg-white/[0.02] p-6">
+      <div>
+        <p className="font-display text-lg text-luxury-gold">{heading}</p>
+        <p className="mt-1 text-xs text-white/45">{hint}</p>
+      </div>
+
+      {/* Website-style live preview (same layout as /about) */}
+      <div
+        className={cn(
+          "overflow-hidden rounded-xl border border-luxury-gold/15",
+          invert ? "bg-[#FBF8F1]" : "bg-[#F7F4EF]"
+        )}
+      >
+        <p className="border-b border-[#D4AF37]/20 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8a7340]">
+          Live preview · matches /about
+        </p>
+        <div className="grid items-stretch gap-0 lg:grid-cols-2">
+          <div className={cn("space-y-3 p-5 sm:p-6", invert && "lg:order-2")}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#C9A227]">
+              {value.eyebrow || "EYEBROW"}
+            </p>
+            <h3 className="font-display text-2xl font-light tracking-wide text-[#14352C] sm:text-3xl">
+              {value.title || "Title"}
+            </h3>
+            <p className="font-body text-sm leading-relaxed text-[#5A635C]">
+              {value.content || "Description appears here…"}
+            </p>
+            <div className="h-px w-14 bg-[#D4AF37]/45" />
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#C9A227]">
+              {linkLabel} →
+            </p>
+          </div>
+          <div className={cn("relative min-h-[200px] bg-[#e8e2d6]", invert && "lg:order-1")}>
+            {hasMediaSrc(value.imageSrc) ? (
+              <SafeImage
+                key={value.imageSrc}
+                src={value.imageSrc}
+                alt={value.title || heading}
+                fill
+                fadeIn={false}
+                objectFit="cover"
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full min-h-[200px] items-center justify-center px-4 text-center text-sm text-[#8a7340]">
+                No image yet — upload or select below
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <ImagePicker
+        label={`${heading} Image`}
+        folder={folder}
+        category={category}
+        value={value.imageSrc || ""}
+        library={library}
+        onLibraryChange={onLibraryChange}
+        onChange={(url) => onChange({ ...value, imageSrc: url })}
+        enableCrop
+      />
+      <AdminInput
+        label="Eyebrow"
+        value={value.eyebrow || ""}
+        onChange={(e) => onChange({ ...value, eyebrow: e.target.value })}
+      />
+      <AdminInput
+        label="Title"
+        value={value.title || ""}
+        onChange={(e) => onChange({ ...value, title: e.target.value })}
+      />
+      <AdminTextarea
+        label="Description"
+        rows={4}
+        value={value.content || ""}
+        onChange={(e) => onChange({ ...value, content: e.target.value })}
+      />
+    </div>
+  );
 }
 
 export function AboutPageEditor({ content, update }: AboutPageEditorProps) {
@@ -20,7 +139,7 @@ export function AboutPageEditor({ content, update }: AboutPageEditorProps) {
     <div className="space-y-6">
       <p className="text-sm text-white/50">
         About Page — every cover image on the live page is editable here (Hero, Story, Dining, Spa,
-        CTA). Changes sync into the Media Library automatically.
+        CTA). Dining & Spa sections include a large preview matching the public /about layout.
       </p>
 
       {/* Hero */}
@@ -133,178 +252,44 @@ export function AboutPageEditor({ content, update }: AboutPageEditorProps) {
         </div>
       </div>
 
-      {/* Dining Experience — live on public About */}
-      <div className="space-y-4 border border-luxury-gold/10 p-6">
-        <p className="font-display text-lg text-luxury-gold">Dining Experience Cover</p>
-        <p className="text-xs text-white/45">
-          Shown on the public About page. Replace this image in Orbit — it must stay visible in the
-          Media Library.
-        </p>
-        <ImagePicker
-          label="Dining Cover Image"
-          folder="dining"
-          category="Dining"
-          value={page.diningExperience?.imageSrc || ""}
-          library={content.mediaLibrary}
-          onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
-          onChange={(url) =>
-            setPage({
-              ...page,
-              diningExperience: {
-                ...(page.diningExperience ?? {
-                  eyebrow: "Dining",
-                  title: "Culinary Journeys",
-                  content: "",
-                  imageSrc: "",
-                }),
-                imageSrc: url,
-              },
-            })
+      <CoverSectionEditor
+        heading="Dining Experience (About page)"
+        hint="Same two-column block as public /about — Culinary Journey / Dining Experience. Change the image here to update the website."
+        block={
+          page.diningExperience ?? {
+            eyebrow: "Culinary Journey",
+            title: "Dining Experience",
+            content: "",
+            imageSrc: "/media/dining/skyz-lounge.jpg",
           }
-          enableCrop
-        />
-        <AdminInput
-          label="Eyebrow"
-          value={page.diningExperience?.eyebrow || ""}
-          onChange={(e) =>
-            setPage({
-              ...page,
-              diningExperience: {
-                ...(page.diningExperience ?? {
-                  eyebrow: "",
-                  title: "",
-                  content: "",
-                  imageSrc: "",
-                }),
-                eyebrow: e.target.value,
-              },
-            })
-          }
-        />
-        <AdminInput
-          label="Title"
-          value={page.diningExperience?.title || ""}
-          onChange={(e) =>
-            setPage({
-              ...page,
-              diningExperience: {
-                ...(page.diningExperience ?? {
-                  eyebrow: "",
-                  title: "",
-                  content: "",
-                  imageSrc: "",
-                }),
-                title: e.target.value,
-              },
-            })
-          }
-        />
-        <AdminTextarea
-          label="Description"
-          rows={4}
-          value={page.diningExperience?.content || ""}
-          onChange={(e) =>
-            setPage({
-              ...page,
-              diningExperience: {
-                ...(page.diningExperience ?? {
-                  eyebrow: "",
-                  title: "",
-                  content: "",
-                  imageSrc: "",
-                }),
-                content: e.target.value,
-              },
-            })
-          }
-        />
-      </div>
+        }
+        linkLabel="Explore Dining"
+        folder="dining"
+        category="Dining"
+        library={content.mediaLibrary}
+        onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+        onChange={(diningExperience) => setPage({ ...page, diningExperience })}
+      />
 
-      {/* Spa & Wellness — live on public About */}
-      <div className="space-y-4 border border-luxury-gold/10 p-6">
-        <p className="font-display text-lg text-luxury-gold">Spa & Wellness Cover</p>
-        <p className="text-xs text-white/45">
-          Shown on the public About page. Fully manageable from Orbit.
-        </p>
-        <ImagePicker
-          label="Spa Cover Image"
-          folder="spa"
-          category="Spa"
-          value={page.spaWellness?.imageSrc || ""}
-          library={content.mediaLibrary}
-          onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
-          onChange={(url) =>
-            setPage({
-              ...page,
-              spaWellness: {
-                ...(page.spaWellness ?? {
-                  eyebrow: "Wellness",
-                  title: "Spa & Wellness",
-                  content: "",
-                  imageSrc: "",
-                }),
-                imageSrc: url,
-              },
-            })
+      <CoverSectionEditor
+        heading="Spa & Wellness (About page)"
+        hint="Same two-column block as public /about — Restore & Renew / Spa & Wellness. Image on the left on the live site."
+        block={
+          page.spaWellness ?? {
+            eyebrow: "Restore & Renew",
+            title: "Spa & Wellness",
+            content: "",
+            imageSrc: "/media/spa/wellness.jpg",
           }
-          enableCrop
-        />
-        <AdminInput
-          label="Eyebrow"
-          value={page.spaWellness?.eyebrow || ""}
-          onChange={(e) =>
-            setPage({
-              ...page,
-              spaWellness: {
-                ...(page.spaWellness ?? {
-                  eyebrow: "",
-                  title: "",
-                  content: "",
-                  imageSrc: "",
-                }),
-                eyebrow: e.target.value,
-              },
-            })
-          }
-        />
-        <AdminInput
-          label="Title"
-          value={page.spaWellness?.title || ""}
-          onChange={(e) =>
-            setPage({
-              ...page,
-              spaWellness: {
-                ...(page.spaWellness ?? {
-                  eyebrow: "",
-                  title: "",
-                  content: "",
-                  imageSrc: "",
-                }),
-                title: e.target.value,
-              },
-            })
-          }
-        />
-        <AdminTextarea
-          label="Description"
-          rows={4}
-          value={page.spaWellness?.content || ""}
-          onChange={(e) =>
-            setPage({
-              ...page,
-              spaWellness: {
-                ...(page.spaWellness ?? {
-                  eyebrow: "",
-                  title: "",
-                  content: "",
-                  imageSrc: "",
-                }),
-                content: e.target.value,
-              },
-            })
-          }
-        />
-      </div>
+        }
+        invert
+        linkLabel="Explore Spa"
+        folder="spa"
+        category="Spa"
+        library={content.mediaLibrary}
+        onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+        onChange={(spaWellness) => setPage({ ...page, spaWellness })}
+      />
 
       {/* Transport copy */}
       <div className="space-y-4 border border-luxury-gold/10 p-6">
