@@ -18,7 +18,7 @@ import {
   extractExcerpt,
   slugifyArticle,
   type CmsArticle,
-} from "@/lib/admin/articles";
+} from "@/lib/admin/articles-shared";
 import { cn } from "@/lib/utils";
 import type { SiteContent } from "@/lib/cms/types";
 

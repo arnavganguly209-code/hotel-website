@@ -3,6 +3,7 @@ import type { SiteContent } from "./types";
 import { mergeWithDefaults } from "./merge";
 import { CMS_CONTENT_TAG } from "./revalidate";
 import { isDatabaseAvailable, db } from "@/lib/db";
+import { applyScheduledPublishes } from "@/lib/admin/articles-shared";
 
 const RECORD_ID = "main";
 
@@ -27,7 +28,6 @@ export async function getContent(): Promise<SiteContent> {
 
     // Auto-publish due scheduled articles (Admin Articles CMS).
     try {
-      const { applyScheduledPublishes } = await import("@/lib/admin/articles");
       const { content: next, changed } = applyScheduledPublishes(merged);
       if (changed) {
         await saveContent(next);

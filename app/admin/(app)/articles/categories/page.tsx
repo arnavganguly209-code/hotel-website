@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Loader2, Plus, Trash2 } from "lucide-react";
-import { slugifyArticle } from "@/lib/admin/articles";
+import { slugifyArticle } from "@/lib/admin/articles-shared";
 
 type Category = {
   id: string;

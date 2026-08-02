@@ -1,4 +1,4 @@
-import type { CmsArticle } from "@/lib/admin/articles";
+import type { CmsArticle } from "@/lib/admin/articles-shared";
 
 export type SeoCheckLevel = "good" | "ok" | "bad";
 
