@@ -27,7 +27,7 @@ export function ArticlesHomeSection({
   const body = section.bodyColor || "#5A6B60";
   const topBg = section.backgroundTop || "#FAF6EE";
   const bottomBg = section.backgroundBottom || "#F4EFE4";
-  const padY = section.sectionPaddingY ?? 88;
+  const padY = Math.round((section.sectionPaddingY ?? 88) / 2);
   const limit = section.articleLimit ?? 9;
 
   const categoryMap = useMemo(

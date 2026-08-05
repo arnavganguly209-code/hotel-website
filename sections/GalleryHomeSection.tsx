@@ -50,7 +50,7 @@ export function GalleryHomeSection({ gallery, section }: GalleryHomeSectionProps
         <HeritageMistBackdrop goldColor={gold} visible={section.showMist !== false} />
       </div>
 
-      <div className="relative mx-auto max-w-[1200px] px-4 py-16 sm:px-6 md:py-20 lg:px-8 lg:py-24">
+      <div className="relative mx-auto max-w-[1200px] px-4 py-8 sm:px-6 md:py-10 lg:px-8 lg:py-12">
         {/* Header — Label → Heading → Divider → Description (matches reference) */}
         <motion.div
           variants={luxuryStagger}

@@ -135,7 +135,7 @@
   }
 
   .section-padding {
-    @apply px-6 py-24 md:px-8 md:py-32 lg:py-40;
+    @apply px-6 py-12 md:px-8 md:py-16 lg:py-20;
   }
 
   .luxury-card {

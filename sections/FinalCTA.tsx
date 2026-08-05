@@ -14,7 +14,7 @@ interface FinalCTAProps {
 
 export function FinalCTA({ meta }: FinalCTAProps) {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-luxury-green via-luxury-green-dark to-luxury-green py-24 md:py-32">
+    <section className="relative overflow-hidden bg-gradient-to-br from-luxury-green via-luxury-green-dark to-luxury-green py-12 md:py-16">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(216,180,106,0.15)_0%,transparent_60%)]" />
 
       <div className="relative mx-auto max-w-4xl px-6 text-center lg:px-8">

@@ -54,7 +54,7 @@ export function ExploreKathmanduSection({ section }: ExploreKathmanduSectionProp
   const cardBg = section.cardBackgroundColor || "#FBF8F1";
   const cardBorder = section.cardBorderColor || `${gold}66`;
   const gap = section.cardsGapPx ?? 22;
-  const paddingY = section.sectionPaddingY ?? 96;
+  const paddingY = Math.round((section.sectionPaddingY ?? 96) / 2);
 
   const destinations = [...(section.destinations ?? [])]
     .filter((d) => d.enabled !== false)

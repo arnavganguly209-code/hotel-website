@@ -42,35 +42,35 @@ function StatCard({
     <motion.div
       ref={ref}
       variants={luxuryFadeUp}
-      className="group relative flex items-center gap-4 rounded-2xl px-5 py-5 transition-all duration-500 hover:-translate-y-1 md:gap-5 md:px-6 md:py-6"
+      className="group relative flex items-center gap-3 rounded-xl px-4 py-3.5 transition-all duration-500 hover:-translate-y-0.5 md:gap-4 md:px-5 md:py-4"
       style={{
         backgroundColor: bg,
         border: `1px solid ${border}99`,
-        boxShadow: "0 10px 28px rgba(0,0,0,0.22)",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = `0 16px 36px rgba(0,0,0,0.28), 0 0 24px ${goldColor}33`;
+        e.currentTarget.style.boxShadow = `0 12px 28px rgba(0,0,0,0.26), 0 0 18px ${goldColor}33`;
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow = "0 10px 28px rgba(0,0,0,0.22)";
+        e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.2)";
       }}
     >
       <div
-        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border md:h-14 md:w-14"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border md:h-11 md:w-11"
         style={{ borderColor: `${border}CC`, color: text }}
       >
-        <Icon className="h-5 w-5 md:h-6 md:w-6" strokeWidth={1.35} />
+        <Icon className="h-4 w-4 md:h-5 md:w-5" strokeWidth={1.35} />
       </div>
       <div className="min-w-0 text-left">
         <p
-          className="font-display text-3xl font-semibold leading-none tracking-wide md:text-[2.15rem]"
+          className="font-display text-2xl font-semibold leading-none tracking-wide md:text-[1.85rem]"
           style={{ color: text }}
         >
           {count}
           {stat.suffix}
         </p>
         <p
-          className="mt-2 font-body text-[10px] font-medium uppercase tracking-[0.22em] md:text-[11px]"
+          className="mt-1.5 font-body text-[9px] font-medium uppercase tracking-[0.2em] md:text-[10px]"
           style={{ color: text }}
         >
           {stat.label}
@@ -99,10 +99,10 @@ export function LuxuryShowcaseStats({
 
   return (
     <div className="relative" style={{ backgroundColor: bandBackground }}>
-      <div className="mx-auto max-w-[1320px] px-3 pb-14 pt-10 sm:px-5 md:pb-16 md:pt-12 lg:px-6">
-        <div className="mb-5 flex justify-center" aria-hidden>
+      <div className="mx-auto max-w-[1320px] px-3 pb-6 pt-5 sm:px-5 md:pb-7 md:pt-6 lg:px-6">
+        <div className="mb-3 flex justify-center" aria-hidden>
           <span
-            className="h-1.5 w-1.5 rotate-45"
+            className="h-1 w-1 rotate-45"
             style={{ backgroundColor: `${goldColor}AA` }}
           />
         </div>
@@ -111,15 +111,15 @@ export function LuxuryShowcaseStats({
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-40px" }}
-          className="grid gap-3 sm:gap-4 md:grid-cols-3 md:gap-5"
+          className="grid gap-2.5 sm:gap-3 md:grid-cols-3 md:gap-4"
         >
           {items.map((stat) => (
             <StatCard key={stat.id || stat.label} stat={stat} goldColor={goldColor} />
           ))}
         </motion.div>
-        <div className="mt-5 flex justify-center" aria-hidden>
+        <div className="mt-3 flex justify-center" aria-hidden>
           <span
-            className="h-1.5 w-1.5 rotate-45"
+            className="h-1 w-1 rotate-45"
             style={{ backgroundColor: `${goldColor}AA` }}
           />
         </div>

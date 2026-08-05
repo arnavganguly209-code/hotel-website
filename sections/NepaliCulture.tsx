@@ -59,7 +59,7 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
         <HeritageMistBackdrop goldColor={gold} visible={content.showMist !== false} />
       </div>
 
-      <div className="relative mx-auto max-w-[1200px] px-4 pb-16 pt-16 sm:px-6 md:pb-20 md:pt-20 lg:px-8 lg:pb-24 lg:pt-24">
+      <div className="relative mx-auto max-w-[1200px] px-4 pb-8 pt-8 sm:px-6 md:pb-10 md:pt-10 lg:px-8 lg:pb-12 lg:pt-12">
         <div className="grid items-stretch gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-14 xl:gap-16">
           {/* Left — overlapping image composition */}
           <motion.div

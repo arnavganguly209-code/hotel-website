@@ -74,7 +74,7 @@ export const defaultContent: SiteContent = {
     bodyColor: "#5A6B60",
     goldColor: "#D4AF37",
     spacing: {
-      sectionPaddingY: 88,
+      sectionPaddingY: 44,
       sliderMaxHeight: 540,
     },
     slider: {
@@ -608,7 +608,7 @@ export const defaultContent: SiteContent = {
     goldColor: "#C5A059",
     headingColor: "#062C24",
     bodyColor: "#5A635C",
-    sectionPaddingY: 96,
+    sectionPaddingY: 48,
     featuredTitle: "Grand Ballroom",
     featuredDescription: "Timeless celebrations in grandeur",
     media: {
@@ -855,7 +855,7 @@ export const defaultContent: SiteContent = {
     bodyColor: "#5A635C",
     cardBackgroundColor: "#FBF8F1",
     cardBorderColor: "#C5A05966",
-    sectionPaddingY: 96,
+    sectionPaddingY: 48,
     cardsGapPx: 22,
   },
   culturalExperiencePage: {
@@ -2666,7 +2666,7 @@ export const defaultContent: SiteContent = {
     bodyColor: "#5A6B60",
     borderColor: "#D4AF3788",
     cardRadiusPx: 18,
-    sectionPaddingY: 88,
+    sectionPaddingY: 44,
     cardGapPx: 24,
   },
   contact: {
@@ -3114,7 +3114,7 @@ export const defaultContent: SiteContent = {
       text: "#F8F5EE",
     },
     spacing: {
-      sectionPaddingY: 96,
+      sectionPaddingY: 48,
     },
   },
   articlesPage: defaultArticlesPage,

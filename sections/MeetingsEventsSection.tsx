@@ -51,7 +51,7 @@ export function MeetingsEventsSection({ section }: MeetingsEventsSectionProps) {
   const imageSrc = section.media?.imageSrc || "";
   const imageAlt =
     section.media?.alt || section.featuredTitle || section.title;
-  const paddingY = section.sectionPaddingY ?? 96;
+  const paddingY = Math.round((section.sectionPaddingY ?? 96) / 2);
 
   return (
     <section

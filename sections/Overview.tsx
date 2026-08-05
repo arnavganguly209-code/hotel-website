@@ -20,7 +20,7 @@ export function Overview({ content }: OverviewProps) {
   const body = content.bodyColor || "#5A6B60";
   const topBg = content.backgroundTop || "#FAF6EE";
   const bottomBg = content.backgroundBottom || "#0F2A22";
-  const padY = content.spacing?.sectionPaddingY ?? 96;
+  const padY = Math.round((content.spacing?.sectionPaddingY ?? 88) / 2);
   const description =
     content.content.split(/\n\n+/).filter(Boolean)[0] || content.content;
 
@@ -87,7 +87,7 @@ export function Overview({ content }: OverviewProps) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-10 mt-10 md:mt-12"
+          className="relative z-10 mt-6 md:mt-8"
         >
           <LuxuryShowcaseSlider
             slider={content.slider}
