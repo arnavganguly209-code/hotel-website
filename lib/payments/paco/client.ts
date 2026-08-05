@@ -297,6 +297,31 @@ export function parseInquiryOutcome(inquiry: Record<string, unknown>): {
     first.invoiceNo2C2P || first.invoiceNo || first.InvoiceNo || ""
   ).trim();
 
+  const paymentStatusInfo = (first.PaymentStatusInfo || first.paymentStatusInfo) as
+    | { PaymentStatus?: string; PaymentStep?: string }
+    | undefined;
+  const pacoStatus = String(paymentStatusInfo?.PaymentStatus || "").toUpperCase();
+  const pacoStep = String(paymentStatusInfo?.PaymentStep || "").toUpperCase();
+
+  if (pacoStatus === "F") {
+    return {
+      paid: false,
+      failed: true,
+      approvalCode: approvalCode || undefined,
+      invoiceNo: invoiceNo || undefined,
+      statusText: pacoStep || "F",
+    };
+  }
+  if (pacoStatus === "A" || pacoStatus === "S") {
+    return {
+      paid: true,
+      failed: false,
+      approvalCode: approvalCode || undefined,
+      invoiceNo: invoiceNo || undefined,
+      statusText: pacoStep || pacoStatus,
+    };
+  }
+
   const paidHints = ["paid", "success", "successful", "approved", "settled", "captured", "completed"];
   const failHints = ["fail", "failed", "decline", "declined", "reject", "error", "void", "cancel"];
 
