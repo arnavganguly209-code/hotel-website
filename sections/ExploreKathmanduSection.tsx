@@ -137,99 +137,105 @@ export function ExploreKathmanduSection({ section }: ExploreKathmanduSectionProp
               <motion.article
                 key={dest.id}
                 variants={luxuryFadeUp}
-                className="group flex h-full flex-col overflow-hidden rounded-[20px] transition-all duration-500 hover:-translate-y-1.5"
-                style={{
-                  backgroundColor: cardBg,
-                  border: `1px solid ${cardBorder}`,
-                  boxShadow: "0 18px 40px rgba(15, 42, 34, 0.10)",
-                }}
+                className="h-full"
               >
-                {/* Image */}
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  {img ? (
-                    <SafeImage
-                      src={img}
-                      alt={dest.media?.alt || dest.title}
-                      fill
-                      objectFit="cover"
-                      className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-[#EFE8DA]">
-                      <p className="font-display text-[10px] uppercase tracking-[0.2em]" style={{ color: gold }}>
-                        Destination
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Distance badge */}
-                  {dest.distance ? (
-                    <span
-                      className="absolute right-3 top-3 rounded-md px-2.5 py-1 font-body text-[10px] font-medium tracking-wide text-white"
-                      style={{ backgroundColor: "rgba(15, 30, 28, 0.78)" }}
-                    >
-                      {dest.distance}
-                    </span>
-                  ) : null}
-
-                  {/* Overlapping circular icon */}
-                  <div
-                    className="absolute -bottom-5 left-1/2 z-10 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full"
-                    style={{
-                      backgroundColor: cardBg,
-                      border: `1.5px solid ${gold}`,
-                      boxShadow: "0 8px 20px rgba(15, 42, 34, 0.12)",
-                    }}
-                  >
-                    {dest.iconSrc ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={dest.iconSrc} alt="" className="h-5 w-5 object-contain" />
+                <Link
+                  href={href}
+                  prefetch
+                  aria-label={`Explore ${dest.title}`}
+                  className="group flex h-full flex-col overflow-hidden rounded-[20px] transition-all duration-500 hover:-translate-y-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  style={{
+                    backgroundColor: cardBg,
+                    border: `1px solid ${cardBorder}`,
+                    boxShadow: "0 18px 40px rgba(15, 42, 34, 0.10)",
+                    outlineColor: gold,
+                  }}
+                >
+                  {/* Image */}
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    {img ? (
+                      <SafeImage
+                        src={img}
+                        alt={dest.media?.alt || dest.title}
+                        fill
+                        objectFit="cover"
+                        className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      />
                     ) : (
-                      <span style={{ color: gold }}>
-                        <Icon className="h-4 w-4" strokeWidth={1.6} />
-                      </span>
+                      <div className="flex h-full w-full items-center justify-center bg-[#EFE8DA]">
+                        <p className="font-display text-[10px] uppercase tracking-[0.2em]" style={{ color: gold }}>
+                          Destination
+                        </p>
+                      </div>
                     )}
-                  </div>
-                </div>
 
-                {/* Content */}
-                <div className="flex flex-1 flex-col px-5 pb-5 pt-8 text-center">
-                  <p
-                    className="font-body text-[10px] font-semibold uppercase tracking-[0.2em]"
-                    style={{ color: gold }}
-                  >
-                    {dest.category}
-                  </p>
-                  <h3
-                    className="mt-2 font-display text-lg font-semibold leading-snug md:text-[1.15rem]"
-                    style={{ color: heading }}
-                  >
-                    {dest.title}
-                  </h3>
-                  <p
-                    className="mt-2.5 flex-1 font-body text-[13px] leading-[1.7]"
-                    style={{ color: body }}
-                  >
-                    {dest.description}
-                  </p>
+                    {/* Distance badge */}
+                    {dest.distance ? (
+                      <span
+                        className="absolute right-3 top-3 rounded-md px-2.5 py-1 font-body text-[10px] font-medium tracking-wide text-white"
+                        style={{ backgroundColor: "rgba(15, 30, 28, 0.78)" }}
+                      >
+                        {dest.distance}
+                      </span>
+                    ) : null}
 
-                  <div className="mt-5 flex flex-col items-center gap-3">
-                    <span className="h-px w-10" style={{ backgroundColor: `${gold}77` }} aria-hidden />
-                    <Link
-                      href={href}
-                      prefetch
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full transition-all duration-500 group-hover:translate-x-0.5"
+                    {/* Overlapping circular icon */}
+                    <div
+                      className="absolute -bottom-5 left-1/2 z-10 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full"
                       style={{
-                        border: `1px solid ${gold}88`,
-                        color: gold,
+                        backgroundColor: cardBg,
+                        border: `1.5px solid ${gold}`,
+                        boxShadow: "0 8px 20px rgba(15, 42, 34, 0.12)",
                       }}
-                      aria-label={`Explore ${dest.title}`}
                     >
-                      <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.8} />
-                    </Link>
+                      {dest.iconSrc ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={dest.iconSrc} alt="" className="h-5 w-5 object-contain" />
+                      ) : (
+                        <span style={{ color: gold }}>
+                          <Icon className="h-4 w-4" strokeWidth={1.6} />
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
+
+                  {/* Content */}
+                  <div className="flex flex-1 flex-col px-5 pb-5 pt-8 text-center">
+                    <p
+                      className="font-body text-[10px] font-semibold uppercase tracking-[0.2em]"
+                      style={{ color: gold }}
+                    >
+                      {dest.category}
+                    </p>
+                    <h3
+                      className="mt-2 font-display text-lg font-semibold leading-snug md:text-[1.15rem]"
+                      style={{ color: heading }}
+                    >
+                      {dest.title}
+                    </h3>
+                    <p
+                      className="mt-2.5 flex-1 font-body text-[13px] leading-[1.7]"
+                      style={{ color: body }}
+                    >
+                      {dest.description}
+                    </p>
+
+                    <div className="mt-5 flex flex-col items-center gap-3">
+                      <span className="h-px w-10" style={{ backgroundColor: `${gold}77` }} aria-hidden />
+                      <span
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full transition-all duration-500 group-hover:translate-x-0.5"
+                        style={{
+                          border: `1px solid ${gold}88`,
+                          color: gold,
+                        }}
+                        aria-hidden
+                      >
+                        <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.8} />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
               </motion.article>
             );
           })}
