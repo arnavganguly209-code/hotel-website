@@ -24,7 +24,17 @@ const BOOKING_STATUSES = new Set([
   "payment_pending",
 ]);
 
-const PAYMENT_STATUSES = new Set(["unpaid", "pending", "paid", "offline", "refunded"]);
+const PAYMENT_STATUSES = new Set([
+  "unpaid",
+  "pending",
+  "paid",
+  "offline",
+  "refunded",
+  "failed",
+  "cancelled",
+  "void",
+  "pay_at_hotel",
+]);
 
 export async function GET(req: Request) {
   if (!isDatabaseAvailable()) {

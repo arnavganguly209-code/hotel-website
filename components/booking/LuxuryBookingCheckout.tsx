@@ -25,34 +25,6 @@ interface LuxuryBookingCheckoutProps {
 
 const fieldClass = "w-full rounded-xl border border-[#d7c49d]/55 bg-white/80 px-4 py-3.5 text-sm text-[#173a2b] outline-none transition placeholder:text-[#8a938e] focus:border-[#af8744] focus:ring-2 focus:ring-[#af8744]/10";
 
-function cardNumberIsValid(value: string) {
-  const digits = value.replace(/\D/g, "");
-  if (digits.length < 13 || digits.length > 19) return false;
-  let sum = 0;
-  let double = false;
-  for (let index = digits.length - 1; index >= 0; index -= 1) {
-    let digit = Number(digits[index]);
-    if (double) {
-      digit *= 2;
-      if (digit > 9) digit -= 9;
-    }
-    sum += digit;
-    double = !double;
-  }
-  return sum % 10 === 0;
-}
-
-function expiryIsValid(value: string) {
-  const match = /^(\d{2})\/(\d{2})$/.exec(value);
-  if (!match) return false;
-  const month = Number(match[1]);
-  const year = 2000 + Number(match[2]);
-  if (month < 1 || month > 12) return false;
-  const expiry = new Date(year, month, 1);
-  const now = new Date();
-  return expiry > new Date(now.getFullYear(), now.getMonth(), 1);
-}
-
 function FieldError({ message }: { message?: string }) {
   return message ? (
     <p className="mt-1.5 text-xs font-medium text-red-700">{message}</p>
@@ -93,7 +65,6 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
     notes: "",
   });
   const [payment, setPayment] = useState<PaymentMethod | "">("");
-  const [card, setCard] = useState({ holder: "", number: "", expiry: "", cvv: "", country: "", billingName: "" });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const nights = calculateNights(stay.checkIn, stay.checkOut);
   const roomQuantity = Math.max(1, Number(stay.rooms) || 1);
@@ -137,14 +108,6 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
     }
     if (step === 4) {
       if (!payment) errors.payment = "Select Pay at Hotel or Pay Online.";
-      if (payment === "online") {
-        if (!card.holder.trim()) errors.holder = "Card holder name is required.";
-        if (!cardNumberIsValid(card.number)) errors.number = "Enter a valid card number.";
-        if (!expiryIsValid(card.expiry)) errors.expiry = "Enter a future expiry date in MM/YY format.";
-        if (!/^\d{3,4}$/.test(card.cvv)) errors.cvv = "Enter a valid 3 or 4 digit CVV.";
-        if (!card.country.trim()) errors.cardCountry = "Billing country is required.";
-        if (!card.billingName.trim()) errors.billingName = "Billing name is required.";
-      }
     }
     return errors;
   };
@@ -190,11 +153,14 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
           paymentMethod: payment,
           totalAmount: total,
           nights,
-          cardLast4: payment === "online" ? card.number.replace(/\D/g, "").slice(-4) : undefined,
         }),
       });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || "Booking failed. Please try again.");
+      if (typeof data.redirectUrl === "string" && data.redirectUrl) {
+        window.location.assign(data.redirectUrl);
+        return;
+      }
       setConfirmed({
         id: data.booking.id,
         voucherUrl: data.booking.voucherUrl,
@@ -355,43 +321,14 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
                 </div>
                 <FieldError message={fieldErrors.payment} />
                 {payment === "online" ? (
-                  <div className="mt-5 overflow-hidden rounded-[24px] border border-[#d7c49d]/50 bg-gradient-to-br from-[#fbf8f1] to-[#f1eadc] shadow-[0_18px_44px_rgba(38,60,49,0.10)]">
-                    <div className="border-b border-[#d7c49d]/40 bg-[#173a2b] px-5 py-4 text-white">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#e0c184]">Secure Card Details</p>
-                      <p className="mt-1 text-xs text-white/65">Payment preview only. Card details are validated locally and are never stored.</p>
-                    </div>
-                    <div className="grid gap-4 p-5 sm:grid-cols-2">
-                      <label className="sm:col-span-2">
-                        <input required placeholder="Card Holder Name *" autoComplete="cc-name" value={card.holder} onChange={(e) => setCard({ ...card, holder: e.target.value })} className={inputClass("holder")} />
-                        <FieldError message={fieldErrors.holder} />
-                      </label>
-                      <label className="sm:col-span-2">
-                        <input required inputMode="numeric" autoComplete="cc-number" placeholder="Card Number *" maxLength={23} value={card.number} onChange={(e) => {
-                          const digits = e.target.value.replace(/\D/g, "").slice(0, 19);
-                          setCard({ ...card, number: digits.replace(/(\d{4})(?=\d)/g, "$1 ") });
-                        }} className={inputClass("number")} />
-                        <FieldError message={fieldErrors.number} />
-                      </label>
-                      <label>
-                        <input required autoComplete="cc-exp" placeholder="Expiry MM/YY *" maxLength={5} value={card.expiry} onChange={(e) => {
-                          const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
-                          setCard({ ...card, expiry: digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits });
-                        }} className={inputClass("expiry")} />
-                        <FieldError message={fieldErrors.expiry} />
-                      </label>
-                      <label>
-                        <input required inputMode="numeric" autoComplete="cc-csc" placeholder="CVV *" maxLength={4} value={card.cvv} onChange={(e) => setCard({ ...card, cvv: e.target.value.replace(/\D/g, "") })} className={inputClass("cvv")} />
-                        <FieldError message={fieldErrors.cvv} />
-                      </label>
-                      <label>
-                        <input required placeholder="Billing Country *" autoComplete="country-name" value={card.country} onChange={(e) => setCard({ ...card, country: e.target.value })} className={inputClass("cardCountry")} />
-                        <FieldError message={fieldErrors.cardCountry} />
-                      </label>
-                      <label>
-                        <input required placeholder="Billing Name *" autoComplete="name" value={card.billingName} onChange={(e) => setCard({ ...card, billingName: e.target.value })} className={inputClass("billingName")} />
-                        <FieldError message={fieldErrors.billingName} />
-                      </label>
-                    </div>
+                  <div className="mt-5 rounded-[24px] border border-[#d7c49d]/50 bg-gradient-to-br from-[#fbf8f1] to-[#f1eadc] p-5 shadow-[0_18px_44px_rgba(38,60,49,0.10)]">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#a47e3e]">
+                      Himalayan Bank Secure Checkout
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-[#4f5f56]">
+                      You will be redirected to Himalayan Bank&apos;s PACO payment page to complete payment securely.
+                      Card details are entered only on the bank&apos;s site and are never stored by Hotel Thamel Park.
+                    </p>
                   </div>
                 ) : payment === "hotel" ? (
                   <p className="mt-5 rounded-2xl border border-[#d7c49d]/45 bg-[#f5edde] p-4 text-sm leading-6 text-[#68736d]">

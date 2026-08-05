@@ -82,15 +82,53 @@ model Booking {
   status          String    @default("pending")
   paymentStatus   String    @default("unpaid")
   transactionId   String?
+  /** Gateway id, e.g. hbl_paco */
+  paymentGateway  String?
+  paymentDate     DateTime?
+  issuerApprovalCode String?
+  pacoOrderNo     String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   roomId          Int?
   room            Room?     @relation(fields: [roomId], references: [id])
   emailLogs       EmailLog[]
+  paymentTransactions PaymentTransaction[]
 
   @@index([roomSlug, checkIn, checkOut])
   @@index([status])
   @@index([source])
+  @@index([createdAt])
+  @@index([pacoOrderNo])
+}
+
+/** HBL PACO / 2C2P payment attempts linked to a booking. */
+model PaymentTransaction {
+  id               String    @id @default(cuid())
+  bookingId        Int
+  booking          Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  gateway          String    @default("hbl_paco")
+  orderNo          String    @unique
+  requestMessageId String?
+  invoiceNo        String?
+  approvalCode     String?
+  amount           Float
+  currency         String    @default("USD")
+  /** initiated | redirected | callback_received | paid | failed | cancelled | refunded | voided | settled | error */
+  status           String    @default("initiated")
+  paymentPageUrl   String?
+  rawRequest       Json?
+  rawResponse      Json?
+  rawCallback      Json?
+  rawInquiry       Json?
+  errorMessage     String    @default("")
+  paidAt           DateTime?
+  emailsSentAt     DateTime?
+  lastInquiryAt    DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([bookingId])
+  @@index([status])
   @@index([createdAt])
 }
 

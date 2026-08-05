@@ -63,6 +63,9 @@ wrangler.toml
 wrangler.jsonc
 vercel.json
 
+# local SDK / PACO extract (never commit)
+/tmp/
+
 # Scratch diagnostics (never commit)
 _diag_*.txt
 _diag_*

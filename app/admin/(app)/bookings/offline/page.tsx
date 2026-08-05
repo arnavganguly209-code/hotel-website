@@ -51,7 +51,7 @@ const STATUSES = [
   "payment_pending",
 ];
 
-const PAYMENT_STATUSES = ["unpaid", "pending", "paid", "offline", "refunded"];
+const PAYMENT_STATUSES = ["unpaid", "pending", "paid", "offline", "refunded", "failed", "cancelled", "void", "pay_at_hotel"];
 
 const emptyForm = {
   name: "",

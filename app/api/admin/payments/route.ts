@@ -37,6 +37,9 @@ export async function GET(req: Request) {
       currency: true,
       transactionId: true,
       cardLast4: true,
+      paymentGateway: true,
+      paymentDate: true,
+      pacoOrderNo: true,
       checkIn: true,
       checkOut: true,
       createdAt: true,
@@ -46,7 +49,7 @@ export async function GET(req: Request) {
   const filtered = bookings.filter((b) => {
     if (paymentStatus && paymentStatus !== "all" && b.paymentStatus !== paymentStatus) return false;
     if (q) {
-      const hay = `${b.name} ${b.email} ${b.roomName}`.toLowerCase();
+      const hay = `${b.name} ${b.email} ${b.roomName} ${b.transactionId || ""} ${b.pacoOrderNo || ""}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -57,10 +60,12 @@ export async function GET(req: Request) {
       .filter((b) => ["paid", "offline"].includes(b.paymentStatus))
       .reduce((sum, b) => sum + (Number(b.grandTotal) || b.totalAmount), 0),
     unpaid: filtered
-      .filter((b) => ["unpaid", "pending", "awaiting_payment", "pay_at_hotel"].includes(b.paymentStatus))
+      .filter((b) =>
+        ["unpaid", "pending", "awaiting_payment", "pay_at_hotel"].includes(b.paymentStatus)
+      )
       .reduce((sum, b) => sum + (Number(b.grandTotal) || b.totalAmount), 0),
     refunded: filtered
-      .filter((b) => b.paymentStatus === "refunded")
+      .filter((b) => b.paymentStatus === "refunded" || b.paymentStatus === "void")
       .reduce((sum, b) => sum + (Number(b.grandTotal) || b.totalAmount), 0),
   };
 

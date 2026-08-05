@@ -10,6 +10,13 @@ import {
   roomPublicSlug,
 } from "@/lib/booking/utils";
 import { taxFieldsFromInclusiveTotal } from "@/lib/booking/tax-snapshot";
+import { formatBookingNumber } from "@/lib/booking/booking-number";
+import {
+  createPrePaymentUi,
+  getPacoConfig,
+  isPacoConfigured,
+  pacoLog,
+} from "@/lib/payments/paco";
 
 export const dynamic = "force-dynamic";
 
@@ -80,10 +87,13 @@ export async function POST(req: Request) {
     if (body.paymentMethod !== "hotel" && body.paymentMethod !== "online") {
       return NextResponse.json({ success: false, error: "Select a valid payment method." }, { status: 400 });
     }
-    if (body.paymentMethod === "online" && !/^\d{4}$/.test(body.cardLast4 || "")) {
+    if (body.paymentMethod === "online" && !isPacoConfigured()) {
       return NextResponse.json(
-        { success: false, error: "Complete and validate the online card details." },
-        { status: 400 }
+        {
+          success: false,
+          error: "Online payment is temporarily unavailable. Please choose Pay at Hotel or try again later.",
+        },
+        { status: 503 }
       );
     }
 
@@ -122,6 +132,8 @@ export async function POST(req: Request) {
     const { findRoomIdBySlug } = await import("@/lib/cms/sync-rooms");
     const roomId = await findRoomIdBySlug(slug);
 
+    const payOnline = body.paymentMethod === "online";
+
     const booking = await db.booking.create({
       data: {
         name: body.name,
@@ -144,7 +156,7 @@ export async function POST(req: Request) {
         flightNumber: body.flightNumber ?? "",
         notes: body.notes ?? "",
         paymentMethod: body.paymentMethod,
-        cardLast4: /^\d{4}$/.test(body.cardLast4 || "") ? body.cardLast4! : "",
+        cardLast4: "",
         totalAmount: tax.totalAmount,
         displayPrice: tax.displayPrice,
         basePrice: tax.basePrice,
@@ -153,8 +165,9 @@ export async function POST(req: Request) {
         grandTotal: tax.grandTotal,
         currency: tax.currency,
         nights,
-        status: body.paymentMethod === "online" ? "confirmed" : "pending",
-        paymentStatus: body.paymentMethod === "online" ? "paid" : "pay_at_hotel",
+        status: payOnline ? "payment_pending" : "pending",
+        paymentStatus: payOnline ? "pending" : "pay_at_hotel",
+        paymentGateway: payOnline ? "hbl_paco" : null,
         transactionId: null,
         roomId,
         source: "online",
@@ -163,10 +176,106 @@ export async function POST(req: Request) {
 
     console.info("[Bookings] Booking saved to database", { bookingId: booking.id });
 
+    const bookingNumber = formatBookingNumber(booking.id);
     const forwarded = req.headers.get("x-forwarded-for") || "";
     const ipAddress = forwarded.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "";
     const userAgent = req.headers.get("user-agent") || "";
 
+    // Pay online → initiate HBL PACO and redirect (emails after paid callback)
+    if (payOnline) {
+      try {
+        const paco = getPacoConfig();
+        const base = paco.siteUrl;
+        const payment = await createPrePaymentUi({
+          amount: tax.grandTotal,
+          currency: tax.currency,
+          productDescription: `Hotel Thamel Park booking ${bookingNumber}`,
+          bookingId: booking.id,
+          bookingNumber,
+          browserIp: ipAddress || "0.0.0.0",
+          browserUserAgent: userAgent,
+          successUrl: `${base}/api/payments/hbl/success`,
+          failedUrl: `${base}/api/payments/hbl/failed`,
+          cancelUrl: `${base}/api/payments/hbl/cancel`,
+          backendUrl: `${base}/api/payments/hbl/callback`,
+        });
+
+        // Append orderNo to front-channel URLs if PACO does not inject it
+        // (notification URLs already registered; we store orderNo for sync)
+        await db.paymentTransaction.create({
+          data: {
+            bookingId: booking.id,
+            gateway: "hbl_paco",
+            orderNo: payment.orderNo,
+            requestMessageId: payment.requestMessageId,
+            amount: tax.grandTotal,
+            currency: tax.currency,
+            status: "redirected",
+            paymentPageUrl: payment.paymentPageURL,
+            rawRequest: payment.request as object,
+            rawResponse: payment.rawResponse as object,
+          },
+        });
+
+        await db.booking.update({
+          where: { id: booking.id },
+          data: { pacoOrderNo: payment.orderNo, transactionId: payment.orderNo },
+        });
+
+        pacoLog("info", "payment_redirect_ready", {
+          bookingId: booking.id,
+          orderNo: payment.orderNo,
+        });
+
+        const { pacoOrderCookieOptions } = await import("@/lib/payments/paco/order-resolve");
+        const cookie = pacoOrderCookieOptions(payment.orderNo);
+        const res = NextResponse.json({
+          success: true,
+          redirectUrl: payment.paymentPageURL,
+          booking: {
+            id: booking.id,
+            bookingNumber,
+            status: "payment_pending",
+            paymentStatus: "pending",
+            transactionId: payment.orderNo,
+            pacoOrderNo: payment.orderNo,
+            displayPrice: tax.displayPrice,
+            basePrice: tax.basePrice,
+            vatRate: tax.vatRate,
+            vatAmount: tax.vatAmount,
+            grandTotal: tax.grandTotal,
+            currency: tax.currency,
+          },
+        });
+        res.cookies.set(cookie.name, cookie.value, {
+          httpOnly: cookie.httpOnly,
+          sameSite: cookie.sameSite,
+          path: cookie.path,
+          maxAge: cookie.maxAge,
+          secure: cookie.secure,
+        });
+        return res;
+      } catch (err) {
+        pacoLog("error", "payment_init_failed", {
+          bookingId: booking.id,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        await db.booking.update({
+          where: { id: booking.id },
+          data: { paymentStatus: "failed", status: "payment_pending" },
+        });
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Unable to start online payment. Please try Pay at Hotel or contact the hotel.",
+            bookingId: booking.id,
+          },
+          { status: 502 }
+        );
+      }
+    }
+
+    // Pay at hotel — existing email + confirmation path
     let emailResult = { guestSent: false, adminSent: false };
     try {
       console.info("[Bookings] Preparing booking emails", { bookingId: booking.id });
@@ -221,6 +330,7 @@ export async function POST(req: Request) {
       success: true,
       booking: {
         id: booking.id,
+        bookingNumber,
         status: booking.status,
         paymentStatus: booking.paymentStatus,
         transactionId: booking.transactionId,

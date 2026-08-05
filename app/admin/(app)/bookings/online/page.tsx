@@ -28,6 +28,9 @@ interface Booking {
   source: string;
   remarks: string;
   createdAt: string;
+  transactionId?: string | null;
+  paymentGateway?: string | null;
+  paymentDate?: string | null;
 }
 
 const STATUSES = [
@@ -40,7 +43,7 @@ const STATUSES = [
   "payment_pending",
 ];
 
-const PAYMENT_STATUSES = ["unpaid", "pending", "paid", "offline", "refunded"];
+const PAYMENT_STATUSES = ["unpaid", "pending", "paid", "offline", "refunded", "failed", "cancelled", "void", "pay_at_hotel"];
 
 function StatusBadge({ value }: { value: string }) {
   const tone =
@@ -245,6 +248,15 @@ export default function AdminOnlineBookingsPage() {
                       <p className="mt-1 text-xs text-[#7a8a82]">
                         {b.guests} adults · {b.children} children
                       </p>
+                      {b.transactionId ? (
+                        <p className="mt-1 text-[10px] text-[#7a8a82]">Txn: {b.transactionId}</p>
+                      ) : null}
+                      {b.paymentGateway ? (
+                        <p className="mt-0.5 text-[10px] uppercase tracking-wide text-[#9e7738]">
+                          {b.paymentGateway}
+                          {b.paymentDate ? ` · ${new Date(b.paymentDate).toLocaleDateString()}` : ""}
+                        </p>
+                      ) : null}
                       <a
                         href={`/api/bookings/${b.id}/voucher`}
                         target="_blank"

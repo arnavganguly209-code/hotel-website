@@ -1,4 +1,11 @@
-/** Future Himalayan Bank payment gateway — interface only (Phase 2). */
+/** Future Himalayan Bank payment gateway — re-exports live PACO client. */
+export {
+  createPrePaymentUi as createHblPayment,
+  inquireTransaction as verifyHblPayment,
+  refundTransaction as refundHblPayment,
+  isPacoConfigured,
+} from "./paco";
+
 export type HimalayanBankChargeInput = {
   amount: number;
   currency: "NPR" | "USD";
@@ -22,12 +29,11 @@ export interface HimalayanBankGateway {
   refund(transactionId: string, amount?: number): Promise<{ success: boolean }>;
 }
 
-/** Placeholder — wire real credentials when the bank API is available. */
 export const himalayanBankGateway: HimalayanBankGateway = {
   async createPayment() {
     return {
       success: false,
-      error: "Himalayan Bank gateway is not configured yet.",
+      error: "Use lib/payments/paco createPrePaymentUi for HBL PACO.",
     };
   },
   async verifyPayment() {
@@ -45,6 +51,9 @@ export const PAYMENT_STATUSES = [
   "offline",
   "refunded",
   "failed",
+  "cancelled",
+  "void",
+  "pay_at_hotel",
 ] as const;
 
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
