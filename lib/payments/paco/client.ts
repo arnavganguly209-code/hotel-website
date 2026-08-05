@@ -9,7 +9,7 @@ import {
   pacoRequestDateTime,
 } from "./jose";
 import { pacoLog } from "./logger";
-import type { PacoPaymentPageResponse, PacoPaymentRequestBody } from "./types";
+import type { PacoAmount, PacoPaymentPageResponse, PacoPaymentRequestBody } from "./types";
 
 async function joseRequest(
   method: "POST" | "PUT",
@@ -40,7 +40,6 @@ async function joseRequest(
           "Content-Type": "application/jose; charset=utf-8",
         },
         body,
-        // Strip default UA like PHP middleware (optional; Node fetch still sends)
         cache: "no-store",
       });
 
@@ -80,15 +79,74 @@ export type CreatePaymentUiInput = {
   failedUrl: string;
   cancelUrl: string;
   backendUrl: string;
-  orderNo?: string;
+  orderNo?: string | number;
+  /** Exact PHP ExecuteFormJose demo (Postman deviceDetails, TestField, ticket/NPR-1 line). */
+  sdkDemoShape?: boolean;
 };
+
+function sdkDemoShapeEnabled(input: CreatePaymentUiInput): boolean {
+  if (input.sdkDemoShape === true) return true;
+  if (input.sdkDemoShape === false) return false;
+  return process.env.HBL_PACO_SDK_DEMO_SHAPE === "1";
+}
+
+/** Live bookings: PHP purchaseItems shape; line price mirrors transactionAmount. */
+function buildLivePurchaseItems(
+  transactionAmount: PacoAmount,
+  input: CreatePaymentUiInput
+): PacoPaymentRequestBody["purchaseItems"] {
+  return [
+    {
+      purchaseItemType: "hotel",
+      referenceNo: input.bookingNumber,
+      purchaseItemDescription: input.productDescription,
+      purchaseItemPrice: transactionAmount,
+      subMerchantID: "string",
+      passengerSeqNo: 1,
+    },
+  ];
+}
+
+/** Payment.php ExecuteFormJose demo line item (optional NPR 1 micro-UAT). */
+function buildSdkDemoPurchaseItems(transactionAmount: PacoAmount): PacoPaymentRequestBody["purchaseItems"] {
+  const purchaseItemPrice =
+    transactionAmount.currencyCode === "NPR" && transactionAmount.amount <= 1
+      ? {
+          amountText: "000000000100",
+          currencyCode: "NPR",
+          decimalPlaces: 2,
+          amount: 1,
+        }
+      : transactionAmount;
+
+  return [
+    {
+      purchaseItemType: "ticket",
+      referenceNo: "2322460376026",
+      purchaseItemDescription: "Bundled insurance",
+      purchaseItemPrice,
+      subMerchantID: "string",
+      passengerSeqNo: 1,
+    },
+  ];
+}
+
+function buildDeviceDetails(input: CreatePaymentUiInput): PacoPaymentRequestBody["deviceDetails"] {
+  return {
+    browserIp: input.browserIp || "0.0.0.0",
+    browser: "HotelThamelPark",
+    browserUserAgent: input.browserUserAgent || "HotelThamelPark/1.0",
+    mobileDeviceFlag: "N",
+  };
+}
 
 export async function createPrePaymentUi(input: CreatePaymentUiInput) {
   const config = getPacoConfig();
   const now = new Date();
-  const orderNo = input.orderNo || pacoOrderNo(now);
+  const orderNo = input.orderNo ?? Number(pacoOrderNo(now));
   const currency = (input.currency || config.currency).toUpperCase();
   const amountBlock = formatPacoAmount(input.amount, currency);
+  const sdkDemo = sdkDemoShapeEnabled(input);
 
   const request: PacoPaymentRequestBody = {
     apiRequest: {
@@ -98,7 +156,7 @@ export async function createPrePaymentUi(input: CreatePaymentUiInput) {
     },
     officeId: config.officeId,
     orderNo,
-    productDescription: input.productDescription,
+    productDescription: sdkDemo ? `desc for '${orderNo}'` : input.productDescription,
     paymentType: "CC",
     paymentCategory: "ECOM",
     storeCardDetails: {
@@ -119,26 +177,23 @@ export async function createPrePaymentUi(input: CreatePaymentUiInput) {
       cancellationURL: input.cancelUrl,
       backendURL: input.backendUrl,
     },
-    deviceDetails: {
-      browserIp: input.browserIp || "0.0.0.0",
-      browser: "HotelThamelPark",
-      browserUserAgent: input.browserUserAgent || "HotelThamelPark/1.0",
-      mobileDeviceFlag: "N",
-    },
-    purchaseItems: [
-      {
-        purchaseItemType: "hotel",
-        referenceNo: input.bookingNumber,
-        purchaseItemDescription: input.productDescription,
-        purchaseItemPrice: amountBlock,
-        subMerchantID: config.officeId,
-        passengerSeqNo: 1,
-      },
-    ],
-    customFieldList: [
-      { fieldName: "bookingId", fieldValue: String(input.bookingId) },
-      { fieldName: "bookingNumber", fieldValue: input.bookingNumber },
-    ],
+    deviceDetails: sdkDemo
+      ? {
+          browserIp: "1.0.0.1",
+          browser: "Postman Browser",
+          browserUserAgent: "PostmanRuntime/7.26.8 - not from header",
+          mobileDeviceFlag: "N",
+        }
+      : buildDeviceDetails(input),
+    purchaseItems: sdkDemo
+      ? buildSdkDemoPurchaseItems(amountBlock)
+      : buildLivePurchaseItems(amountBlock, input),
+    customFieldList: sdkDemo
+      ? [{ fieldName: "TestField", fieldValue: "This is test" }]
+      : [
+          { fieldName: "bookingId", fieldValue: String(input.bookingId) },
+          { fieldName: "bookingNumber", fieldValue: input.bookingNumber },
+        ],
   };
 
   const decrypted = await joseRequest("POST", "api/1.0/Payment/prePaymentUi", request, config);
@@ -151,7 +206,7 @@ export async function createPrePaymentUi(input: CreatePaymentUiInput) {
   }
 
   return {
-    orderNo,
+    orderNo: String(orderNo),
     requestMessageId: request.apiRequest.requestMessageID,
     paymentPageURL,
     rawResponse: parsed,

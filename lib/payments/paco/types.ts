@@ -18,7 +18,8 @@ export type PacoApiRequestMeta = {
 export type PacoPaymentRequestBody = {
   apiRequest: PacoApiRequestMeta;
   officeId: string;
-  orderNo: string;
+  /** PHP Carbon::getPreciseTimestamp(3) is numeric; PACO accepts string or number. */
+  orderNo: string | number;
   productDescription: string;
   paymentType: string;
   paymentCategory: string;
