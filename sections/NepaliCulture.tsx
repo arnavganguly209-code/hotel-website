@@ -14,7 +14,7 @@ interface NepaliCultureProps {
   content: SiteContent["culture"];
 }
 
-function TitleWithGoldAccent({ title, heading, gold }: { title: string; heading: string; gold: string }) {
+function TitleBlock({ title, heading, gold }: { title: string; heading: string; gold: string }) {
   const parts = title.trim().split(/\s+/);
   if (parts.length < 2) {
     return <span style={{ color: heading }}>{title}</span>;
@@ -22,15 +22,19 @@ function TitleWithGoldAccent({ title, heading, gold }: { title: string; heading:
   const last = parts.pop()!;
   return (
     <>
-      <span style={{ color: heading }}>{parts.join(" ")} </span>
-      <span style={{ color: gold }}>{last}</span>
+      <span className="block" style={{ color: heading }}>
+        {parts.join(" ")}
+      </span>
+      <span className="mt-0.5 block text-[1.05em]" style={{ color: gold }}>
+        {last}
+      </span>
     </>
   );
 }
 
 /**
- * Premium Heritage / Cultural Experience — homepage section
- * Hyatt / JW Marriott style: top-aligned image + content, glass stats, full-card links.
+ * Authentic Cultural Experience — reference-matched luxury layout.
+ * Desktop: left image height = right column height (top + bottom flush).
  */
 export function NepaliCulture({ content }: NepaliCultureProps) {
   const gold = content.goldColor || "#C5A059";
@@ -50,7 +54,7 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
   const stats = [...(content.stats || [])]
     .filter((s) => s.enabled !== false)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    .slice(0, 4);
+    .slice(0, 3);
 
   const highlights = [...(content.highlights || [])]
     .filter((h) => h.enabled !== false)
@@ -74,16 +78,16 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
         <HeritageMistBackdrop goldColor={gold} visible={content.showMist !== false} />
       </div>
 
-      <div className="relative mx-auto max-w-[1200px] px-4 py-7 sm:px-6 sm:py-8 md:py-9 lg:px-8 lg:py-10">
-        {/* Desktop: image | content — items-start so tops align */}
-        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,1fr)] lg:gap-12 xl:gap-14">
-          {/* Left — image (no extra top padding that drops the frame) */}
+      <div className="relative mx-auto max-w-[1200px] px-4 py-8 sm:px-6 sm:py-9 lg:px-8 lg:py-11">
+        {/* items-stretch: left image grows to right column height */}
+        <div className="grid items-start gap-8 lg:grid-cols-2 lg:items-stretch lg:gap-10 xl:gap-12">
+          {/* LEFT — stretches with right on desktop */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.75, ease: luxuryEase }}
-            className="relative order-1 w-full pb-6 lg:order-1 lg:pb-8"
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.7, ease: luxuryEase }}
+            className="relative order-1 h-auto w-full lg:h-full lg:min-h-[520px]"
           >
             <HeritageImageStack
               mainSrc={mainSrc}
@@ -92,118 +96,145 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
               circularAlt={content.circularImageAlt}
               badge={content.badge}
               goldColor={gold}
+              headingColor={heading}
               href={cardHref}
+              className="h-full min-h-[480px] lg:min-h-full"
             />
           </motion.div>
 
-          {/* Right — copy + stats + culture cards */}
+          {/* RIGHT — defines column height */}
           <motion.div
             variants={luxuryStagger}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            className="order-2 flex min-w-0 flex-col lg:order-2"
+            viewport={{ once: true, margin: "-40px" }}
+            className="order-2 flex min-w-0 flex-col"
           >
-            <motion.div variants={luxuryFadeUp} className="mb-3.5 flex items-center justify-center gap-2.5 lg:justify-start">
-              <span className="hidden h-px w-8 sm:block" style={{ backgroundColor: `${gold}88` }} />
+            <motion.div
+              variants={luxuryFadeUp}
+              className="mb-3 flex items-center justify-center gap-2.5 lg:justify-start"
+            >
               <span className="h-1 w-1 rotate-45" style={{ backgroundColor: gold }} aria-hidden />
               <p
                 className="font-display text-[10px] font-semibold uppercase sm:text-[11px]"
-                style={{ color: gold, letterSpacing: "0.3em" }}
+                style={{ color: gold, letterSpacing: "0.32em" }}
               >
                 {content.eyebrow}
               </p>
               <span className="h-1 w-1 rotate-45" style={{ backgroundColor: gold }} aria-hidden />
-              <span className="hidden h-px w-8 sm:block" style={{ backgroundColor: `${gold}88` }} />
             </motion.div>
 
             <motion.h2
               variants={luxuryFadeUp}
-              className="text-center font-display text-[1.7rem] font-semibold uppercase leading-[1.18] tracking-[0.04em] sm:text-[1.95rem] md:text-[2.2rem] lg:text-left lg:text-[2.35rem]"
+              className="text-center font-display text-[1.65rem] font-semibold uppercase leading-[1.15] tracking-[0.03em] sm:text-[1.9rem] md:text-[2.15rem] lg:text-left lg:text-[2.25rem]"
             >
-              <TitleWithGoldAccent title={content.title} heading={heading} gold={gold} />
+              <TitleBlock title={content.title} heading={heading} gold={gold} />
             </motion.h2>
 
             <motion.p
               variants={luxuryFadeUp}
-              className="mx-auto mt-4 max-w-lg text-center font-body text-[14px] leading-[1.75] md:text-[15px] lg:mx-0 lg:text-left"
+              className="mx-auto mt-3.5 max-w-xl text-center font-body text-[14px] leading-[1.7] md:text-[15px] lg:mx-0 lg:text-left"
               style={{ color: body }}
             >
               {description}
             </motion.p>
 
-            {/* Gold divider */}
-            <motion.div variants={luxuryFadeUp} className="mx-auto mt-5 flex items-center gap-2.5 lg:mx-0" aria-hidden>
-              <span className="h-px w-10" style={{ backgroundColor: `${gold}77` }} />
-              <span className="h-1 w-1 rotate-45" style={{ backgroundColor: gold }} />
-              <span className="h-px w-10" style={{ backgroundColor: `${gold}77` }} />
-            </motion.div>
-
             {content.quote ? (
               <motion.blockquote
                 variants={luxuryFadeUp}
-                className="relative mx-auto mt-5 w-full max-w-lg rounded-2xl px-5 py-5 lg:mx-0"
+                className="relative mx-auto mt-5 w-full rounded-xl px-5 py-4 lg:mx-0"
                 style={{
-                  background: "rgba(251,248,241,0.92)",
+                  background: "#FBF8F1",
                   border: `1px solid ${gold}55`,
-                  boxShadow: "0 12px 28px rgba(15,42,34,0.07)",
                 }}
               >
-                <span className="font-display absolute left-3.5 top-1.5 text-3xl leading-none" style={{ color: gold }} aria-hidden>
+                <span
+                  className="font-display absolute left-3.5 top-2 text-[28px] leading-none"
+                  style={{ color: gold }}
+                  aria-hidden
+                >
                   “
                 </span>
-                <p className="px-2 text-center font-accent text-[14px] italic leading-relaxed md:text-[15px] lg:text-left" style={{ color: heading }}>
+                <p
+                  className="pl-4 text-center font-accent text-[14px] italic leading-relaxed md:text-[15px] lg:text-left"
+                  style={{ color: heading }}
+                >
                   {content.quote}
                 </p>
                 {content.quoteAuthor ? (
-                  <footer className="mt-3 text-center text-[9px] font-semibold uppercase tracking-[0.2em] lg:text-left" style={{ color: gold }}>
+                  <footer
+                    className="mt-2.5 text-center text-[9px] font-semibold uppercase tracking-[0.2em] lg:text-left"
+                    style={{ color: gold }}
+                  >
                     — {content.quoteAuthor}
                   </footer>
                 ) : null}
               </motion.blockquote>
             ) : null}
 
-            {/* Premium 2×2 glass stats — replaces old thin row */}
+            {/* Stats — 3-column row with gold dividers (reference style) */}
             {stats.length > 0 ? (
               <motion.div
                 variants={luxuryFadeUp}
-                className="mx-auto mt-6 grid w-full max-w-lg grid-cols-2 gap-2.5 sm:gap-3 lg:mx-0"
+                className="mx-auto mt-5 grid w-full grid-cols-3 gap-0 lg:mx-0"
+                style={{
+                  borderTop: `1px solid ${gold}33`,
+                  borderBottom: `1px solid ${gold}33`,
+                }}
               >
-                {stats.map((stat) => (
+                {stats.map((stat, i) => (
                   <div
                     key={stat.id || stat.label}
-                    className="group/stat flex min-h-[88px] flex-col justify-center rounded-2xl px-3.5 py-3.5 transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(15,42,34,0.10)] sm:min-h-[96px] sm:px-4 sm:py-4"
-                    style={{
-                      background: "rgba(251,248,241,0.88)",
-                      border: `1px solid ${gold}66`,
-                      boxShadow: "0 8px 22px rgba(15,42,34,0.06)",
-                    }}
+                    className="relative px-2 py-4 text-center sm:px-3 sm:py-5"
+                    style={
+                      i > 0
+                        ? { borderLeft: `1px solid ${gold}44` }
+                        : undefined
+                    }
                   >
-                    <div className="mb-1.5 flex items-center gap-2" style={{ color: gold }}>
-                      <DynamicIcon name={stat.icon} className="h-4 w-4 shrink-0 transition-transform duration-500 group-hover/stat:scale-110" />
-                      <p className="font-body text-[9px] font-semibold uppercase tracking-[0.16em] sm:text-[10px]" style={{ color: gold }}>
-                        {stat.label}
-                      </p>
+                    <div style={{ color: gold }}>
+                      <DynamicIcon name={stat.icon} className="mx-auto mb-2 h-5 w-5" />
                     </div>
-                    <p className="font-display text-lg font-semibold leading-tight tracking-wide sm:text-xl" style={{ color: heading }}>
-                      {stat.value}
+                    <p
+                      className="font-display text-xl font-semibold leading-none tracking-wide sm:text-2xl"
+                      style={{ color: heading }}
+                    >
+                      {stat.value.replace(/\s*Nearby$/i, "").replace(/\s*Years$/i, "").trim() ||
+                        stat.value}
+                    </p>
+                    <p
+                      className="mt-2 text-[8px] font-semibold uppercase leading-snug tracking-[0.12em] sm:text-[9px]"
+                      style={{ color: body }}
+                    >
+                      {stat.label}
                     </p>
                   </div>
                 ))}
               </motion.div>
             ) : null}
 
-            {/* Culture cards — entire card clickable */}
+            {/* Culture cards — compact, fill remaining; bottoms align with image */}
             {imageCards.length > 0 ? (
               <motion.div
                 variants={luxuryFadeUp}
-                className="mt-6 -mx-4 flex gap-3 overflow-x-auto px-4 pb-1 snap-x snap-mandatory sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                className="mt-5 grid flex-1 grid-cols-1 content-end gap-3 sm:grid-cols-3"
               >
                 {imageCards.map((card) => {
                   const src = card.media?.imageSrc || "";
                   const href = card.href || cardHref;
-                  const inner = (
-                    <>
+                  return (
+                    <Link
+                      key={card.id}
+                      href={href}
+                      prefetch
+                      className="group/card flex h-full flex-col overflow-hidden rounded-[14px] transition-all duration-500 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C5A059]/50"
+                      style={{
+                        backgroundColor: "#FBF8F1",
+                        border: `1px solid ${gold}55`,
+                        boxShadow: "0 10px 24px rgba(15, 42, 34, 0.08)",
+                      }}
+                      aria-label={card.title}
+                    >
                       <div className="relative aspect-[16/10] overflow-hidden">
                         {src ? (
                           <SafeImage
@@ -212,48 +243,44 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
                             fill
                             objectFit="cover"
                             className="object-cover object-center transition-transform duration-700 ease-out group-hover/card:scale-105"
-                            sizes="(max-width: 640px) 70vw, (max-width: 1024px) 33vw, 180px"
+                            sizes="(max-width: 640px) 100vw, 180px"
                           />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center bg-[#EFE8DA]">
-                            <p className="px-2 text-center font-display text-[9px] uppercase tracking-[0.16em]" style={{ color: gold }}>
+                            <p
+                              className="px-2 text-center font-display text-[9px] uppercase tracking-[0.16em]"
+                              style={{ color: gold }}
+                            >
                               {card.title}
                             </p>
                           </div>
                         )}
                       </div>
-                      <div className="flex flex-1 flex-col px-3 pb-3.5 pt-3">
-                        <p className="font-body text-[9px] font-semibold uppercase tracking-[0.18em]" style={{ color: gold }}>
+                      <div className="flex flex-1 flex-col px-2.5 pb-3 pt-2.5">
+                        <p
+                          className="font-body text-[8px] font-semibold uppercase tracking-[0.16em]"
+                          style={{ color: gold }}
+                        >
                           {card.label}
                         </p>
-                        <h3 className="mt-1.5 font-display text-[13px] font-semibold leading-snug sm:text-sm" style={{ color: heading }}>
+                        <h3
+                          className="mt-1 font-display text-[12px] font-semibold leading-snug sm:text-[13px]"
+                          style={{ color: heading }}
+                        >
                           {card.title}
                         </h3>
-                        <p className="mt-1.5 line-clamp-3 flex-1 font-body text-[11px] leading-[1.55]" style={{ color: body }}>
+                        <p
+                          className="mt-1 line-clamp-2 flex-1 font-body text-[10px] leading-[1.5]"
+                          style={{ color: body }}
+                        >
                           {card.description}
                         </p>
-                        <div className="mt-3 flex items-center gap-2" style={{ color: gold }}>
-                          <span className="h-px w-6" style={{ backgroundColor: `${gold}77` }} aria-hidden />
-                          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 group-hover/card:translate-x-0.5" strokeWidth={1.8} />
-                        </div>
+                        <ArrowRight
+                          className="mt-2 h-3.5 w-3.5 transition-transform duration-500 group-hover/card:translate-x-0.5"
+                          style={{ color: gold }}
+                          strokeWidth={1.8}
+                        />
                       </div>
-                    </>
-                  );
-
-                  return (
-                    <Link
-                      key={card.id}
-                      href={href}
-                      prefetch
-                      className="group/card flex w-[78%] max-w-[260px] shrink-0 snap-start flex-col overflow-hidden rounded-[16px] transition-all duration-500 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C5A059]/50 sm:w-auto sm:max-w-none"
-                      style={{
-                        backgroundColor: "#FBF8F1",
-                        border: `1px solid ${gold}66`,
-                        boxShadow: "0 12px 28px rgba(15, 42, 34, 0.09)",
-                      }}
-                      aria-label={card.title}
-                    >
-                      {inner}
                     </Link>
                   );
                 })}
@@ -262,13 +289,15 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
           </motion.div>
         </div>
 
-        {/* Experience highlights — compact */}
         {highlights.length > 0 ? (
           <div className="relative mt-10 md:mt-12">
             <div className="mb-5 flex items-center justify-center gap-2.5">
               <span className="h-px w-8 sm:w-12" style={{ backgroundColor: `${gold}77` }} />
               <span className="h-1 w-1 rotate-45" style={{ backgroundColor: gold }} aria-hidden />
-              <p className="font-display text-[10px] font-semibold uppercase sm:text-[11px]" style={{ color: gold, letterSpacing: "0.26em" }}>
+              <p
+                className="font-display text-[10px] font-semibold uppercase sm:text-[11px]"
+                style={{ color: gold, letterSpacing: "0.26em" }}
+              >
                 {content.highlightsLabel || "Experience Highlights"}
               </p>
               <span className="h-1 w-1 rotate-45" style={{ backgroundColor: gold }} aria-hidden />
@@ -280,29 +309,32 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-40px" }}
-              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-3.5"
+              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
             >
               {highlights.map((item) => (
                 <motion.div
                   key={item.id}
                   variants={luxuryFadeUp}
-                  className="group rounded-[18px] px-4 py-5 text-center transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(15,42,34,0.10)]"
+                  className="rounded-[16px] px-4 py-4 text-center transition-all duration-500 hover:-translate-y-0.5"
                   style={{
-                    background: "rgba(251,248,241,0.92)",
+                    background: "#FBF8F1",
                     border: `1px solid ${gold}44`,
-                    boxShadow: "0 10px 26px rgba(15,42,34,0.06)",
+                    boxShadow: "0 8px 22px rgba(15,42,34,0.06)",
                   }}
                 >
                   <div
-                    className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full transition-transform duration-500 group-hover:scale-105"
+                    className="mx-auto mb-2.5 flex h-9 w-9 items-center justify-center rounded-full"
                     style={{ color: gold, border: `1px solid ${gold}66` }}
                   >
                     <DynamicIcon name={item.icon} className="h-4 w-4" />
                   </div>
-                  <h4 className="font-display text-[13px] font-semibold uppercase tracking-[0.1em]" style={{ color: heading }}>
+                  <h4
+                    className="font-display text-[12px] font-semibold uppercase tracking-[0.1em]"
+                    style={{ color: heading }}
+                  >
                     {item.title}
                   </h4>
-                  <p className="mt-2 font-body text-[12px] leading-relaxed md:text-[13px]" style={{ color: body }}>
+                  <p className="mt-1.5 font-body text-[12px] leading-relaxed" style={{ color: body }}>
                     {item.description}
                   </p>
                 </motion.div>
@@ -312,15 +344,15 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
         ) : null}
 
         {content.ctaVisible !== false && content.ctaText ? (
-          <div className="relative mt-8 flex justify-center md:mt-9">
+          <div className="relative mt-8 flex justify-center">
             <Link
               href={content.ctaHref || "/cultural-experience"}
               prefetch
-              className="inline-flex min-h-12 items-center gap-2.5 rounded-full px-8 py-3 font-body text-[11px] font-semibold uppercase tracking-[0.18em] transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(6,44,36,0.28)] sm:px-9 sm:text-[12px]"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full px-8 py-2.5 font-body text-[11px] font-semibold uppercase tracking-[0.18em] transition-all duration-500 hover:-translate-y-0.5 sm:text-[12px]"
               style={{
                 backgroundColor: heading,
                 color: gold,
-                boxShadow: "0 10px 28px rgba(6, 44, 36, 0.22)",
+                boxShadow: "0 10px 26px rgba(6, 44, 36, 0.22)",
               }}
             >
               {content.ctaText}
