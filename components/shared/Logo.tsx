@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { cn } from "@/lib/utils";
 import { routes } from "@/lib/navigation";
@@ -17,6 +20,15 @@ interface LogoProps {
   centered?: boolean;
 }
 
+function scrollToHero() {
+  const hero = document.getElementById("hero");
+  if (hero) {
+    hero.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 export function Logo({
   variant = "dark",
   className,
@@ -30,6 +42,8 @@ export function Logo({
   showStars = false,
   centered = false,
 }: LogoProps) {
+  const pathname = usePathname();
+  const router = useRouter();
   const brandLabel = (headerText || name)
     .replace(/\s*&\s*SPA/gi, "")
     .replace(/\s+/g, " ")
@@ -37,10 +51,27 @@ export function Logo({
   const displayText = brandLabel.toUpperCase();
   const showName = showText && !hideText && !useLogo;
   const showLogoImage = useLogo && logoSrc;
+  const isHome = pathname === "/" || pathname === "";
+
+  function handleClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    if (isHome) {
+      e.preventDefault();
+      scrollToHero();
+      // Keep URL clean / sync hash for shareability
+      if (typeof window !== "undefined" && window.location.hash !== "#hero") {
+        window.history.replaceState(null, "", "/#hero");
+      }
+      return;
+    }
+    // Other pages → home hero
+    e.preventDefault();
+    router.push("/#hero");
+  }
 
   return (
     <Link
-      href={routes.home}
+      href="/#hero"
+      onClick={handleClick}
       className={cn(
         "group flex flex-col items-center gap-1",
         !centered && "sm:flex-row sm:gap-3",

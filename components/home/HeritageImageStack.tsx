@@ -50,7 +50,7 @@ export function HeritageImageStack({
   const frame = (
     <div
       className={cn(
-        "group/image relative mx-auto w-full max-w-[520px] lg:mx-0 lg:h-full lg:max-w-none",
+        "group/image relative mx-auto w-full max-w-[520px] overflow-visible lg:mx-0 lg:h-full lg:max-w-none",
         className
       )}
     >
@@ -112,11 +112,11 @@ export function HeritageImageStack({
         ) : null}
       </div>
 
-      {/* Circular detail — overlaps top-left, inside margin of frame */}
+      {/* Circular detail — overlaps top-left corner (reference: larger + corner hang) */}
       {circularSrc ? (
-        <div className="absolute left-2.5 top-2.5 z-20 h-[6.5rem] w-[6.5rem] sm:left-3.5 sm:top-3.5 sm:h-[7.75rem] sm:w-[7.75rem] lg:left-4 lg:top-4 lg:h-[9rem] lg:w-[9rem]">
+        <div className="absolute -left-3 -top-3 z-20 h-[7.75rem] w-[7.75rem] sm:-left-4 sm:-top-4 sm:h-[9.5rem] sm:w-[9.5rem] lg:-left-5 lg:-top-5 lg:h-[11rem] lg:w-[11rem]">
           <div
-            className="h-full w-full overflow-hidden rounded-full bg-[#F9F6EF] p-[4px] shadow-[0_12px_28px_rgba(15,42,34,0.2)]"
+            className="h-full w-full overflow-hidden rounded-full bg-[#F9F6EF] p-[4px] shadow-[0_12px_28px_rgba(15,42,34,0.22)]"
             style={{ border: `1.5px solid ${goldColor}` }}
           >
             <div className="relative h-full w-full overflow-hidden rounded-full">
@@ -126,7 +126,7 @@ export function HeritageImageStack({
                 fill
                 objectFit="cover"
                 className="object-cover object-center"
-                sizes="160px"
+                sizes="180px"
               />
             </div>
           </div>

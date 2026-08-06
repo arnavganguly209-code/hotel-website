@@ -55,6 +55,21 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const activeVideoUrl = mode === "video" ? mediaUrl(videoSrc, revision || videoSrc) : "";
   const activeImageUrl =
     mode === "image" ? mediaUrl(imageSrc, revision || imageSrc) : "";
+
+  // Brand / deep-link: /#hero scrolls this section into view
+  useEffect(() => {
+    function goHero() {
+      if (typeof window === "undefined") return;
+      if (window.location.hash !== "#hero") return;
+      requestAnimationFrame(() => {
+        const el = sectionRef.current || document.getElementById("hero");
+        el?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+    goHero();
+    window.addEventListener("hashchange", goHero);
+    return () => window.removeEventListener("hashchange", goHero);
+  }, []);
   const activeMediaKey =
     mode === "image"
       ? `image:${activeImageUrl}`

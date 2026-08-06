@@ -69,7 +69,7 @@ export function NepaliCulture({ content }: NepaliCultureProps) {
     <section
       id="culture"
       aria-label="Cultural experience"
-      className="relative overflow-x-clip"
+      className="relative overflow-x-clip lg:overflow-visible"
       style={{
         background: `linear-gradient(180deg, ${topBg} 0%, ${topBg} 55%, ${bottomBg} 100%)`,
       }}
