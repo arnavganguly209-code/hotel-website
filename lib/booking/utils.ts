@@ -1,4 +1,4 @@
-import { routes, roomDetailPath } from "@/lib/navigation";
+import { routes, roomDetailPath, roomReservePath } from "@/lib/navigation";
 import type { SiteContent } from "@/lib/cms/types";
 import type { BookingSearchParams } from "./types";
 import {
@@ -156,7 +156,7 @@ export function buildReserveUrl(slug: string, search: BookingSearchParams): stri
     search.promoCode
   );
   const q = params.toString();
-  return `/rooms/${slug}/reserve${q ? `?${q}` : ""}`;
+  return `${roomReservePath(slug)}${q ? `?${q}` : ""}`;
 }
 
 export function formatBookingDate(value: string): string {

@@ -36,6 +36,10 @@ export function roomDetailPath(id: string) {
   return `/rooms/${id}`;
 }
 
+export function roomReservePath(slug: string) {
+  return `/rooms/${slug}/reserve`;
+}
+
 export function articleDetailPath(slug: string) {
   return `/articles/${slug}`;
 }

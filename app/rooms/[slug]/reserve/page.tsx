@@ -5,7 +5,7 @@ import { InnerPageHero } from "@/components/shared/InnerPageHero";
 import { LuxuryBookingCheckout } from "@/components/booking/LuxuryBookingCheckout";
 import { bookingSearchFromParams, roomPublicSlug } from "@/lib/booking/utils";
 import { buildBreadcrumbSchema, buildPageMetadata } from "@/lib/seo/page-metadata";
-import { roomDetailPath } from "@/lib/navigation";
+import { roomDetailPath, roomReservePath } from "@/lib/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,7 @@ export async function generateMetadata({
   if (!room) return { title: "Reserve" };
 
   const publicSlug = roomPublicSlug(room);
-  const path = `/rooms/${publicSlug}/reserve`;
+  const path = roomReservePath(publicSlug);
 
   return buildPageMetadata(
     {
@@ -50,7 +50,7 @@ export default async function ReserveRoute({ params, searchParams }: ReserveRout
     { name: "Home", url: "/" },
     { name: "Rooms", url: "/rooms" },
     { name: room.name, url: roomDetailPath(publicSlug) },
-    { name: "Reserve", url: `/rooms/${publicSlug}/reserve` },
+    { name: "Reserve", url: roomReservePath(publicSlug) },
   ]);
 
   return (
