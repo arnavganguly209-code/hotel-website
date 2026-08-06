@@ -69,22 +69,29 @@ export function Header({ header, hotelName }: HeaderProps) {
   /* ~20% shorter than CMS height (default 72 → 58) */
   const barHeight = Math.max(52, Math.round((header.height || 72) * 0.8));
 
-  /* Light cream-green glass — opaque enough to stay cream, not muddy from hero */
+  /* Visible cream-green — not white glass */
   const headerStyle = cn(
     header.sticky !== false && "fixed",
     "left-0 right-0 top-0 z-50 will-change-[backdrop-filter,box-shadow]",
-    "border-b border-[rgba(197,160,89,0.18)]",
-    "bg-[rgba(245,248,238,0.92)] backdrop-blur-[14px]",
-    "supports-[backdrop-filter]:bg-[rgba(242,247,234,0.88)]",
+    "border-b border-[rgba(140,170,120,0.28)]",
+    "backdrop-blur-[12px]",
     "transition-[box-shadow,background-color,border-color] duration-500 ease-out",
     useTransparent
-      ? "shadow-[0_2px_14px_rgba(24,60,45,0.05)]"
-      : "shadow-[0_6px_22px_rgba(24,60,45,0.08)]"
+      ? "shadow-[0_2px_14px_rgba(24,60,45,0.06)]"
+      : "shadow-[0_6px_22px_rgba(24,60,45,0.10)]"
   );
 
   return (
     <>
-      <header className={headerStyle} style={{ minHeight: barHeight }}>
+      <header
+        className={headerStyle}
+        style={{
+          minHeight: barHeight,
+          backgroundColor: "rgba(214, 232, 210, 0.96)",
+          backgroundImage:
+            "linear-gradient(90deg, rgba(200, 222, 194, 0.98) 0%, rgba(222, 236, 214, 0.97) 50%, rgba(200, 222, 194, 0.98) 100%)",
+        }}
+      >
         <div
           className="mx-auto grid max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-3 min-[375px]:gap-3 min-[375px]:px-4 sm:gap-4 sm:px-5 lg:grid-cols-[1fr_auto_1fr] lg:px-8"
           style={{ minHeight: barHeight }}
