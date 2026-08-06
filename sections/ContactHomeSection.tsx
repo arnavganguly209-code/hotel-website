@@ -41,7 +41,7 @@ function OrnamentDivider({ className = "" }: { className?: string }) {
 function CardShell({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
     <div
-      className={`h-full rounded-[18px] p-6 sm:p-7 md:p-8 ${className}`}
+      className={`flex h-full flex-col rounded-[18px] p-6 sm:p-7 md:p-8 ${className}`}
       style={{
         backgroundColor: CARD_BG,
         border: `1px solid ${GOLD}55`,
@@ -148,16 +148,16 @@ export function ContactHomeSection({ contact, hotel }: ContactHomeSectionProps) 
           </motion.p>
         </div>
 
-        {/* Same frame: left details + right form, tops flush */}
-        <div className="grid items-start gap-5 lg:grid-cols-[0.92fr_1.28fr] lg:gap-6 xl:gap-7">
-          {/* LEFT — contact details card */}
-          <motion.div variants={fadeUp} className="min-w-0 self-start">
+        {/* Equal-height frames: left details stretch to match form */}
+        <div className="grid items-stretch gap-5 lg:grid-cols-[0.95fr_1.25fr] lg:gap-6 xl:gap-7">
+          {/* LEFT — contact details (fills form height) */}
+          <motion.div variants={fadeUp} className="min-w-0 h-full">
             <CardShell>
-              <ul>
+              <ul className="flex h-full min-h-0 flex-1 flex-col justify-between gap-1">
                 {details.map((item, i) => (
-                  <li key={item.label}>
+                  <li key={item.label} className="flex flex-1 flex-col justify-center">
                     {i > 0 ? (
-                      <div className="my-4 flex items-center gap-2.5" aria-hidden>
+                      <div className="mb-4 flex items-center gap-2.5 sm:mb-5" aria-hidden>
                         <span className="h-px flex-1" style={{ backgroundColor: `${GOLD}55` }} />
                         <span
                           className="h-1 w-1 rotate-45 shrink-0"
@@ -168,14 +168,14 @@ export function ContactHomeSection({ contact, hotel }: ContactHomeSectionProps) 
                     ) : null}
                     <div className="flex items-start gap-3.5">
                       <div
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full sm:h-12 sm:w-12"
                         style={{
                           backgroundColor: "#F3EDE0",
                           border: `1px solid ${GOLD}66`,
                           color: GOLD,
                         }}
                       >
-                        <item.icon className="h-4 w-4" strokeWidth={1.4} />
+                        <item.icon className="h-4 w-4 sm:h-[1.1rem] sm:w-[1.1rem]" strokeWidth={1.4} />
                       </div>
                       <div className="min-w-0 pt-0.5">
                         <p
@@ -185,7 +185,7 @@ export function ContactHomeSection({ contact, hotel }: ContactHomeSectionProps) 
                           {item.label}
                         </p>
                         <p
-                          className="mt-1 font-body text-[14px] font-medium leading-snug sm:text-[15px]"
+                          className="mt-1.5 font-body text-[14px] font-medium leading-snug sm:text-[15px]"
                           style={{ color: HEADING }}
                         >
                           {item.value}
@@ -198,11 +198,11 @@ export function ContactHomeSection({ contact, hotel }: ContactHomeSectionProps) 
             </CardShell>
           </motion.div>
 
-          {/* RIGHT — form card (same top edge as left) */}
-          <motion.div variants={fadeUp} className="min-w-0 self-start">
+          {/* RIGHT — form card (same top + bottom as left) */}
+          <motion.div variants={fadeUp} className="min-w-0 h-full">
             <CardShell>
               {status === "success" ? (
-                <div className="text-center">
+                <div className="flex flex-1 flex-col items-center justify-center text-center">
                   <h3
                     className="font-display text-xl font-semibold uppercase tracking-[0.06em]"
                     style={{ color: HEADING }}
@@ -227,16 +227,16 @@ export function ContactHomeSection({ contact, hotel }: ContactHomeSectionProps) 
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} noValidate={false}>
+                <form onSubmit={handleSubmit} noValidate={false} className="flex h-full flex-1 flex-col">
                   <h3
                     className="text-center font-display text-[1.15rem] font-semibold uppercase tracking-[0.08em] sm:text-xl"
                     style={{ color: HEADING }}
                   >
                     Send a Message
                   </h3>
-                  <OrnamentDivider className="my-4" />
+                  <OrnamentDivider className="my-3.5" />
 
-                  <div className="grid gap-3.5 sm:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     <IconField icon={User}>
                       <input
                         name="fullName"
@@ -260,7 +260,7 @@ export function ContactHomeSection({ contact, hotel }: ContactHomeSectionProps) 
                     </IconField>
                   </div>
 
-                  <div className="mt-3.5">
+                  <div className="mt-3">
                     <IconField icon={Phone}>
                       <input
                         name="phone"
@@ -273,7 +273,7 @@ export function ContactHomeSection({ contact, hotel }: ContactHomeSectionProps) 
                     </IconField>
                   </div>
 
-                  <div className="mt-3.5">
+                  <div className="mt-3">
                     <IconField icon={PenLine}>
                       <input
                         name="subject"
@@ -284,7 +284,7 @@ export function ContactHomeSection({ contact, hotel }: ContactHomeSectionProps) 
                     </IconField>
                   </div>
 
-                  <div className="relative mt-3.5">
+                  <div className="relative mt-3 flex-1">
                     <span
                       className="pointer-events-none absolute left-3.5 top-3.5"
                       style={{ color: `${BODY}99` }}
@@ -296,15 +296,15 @@ export function ContactHomeSection({ contact, hotel }: ContactHomeSectionProps) 
                       name="message"
                       required
                       placeholder="Your Message"
-                      rows={4}
+                      rows={3}
                       aria-label="Message"
-                      className={`${fieldClass} resize-none pt-3.5`}
+                      className={`${fieldClass} h-full min-h-[5.5rem] resize-none pt-3.5`}
                     />
                   </div>
 
                   {status === "error" ? (
                     <p
-                      className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                      className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
                       role="alert"
                     >
                       {error}
@@ -314,7 +314,7 @@ export function ContactHomeSection({ contact, hotel }: ContactHomeSectionProps) 
                   <button
                     type="submit"
                     disabled={status === "loading"}
-                    className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-8 font-body text-[11px] font-semibold uppercase tracking-[0.16em] text-white transition hover:-translate-y-0.5 disabled:opacity-60 sm:text-[12px]"
+                    className="mt-4 inline-flex min-h-12 w-fit items-center justify-center gap-2 rounded-xl px-8 font-body text-[11px] font-semibold uppercase tracking-[0.16em] text-white transition hover:-translate-y-0.5 disabled:opacity-60 sm:text-[12px]"
                     style={{
                       background: `linear-gradient(135deg, ${GOLD} 0%, #B08D45 100%)`,
                       boxShadow: "0 12px 28px rgba(197, 160, 89, 0.38)",
