@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { SafeImage } from "@/components/shared/SafeImage";
 import type { CultureBadge } from "@/lib/cms/types";
 
@@ -10,6 +11,8 @@ interface HeritageImageStackProps {
   circularAlt: string;
   badge: CultureBadge;
   goldColor: string;
+  /** When set, entire image composition is clickable */
+  href?: string;
 }
 
 function renderBadgeCopy(description: string, emphasis: string, emphasisColor: string) {
@@ -20,10 +23,7 @@ function renderBadgeCopy(description: string, emphasis: string, emphasisColor: s
   return (
     <>
       {before}
-      <span
-        className="font-display text-[15px] font-semibold md:text-base"
-        style={{ color: emphasisColor }}
-      >
+      <span className="font-display text-[14px] font-semibold md:text-[15px]" style={{ color: emphasisColor }}>
         {emphasis}
       </span>
       {after}
@@ -38,14 +38,39 @@ export function HeritageImageStack({
   circularAlt,
   badge,
   goldColor,
+  href,
 }: HeritageImageStackProps) {
-  return (
-    <div className="relative mx-auto w-full max-w-[520px] lg:mx-0 lg:max-w-none">
-      {/* Circular portrait — stacks above main on mobile */}
+  const frame = (
+    <div className="group/image relative mx-auto w-full max-w-[520px] lg:mx-0 lg:max-w-none">
+      {/* Main frame — top-aligned, premium glass edge */}
+      <div
+        className="relative aspect-[4/5] overflow-hidden rounded-[22px] shadow-[0_24px_56px_rgba(15,42,34,0.18)] transition-shadow duration-700 group-hover/image:shadow-[0_32px_64px_rgba(15,42,34,0.24)] sm:rounded-[26px]"
+        style={{
+          border: `1px solid ${goldColor}AA`,
+          boxShadow: `0 24px 56px rgba(15,42,34,0.18), inset 0 1px 0 rgba(255,255,255,0.22)`,
+        }}
+      >
+        <SafeImage
+          src={mainSrc}
+          alt={mainAlt || "Cultural experience"}
+          fill
+          objectFit="cover"
+          className="object-cover object-center transition-transform duration-700 ease-out group-hover/image:scale-[1.04]"
+          sizes="(max-width: 1024px) 90vw, 480px"
+          priority
+        />
+        {/* Soft glass sheen */}
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#062C24]/35 via-transparent to-white/10"
+          aria-hidden
+        />
+      </div>
+
+      {/* Circular cultural detail — attached top-left corner */}
       {circularSrc ? (
-        <div className="relative z-20 mx-auto mb-[-2.5rem] h-[9.5rem] w-[9.5rem] sm:h-[11rem] sm:w-[11rem] md:mb-[-3rem] lg:absolute lg:left-[-1.25rem] lg:top-[-1.5rem] lg:mb-0 lg:h-[10.5rem] lg:w-[10.5rem] xl:h-[11.5rem] xl:w-[11.5rem]">
+        <div className="absolute -left-2 -top-3 z-20 h-[5.5rem] w-[5.5rem] sm:-left-3 sm:-top-4 sm:h-[6.75rem] sm:w-[6.75rem] lg:-left-4 lg:-top-5 lg:h-[7.5rem] lg:w-[7.5rem]">
           <div
-            className="h-full w-full overflow-hidden rounded-full bg-[#F9F6EF] p-[6px] shadow-[0_18px_40px_rgba(15,42,34,0.16)]"
+            className="h-full w-full overflow-hidden rounded-full bg-[#F9F6EF] p-[5px] shadow-[0_14px_32px_rgba(15,42,34,0.18)]"
             style={{ border: `1.5px solid ${goldColor}` }}
           >
             <div className="relative h-full w-full overflow-hidden rounded-full">
@@ -55,75 +80,61 @@ export function HeritageImageStack({
                 fill
                 objectFit="cover"
                 className="object-cover object-center"
-                sizes="200px"
+                sizes="140px"
               />
             </div>
           </div>
         </div>
       ) : null}
 
-      {/* Main vertical frame */}
-      <div
-        className="relative z-10 aspect-[4/5] overflow-hidden rounded-[28px] shadow-[0_28px_60px_rgba(15,42,34,0.16)] sm:rounded-[32px]"
-        style={{ border: `1px solid ${goldColor}99` }}
-      >
-        <SafeImage
-          src={mainSrc}
-          alt={mainAlt || "Cultural experience"}
-          fill
-          objectFit="cover"
-          className="object-cover object-center"
-          sizes="(max-width: 1024px) 90vw, 480px"
-          priority
-        />
-      </div>
-
-      {/* Floating experience badge */}
+      {/* Experience badge — attached bottom-left of frame */}
       {badge.enabled !== false ? (
-        <div className="relative z-30 mx-auto mt-[-2.25rem] w-[min(100%,340px)] lg:absolute lg:bottom-6 lg:left-[-0.5rem] lg:mt-0 lg:w-[min(92%,340px)] xl:left-[-1rem]">
-          <div className="flex items-center gap-3 rounded-2xl bg-[#FBF8F1] px-3.5 py-3.5 shadow-[0_16px_40px_rgba(15,42,34,0.14)] ring-1 ring-black/[0.04] sm:gap-4 sm:px-4 sm:py-4">
+        <div className="absolute -bottom-3 left-3 z-30 w-[min(88%,300px)] sm:left-4 lg:-bottom-4 lg:left-5 lg:w-[min(90%,320px)]">
+          <div
+            className="flex items-center gap-3 rounded-2xl px-3.5 py-3 shadow-[0_16px_40px_rgba(15,42,34,0.16)] backdrop-blur-md sm:gap-3.5 sm:px-4 sm:py-3.5"
+            style={{
+              background: "rgba(251,248,241,0.94)",
+              border: `1px solid ${goldColor}88`,
+            }}
+          >
             <div
-              className="relative flex h-[3.35rem] w-[3.35rem] shrink-0 items-center justify-center rounded-full sm:h-16 sm:w-16"
+              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full sm:h-14 sm:w-14"
               style={{
                 background: `radial-gradient(circle at 35% 30%, #E8D5A3 0%, ${goldColor} 55%, #8B7340 100%)`,
-                boxShadow: `0 8px 20px ${goldColor}55`,
+                boxShadow: `0 8px 18px ${goldColor}55`,
               }}
             >
               {badge.iconSrc ? (
                 <SafeImage
                   src={badge.iconSrc}
                   alt=""
-                  width={40}
-                  height={40}
+                  width={36}
+                  height={36}
                   objectFit="contain"
-                  className="h-8 w-8 object-contain"
+                  className="h-7 w-7 object-contain"
                 />
               ) : (
-                <>
-                  <span
-                    className="pointer-events-none absolute inset-[3px] rounded-full border"
-                    style={{ borderColor: "rgba(255,255,255,0.45)" }}
-                    aria-hidden
-                  />
-                  <span className="font-display text-lg font-bold leading-none text-[#062C24] sm:text-xl">
-                    {badge.number || "20+"}
-                  </span>
-                </>
+                <span className="font-display text-base font-bold leading-none text-[#062C24] sm:text-lg">
+                  {badge.number || "20+"}
+                </span>
               )}
             </div>
-            <p
-              className="min-w-0 font-body text-[12px] leading-[1.55] text-[#4A554E] sm:text-[13px]"
-              style={{ color: "#4A554E" }}
-            >
-              {renderBadgeCopy(
-                badge.description,
-                badge.emphasis || badge.number,
-                "#062C24"
-              )}
+            <p className="min-w-0 font-body text-[11px] leading-[1.5] text-[#4A554E] sm:text-[12px]">
+              {renderBadgeCopy(badge.description, badge.emphasis || badge.number, "#062C24")}
             </p>
           </div>
         </div>
       ) : null}
     </div>
   );
+
+  if (href) {
+    return (
+      <Link href={href} prefetch className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C5A059]/50" aria-label={mainAlt || "Cultural experience"}>
+        {frame}
+      </Link>
+    );
+  }
+
+  return frame;
 }

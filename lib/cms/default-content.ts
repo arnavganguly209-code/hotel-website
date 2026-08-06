@@ -237,9 +237,10 @@ export const defaultContent: SiteContent = {
     bodyColor: "#5A635C",
     showMist: true,
     stats: [
-      { id: "cs1", value: "7", label: "UNESCO Sites Nearby", icon: "Landmark", enabled: true, order: 0 },
-      { id: "cs2", value: "2000+", label: "Years of Heritage", icon: "Clock", enabled: true, order: 1 },
-      { id: "cs3", value: "50+", label: "Curated Experiences", icon: "Star", enabled: true, order: 2 },
+      { id: "cs1", value: "7 Nearby", label: "UNESCO Heritage", icon: "Landmark", enabled: true, order: 0 },
+      { id: "cs2", value: "4.9 / 5", label: "Guest Rating", icon: "Star", enabled: true, order: 1 },
+      { id: "cs3", value: "20+ Years", label: "Hospitality Excellence", icon: "Hotel", enabled: true, order: 2 },
+      { id: "cs4", value: "1000+", label: "Local Experiences", icon: "Sparkles", enabled: true, order: 3 },
     ],
     imageCards: [
       {

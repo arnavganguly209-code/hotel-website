@@ -1107,7 +1107,19 @@ function mergeCulture(
 ): SiteContent["culture"] {
   if (!partial) return defaults;
 
-  const stats = definedArray(partial.stats, defaults.stats).map((stat, i) => {
+  const incomingStats = definedArray(partial.stats, defaults.stats);
+  const looksLegacyStats =
+    incomingStats.length < 4 ||
+    incomingStats.some(
+      (s) =>
+        s.label === "UNESCO Sites Nearby" ||
+        s.label === "Years of Heritage" ||
+        s.label === "Curated Experiences" ||
+        s.label === "2000+" ||
+        s.value === "2000+"
+    );
+  const statsSource = looksLegacyStats ? defaults.stats : incomingStats;
+  const stats = statsSource.map((stat, i) => {
     const base = defaults.stats[i] ?? defaults.stats[0];
     return {
       id: stat.id || base?.id || `cs${i + 1}`,
