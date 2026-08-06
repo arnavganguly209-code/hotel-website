@@ -64,7 +64,7 @@ export function Logo({
           className={cn(
             "text-center font-display text-[13px] font-extrabold leading-none tracking-[0.14em] min-[360px]:tracking-[0.18em] sm:text-[15px] sm:tracking-[0.22em] md:text-[18px] md:tracking-[0.24em] lg:text-[19px]",
             "text-[#111111] transition-colors duration-300 group-hover:text-[#000000]",
-            variant === "light" && "text-white group-hover:text-[#F5F0E6]"
+            variant === "light" && "text-[#F5F0E6] group-hover:text-white"
           )}
         >
           {displayText}

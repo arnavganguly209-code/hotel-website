@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/Logo";
 import { routes } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
-import { HEADER_CREAM_GREEN } from "@/lib/header-theme";
+import { HEADER_SEARCH_MATCH } from "@/lib/header-theme";
 import { useScrolled } from "@/hooks/useScrolled";
 import type { SiteContent } from "@/lib/cms/types";
 
@@ -30,7 +30,7 @@ function HamburgerIcon({ open }: { open: boolean }) {
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="block h-[1.5px] w-full origin-center rounded-full bg-[#8B6914]"
+          className="block h-[1.5px] w-full origin-center rounded-full bg-[#C5A059]"
           animate={
             open
               ? i === 0
@@ -72,31 +72,31 @@ export function Header({ header, hotelName }: HeaderProps) {
   const headerStyle = cn(
     header.sticky !== false && "fixed",
     "left-0 right-0 top-0 z-50 will-change-[backdrop-filter,box-shadow]",
-    "border-b border-[rgba(140,170,120,0.28)]",
-    "backdrop-blur-[12px]",
+    "border-b border-[rgba(212,176,106,0.32)]",
+    "backdrop-blur-[24px]",
     "transition-[box-shadow,background-color,border-color] duration-500 ease-out",
     useTransparent
-      ? "shadow-[0_2px_14px_rgba(24,60,45,0.06)]"
-      : "shadow-[0_6px_22px_rgba(24,60,45,0.10)]"
+      ? "shadow-[0_2px_14px_rgba(8,20,14,0.18)]"
+      : "shadow-[0_8px_28px_rgba(8,20,14,0.28)]"
   );
 
   return (
     <>
-      <header className={headerStyle} style={{ minHeight: barHeight, ...HEADER_CREAM_GREEN }}>
+      <header className={headerStyle} style={{ minHeight: barHeight, ...HEADER_SEARCH_MATCH }}>
         <div
           className="mx-auto grid max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-3 min-[375px]:gap-3 min-[375px]:px-4 sm:gap-4 sm:px-5 lg:grid-cols-[1fr_auto_1fr] lg:px-8"
           style={{ minHeight: barHeight }}
         >
           <button
             onClick={() => setMenuOpen(true)}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#8B6914]/25 bg-white/45 transition-all active:scale-95 hover:border-[#8B6914]/50 hover:bg-white/65 hover:shadow-luxury sm:h-10 sm:w-10"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/35 bg-white/[0.06] transition-all active:scale-95 hover:border-[#D4AF37]/60 hover:bg-white/[0.10] sm:h-10 sm:w-10"
             aria-label="Open menu"
           >
             <HamburgerIcon open={false} />
           </button>
 
           <Logo
-            variant="dark"
+            variant="light"
             name={hotelName}
             headerText={header.headerText}
             useLogo={header.useLogo}
@@ -112,7 +112,7 @@ export function Header({ header, hotelName }: HeaderProps) {
             {header.showPhone && (
               <motion.a
                 href={phoneHref}
-                className="group/phone relative hidden items-center gap-2 rounded-full border border-[#3d5c45]/20 bg-[rgba(235,242,228,0.75)] px-3.5 py-1.5 text-[13px] font-bold tracking-[0.04em] text-[#3d5c45] shadow-[0_2px_10px_rgba(45,70,50,0.08)] md:flex lg:px-4 lg:text-[15px]"
+                className="group/phone relative hidden items-center gap-2 rounded-full border border-[#D4AF37]/28 bg-white/[0.06] px-3.5 py-1.5 text-[13px] font-bold tracking-[0.04em] text-[#E8F0E4] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] md:flex lg:px-4 lg:text-[15px]"
                 aria-label={`Call ${phoneDisplay}`}
                 initial={{ opacity: 0.92, x: 6 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -121,7 +121,7 @@ export function Header({ header, hotelName }: HeaderProps) {
                 whileTap={{ scale: 0.98 }}
               >
                 <Phone
-                  className="h-3.5 w-3.5 shrink-0 text-[#3d5c45] transition-transform duration-500 group-hover/phone:rotate-12"
+                  className="h-3.5 w-3.5 shrink-0 text-[#D4AF37] transition-transform duration-500 group-hover/phone:rotate-12"
                   aria-hidden
                 />
                 <span className="hidden whitespace-nowrap lg:inline">{phoneDisplay}</span>

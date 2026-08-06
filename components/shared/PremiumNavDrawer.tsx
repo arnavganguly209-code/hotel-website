@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { X, Phone, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/Logo";
-import { HEADER_CREAM_GREEN } from "@/lib/header-theme";
+import { HEADER_SEARCH_MATCH } from "@/lib/header-theme";
 import { routes } from "@/lib/navigation";
 import type { SiteContent } from "@/lib/cms/types";
 
@@ -36,7 +36,7 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.28 }}
-        className="fixed inset-0 z-[90] bg-[#173a2b]/40 backdrop-blur-md"
+        className="fixed inset-0 z-[90] bg-[#0f1f18]/55 backdrop-blur-md"
         onClick={onClose}
       />
 
@@ -45,12 +45,12 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
         animate={{ x: 0 }}
         exit={{ x: "-100%" }}
         transition={{ type: "tween", duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed inset-y-0 left-0 z-[100] flex w-full max-w-md flex-col border-r border-[rgba(140,170,120,0.35)] shadow-2xl backdrop-blur-[12px]"
-        style={HEADER_CREAM_GREEN}
+        className="fixed inset-y-0 left-0 z-[100] flex w-full max-w-md flex-col border-r border-[rgba(212,176,106,0.32)] shadow-2xl backdrop-blur-[24px]"
+        style={HEADER_SEARCH_MATCH}
       >
-        <div className="flex items-center justify-between border-b border-[rgba(140,170,120,0.28)] px-6 py-5">
+        <div className="flex items-center justify-between border-b border-[rgba(212,176,106,0.28)] px-6 py-5">
           <Logo
-            variant="dark"
+            variant="light"
             name={hotelName}
             headerText={header.headerText}
             useLogo={header.useLogo}
@@ -61,7 +61,7 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
           />
           <button
             onClick={onClose}
-            className="flex h-12 w-12 items-center justify-center rounded-full border border-[#8B6914]/30 bg-white/50 text-[#8B6914] transition-colors active:scale-95 hover:border-[#8B6914]/55"
+            className="flex h-12 w-12 items-center justify-center rounded-full border border-[#D4AF37]/35 bg-white/[0.06] text-[#C5A059] transition-colors active:scale-95 hover:border-[#D4AF37]/60"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" strokeWidth={1.5} />
@@ -69,7 +69,7 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
         </div>
 
         <nav className="flex-1 overflow-y-auto px-6 py-8" aria-label="Main navigation">
-          <p className="mb-4 text-[10px] font-medium uppercase tracking-[0.35em] text-[#8B6914]/80">
+          <p className="mb-4 text-[10px] font-medium uppercase tracking-[0.35em] text-[#D4AF37]">
             Explore
           </p>
           {header.menuItems.map((item, i) => (
@@ -87,22 +87,22 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
                 onClick={onClose}
                 className="group relative flex min-h-12 items-center justify-between py-3.5"
               >
-                <span className="font-display text-xl font-medium tracking-wide text-[#111111] transition-colors group-hover:text-[#3d5c45]">
+                <span className="font-display text-xl font-medium tracking-wide text-[#F5F0E6] transition-colors group-hover:text-[#D4AF37]">
                   {item.label}
                 </span>
-                <ArrowUpRight className="h-4 w-4 text-[#8B6914]/0 transition-all group-hover:text-[#8B6914]/80" />
-                <span className="absolute bottom-0 left-0 h-px w-0 bg-gradient-to-r from-[#8B6914] to-[#C5A059] transition-all duration-500 group-hover:w-full" />
+                <ArrowUpRight className="h-4 w-4 text-[#D4AF37]/0 transition-all group-hover:text-[#D4AF37]/80" />
+                <span className="absolute bottom-0 left-0 h-px w-0 bg-gradient-to-r from-[#D4AF37] to-[#C5A059] transition-all duration-500 group-hover:w-full" />
               </Link>
             </motion.div>
           ))}
         </nav>
 
-        <div className="border-t border-[rgba(140,170,120,0.28)] p-6">
+        <div className="border-t border-[rgba(212,176,106,0.28)] p-6">
           <a
             href={`tel:${(header.phone || "").replace(/[^\d+]/g, "")}`}
-            className="mb-4 flex items-center justify-center gap-2 text-[15px] font-bold tracking-[0.04em] text-[#3d5c45] transition-transform hover:translate-x-0.5 hover:opacity-90"
+            className="mb-4 flex items-center justify-center gap-2 text-[15px] font-bold tracking-[0.04em] text-[#E8F0E4] transition-transform hover:translate-x-0.5 hover:opacity-90"
           >
-            <Phone className="h-4 w-4 text-[#3d5c45]" aria-hidden />
+            <Phone className="h-4 w-4 text-[#D4AF37]" aria-hidden />
             {header.phone}
           </a>
           <Button variant="gold" size="lg" className="w-full rounded-xl uppercase tracking-wider" asChild>

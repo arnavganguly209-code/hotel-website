@@ -1,6 +1,11 @@
-/** Shared cream-green fill for site header + mobile nav drawer */
-export const HEADER_CREAM_GREEN = {
-  backgroundColor: "rgba(214, 232, 210, 0.96)",
-  backgroundImage:
-    "linear-gradient(90deg, rgba(200, 222, 194, 0.98) 0%, rgba(222, 236, 214, 0.97) 50%, rgba(200, 222, 194, 0.98) 100%)",
+/**
+ * Match the hero booking/search bar frame
+ * (lib/cms/hero-builder-defaults.ts → bookingBar.background)
+ */
+export const HEADER_SEARCH_MATCH = {
+  backgroundColor: "#204732",
+  backgroundImage: "linear-gradient(160deg, #2A5540 0%, #204732 55%, #26503B 100%)",
 } as const;
+
+/** @deprecated alias — same as search-box match */
+export const HEADER_CREAM_GREEN = HEADER_SEARCH_MATCH;
