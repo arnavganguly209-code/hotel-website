@@ -1108,7 +1108,7 @@ export const defaultContent: SiteContent = {
         imageSrc: "/media/dining/korean-restaurant.jpg",
         imageAlt: "Garden View Korean Restaurant",
         ctaText: "Reserve Table",
-        ctaHref: "#reserve-table",
+        ctaHref: "/contact",
       },
       {
         id: "sky-lounge",
@@ -1127,7 +1127,7 @@ export const defaultContent: SiteContent = {
         imageSrc: "/media/dining/skyz-lounge.jpg",
         imageAlt: "Sky Lounge Restaurant and Bar",
         ctaText: "Reserve Table",
-        ctaHref: "#reserve-table",
+        ctaHref: "/contact",
       },
     ],
     menu: {
@@ -1502,7 +1502,7 @@ export const defaultContent: SiteContent = {
       description:
         "Whether a quiet garden lunch or a celebratory rooftop evening, our tables are ready for you.",
       buttonText: "Reserve Table",
-      buttonHref: "#reserve-table",
+      buttonHref: "/contact",
       secondaryText: "Contact Us",
       secondaryHref: "/contact",
       backgroundImage: "/media/dining/skyz-lounge.jpg",
@@ -3087,11 +3087,11 @@ export const defaultContent: SiteContent = {
       { id: "pay6", src: "/media/payments/06-esewa.png?v=official3" },
     ],
     legalLinks: [
-      { label: "Privacy Policy", href: "/legal#privacy" },
-      { label: "Terms & Conditions", href: "/legal#terms" },
-      { label: "Cancellation Policy", href: "/legal#cancellation" },
-      { label: "Cookie Settings", href: "/legal#cookies" },
-      { label: "Sitemap", href: "/legal#sitemap" },
+      { label: "Privacy Policy", href: "/legal/privacy" },
+      { label: "Terms & Conditions", href: "/legal/terms" },
+      { label: "Cancellation Policy", href: "/legal/cancellation" },
+      { label: "Cookie Settings", href: "/legal/cookies" },
+      { label: "Sitemap", href: "/legal/sitemap" },
     ],
     showMountains: true,
     copyrightText: "Hotel Thamel Park. All Rights Reserved.",

@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { MediaPlaceholder } from "@/components/shared/MediaPlaceholder";
 import { SafeImage } from "@/components/shared/SafeImage";
 import {
+  buildReserveUrl,
   buildRoomDetailUrl,
   formatBookingDate,
   isRoomAvailableForSearch,
@@ -112,7 +113,7 @@ export function RoomsPage({ rooms, page, search, hasSearch }: RoomsPageProps) {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-80px" }}
-              className="grid gap-8 lg:grid-cols-2"
+              className="grid min-w-0 gap-8 lg:grid-cols-2"
             >
               {available.map((room) => {
                 const slug = roomPublicSlug(room);
@@ -176,7 +177,18 @@ export function RoomsPage({ rooms, page, search, hasSearch }: RoomsPageProps) {
                             Read More
                           </Link>
                           <Link
-                            href={`${detailHref}#reserve`}
+                            href={
+                              hasSearch
+                                ? buildReserveUrl(slug, search)
+                                : buildReserveUrl(slug, {
+                                    checkIn: "",
+                                    checkOut: "",
+                                    guests: "2",
+                                    children: "0",
+                                    rooms: "1",
+                                    breakfast: "with-breakfast",
+                                  })
+                            }
                             className="group/button inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#d3ad64] bg-gradient-to-r from-[#173a2b] to-[#214b38] px-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f5dfad] shadow-[0_10px_28px_rgba(22,58,42,0.24)] transition-all duration-500 hover:-translate-y-0.5 hover:from-[#b8893e] hover:to-[#d0a65d] hover:text-[#10281d] hover:shadow-[0_16px_38px_rgba(156,113,51,0.30)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b48b49] focus-visible:ring-offset-2 sm:min-w-[132px]"
                           >
                             Book Now

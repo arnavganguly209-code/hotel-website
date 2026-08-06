@@ -12,11 +12,25 @@ export const routes = {
   articles: "/articles",
   culturalExperience: "/cultural-experience",
   contact: "/contact",
-  privacy: "/privacy-policy",
-  terms: "/terms-and-conditions",
+  privacy: "/legal/privacy",
+  terms: "/legal/terms",
   legal: "/legal",
   orbit: "/orbit",
 } as const;
+
+export const LEGAL_SECTIONS = [
+  "privacy",
+  "terms",
+  "cancellation",
+  "cookies",
+  "sitemap",
+] as const;
+
+export type LegalSectionId = (typeof LEGAL_SECTIONS)[number];
+
+export function legalSectionPath(section: LegalSectionId): string {
+  return `/legal/${section}`;
+}
 
 export function roomDetailPath(id: string) {
   return `/rooms/${id}`;
@@ -59,11 +73,11 @@ export const FOOTER_NAV = {
     { label: "Wellness", href: routes.spa },
   ],
   policies: [
-    { label: "Privacy Policy", href: `${routes.legal}#privacy` },
-    { label: "Terms & Conditions", href: `${routes.legal}#terms` },
-    { label: "Cancellation Policy", href: `${routes.legal}#cancellation` },
-    { label: "Cookie Settings", href: `${routes.legal}#cookies` },
-    { label: "Sitemap", href: `${routes.legal}#sitemap` },
+    { label: "Privacy Policy", href: legalSectionPath("privacy") },
+    { label: "Terms & Conditions", href: legalSectionPath("terms") },
+    { label: "Cancellation Policy", href: legalSectionPath("cancellation") },
+    { label: "Cookie Settings", href: legalSectionPath("cookies") },
+    { label: "Sitemap", href: legalSectionPath("sitemap") },
   ],
 } as const;
 

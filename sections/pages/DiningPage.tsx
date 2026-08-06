@@ -270,7 +270,7 @@ export function DiningPage({ content }: DiningPageProps) {
                     </div>
                   ) : null}
                   <a
-                    href={venue.ctaHref || "#reserve-table"}
+                    href={venue.ctaHref || "/contact"}
                     className="mt-8 inline-flex items-center gap-2 rounded-full px-7 py-3 font-body text-[11px] font-semibold uppercase tracking-[0.18em] transition hover:-translate-y-0.5"
                     style={{ backgroundColor: heading, color: gold }}
                   >
@@ -690,7 +690,7 @@ export function DiningPage({ content }: DiningPageProps) {
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <a
-              href={content.cta.buttonHref || "#reserve-table"}
+              href={content.cta.buttonHref || "/contact"}
               className="inline-flex min-h-12 items-center gap-2 rounded-full px-8 py-3.5 font-body text-[11px] font-semibold uppercase tracking-[0.18em] transition hover:-translate-y-0.5"
               style={{ backgroundColor: gold, color: heading }}
             >

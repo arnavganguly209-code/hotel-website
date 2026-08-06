@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { db, isDatabaseAvailable } from "@/lib/db";
 import { formatBookingNumber } from "@/lib/booking/booking-number";
 import { syncPaymentFromInquiry } from "@/lib/payments/paco";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Payment successful",
+  robots: { index: false, follow: false },
+};
 
 export default async function PaymentSuccessPage({
   searchParams,

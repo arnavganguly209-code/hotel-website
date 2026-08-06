@@ -19,7 +19,7 @@ import { LuxuryRoomGallery } from "@/components/booking/LuxuryRoomGallery";
 import { VatInclusivePriceSummary } from "@/components/booking/VatInclusivePriceSummary";
 import {
   bookingDatesAreValid,
-  buildBookUrl,
+  buildReserveUrl,
   calculateExtraGuestBreakdown,
   calculateNights,
   roomFitsOccupancy,
@@ -115,7 +115,7 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
       </section>
 
       <section className="px-4 py-16 sm:px-6 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-14">
+        <div className="mx-auto grid min-w-0 max-w-7xl gap-12 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-14">
           <div className="min-w-0 space-y-14">
             <LuxuryRoomGallery images={gallery} alt={room.seo?.altText || room.name} />
 
@@ -167,7 +167,7 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
             </section>
           </div>
 
-          <aside id="reserve" className="scroll-mt-28 lg:sticky lg:top-24 lg:self-start">
+          <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
             <div className="overflow-hidden rounded-[28px] border border-[#d5b979]/30 bg-white/90 shadow-[0_25px_70px_rgba(15,45,32,0.16)] backdrop-blur-xl">
               <div className="bg-[#153a2a] px-6 py-6 text-white">
                 <p className="text-[10px] uppercase tracking-[0.24em] text-[#dabb7d]">Reserve this room</p>
@@ -200,9 +200,18 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
                 {!validDates ? <p className="text-xs text-red-600">Choose a valid future check-in and check-out date.</p> : null}
                 {!fitsOccupancy ? <p className="text-xs text-red-600">Guest count exceeds this room’s maximum occupancy.</p> : null}
                 <Button asChild={validDates && fitsOccupancy} type={validDates && fitsOccupancy ? undefined : "button"} disabled={!validDates || !fitsOccupancy || room.available === false} variant="gold" size="lg" className="w-full gap-2 uppercase tracking-[0.14em]">
-                  {validDates && fitsOccupancy ? <Link href={buildBookUrl(roomPublicSlug(room), bookingSearch)}>Continue to Book <ArrowRight className="h-4 w-4" /></Link> : <span>Continue to Book</span>}
+                  {validDates && fitsOccupancy ? (
+                    <Link href={buildReserveUrl(roomPublicSlug(room), bookingSearch)}>
+                      Continue to Book <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  ) : (
+                    <span>Continue to Book</span>
+                  )}
                 </Button>
-                <p className="text-center text-[11px] leading-5 text-[#758078]">No payment is charged until your request is reviewed. Pay online is a preview only.</p>
+                <p className="text-center text-[11px] leading-5 text-[#758078]">
+                  Pay at hotel confirms with our team. Pay online redirects to Himalayan Bank&apos;s
+                  secure checkout to complete payment.
+                </p>
               </div>
             </div>
           </aside>

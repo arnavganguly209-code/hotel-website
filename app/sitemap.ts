@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { roomPublicSlug } from "@/lib/booking/utils";
 import { getContent } from "@/lib/cms/store";
-import { routes } from "@/lib/navigation";
+import { routes, legalSectionPath, LEGAL_SECTIONS } from "@/lib/navigation";
 import { SITE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -25,11 +25,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: routes.about, priority: 0.75, changeFrequency: "monthly" },
     { path: routes.contact, priority: 0.85, changeFrequency: "monthly" },
     { path: routes.book, priority: 0.9, changeFrequency: "weekly" },
-    { path: routes.availability, priority: 0.7, changeFrequency: "daily" },
     { path: routes.culturalExperience, priority: 0.7, changeFrequency: "monthly" },
-    { path: routes.privacy, priority: 0.3, changeFrequency: "yearly" },
-    { path: routes.terms, priority: 0.3, changeFrequency: "yearly" },
-    { path: routes.legal, priority: 0.3, changeFrequency: "yearly" },
+    ...LEGAL_SECTIONS.map((section) => ({
+      path: legalSectionPath(section),
+      priority: 0.3,
+      changeFrequency: "yearly" as const,
+    })),
   ];
 
   const seen = new Set<string>();
@@ -61,6 +62,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.8,
+    });
+    pushUnique(out, {
+      url: `${SITE_URL}/rooms/${slug}/reserve`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.5,
     });
   }
 

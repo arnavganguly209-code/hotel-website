@@ -142,6 +142,23 @@ export function buildBookUrl(slug: string, search: BookingSearchParams): string 
   return `${routes.book}?${params.toString()}`;
 }
 
+/** SEO-friendly reserve URL — same params as book, under /rooms/[slug]/reserve */
+export function buildReserveUrl(slug: string, search: BookingSearchParams): string {
+  const params = withPromo(
+    new URLSearchParams({
+      checkIn: search.checkIn,
+      checkOut: search.checkOut,
+      guests: search.guests,
+      children: search.children,
+      rooms: search.rooms,
+      breakfast: "with-breakfast",
+    }),
+    search.promoCode
+  );
+  const q = params.toString();
+  return `/rooms/${slug}/reserve${q ? `?${q}` : ""}`;
+}
+
 export function formatBookingDate(value: string): string {
   if (!value) return "—";
   return new Date(`${value}T12:00:00`).toLocaleDateString("en-US", {

@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Payment cancelled",
+  robots: { index: false, follow: false },
+};
 
 export default async function PaymentCancelledPage({
   searchParams,

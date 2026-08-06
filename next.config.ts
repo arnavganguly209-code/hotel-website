@@ -35,6 +35,21 @@ const nextConfig: NextConfig = {
         destination: "/restaurant/:path*",
         permanent: true,
       },
+      {
+        source: "/privacy-policy",
+        destination: "/legal/privacy",
+        permanent: true,
+      },
+      {
+        source: "/terms-and-conditions",
+        destination: "/legal/terms",
+        permanent: true,
+      },
+      {
+        source: "/legal/refund",
+        destination: "/legal/cancellation",
+        permanent: true,
+      },
     ];
   },
   async headers() {

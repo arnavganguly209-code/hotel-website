@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, CreditCard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,10 @@ interface LuxuryBookingCheckoutProps {
   search: BookingSearchParams;
 }
 
-const fieldClass = "w-full rounded-xl border border-[#d7c49d]/55 bg-white/80 px-4 py-3.5 text-sm text-[#173a2b] outline-none transition placeholder:text-[#8a938e] focus:border-[#af8744] focus:ring-2 focus:ring-[#af8744]/10";
+const fieldClass =
+  "w-full rounded-xl border border-[#d7c49d]/55 bg-white/80 px-4 py-4 text-sm text-[#173a2b] outline-none transition placeholder:text-[#8a938e] focus:border-[#af8744] focus:ring-2 focus:ring-[#af8744]/10 sm:py-3.5";
+
+const ERROR_FIELD_ATTR = "data-booking-field";
 
 function FieldError({ message }: { message?: string }) {
   return message ? (
@@ -32,6 +35,7 @@ function FieldError({ message }: { message?: string }) {
 }
 
 export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCheckoutProps) {
+  const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +61,15 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
     rooms: search.rooms || "1",
   });
   const breakfast = "with-breakfast" as const;
-  const [guest, setGuest] = useState({ firstName: "", lastName: "", email: "", phone: "", whatsapp: "", countryCode: "+977", country: "" });
+  const [guest, setGuest] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    whatsapp: "",
+    countryCode: "+977",
+    country: "",
+  });
   const [request, setRequest] = useState({
     promoCode: search.promoCode || "",
     arrivalTime: "",
@@ -93,8 +105,6 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
       } else if (!roomFitsOccupancy(room, adultCount, childCount, roomQuantity)) {
         errors.dates = "Guest count exceeds this room’s maximum occupancy.";
       }
-    }
-    if (step === 2) {
       if (!guest.firstName.trim()) errors.firstName = "First name is required.";
       if (!guest.lastName.trim()) errors.lastName = "Last name is required.";
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest.email)) errors.email = "Enter a valid email address.";
@@ -102,14 +112,25 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
       if (!guest.phone.trim()) errors.phone = "Phone number is required.";
       if (!guest.whatsapp.trim()) errors.whatsapp = "WhatsApp number is required.";
       if (!guest.country.trim()) errors.country = "Country is required.";
+      if (!request.arrivalTime) errors.arrivalTime = "Expected arrival time is required.";
     }
-    if (step === 3 && !request.arrivalTime) {
-      errors.arrivalTime = "Expected arrival time is required.";
-    }
-    if (step === 4) {
-      if (!payment) errors.payment = "Select Pay at Hotel or Pay Online.";
+    if (step === 2 && !payment) {
+      errors.payment = "Select Pay at Hotel or Pay Online.";
     }
     return errors;
+  };
+
+  const scrollToFirstError = (errors: Record<string, string>) => {
+    const firstKey = Object.keys(errors)[0];
+    if (!firstKey) return;
+    const root = formRef.current;
+    if (!root) return;
+    const el =
+      root.querySelector(`[${ERROR_FIELD_ATTR}="${firstKey}"]`) ??
+      root.querySelector('[role="alert"]');
+    if (el && "scrollIntoView" in el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   };
 
   const validationPassed = () => {
@@ -117,6 +138,7 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
     setFieldErrors(errors);
     if (Object.keys(errors).length) {
       setError(Object.values(errors)[0]);
+      scrollToFirstError(errors);
       return false;
     }
     setError(null);
@@ -125,7 +147,8 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
 
   const next = () => {
     if (!validationPassed()) return;
-    setStep((value) => Math.min(4, value + 1));
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -233,12 +256,25 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
   }
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-10">
-      <form onSubmit={handleSubmit} className="min-w-0 rounded-[30px] border border-[#d4bc8e]/30 bg-white/88 p-5 shadow-[0_25px_70px_rgba(20,55,40,0.11)] backdrop-blur-xl sm:p-8 lg:p-10">
-        <div className="grid grid-cols-4 gap-2">
-          {["Stay", "Guest", "Requests", "Payment"].map((label, index) => {
+    <div className="mx-auto grid max-w-7xl min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-10">
+      <form
+        ref={formRef}
+        onSubmit={handleSubmit}
+        className="min-w-0 rounded-[30px] border border-[#d4bc8e]/30 bg-white/88 p-5 shadow-[0_25px_70px_rgba(20,55,40,0.11)] backdrop-blur-xl sm:p-8 lg:pb-10 lg:p-10 max-lg:pb-28"
+      >
+        <div className="grid grid-cols-2 gap-2">
+          {["Details", "Payment"].map((label, index) => {
             const number = index + 1;
-            return <div key={label} className="text-center"><div className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold ${number <= step ? "bg-[#173a2b] text-white" : "bg-[#eee8dc] text-[#7b847e]"}`}>{number < step ? <Check className="h-4 w-4" /> : number}</div><p className="mt-2 text-[9px] font-semibold uppercase tracking-wider text-[#6f7973]">{label}</p></div>;
+            return (
+              <div key={label} className="text-center">
+                <div
+                  className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold ${number <= step ? "bg-[#173a2b] text-white" : "bg-[#eee8dc] text-[#7b847e]"}`}
+                >
+                  {number < step ? <Check className="h-4 w-4" /> : number}
+                </div>
+                <p className="mt-2 text-[9px] font-semibold uppercase tracking-wider text-[#6f7973]">{label}</p>
+              </div>
+            );
           })}
         </div>
 
@@ -246,56 +282,193 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -18 }} transition={{ duration: 0.25 }}>
             {step === 1 ? (
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#a47e3e]">Step 1</p><h2 className="mt-2 font-display text-3xl text-[#173a2b]">Choose your stay</h2>
-                <div className="mt-7 grid gap-4 sm:grid-cols-2">
-                  <label className="text-xs font-semibold text-[#4f5f56]">Check In<input required type="date" value={stay.checkIn} onChange={(e) => setStay({ ...stay, checkIn: e.target.value })} className={`mt-2 ${inputClass("dates")}`} /></label>
-                  <label className="text-xs font-semibold text-[#4f5f56]">Check Out<input required type="date" value={stay.checkOut} onChange={(e) => setStay({ ...stay, checkOut: e.target.value })} className={`mt-2 ${inputClass("dates")}`} /></label>
-                  <label className="text-xs font-semibold text-[#4f5f56]">Adults<input required type="number" min="1" max="8" value={stay.adults} onChange={(e) => setStay({ ...stay, adults: e.target.value })} className={`mt-2 ${fieldClass}`} /></label>
-                  <label className="text-xs font-semibold text-[#4f5f56]">Children<input type="number" min="0" max="6" value={stay.children} onChange={(e) => setStay({ ...stay, children: e.target.value })} className={`mt-2 ${fieldClass}`} /></label>
+              <div className="space-y-10">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#a47e3e]">Step 1</p>
+                  <h2 className="mt-2 font-display text-3xl text-[#173a2b]">Your stay & details</h2>
+                  <div className="mt-7 grid gap-4 sm:grid-cols-2">
+                    <label className="text-xs font-semibold text-[#4f5f56]">
+                      Check In
+                      <input
+                        required
+                        type="date"
+                        value={stay.checkIn}
+                        onChange={(e) => setStay({ ...stay, checkIn: e.target.value })}
+                        className={`mt-2 ${inputClass("dates")}`}
+                        {...{ [ERROR_FIELD_ATTR]: "dates" }}
+                      />
+                    </label>
+                    <label className="text-xs font-semibold text-[#4f5f56]">
+                      Check Out
+                      <input
+                        required
+                        type="date"
+                        value={stay.checkOut}
+                        onChange={(e) => setStay({ ...stay, checkOut: e.target.value })}
+                        className={`mt-2 ${inputClass("dates")}`}
+                      />
+                    </label>
+                    <label className="text-xs font-semibold text-[#4f5f56]">
+                      Adults
+                      <input
+                        required
+                        type="number"
+                        min="1"
+                        max="8"
+                        value={stay.adults}
+                        onChange={(e) => setStay({ ...stay, adults: e.target.value })}
+                        className={`mt-2 ${fieldClass}`}
+                      />
+                    </label>
+                    <label className="text-xs font-semibold text-[#4f5f56]">
+                      Children
+                      <input
+                        type="number"
+                        min="0"
+                        max="6"
+                        value={stay.children}
+                        onChange={(e) => setStay({ ...stay, children: e.target.value })}
+                        className={`mt-2 ${fieldClass}`}
+                      />
+                    </label>
+                  </div>
+                  <FieldError message={fieldErrors.dates} />
+                  <div className="mt-5 flex justify-between rounded-2xl border border-[#ae8645] bg-[#f5edde] p-4 text-sm text-[#173a2b]">
+                    <span>Breakfast Included · VAT inclusive</span>
+                    <strong>${room.price} / night</strong>
+                  </div>
                 </div>
-                <FieldError message={fieldErrors.dates} />
-                <div className="mt-5 flex justify-between rounded-2xl border border-[#ae8645] bg-[#f5edde] p-4 text-sm text-[#173a2b]">
-                  <span>Breakfast Included · VAT inclusive</span>
-                  <strong>${room.price} / night</strong>
+
+                <div>
+                  <h3 className="font-display text-xl text-[#173a2b]">Guest information</h3>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                    <label>
+                      <input
+                        required
+                        placeholder="First Name *"
+                        value={guest.firstName}
+                        onChange={(e) => setGuest({ ...guest, firstName: e.target.value })}
+                        className={inputClass("firstName")}
+                        {...{ [ERROR_FIELD_ATTR]: "firstName" }}
+                      />
+                      <FieldError message={fieldErrors.firstName} />
+                    </label>
+                    <label>
+                      <input
+                        required
+                        placeholder="Last Name *"
+                        value={guest.lastName}
+                        onChange={(e) => setGuest({ ...guest, lastName: e.target.value })}
+                        className={inputClass("lastName")}
+                        {...{ [ERROR_FIELD_ATTR]: "lastName" }}
+                      />
+                      <FieldError message={fieldErrors.lastName} />
+                    </label>
+                    <label>
+                      <input
+                        required
+                        type="email"
+                        placeholder="Email *"
+                        value={guest.email}
+                        onChange={(e) => setGuest({ ...guest, email: e.target.value })}
+                        className={inputClass("email")}
+                        {...{ [ERROR_FIELD_ATTR]: "email" }}
+                      />
+                      <FieldError message={fieldErrors.email} />
+                    </label>
+                    <div className="grid grid-cols-[95px_1fr] gap-2">
+                      <label>
+                        <input
+                          aria-label="Country code"
+                          placeholder="+977"
+                          value={guest.countryCode}
+                          onChange={(e) => setGuest({ ...guest, countryCode: e.target.value })}
+                          className={inputClass("countryCode")}
+                          {...{ [ERROR_FIELD_ATTR]: "countryCode" }}
+                        />
+                        <FieldError message={fieldErrors.countryCode} />
+                      </label>
+                      <label>
+                        <input
+                          required
+                          placeholder="Phone *"
+                          value={guest.phone}
+                          onChange={(e) => setGuest({ ...guest, phone: e.target.value })}
+                          className={inputClass("phone")}
+                          {...{ [ERROR_FIELD_ATTR]: "phone" }}
+                        />
+                        <FieldError message={fieldErrors.phone} />
+                      </label>
+                    </div>
+                    <label>
+                      <input
+                        required
+                        placeholder="WhatsApp *"
+                        value={guest.whatsapp}
+                        onChange={(e) => setGuest({ ...guest, whatsapp: e.target.value })}
+                        className={inputClass("whatsapp")}
+                        {...{ [ERROR_FIELD_ATTR]: "whatsapp" }}
+                      />
+                      <FieldError message={fieldErrors.whatsapp} />
+                    </label>
+                    <label>
+                      <input
+                        required
+                        placeholder="Country *"
+                        value={guest.country}
+                        onChange={(e) => setGuest({ ...guest, country: e.target.value })}
+                        className={inputClass("country")}
+                        {...{ [ERROR_FIELD_ATTR]: "country" }}
+                      />
+                      <FieldError message={fieldErrors.country} />
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-display text-xl text-[#173a2b]">Requests</h3>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                    <input
+                      placeholder="Promo Code"
+                      value={request.promoCode}
+                      onChange={(e) => setRequest({ ...request, promoCode: e.target.value })}
+                      className={fieldClass}
+                    />
+                    <label>
+                      <span className="mb-2 block text-xs font-semibold text-[#4f5f56]">Expected Arrival Time *</span>
+                      <input
+                        required
+                        type="time"
+                        aria-label="Arrival Time"
+                        value={request.arrivalTime}
+                        onChange={(e) => setRequest({ ...request, arrivalTime: e.target.value })}
+                        className={inputClass("arrivalTime")}
+                        {...{ [ERROR_FIELD_ATTR]: "arrivalTime" }}
+                      />
+                      <FieldError message={fieldErrors.arrivalTime} />
+                    </label>
+                    <input
+                      placeholder="Flight Number"
+                      value={request.flightNumber}
+                      onChange={(e) => setRequest({ ...request, flightNumber: e.target.value })}
+                      className={`${fieldClass} sm:col-span-2`}
+                    />
+                    <textarea
+                      rows={5}
+                      placeholder="Notes or special requests"
+                      value={request.notes}
+                      onChange={(e) => setRequest({ ...request, notes: e.target.value })}
+                      className={`${fieldClass} resize-none sm:col-span-2`}
+                    />
+                  </div>
                 </div>
               </div>
             ) : null}
             {step === 2 ? (
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#a47e3e]">Step 2</p><h2 className="mt-2 font-display text-3xl text-[#173a2b]">Guest details</h2>
-                <div className="mt-7 grid gap-4 sm:grid-cols-2">
-                  <label><input required placeholder="First Name *" value={guest.firstName} onChange={(e) => setGuest({ ...guest, firstName: e.target.value })} className={inputClass("firstName")} /><FieldError message={fieldErrors.firstName} /></label>
-                  <label><input required placeholder="Last Name *" value={guest.lastName} onChange={(e) => setGuest({ ...guest, lastName: e.target.value })} className={inputClass("lastName")} /><FieldError message={fieldErrors.lastName} /></label>
-                  <label><input required type="email" placeholder="Email *" value={guest.email} onChange={(e) => setGuest({ ...guest, email: e.target.value })} className={inputClass("email")} /><FieldError message={fieldErrors.email} /></label>
-                  <div className="grid grid-cols-[95px_1fr] gap-2">
-                    <label><input aria-label="Country code" placeholder="+977" value={guest.countryCode} onChange={(e) => setGuest({ ...guest, countryCode: e.target.value })} className={inputClass("countryCode")} /><FieldError message={fieldErrors.countryCode} /></label>
-                    <label><input required placeholder="Phone *" value={guest.phone} onChange={(e) => setGuest({ ...guest, phone: e.target.value })} className={inputClass("phone")} /><FieldError message={fieldErrors.phone} /></label>
-                  </div>
-                  <label><input required placeholder="WhatsApp *" value={guest.whatsapp} onChange={(e) => setGuest({ ...guest, whatsapp: e.target.value })} className={inputClass("whatsapp")} /><FieldError message={fieldErrors.whatsapp} /></label>
-                  <label><input required placeholder="Country *" value={guest.country} onChange={(e) => setGuest({ ...guest, country: e.target.value })} className={inputClass("country")} /><FieldError message={fieldErrors.country} /></label>
-                </div>
-              </div>
-            ) : null}
-            {step === 3 ? (
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#a47e3e]">Step 3</p><h2 className="mt-2 font-display text-3xl text-[#173a2b]">Special requests</h2>
-                <div className="mt-7 grid gap-4 sm:grid-cols-2">
-                  <input placeholder="Promo Code" value={request.promoCode} onChange={(e) => setRequest({ ...request, promoCode: e.target.value })} className={fieldClass} />
-                  <label>
-                    <span className="mb-2 block text-xs font-semibold text-[#4f5f56]">Expected Arrival Time *</span>
-                    <input required type="time" aria-label="Arrival Time" value={request.arrivalTime} onChange={(e) => setRequest({ ...request, arrivalTime: e.target.value })} className={inputClass("arrivalTime")} />
-                    <FieldError message={fieldErrors.arrivalTime} />
-                  </label>
-                  <input placeholder="Flight Number" value={request.flightNumber} onChange={(e) => setRequest({ ...request, flightNumber: e.target.value })} className={`${fieldClass} sm:col-span-2`} />
-                  <textarea rows={5} placeholder="Notes or special requests" value={request.notes} onChange={(e) => setRequest({ ...request, notes: e.target.value })} className={`${fieldClass} resize-none sm:col-span-2`} />
-                </div>
-              </div>
-            ) : null}
-            {step === 4 ? (
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#a47e3e]">Step 4</p><h2 className="mt-2 font-display text-3xl text-[#173a2b]">Payment option</h2>
-                <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#a47e3e]">Step 2</p>
+                <h2 className="mt-2 font-display text-3xl text-[#173a2b]">Payment option</h2>
+                <div className="mt-7 grid gap-3 sm:grid-cols-2" {...{ [ERROR_FIELD_ATTR]: "payment" }}>
                   {(["hotel", "online"] as const).map((option) => (
                     <button
                       key={option}
@@ -342,14 +515,76 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
           </motion.div>
         </AnimatePresence>
 
-        {error ? <p role="alert" className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
-        <div className="mt-8 flex items-center justify-between gap-3">
-          <Button type="button" variant="outline" disabled={step === 1 || submitting} onClick={() => { setError(null); setFieldErrors({}); setStep((value) => Math.max(1, value - 1)); }} className="gap-2"><ArrowLeft className="h-4 w-4" /> Back</Button>
-          {step < 4 ? <Button type="button" variant="gold" onClick={next} className="gap-2">Continue <ArrowRight className="h-4 w-4" /></Button> : <Button type="submit" variant="gold" disabled={submitting} className="gap-2">{submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{booking.submitLabel}<ArrowRight className="h-4 w-4" /></Button>}
+        {error ? (
+          <p role="alert" className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </p>
+        ) : null}
+
+        <div className="mt-8 hidden items-center justify-between gap-3 lg:flex">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={step === 1 || submitting}
+            onClick={() => {
+              setError(null);
+              setFieldErrors({});
+              setStep(1);
+            }}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back
+          </Button>
+          {step < 2 ? (
+            <Button type="button" variant="gold" onClick={next} className="gap-2">
+              Continue <ArrowRight className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button type="submit" variant="gold" disabled={submitting} className="gap-2">
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {booking.submitLabel}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </form>
 
-      <aside className="lg:sticky lg:top-24 lg:self-start">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d7c49d]/50 bg-white/95 p-4 shadow-[0_-8px_30px_rgba(20,55,40,0.12)] backdrop-blur-md lg:hidden">
+        <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={step === 1 || submitting}
+            onClick={() => {
+              setError(null);
+              setFieldErrors({});
+              setStep(1);
+            }}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back
+          </Button>
+          {step < 2 ? (
+            <Button type="button" variant="gold" onClick={next} className="min-w-[140px] gap-2">
+              Continue <ArrowRight className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="gold"
+              disabled={submitting}
+              className="min-w-[140px] gap-2"
+              onClick={() => formRef.current?.requestSubmit()}
+            >
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {booking.submitLabel}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
         <div className="rounded-[28px] bg-[#153a2a] p-7 text-white shadow-[0_24px_70px_rgba(17,52,36,0.20)]">
           <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#d9bb7c]">Stay summary</p>
           <h3 className="mt-3 font-display text-2xl">{room.name}</h3>
