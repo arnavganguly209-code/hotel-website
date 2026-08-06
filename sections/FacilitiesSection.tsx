@@ -16,22 +16,27 @@ interface FacilitiesSectionProps {
 
 type FacilityItem = SiteContent["facilities"][number];
 
-function RowDivider({ gold }: { gold: string }) {
+function LotusMark({ gold }: { gold: string }) {
   return (
-    <div className="flex items-center justify-center gap-3 py-2" aria-hidden>
-      <span
-        className="h-px max-w-[min(100%,28rem)] flex-1"
-        style={{ backgroundColor: `${gold}55` }}
+    <svg
+      width="28"
+      height="22"
+      viewBox="0 0 28 22"
+      fill="none"
+      aria-hidden
+      className="mx-auto"
+    >
+      <path
+        d="M14 20c-2.2-3.2-5.8-5.2-9.5-5.8 2.4-1.2 4.6-3.2 5.8-5.8C11.5 5.2 12.6 2.4 14 0c1.4 2.4 2.5 5.2 3.7 8.4 1.2 2.6 3.4 4.6 5.8 5.8C19.8 14.8 16.2 16.8 14 20Z"
+        fill={gold}
+        fillOpacity="0.92"
       />
-      <span
-        className="h-1.5 w-1.5 shrink-0 rotate-45"
-        style={{ backgroundColor: `${gold}BB` }}
+      <path
+        d="M14 20c1.5-2.8 1.8-5.6 1.2-8.2C14.8 9.2 14.3 6.8 14 4.5c-.3 2.3-.8 4.7-1.2 7.3C12.2 14.4 12.5 17.2 14 20Z"
+        fill={gold}
+        fillOpacity="0.55"
       />
-      <span
-        className="h-px max-w-[min(100%,28rem)] flex-1"
-        style={{ backgroundColor: `${gold}55` }}
-      />
-    </div>
+    </svg>
   );
 }
 
@@ -51,7 +56,7 @@ function AmenityRow({
   columnsClass: string;
 }) {
   return (
-    <div className={`grid gap-x-4 gap-y-10 sm:gap-x-6 ${columnsClass}`}>
+    <div className={`grid gap-x-3 gap-y-10 sm:gap-x-4 sm:gap-y-12 ${columnsClass}`}>
       {items.map((facility, i) => (
         <AmenityGlassCard
           key={facility.id}
@@ -66,20 +71,19 @@ function AmenityRow({
   );
 }
 
-/** Responsive amenity grid: 5×2 desktop, 3-3-2-2 tablet, 2-col mobile */
+/** Exceptional Services grid — cream cards, gold-rim green badges (reference match) */
 function AmenitiesIconGrid({
   cards,
   gold,
   heading,
-  body,
 }: {
   cards: FacilityItem[];
   gold: string;
   heading: string;
-  body: string;
 }) {
   const row1 = cards.slice(0, 5);
   const row2 = cards.slice(5, 10);
+  const descColor = "#6B5E4E";
 
   return (
     <motion.div
@@ -89,23 +93,44 @@ function AmenitiesIconGrid({
       viewport={{ once: true, margin: "-40px" }}
       className="mt-14 md:mt-16"
     >
-      {/* Desktop — 5 × 2 with mid-row gold divider */}
-      <div className="hidden space-y-2 xl:block">
+      {/* Section label — Exceptional Services */}
+      <div className="mb-10 text-center sm:mb-12">
+        <LotusMark gold={gold} />
+        <h3
+          className="mt-3 font-display text-[1.35rem] font-semibold uppercase tracking-[0.18em] sm:text-[1.55rem] md:text-[1.75rem]"
+          style={{ color: heading }}
+        >
+          Exceptional Services
+        </h3>
+        <p
+          className="mt-2 font-accent text-[14px] italic sm:text-[15px] md:text-[16px]"
+          style={{ color: gold }}
+        >
+          Crafted for Comfort. Designed for You.
+        </p>
+        <div className="mx-auto mt-4 flex max-w-xs items-center justify-center gap-3" aria-hidden>
+          <span className="h-px flex-1" style={{ backgroundColor: `${gold}77` }} />
+          <span className="h-1.5 w-1.5 rotate-45" style={{ backgroundColor: gold }} />
+          <span className="h-px flex-1" style={{ backgroundColor: `${gold}77` }} />
+        </div>
+      </div>
+
+      {/* Desktop — 5 × 2 */}
+      <div className="hidden space-y-10 xl:block">
         <AmenityRow
           items={row1}
           startIndex={0}
           gold={gold}
           heading={heading}
-          body={body}
+          body={descColor}
           columnsClass="grid-cols-5"
         />
-        <RowDivider gold={gold} />
         <AmenityRow
           items={row2}
           startIndex={5}
           gold={gold}
           heading={heading}
-          body={body}
+          body={descColor}
           columnsClass="grid-cols-5"
         />
       </div>
@@ -117,7 +142,7 @@ function AmenitiesIconGrid({
           startIndex={0}
           gold={gold}
           heading={heading}
-          body={body}
+          body={descColor}
           columnsClass="grid-cols-3"
         />
         <AmenityRow
@@ -125,7 +150,7 @@ function AmenitiesIconGrid({
           startIndex={3}
           gold={gold}
           heading={heading}
-          body={body}
+          body={descColor}
           columnsClass="grid-cols-3"
         />
         <AmenityRow
@@ -133,7 +158,7 @@ function AmenitiesIconGrid({
           startIndex={6}
           gold={gold}
           heading={heading}
-          body={body}
+          body={descColor}
           columnsClass="mx-auto max-w-md grid-cols-2"
         />
         <AmenityRow
@@ -141,25 +166,21 @@ function AmenitiesIconGrid({
           startIndex={8}
           gold={gold}
           heading={heading}
-          body={body}
+          body={descColor}
           columnsClass="mx-auto max-w-md grid-cols-2"
         />
       </div>
 
       {/* Mobile — 2 columns */}
-      <div className="space-y-10 md:hidden">
+      <div className="md:hidden">
         <AmenityRow
           items={cards}
           startIndex={0}
           gold={gold}
           heading={heading}
-          body={body}
+          body={descColor}
           columnsClass="grid-cols-2"
         />
-      </div>
-
-      <div className="mt-12 flex justify-center" aria-hidden>
-        <span className="h-1.5 w-1.5 rotate-45" style={{ backgroundColor: `${gold}AA` }} />
       </div>
     </motion.div>
   );
@@ -329,7 +350,6 @@ export function FacilitiesSection({ facilities, section }: FacilitiesSectionProp
           cards={cards}
           gold={gold}
           heading={heading}
-          body={body}
         />
       </div>
     </section>
