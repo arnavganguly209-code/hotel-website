@@ -74,10 +74,7 @@ export function Header({ header, hotelName }: HeaderProps) {
     "left-0 right-0 top-0 z-50 will-change-[backdrop-filter,box-shadow]",
     "border-b border-[rgba(212,176,106,0.32)]",
     "backdrop-blur-[24px]",
-    "transition-[box-shadow,background-color,border-color] duration-500 ease-out",
-    useTransparent
-      ? "shadow-[0_2px_14px_rgba(8,20,14,0.18)]"
-      : "shadow-[0_8px_28px_rgba(8,20,14,0.28)]"
+    "transition-[box-shadow,background-color,border-color] duration-500 ease-out"
   );
 
   return (
