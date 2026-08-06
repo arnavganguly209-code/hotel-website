@@ -63,8 +63,8 @@ export function Logo({
         <span
           className={cn(
             "text-center font-display text-[13px] font-extrabold leading-none tracking-[0.14em] min-[360px]:tracking-[0.18em] sm:text-[15px] sm:tracking-[0.22em] md:text-[18px] md:tracking-[0.24em] lg:text-[19px]",
-            "text-[#C5A059] transition-colors duration-300 group-hover:text-[#D4AF37]",
-            variant === "light" && "text-[#E8C878] group-hover:text-[#F0D490]"
+            "text-[#111111] transition-colors duration-300 group-hover:text-[#000000]",
+            variant === "light" && "text-white group-hover:text-[#F5F0E6]"
           )}
         >
           {displayText}

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/Logo";
 import { routes } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
+import { HEADER_CREAM_GREEN } from "@/lib/header-theme";
 import { useScrolled } from "@/hooks/useScrolled";
 import type { SiteContent } from "@/lib/cms/types";
 
@@ -29,7 +30,7 @@ function HamburgerIcon({ open }: { open: boolean }) {
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="block h-px w-full origin-center bg-current"
+          className="block h-[1.5px] w-full origin-center rounded-full bg-[#8B6914]"
           animate={
             open
               ? i === 0
@@ -66,10 +67,8 @@ export function Header({ header, hotelName }: HeaderProps) {
 
   const phoneDisplay = header.phone || "+977 014701536";
   const phoneHref = `tel:${phoneDisplay.replace(/[^\d+]/g, "")}`;
-  /* ~20% shorter than CMS height (default 72 → 58) */
   const barHeight = Math.max(52, Math.round((header.height || 72) * 0.8));
 
-  /* Visible cream-green — not white glass */
   const headerStyle = cn(
     header.sticky !== false && "fixed",
     "left-0 right-0 top-0 z-50 will-change-[backdrop-filter,box-shadow]",
@@ -83,29 +82,21 @@ export function Header({ header, hotelName }: HeaderProps) {
 
   return (
     <>
-      <header
-        className={headerStyle}
-        style={{
-          minHeight: barHeight,
-          backgroundColor: "rgba(214, 232, 210, 0.96)",
-          backgroundImage:
-            "linear-gradient(90deg, rgba(200, 222, 194, 0.98) 0%, rgba(222, 236, 214, 0.97) 50%, rgba(200, 222, 194, 0.98) 100%)",
-        }}
-      >
+      <header className={headerStyle} style={{ minHeight: barHeight, ...HEADER_CREAM_GREEN }}>
         <div
           className="mx-auto grid max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-3 min-[375px]:gap-3 min-[375px]:px-4 sm:gap-4 sm:px-5 lg:grid-cols-[1fr_auto_1fr] lg:px-8"
           style={{ minHeight: barHeight }}
         >
           <button
             onClick={() => setMenuOpen(true)}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[rgba(24,77,61,0.12)] bg-white/55 text-luxury-green-dark backdrop-blur-sm transition-all active:scale-95 hover:border-luxury-gold/30 hover:bg-white/70 hover:shadow-luxury sm:h-10 sm:w-10"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#8B6914]/25 bg-white/45 transition-all active:scale-95 hover:border-[#8B6914]/50 hover:bg-white/65 hover:shadow-luxury sm:h-10 sm:w-10"
             aria-label="Open menu"
           >
             <HamburgerIcon open={false} />
           </button>
 
           <Logo
-            variant={useTransparent ? "dark" : "dark"}
+            variant="dark"
             name={hotelName}
             headerText={header.headerText}
             useLogo={header.useLogo}
@@ -119,14 +110,22 @@ export function Header({ header, hotelName }: HeaderProps) {
 
           <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
             {header.showPhone && (
-              <a
+              <motion.a
                 href={phoneHref}
-                className="hidden items-center gap-2 rounded-full bg-[#173a2b]/88 px-3.5 py-1.5 text-[13px] font-bold tracking-[0.04em] text-white shadow-[0_2px_10px_rgba(15,40,30,0.18)] transition-opacity hover:opacity-90 md:flex lg:px-4 lg:text-[15px]"
+                className="group/phone relative hidden items-center gap-2 rounded-full border border-[#3d5c45]/20 bg-[rgba(235,242,228,0.75)] px-3.5 py-1.5 text-[13px] font-bold tracking-[0.04em] text-[#3d5c45] shadow-[0_2px_10px_rgba(45,70,50,0.08)] md:flex lg:px-4 lg:text-[15px]"
                 aria-label={`Call ${phoneDisplay}`}
+                initial={{ opacity: 0.92, x: 6 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                whileHover={{ x: 3, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <Phone className="h-3.5 w-3.5 shrink-0 text-white" aria-hidden />
+                <Phone
+                  className="h-3.5 w-3.5 shrink-0 text-[#3d5c45] transition-transform duration-500 group-hover/phone:rotate-12"
+                  aria-hidden
+                />
                 <span className="hidden whitespace-nowrap lg:inline">{phoneDisplay}</span>
-              </a>
+              </motion.a>
             )}
             <Button
               size="sm"
