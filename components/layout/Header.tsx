@@ -66,30 +66,32 @@ export function Header({ header, hotelName }: HeaderProps) {
 
   const phoneDisplay = header.phone || "+977 014701536";
   const phoneHref = `tel:${phoneDisplay.replace(/[^\d+]/g, "")}`;
+  /* ~20% shorter than CMS height (default 72 → 58) */
+  const barHeight = Math.max(52, Math.round((header.height || 72) * 0.8));
 
-  /* Cream-green glass — ~48% opacity, soft blur, luxury lobby feel */
+  /* Light cream-green glass — opaque enough to stay cream, not muddy from hero */
   const headerStyle = cn(
     header.sticky !== false && "fixed",
     "left-0 right-0 top-0 z-50 will-change-[backdrop-filter,box-shadow]",
-    "border-b border-[rgba(197,160,89,0.22)]",
-    "bg-[rgba(236,242,232,0.48)] backdrop-blur-[18px] backdrop-saturate-150",
-    "supports-[backdrop-filter]:bg-[rgba(236,242,232,0.45)]",
+    "border-b border-[rgba(197,160,89,0.18)]",
+    "bg-[rgba(245,248,238,0.92)] backdrop-blur-[14px]",
+    "supports-[backdrop-filter]:bg-[rgba(242,247,234,0.88)]",
     "transition-[box-shadow,background-color,border-color] duration-500 ease-out",
     useTransparent
-      ? "shadow-[0_4px_20px_rgba(24,60,45,0.04)]"
-      : "shadow-[0_8px_28px_rgba(24,60,45,0.10)]"
+      ? "shadow-[0_2px_14px_rgba(24,60,45,0.05)]"
+      : "shadow-[0_6px_22px_rgba(24,60,45,0.08)]"
   );
 
   return (
     <>
-      <header className={headerStyle} style={{ minHeight: header.height }}>
+      <header className={headerStyle} style={{ minHeight: barHeight }}>
         <div
           className="mx-auto grid max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-3 min-[375px]:gap-3 min-[375px]:px-4 sm:gap-4 sm:px-5 lg:grid-cols-[1fr_auto_1fr] lg:px-8"
-          style={{ minHeight: header.height }}
+          style={{ minHeight: barHeight }}
         >
           <button
             onClick={() => setMenuOpen(true)}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[rgba(24,77,61,0.10)] bg-white/40 text-luxury-green-dark backdrop-blur-sm transition-all active:scale-95 hover:border-luxury-gold/30 hover:bg-white/55 hover:shadow-luxury sm:h-12 sm:w-12"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[rgba(24,77,61,0.12)] bg-white/55 text-luxury-green-dark backdrop-blur-sm transition-all active:scale-95 hover:border-luxury-gold/30 hover:bg-white/70 hover:shadow-luxury sm:h-10 sm:w-10"
             aria-label="Open menu"
           >
             <HamburgerIcon open={false} />
@@ -112,16 +114,16 @@ export function Header({ header, hotelName }: HeaderProps) {
             {header.showPhone && (
               <a
                 href={phoneHref}
-                className="hidden items-center gap-2 text-[13px] font-semibold tracking-[0.04em] text-[#1a3d30] transition-colors hover:text-[#9a7a3a] md:flex lg:text-[15px]"
+                className="hidden items-center gap-2 rounded-full bg-[#173a2b]/88 px-3.5 py-1.5 text-[13px] font-bold tracking-[0.04em] text-white shadow-[0_2px_10px_rgba(15,40,30,0.18)] transition-opacity hover:opacity-90 md:flex lg:px-4 lg:text-[15px]"
                 aria-label={`Call ${phoneDisplay}`}
               >
-                <Phone className="h-3.5 w-3.5 shrink-0 text-[#b8934a]" aria-hidden />
+                <Phone className="h-3.5 w-3.5 shrink-0 text-white" aria-hidden />
                 <span className="hidden whitespace-nowrap lg:inline">{phoneDisplay}</span>
               </a>
             )}
             <Button
               size="sm"
-              className="hidden rounded-full border-0 bg-gradient-to-r from-[#C89A3D] to-[#E9A546] px-5 uppercase tracking-[0.16em] text-white shadow-[0_6px_24px_rgba(200,154,61,0.35)] hover:opacity-95 sm:inline-flex"
+              className="hidden h-9 rounded-full border-0 bg-gradient-to-r from-[#C89A3D] to-[#E9A546] px-4 uppercase tracking-[0.16em] text-white shadow-[0_6px_24px_rgba(200,154,61,0.35)] hover:opacity-95 sm:inline-flex"
               asChild
             >
               <Link href={routes.rooms}>{header.bookButtonText}</Link>
