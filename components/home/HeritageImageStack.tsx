@@ -114,7 +114,7 @@ export function HeritageImageStack({
 
       {/* Circular detail — overlaps top-left, inside margin of frame */}
       {circularSrc ? (
-        <div className="absolute left-3 top-3 z-20 h-[4.75rem] w-[4.75rem] sm:left-4 sm:top-4 sm:h-[5.75rem] sm:w-[5.75rem] lg:left-5 lg:top-5 lg:h-[6.25rem] lg:w-[6.25rem]">
+        <div className="absolute left-2.5 top-2.5 z-20 h-[6.5rem] w-[6.5rem] sm:left-3.5 sm:top-3.5 sm:h-[7.75rem] sm:w-[7.75rem] lg:left-4 lg:top-4 lg:h-[9rem] lg:w-[9rem]">
           <div
             className="h-full w-full overflow-hidden rounded-full bg-[#F9F6EF] p-[4px] shadow-[0_12px_28px_rgba(15,42,34,0.2)]"
             style={{ border: `1.5px solid ${goldColor}` }}
@@ -126,7 +126,7 @@ export function HeritageImageStack({
                 fill
                 objectFit="cover"
                 className="object-cover object-center"
-                sizes="120px"
+                sizes="160px"
               />
             </div>
           </div>

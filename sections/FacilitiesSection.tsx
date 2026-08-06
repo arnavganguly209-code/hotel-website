@@ -205,119 +205,124 @@ export function FacilitiesSection({ facilities, section }: FacilitiesSectionProp
       </div>
 
       <div className="relative mx-auto max-w-[1200px] px-4 py-8 sm:px-6 md:py-10 lg:px-8 lg:py-12">
-        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14 xl:gap-16">
-          {/* Left — luxury image */}
-          <motion.div
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.9, ease: luxuryEase }}
-            className="relative"
-          >
-            <div
-              className="relative aspect-[4/3] overflow-hidden rounded-[24px] md:rounded-[28px]"
-              style={{
-                border: `1px solid ${gold}88`,
-                boxShadow: "0 28px 60px rgba(15, 42, 34, 0.16)",
-              }}
-            >
-              {imageSrc ? (
-                <SafeImage
-                  src={imageSrc}
-                  alt={imageAlt}
-                  fill
-                  objectFit="cover"
-                  className="object-cover object-center"
-                  sizes="(max-width: 1024px) 100vw, 560px"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-[#EFE8DA]">
-                  <p
-                    className="font-display text-xs uppercase tracking-[0.28em]"
-                    style={{ color: `${gold}99` }}
-                  >
-                    Amenities
-                  </p>
-                </div>
-              )}
-            </div>
-          </motion.div>
-
-          {/* Right — copy */}
-          <motion.div
-            variants={luxuryStagger}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            className="flex min-w-0 flex-col"
-          >
+        {/* Shared frame: image top/bottom flush with copy + CTA */}
+        <div
+          className="rounded-[22px] p-4 sm:rounded-[26px] sm:p-5 md:p-6 lg:p-7"
+          style={{
+            backgroundColor: "#FBF8F1",
+            border: `1px solid ${gold}55`,
+            boxShadow: "0 18px 44px rgba(15, 42, 34, 0.08)",
+          }}
+        >
+          <div className="grid items-start gap-6 lg:grid-cols-2 lg:items-stretch lg:gap-8 xl:gap-10">
+            {/* Left — stretches to right column height */}
             <motion.div
-              variants={luxuryFadeUp}
-              className="mb-5 flex items-center gap-3"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.8, ease: luxuryEase }}
+              className="relative h-auto min-h-[240px] w-full lg:h-full lg:min-h-[420px]"
             >
-              <p
-                className="font-display text-[11px] font-semibold uppercase"
-                style={{ color: gold, letterSpacing: "0.32em" }}
+              <div
+                className="relative aspect-[4/3] overflow-hidden rounded-[18px] sm:rounded-[20px] lg:absolute lg:inset-0 lg:aspect-auto lg:h-full"
+                style={{
+                  border: `1px solid ${gold}88`,
+                  boxShadow: "0 18px 40px rgba(15, 42, 34, 0.12)",
+                }}
               >
-                {section.eyebrow}
-              </p>
-              <span
-                className="h-px max-w-[5rem] flex-1"
-                style={{ backgroundColor: `${gold}88` }}
-              />
-              <span
-                className="h-1 w-1 rotate-45"
-                style={{ backgroundColor: gold }}
-                aria-hidden
-              />
+                {imageSrc ? (
+                  <SafeImage
+                    src={imageSrc}
+                    alt={imageAlt}
+                    fill
+                    objectFit="cover"
+                    className="object-cover object-center"
+                    sizes="(max-width: 1024px) 100vw, 560px"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-[#EFE8DA]">
+                    <p
+                      className="font-display text-xs uppercase tracking-[0.28em]"
+                      style={{ color: `${gold}99` }}
+                    >
+                      Amenities
+                    </p>
+                  </div>
+                )}
+              </div>
             </motion.div>
 
-            <motion.h2
-              variants={luxuryFadeUp}
-              className="font-display text-[1.85rem] font-semibold uppercase leading-[1.2] tracking-[0.03em] sm:text-3xl md:text-[2.35rem] lg:text-[2.5rem]"
-              style={{ color: heading }}
-            >
-              {section.title}
-            </motion.h2>
-
+            {/* Right — defines frame height; CTA sits at bottom edge */}
             <motion.div
-              variants={luxuryFadeUp}
-              className="my-5 flex items-center gap-3"
-              aria-hidden
+              variants={luxuryStagger}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-60px" }}
+              className="flex min-w-0 flex-col"
             >
-              <span className="h-px w-10" style={{ backgroundColor: `${gold}77` }} />
-              <span className="h-1.5 w-1.5 rotate-45" style={{ backgroundColor: gold }} />
-              <span className="h-px w-10" style={{ backgroundColor: `${gold}77` }} />
-            </motion.div>
-
-            <motion.div
-              variants={luxuryFadeUp}
-              className="space-y-4 font-body text-[15px] leading-[1.85] md:text-base"
-              style={{ color: body }}
-            >
-              {paragraphs.map((para, i) => (
-                <p key={i}>{para}</p>
-              ))}
-            </motion.div>
-
-            {section.ctaVisible !== false && section.ctaText ? (
-              <motion.div variants={luxuryFadeUp} className="mt-8">
-                <Link
-                  href={section.ctaHref || "/about"}
-                  prefetch
-                  className="inline-flex items-center gap-2.5 rounded-full px-8 py-3.5 font-body text-[11px] font-semibold uppercase tracking-[0.18em] transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(6,44,36,0.28)]"
-                  style={{
-                    backgroundColor: heading,
-                    color: gold,
-                    boxShadow: "0 10px 28px rgba(6, 44, 36, 0.22)",
-                  }}
+              <motion.div
+                variants={luxuryFadeUp}
+                className="mb-4 flex items-center justify-center gap-3 lg:justify-start"
+              >
+                <span className="h-px w-8" style={{ backgroundColor: `${gold}88` }} aria-hidden />
+                <p
+                  className="font-display text-[10px] font-semibold uppercase sm:text-[11px]"
+                  style={{ color: gold, letterSpacing: "0.28em" }}
                 >
-                  {section.ctaText}
-                  <ArrowRight className="h-4 w-4" strokeWidth={1.6} />
-                </Link>
+                  {section.eyebrow}
+                </p>
+                <span className="h-1 w-1 rotate-45" style={{ backgroundColor: gold }} aria-hidden />
+                <span className="h-px w-8" style={{ backgroundColor: `${gold}88` }} aria-hidden />
               </motion.div>
-            ) : null}
-          </motion.div>
+
+              <motion.h2
+                variants={luxuryFadeUp}
+                className="text-center font-display text-[1.65rem] font-semibold uppercase leading-[1.2] tracking-[0.03em] sm:text-[1.9rem] md:text-[2.15rem] lg:text-left lg:text-[2.25rem]"
+                style={{ color: heading }}
+              >
+                {section.title}
+              </motion.h2>
+
+              <motion.div
+                variants={luxuryFadeUp}
+                className="my-4 flex items-center justify-center gap-3 lg:justify-start"
+                aria-hidden
+              >
+                <span className="h-px w-10" style={{ backgroundColor: `${gold}77` }} />
+                <span className="h-1.5 w-1.5 rotate-45" style={{ backgroundColor: gold }} />
+                <span className="h-px w-10" style={{ backgroundColor: `${gold}77` }} />
+              </motion.div>
+
+              <motion.div
+                variants={luxuryFadeUp}
+                className="space-y-3.5 font-body text-[14px] leading-[1.75] md:text-[15px]"
+                style={{ color: body }}
+              >
+                {paragraphs.map((para, i) => (
+                  <p key={i}>{para}</p>
+                ))}
+              </motion.div>
+
+              {section.ctaVisible !== false && section.ctaText ? (
+                <motion.div variants={luxuryFadeUp} className="mt-6 flex justify-center lg:mt-auto lg:justify-start lg:pt-6">
+                  <Link
+                    href={section.ctaHref || "/about"}
+                    prefetch
+                    className="inline-flex min-h-11 items-center gap-2.5 rounded-xl px-7 py-3 font-body text-[11px] font-semibold uppercase tracking-[0.16em] transition-all duration-500 hover:-translate-y-0.5"
+                    style={{
+                      backgroundColor: heading,
+                      color: gold,
+                      border: `1px solid ${gold}66`,
+                      boxShadow: "0 10px 26px rgba(6, 44, 36, 0.22)",
+                    }}
+                  >
+                    {section.ctaText}
+                    <ArrowRight className="h-4 w-4" strokeWidth={1.6} />
+                  </Link>
+                </motion.div>
+              ) : null}
+            </motion.div>
+          </div>
         </div>
 
         <AmenitiesIconGrid
