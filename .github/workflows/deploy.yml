@@ -13,8 +13,11 @@ on:
   workflow_dispatch:
 
 concurrency:
+  # Only the newest main deploy should run. Stale queued/in-progress
+  # SSH deploys were stacking (~15–22m) and showing as failed/cancelled in Actions
+  # even when production was already updated via a later manual/SSH deploy.
   group: production-vps-deploy
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -54,9 +57,10 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          timeout: 90s
+          timeout: 120s
           command_timeout: 40m
           request_pty: true
+          script_stop: true
           envs: GITHUB_SHA
           script: |
             set -e
@@ -91,7 +95,12 @@ jobs:
             git fetch origin
             echo "fetch ok"
 
-            git reset --hard origin/main
+            # Prefer the exact commit that triggered this workflow; fall back to origin/main
+            if [ -n "${GITHUB_SHA:-}" ] && git cat-file -e "${GITHUB_SHA}^{commit}" 2>/dev/null; then
+              git reset --hard "$GITHUB_SHA"
+            else
+              git reset --hard origin/main
+            fi
             echo "reset ok HEAD=$(git rev-parse --short HEAD)"
 
             mkdir -p public/uploads/general
