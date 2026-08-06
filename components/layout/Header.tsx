@@ -64,30 +64,32 @@ export function Header({ header, hotelName }: HeaderProps) {
     setMenuOpen(false);
   }, [pathname]);
 
+  const phoneDisplay = header.phone || "+977 014701536";
+  const phoneHref = `tel:${phoneDisplay.replace(/[^\d+]/g, "")}`;
+
+  /* Cream-green glass — ~48% opacity, soft blur, luxury lobby feel */
   const headerStyle = cn(
     header.sticky !== false && "fixed",
-    "left-0 right-0 top-0 z-50 transition-all duration-700",
+    "left-0 right-0 top-0 z-50 will-change-[backdrop-filter,box-shadow]",
+    "border-b border-[rgba(197,160,89,0.22)]",
+    "bg-[rgba(236,242,232,0.48)] backdrop-blur-[18px] backdrop-saturate-150",
+    "supports-[backdrop-filter]:bg-[rgba(236,242,232,0.45)]",
+    "transition-[box-shadow,background-color,border-color] duration-500 ease-out",
     useTransparent
-      ? "border-b border-[#184D3D]/10 bg-gradient-to-r from-[#F6F3E7] via-[#F3F2E7] to-[#EFF0E5] backdrop-blur-xl"
-      : "border-b border-[#C89A3D]/10 bg-gradient-to-r from-[#F6F3E7]/95 via-[#F3F2E7]/95 to-[#EFF0E5]/95 shadow-[0_4px_30px_rgba(24,77,61,0.06)] backdrop-blur-xl"
+      ? "shadow-[0_4px_20px_rgba(24,60,45,0.04)]"
+      : "shadow-[0_8px_28px_rgba(24,60,45,0.10)]"
   );
 
   return (
     <>
-      <header
-        className={headerStyle}
-        style={{
-          minHeight: header.height,
-          backgroundColor: useTransparent ? undefined : header.backgroundColor,
-        }}
-      >
+      <header className={headerStyle} style={{ minHeight: header.height }}>
         <div
-          className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-5 lg:px-8"
+          className="mx-auto grid max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-3 min-[375px]:gap-3 min-[375px]:px-4 sm:gap-4 sm:px-5 lg:grid-cols-[1fr_auto_1fr] lg:px-8"
           style={{ minHeight: header.height }}
         >
           <button
             onClick={() => setMenuOpen(true)}
-            className="flex h-12 w-12 items-center justify-center rounded-full border border-luxury-green/8 bg-white/50 text-luxury-green-dark backdrop-blur-sm transition-all active:scale-95 hover:border-luxury-gold/30 hover:shadow-luxury"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[rgba(24,77,61,0.10)] bg-white/40 text-luxury-green-dark backdrop-blur-sm transition-all active:scale-95 hover:border-luxury-gold/30 hover:bg-white/55 hover:shadow-luxury sm:h-12 sm:w-12"
             aria-label="Open menu"
           >
             <HamburgerIcon open={false} />
@@ -103,17 +105,18 @@ export function Header({ header, hotelName }: HeaderProps) {
             logoSrc={header.logoSrc}
             logoSize={header.logoSize}
             centered
-            className="justify-self-center"
+            className="min-w-0 justify-self-center px-1"
           />
 
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
             {header.showPhone && (
               <a
-                href={`tel:${header.phone}`}
-                className="hidden items-center gap-2 text-xs text-luxury-muted transition-colors hover:text-luxury-gold md:flex"
+                href={phoneHref}
+                className="hidden items-center gap-2 text-[13px] font-semibold tracking-[0.04em] text-[#1a3d30] transition-colors hover:text-[#9a7a3a] md:flex lg:text-[15px]"
+                aria-label={`Call ${phoneDisplay}`}
               >
-                <Phone className="h-3.5 w-3.5" />
-                <span className="hidden lg:inline">{header.phone}</span>
+                <Phone className="h-3.5 w-3.5 shrink-0 text-[#b8934a]" aria-hidden />
+                <span className="hidden whitespace-nowrap lg:inline">{phoneDisplay}</span>
               </a>
             )}
             <Button

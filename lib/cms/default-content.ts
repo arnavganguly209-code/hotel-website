@@ -41,7 +41,7 @@ export const defaultContent: SiteContent = {
     backgroundColor: "#FDFBF7",
     textColor: "#183426",
     showStars: false,
-    phone: "+977-1-4412345",
+    phone: "+977 014701536",
     showPhone: true,
     bookButtonText: "Book Now",
     menuItems: [...DRAWER_NAV_ITEMS],

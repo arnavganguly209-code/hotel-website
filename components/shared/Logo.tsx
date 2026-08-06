@@ -62,10 +62,11 @@ export function Logo({
       ) : showName ? (
         <span
           className={cn(
-            "text-center font-display text-[10px] font-medium leading-relaxed tracking-[0.2em] transition-colors sm:text-xs md:text-sm",
-            variant === "light"
-              ? "text-white group-hover:text-luxury-champagne"
-              : "text-luxury-green-dark group-hover:text-luxury-gold"
+            "text-center font-display text-[13px] font-extrabold leading-none tracking-[0.14em] min-[360px]:tracking-[0.18em] sm:text-[15px] sm:tracking-[0.22em] md:text-[18px] md:tracking-[0.24em] lg:text-[19px]",
+            "bg-gradient-to-b from-[#C5A059] via-[#D8BC78] to-[#F2EADB] bg-clip-text text-transparent",
+            "[-webkit-text-fill-color:transparent]",
+            "transition-[filter,opacity] duration-500 group-hover:brightness-110",
+            variant === "light" && "from-[#E0C078] via-[#EFD9A0] to-[#FFF8EC]"
           )}
         >
           {displayText}

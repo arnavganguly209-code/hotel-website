@@ -98,10 +98,10 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
 
         <div className="border-t border-luxury-green/10 bg-gradient-to-t from-luxury-champagne/10 to-transparent p-6">
           <a
-            href={`tel:${header.phone}`}
-            className="mb-4 flex items-center justify-center gap-2 text-sm text-luxury-muted hover:text-luxury-gold"
+            href={`tel:${(header.phone || "").replace(/[^\d+]/g, "")}`}
+            className="mb-4 flex items-center justify-center gap-2 text-[15px] font-semibold tracking-[0.04em] text-[#1a3d30] hover:text-[#9a7a3a]"
           >
-            <Phone className="h-4 w-4" />
+            <Phone className="h-4 w-4 text-[#b8934a]" aria-hidden />
             {header.phone}
           </a>
           <Button variant="gold" size="lg" className="w-full rounded-xl uppercase tracking-wider" asChild>

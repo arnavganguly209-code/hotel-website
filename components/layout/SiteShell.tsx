@@ -34,6 +34,7 @@ export function SiteShell({ children, content }: SiteShellProps) {
   const header = {
     ...content.header,
     headerText: stripSpaBrand(content.header.headerText || "HOTEL THAMEL PARK"),
+    phone: "+977 014701536",
   };
 
   return (
