@@ -61,7 +61,7 @@ export const defaultContent: SiteContent = {
     gallery: { enabled: true, order: 7, eyebrow: "Visual Journey", title: "Moments of Elegance", description: "Discover our world of luxury." },
     testimonials: { enabled: true, order: 8, eyebrow: "Guest Voices", title: "Testimonials", description: "Stories from our distinguished guests." },
     articles: { enabled: true, order: 8.5, eyebrow: "LATEST ARTICLES", title: "Travel Journal & Hotel Guide", description: "Explore expert travel tips, luxury hotel experiences, Kathmandu guides, hidden gems and hospitality insights carefully curated for our guests." },
-    cta: { enabled: true, order: 9, eyebrow: "Reservations", title: "Begin Your Journey", description: "Our concierge awaits your arrival.", ctaText: "Contact Us", ctaHref: routes.contact },
+    cta: { enabled: true, order: 9, eyebrow: "Personalized Reservations", title: "Every Exceptional Stay Starts With a Conversation", description: "Connect with our hospitality specialists to plan a stay tailored entirely to your preferences.", ctaText: "Contact Concierge", ctaHref: routes.contact },
   },
   overview: {
     eyebrow: "Welcome",

@@ -4,6 +4,8 @@ import { useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, CreditCard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ArrivalTimeSelect } from "@/components/booking/ArrivalTimeSelect";
+import { CountryAutocomplete } from "@/components/booking/CountryAutocomplete";
 import { VatInclusivePriceSummary } from "@/components/booking/VatInclusivePriceSummary";
 import {
   bookingDatesAreValid,
@@ -112,7 +114,7 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
       if (!guest.phone.trim()) errors.phone = "Phone number is required.";
       if (!guest.whatsapp.trim()) errors.whatsapp = "WhatsApp number is required.";
       if (!guest.country.trim()) errors.country = "Country is required.";
-      if (!request.arrivalTime) errors.arrivalTime = "Expected arrival time is required.";
+      // Arrival time is optional; if set, only afternoon/evening (12:00+) is offered in UI
     }
     if (step === 2 && !payment) {
       errors.payment = "Select Pay at Hotel or Pay Online.";
@@ -412,13 +414,17 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
                       <FieldError message={fieldErrors.whatsapp} />
                     </label>
                     <label>
-                      <input
+                      <CountryAutocomplete
                         required
-                        placeholder="Country *"
+                        placeholder="Country * (type to search)"
                         value={guest.country}
-                        onChange={(e) => setGuest({ ...guest, country: e.target.value })}
+                        onChange={(country) => {
+                          setGuest({ ...guest, country });
+                          setFieldErrors((current) => ({ ...current, country: "" }));
+                        }}
                         className={inputClass("country")}
-                        {...{ [ERROR_FIELD_ATTR]: "country" }}
+                        errorFieldAttr={ERROR_FIELD_ATTR}
+                        errorFieldName="country"
                       />
                       <FieldError message={fieldErrors.country} />
                     </label>
@@ -434,19 +440,19 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
                       onChange={(e) => setRequest({ ...request, promoCode: e.target.value })}
                       className={fieldClass}
                     />
-                    <label>
-                      <span className="mb-2 block text-xs font-semibold text-[#4f5f56]">Expected Arrival Time *</span>
-                      <input
-                        required
-                        type="time"
-                        aria-label="Arrival Time"
+                    <div>
+                      <ArrivalTimeSelect
                         value={request.arrivalTime}
-                        onChange={(e) => setRequest({ ...request, arrivalTime: e.target.value })}
+                        onChange={(arrivalTime) => {
+                          setRequest({ ...request, arrivalTime });
+                          setFieldErrors((current) => ({ ...current, arrivalTime: "" }));
+                        }}
                         className={inputClass("arrivalTime")}
-                        {...{ [ERROR_FIELD_ATTR]: "arrivalTime" }}
+                        errorFieldAttr={ERROR_FIELD_ATTR}
+                        errorFieldName="arrivalTime"
                       />
                       <FieldError message={fieldErrors.arrivalTime} />
-                    </label>
+                    </div>
                     <input
                       placeholder="Flight Number"
                       value={request.flightNumber}
