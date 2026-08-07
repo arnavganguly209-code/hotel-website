@@ -204,8 +204,8 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
             showText: false,
             hideText: true,
             logoSrc: defaultContent.header.logoSrc,
-            logoSize: 220,
-            height: 64,
+            logoSize: 308,
+            height: 80,
             transparent: false,
             showBookButton: true,
             showPrimaryNav: true,
@@ -214,14 +214,28 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
             textColor: defaultContent.header.textColor,
           }
         : {};
+      const logoBump =
+        !legacyTextHeader &&
+        (headerPartial.logoSize == null || headerPartial.logoSize <= 250)
+          ? {
+              logoSize: 308,
+              height: Math.max(headerPartial.height ?? 0, 80),
+            }
+          : {};
+      const primaryNavItems = definedArray(
+        headerPartial.primaryNavItems,
+        defaultContent.header.primaryNavItems
+      ).map((item) =>
+        /overview/i.test(item.label) || item.href === "/#overview" || item.href === "/"
+          ? { ...item, href: "/#hero" }
+          : item
+      );
       return {
         ...defaultContent.header,
         ...headerPartial,
         ...slimDefaults,
-        primaryNavItems: definedArray(
-          headerPartial.primaryNavItems,
-          defaultContent.header.primaryNavItems
-        ),
+        ...logoBump,
+        primaryNavItems,
         menuItems: normalizeRestaurantNavLinks(
           ensureArticlesNavItem(
             ensureMeetingsNavItem(

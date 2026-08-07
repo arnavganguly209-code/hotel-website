@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,13 +24,22 @@ interface HeaderProps {
   hotelName: string;
 }
 
+function scrollToHero() {
+  const hero = document.getElementById("hero");
+  if (hero) {
+    hero.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function HamburgerIcon({ open }: { open: boolean }) {
   return (
     <div className="flex h-5 w-6 flex-col justify-between">
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="block h-[1.5px] w-full origin-center rounded-full bg-[#C5A059]"
+          className="block h-[2px] w-full origin-center rounded-full bg-[#E8C56A] shadow-[0_0_8px_rgba(212,175,55,0.55)]"
           animate={
             open
               ? i === 0
@@ -49,6 +58,7 @@ function HamburgerIcon({ open }: { open: boolean }) {
 
 export function Header({ header, hotelName }: HeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const scrolled = useScrolled(40);
   const [menuOpen, setMenuOpen] = useState(false);
   const isHome = pathname === "/";
@@ -67,13 +77,13 @@ export function Header({ header, hotelName }: HeaderProps) {
 
   const phoneDisplay = header.phone || "+977 014701536";
   const phoneHref = `tel:${phoneDisplay.replace(/[^\d+]/g, "")}`;
-  const barHeight = Math.max(56, Math.min(72, header.height || 64));
-  const logoWidth = header.logoSize || 220;
+  const barHeight = Math.max(68, Math.min(88, header.height || 80));
+  const logoWidth = Math.max(308, header.logoSize || 308);
   const primaryNav =
     header.primaryNavItems?.length > 0
       ? header.primaryNavItems
       : [
-          { label: "Overview", href: "/#overview" },
+          { label: "Overview", href: "/#hero" },
           { label: "Rooms", href: routes.rooms },
           { label: "Restaurant", href: routes.restaurant },
           { label: "Contact", href: routes.contact },
@@ -81,6 +91,27 @@ export function Header({ header, hotelName }: HeaderProps) {
   const bookHref = header.bookButtonHref || routes.rooms;
   const showPrimaryNav = header.showPrimaryNav !== false;
   const showBook = header.showBookButton !== false;
+
+  function handlePrimaryClick(
+    e: React.MouseEvent<HTMLAnchorElement>,
+    item: { label: string; href: string }
+  ) {
+    const toHero =
+      /overview/i.test(item.label) ||
+      item.href === "/#hero" ||
+      item.href === "/#overview" ||
+      item.href === "/";
+    if (!toHero) return;
+    e.preventDefault();
+    if (isHome) {
+      scrollToHero();
+      if (typeof window !== "undefined" && window.location.hash !== "#hero") {
+        window.history.replaceState(null, "", "/#hero");
+      }
+      return;
+    }
+    router.push("/#hero");
+  }
 
   const headerStyle = cn(
     header.sticky !== false && "fixed",
@@ -106,7 +137,6 @@ export function Header({ header, hotelName }: HeaderProps) {
           className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-3 min-[375px]:px-4 sm:gap-4 sm:px-5 lg:gap-6 lg:px-8"
           style={{ minHeight: barHeight }}
         >
-          {/* Left — brand logo */}
           <div className="flex min-w-0 shrink-0 items-center">
             <Logo
               variant="light"
@@ -122,47 +152,53 @@ export function Header({ header, hotelName }: HeaderProps) {
             />
           </div>
 
-          {/* Center — primary pages */}
           {showPrimaryNav && (
             <nav
-              className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 md:flex lg:gap-2"
+              className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-0.5 md:flex lg:gap-1"
               aria-label="Primary"
             >
               {primaryNav.map((item) => {
-                const active =
-                  item.href === "/" || item.href.startsWith("/#")
-                    ? isHome
-                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const isOverview =
+                  /overview/i.test(item.label) ||
+                  item.href === "/#hero" ||
+                  item.href === "/#overview" ||
+                  item.href === "/";
+                const active = isOverview
+                  ? isHome
+                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
                 return (
                   <Link
                     key={`${item.label}-${item.href}`}
-                    href={item.href}
+                    href={isOverview ? "/#hero" : item.href}
+                    onClick={(e) => handlePrimaryClick(e, item)}
                     className={cn(
-                      "relative whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.14em] transition-colors duration-300 lg:px-3.5 lg:text-[13px]",
-                      active
-                        ? "text-[#F5F0E6]"
-                        : "text-[#E8F0E4]/72 hover:text-[#F5F0E6]"
+                      "group/nav relative whitespace-nowrap px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.16em] lg:px-3.5 lg:text-[13px]",
+                      "!text-white transition-[color,transform,text-shadow] duration-300 ease-out",
+                      "hover:!text-[#E8C56A] hover:scale-[1.04]",
+                      "hover:[text-shadow:0_0_18px_rgba(232,197,106,0.55)]",
+                      active && "!text-[#FFF8E7] [text-shadow:0_0_14px_rgba(212,175,55,0.35)]"
                     )}
                   >
                     {item.label}
-                    {active && (
-                      <span
-                        className="absolute inset-x-3 -bottom-0.5 h-px bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"
-                        aria-hidden
-                      />
-                    )}
+                    <span
+                      className={cn(
+                        "pointer-events-none absolute inset-x-3 -bottom-0.5 h-[1.5px] origin-center scale-x-0 bg-gradient-to-r from-transparent via-[#E8C56A] to-transparent transition-transform duration-300 ease-out",
+                        "group-hover/nav:scale-x-100",
+                        active && "scale-x-100"
+                      )}
+                      aria-hidden
+                    />
                   </Link>
                 );
               })}
             </nav>
           )}
 
-          {/* Right — phone, book, menu */}
           <div className="relative z-10 flex shrink-0 items-center justify-end gap-1.5 sm:gap-2.5">
             {header.showPhone && (
               <motion.a
                 href={phoneHref}
-                className="group/phone relative hidden items-center gap-2 rounded-full border border-[#D4AF37]/28 bg-white/[0.06] px-3 py-1.5 text-[12px] font-bold tracking-[0.04em] text-[#E8F0E4] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] md:flex lg:px-3.5 lg:text-[13px]"
+                className="group/phone relative hidden items-center gap-2 rounded-full border border-[#D4AF37]/40 bg-white/[0.08] px-3 py-1.5 text-[12px] font-bold tracking-[0.04em] !text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] md:flex lg:px-3.5 lg:text-[13px]"
                 aria-label={`Call ${phoneDisplay}`}
                 initial={{ opacity: 0.92, x: 6 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -171,7 +207,7 @@ export function Header({ header, hotelName }: HeaderProps) {
                 whileTap={{ scale: 0.98 }}
               >
                 <Phone
-                  className="h-3.5 w-3.5 shrink-0 text-[#D4AF37] transition-transform duration-500 group-hover/phone:rotate-12"
+                  className="h-3.5 w-3.5 shrink-0 text-[#E8C56A] transition-transform duration-500 group-hover/phone:rotate-12"
                   aria-hidden
                 />
                 <span className="hidden whitespace-nowrap xl:inline">{phoneDisplay}</span>
@@ -188,7 +224,7 @@ export function Header({ header, hotelName }: HeaderProps) {
             )}
             <button
               onClick={() => setMenuOpen(true)}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/35 bg-white/[0.06] transition-all active:scale-95 hover:border-[#D4AF37]/60 hover:bg-white/[0.10] sm:h-10 sm:w-10"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#E8C56A]/55 bg-white/[0.10] shadow-[0_0_16px_rgba(232,197,106,0.22)] transition-all active:scale-95 hover:border-[#E8C56A]/85 hover:bg-white/[0.14] sm:h-11 sm:w-11"
               aria-label="Open menu"
             >
               <HamburgerIcon open={false} />

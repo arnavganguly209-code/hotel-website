@@ -40,7 +40,7 @@ export function Logo({
   showText = true,
   hideText = false,
   logoSrc = "",
-  logoSize = 220,
+  logoSize = 308,
   centered = false,
   blendDarkBackground = false,
 }: LogoProps) {
@@ -54,7 +54,8 @@ export function Logo({
   const showName = showText && !hideText && !useLogo;
   const showLogoImage = useLogo && logoSrc;
   const isHome = pathname === "/" || pathname === "";
-  const logoWidth = Math.max(80, logoSize || 220);
+  const logoWidth = Math.max(120, logoSize || 308);
+  const maxH = Math.max(52, Math.round(logoWidth * 0.38));
 
   function handleClick(e: React.MouseEvent<HTMLAnchorElement>) {
     if (isHome) {
@@ -88,14 +89,14 @@ export function Logo({
           width={logoWidth}
           height={Math.round(logoWidth * 0.36)}
           className={cn(
-            "h-auto w-auto max-w-full bg-transparent object-contain object-left",
+            "h-auto w-auto max-w-none bg-transparent object-contain object-left",
             blendDarkBackground && "mix-blend-lighten"
           )}
           style={{
             width: logoWidth,
-            maxWidth: "min(220px, 42vw)",
+            maxWidth: `min(${logoWidth}px, 58vw)`,
             height: "auto",
-            maxHeight: Math.min(56, Math.round(logoWidth * 0.34)),
+            maxHeight: maxH,
             background: "transparent",
           }}
           priority
@@ -105,7 +106,7 @@ export function Logo({
           className={cn(
             "text-left font-display text-[13px] font-extrabold leading-none tracking-[0.14em] min-[360px]:tracking-[0.18em] sm:text-[15px] sm:tracking-[0.22em] md:text-[15px] lg:text-[16px]",
             "text-[#111111] transition-colors duration-300 group-hover:text-[#000000]",
-            variant === "light" && "text-[#F5F0E6] group-hover:text-white"
+            variant === "light" && "text-white group-hover:text-[#F5E6C8]"
           )}
         >
           {displayText}
