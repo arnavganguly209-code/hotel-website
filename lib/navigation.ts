@@ -44,6 +44,14 @@ export function articleDetailPath(slug: string) {
   return `/articles/${slug}`;
 }
 
+/** Slim header center nav (4 primary pages). */
+export const PRIMARY_NAV_ITEMS = [
+  { label: "Overview", href: "/#overview" },
+  { label: "Rooms", href: routes.rooms },
+  { label: "Restaurant", href: routes.restaurant },
+  { label: "Contact", href: routes.contact },
+] as const;
+
 export const DRAWER_NAV_ITEMS = [
   { label: "Overview", href: routes.home },
   { label: "Rooms", href: routes.rooms },

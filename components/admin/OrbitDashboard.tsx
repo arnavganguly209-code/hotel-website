@@ -439,36 +439,190 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
             {activeSection === "header" && (
               <>
-                <label className="flex items-center gap-3 text-sm text-white/70">
-                  <input type="checkbox" checked={content.header.useLogo} onChange={(e) => update("header", { ...content.header, useLogo: e.target.checked })} className="accent-luxury-gold" />
-                  Use Logo instead of Text
-                </label>
-                <label className="flex items-center gap-3 text-sm text-white/70">
-                  <input type="checkbox" checked={content.header.showText} onChange={(e) => update("header", { ...content.header, showText: e.target.checked })} className="accent-luxury-gold" />
-                  Show Text
-                </label>
-                <label className="flex items-center gap-3 text-sm text-white/70">
-                  <input type="checkbox" checked={content.header.hideText} onChange={(e) => update("header", { ...content.header, hideText: e.target.checked })} className="accent-luxury-gold" />
-                  Hide Header Text
-                </label>
-                <AdminInput label="Header Text" value={content.header.headerText} onChange={(e) => update("header", { ...content.header, headerText: e.target.value })} />
-                <AdminInput label="Logo URL" value={content.header.logoSrc} onChange={(e) => update("header", { ...content.header, logoSrc: e.target.value })} />
-                <ImagePicker label="Header Logo" folder="logo" category="General" value={content.header.logoSrc} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => update("header", { ...content.header, logoSrc: url })} />
-                <Button type="button" variant="outline" size="sm" className="border-red-400/30 text-red-400" onClick={() => update("header", { ...content.header, logoSrc: "", useLogo: false })}>Remove Logo</Button>
-                <AdminInput label="Logo Size (px)" type="number" value={content.header.logoSize} onChange={(e) => update("header", { ...content.header, logoSize: Number(e.target.value) })} />
-                <AdminInput label="Header Height (px)" type="number" value={content.header.height} onChange={(e) => update("header", { ...content.header, height: Number(e.target.value) })} />
-                <label className="flex items-center gap-3 text-sm text-white/70">
-                  <input type="checkbox" checked={content.header.sticky} onChange={(e) => update("header", { ...content.header, sticky: e.target.checked })} className="accent-luxury-gold" />
-                  Sticky Header
-                </label>
-                <label className="flex items-center gap-3 text-sm text-white/70">
-                  <input type="checkbox" checked={content.header.transparent} onChange={(e) => update("header", { ...content.header, transparent: e.target.checked })} className="accent-luxury-gold" />
-                  Transparent on Home
-                </label>
-                <AdminInput label="Background Color" value={content.header.backgroundColor} onChange={(e) => update("header", { ...content.header, backgroundColor: e.target.value })} />
-                <AdminInput label="Text Color" value={content.header.textColor} onChange={(e) => update("header", { ...content.header, textColor: e.target.value })} />
-                <AdminInput label="Phone" value={content.header.phone} onChange={(e) => update("header", { ...content.header, phone: e.target.value })} />
-                <AdminInput label="Book Button Text" value={content.header.bookButtonText} onChange={(e) => update("header", { ...content.header, bookButtonText: e.target.value })} />
+                <p className="text-sm text-white/50">
+                  Slim professional header — logo left (220px), primary pages center, phone + Book Now + menu right. Drawer shows full site links.
+                </p>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Brand / Logo</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input type="checkbox" checked={content.header.useLogo} onChange={(e) => update("header", { ...content.header, useLogo: e.target.checked })} className="accent-luxury-gold" />
+                    Use Logo Image
+                  </label>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input type="checkbox" checked={content.header.showText} onChange={(e) => update("header", { ...content.header, showText: e.target.checked })} className="accent-luxury-gold" />
+                    Show Text Brand (when logo off)
+                  </label>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input type="checkbox" checked={content.header.hideText} onChange={(e) => update("header", { ...content.header, hideText: e.target.checked })} className="accent-luxury-gold" />
+                    Hide Header Text
+                  </label>
+                  <AdminInput label="Header Text Fallback" value={content.header.headerText} onChange={(e) => update("header", { ...content.header, headerText: e.target.value })} />
+                  <AdminInput label="Logo URL" value={content.header.logoSrc} onChange={(e) => update("header", { ...content.header, logoSrc: e.target.value })} />
+                  <ImagePicker label="Header Logo" folder="logo" category="General" value={content.header.logoSrc} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} onChange={(url) => update("header", { ...content.header, logoSrc: url, useLogo: true })} />
+                  <Button type="button" variant="outline" size="sm" className="border-red-400/30 text-red-400" onClick={() => update("header", { ...content.header, logoSrc: "", useLogo: false })}>Remove Logo</Button>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput label="Logo Width (px)" type="number" value={content.header.logoSize} onChange={(e) => update("header", { ...content.header, logoSize: Number(e.target.value) })} />
+                    <AdminInput label="Header Height (px)" type="number" value={content.header.height} onChange={(e) => update("header", { ...content.header, height: Number(e.target.value) })} />
+                  </div>
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Bar Behavior & Colors</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input type="checkbox" checked={content.header.sticky} onChange={(e) => update("header", { ...content.header, sticky: e.target.checked })} className="accent-luxury-gold" />
+                    Sticky Header
+                  </label>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input type="checkbox" checked={content.header.transparent} onChange={(e) => update("header", { ...content.header, transparent: e.target.checked })} className="accent-luxury-gold" />
+                    Transparent on Home (before scroll)
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput label="Background Color" value={content.header.backgroundColor} onChange={(e) => update("header", { ...content.header, backgroundColor: e.target.value })} />
+                    <AdminInput label="Text Color" value={content.header.textColor} onChange={(e) => update("header", { ...content.header, textColor: e.target.value })} />
+                  </div>
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <p className="font-display text-lg text-luxury-gold">Right Actions</p>
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input type="checkbox" checked={content.header.showPhone} onChange={(e) => update("header", { ...content.header, showPhone: e.target.checked })} className="accent-luxury-gold" />
+                    Show Phone
+                  </label>
+                  <AdminInput label="Phone Number" value={content.header.phone} onChange={(e) => update("header", { ...content.header, phone: e.target.value })} />
+                  <label className="flex items-center gap-3 text-sm text-white/70">
+                    <input type="checkbox" checked={content.header.showBookButton !== false} onChange={(e) => update("header", { ...content.header, showBookButton: e.target.checked })} className="accent-luxury-gold" />
+                    Show Book Button
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AdminInput label="Book Button Text" value={content.header.bookButtonText} onChange={(e) => update("header", { ...content.header, bookButtonText: e.target.value })} />
+                    <AdminInput label="Book Button Link" value={content.header.bookButtonHref || "/rooms"} onChange={(e) => update("header", { ...content.header, bookButtonHref: e.target.value })} />
+                  </div>
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-display text-lg text-luxury-gold">Center Primary Nav</p>
+                      <p className="text-xs text-white/40">Shown in the slim bar middle (desktop). Typical: Overview, Rooms, Restaurant, Contact.</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2 text-sm text-white/70">
+                        <input type="checkbox" checked={content.header.showPrimaryNav !== false} onChange={(e) => update("header", { ...content.header, showPrimaryNav: e.target.checked })} className="accent-luxury-gold" />
+                        Show
+                      </label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="border-luxury-gold/30 text-luxury-gold"
+                        onClick={() =>
+                          update("header", {
+                            ...content.header,
+                            primaryNavItems: [...(content.header.primaryNavItems || []), { label: "New Page", href: "/" }],
+                          })
+                        }
+                      >
+                        <Plus className="h-4 w-4" /> Add
+                      </Button>
+                    </div>
+                  </div>
+                  {(content.header.primaryNavItems || []).map((item, i) => (
+                    <div key={`primary-${i}`} className="grid grid-cols-[1fr_1fr_auto] gap-3">
+                      <AdminInput
+                        label="Label"
+                        value={item.label}
+                        onChange={(e) => {
+                          const primaryNavItems = [...content.header.primaryNavItems];
+                          primaryNavItems[i] = { ...item, label: e.target.value };
+                          update("header", { ...content.header, primaryNavItems });
+                        }}
+                      />
+                      <AdminInput
+                        label="URL"
+                        value={item.href}
+                        onChange={(e) => {
+                          const primaryNavItems = [...content.header.primaryNavItems];
+                          primaryNavItems[i] = { ...item, href: e.target.value };
+                          update("header", { ...content.header, primaryNavItems });
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="mt-6 text-red-400"
+                        onClick={() =>
+                          update("header", {
+                            ...content.header,
+                            primaryNavItems: content.header.primaryNavItems.filter((_, idx) => idx !== i),
+                          })
+                        }
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-4 border border-luxury-gold/10 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-display text-lg text-luxury-gold">Drawer Menu (☰)</p>
+                      <p className="text-xs text-white/40">Full site links opened from the 3-line menu on the right.</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="border-luxury-gold/30 text-luxury-gold"
+                      onClick={() =>
+                        update("header", {
+                          ...content.header,
+                          menuItems: [...content.header.menuItems, { label: "New Link", href: "/" }],
+                        })
+                      }
+                    >
+                      <Plus className="h-4 w-4" /> Add
+                    </Button>
+                  </div>
+                  {content.header.menuItems.map((item, i) => (
+                    <div key={`drawer-${i}`} className="grid grid-cols-[1fr_1fr_auto] gap-3">
+                      <AdminInput
+                        label="Label"
+                        value={item.label}
+                        onChange={(e) => {
+                          const menuItems = [...content.header.menuItems];
+                          menuItems[i] = { ...item, label: e.target.value };
+                          update("header", { ...content.header, menuItems });
+                        }}
+                      />
+                      <AdminInput
+                        label="URL"
+                        value={item.href}
+                        onChange={(e) => {
+                          const menuItems = [...content.header.menuItems];
+                          menuItems[i] = { ...item, href: e.target.value };
+                          update("header", { ...content.header, menuItems });
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="mt-6 text-red-400"
+                        onClick={() =>
+                          update("header", {
+                            ...content.header,
+                            menuItems: content.header.menuItems.filter((_, idx) => idx !== i),
+                          })
+                        }
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </>
             )}
 

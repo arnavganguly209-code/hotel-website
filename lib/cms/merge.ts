@@ -191,18 +191,48 @@ function mergeFooterSocial(
 export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
   const merged: SiteContent = {
     hotel: { ...defaultContent.hotel, ...partial.hotel },
-    header: {
-      ...defaultContent.header,
-      ...partial.header,
-      menuItems: normalizeRestaurantNavLinks(
-        ensureArticlesNavItem(
-          ensureMeetingsNavItem(
-            definedArray(partial.header?.menuItems, defaultContent.header.menuItems)
+    header: (() => {
+      const headerPartial: Partial<SiteContent["header"]> = partial.header ?? {};
+      const hasPrimaryNav = Array.isArray(headerPartial.primaryNavItems);
+      const legacyTextHeader =
+        !hasPrimaryNav &&
+        headerPartial.useLogo !== true &&
+        (headerPartial.logoSize == null || headerPartial.logoSize <= 64);
+      const slimDefaults = legacyTextHeader
+        ? {
+            useLogo: true as const,
+            showText: false,
+            hideText: true,
+            logoSrc: defaultContent.header.logoSrc,
+            logoSize: 220,
+            height: 64,
+            transparent: false,
+            showBookButton: true,
+            showPrimaryNav: true,
+            bookButtonHref: defaultContent.header.bookButtonHref,
+            backgroundColor: defaultContent.header.backgroundColor,
+            textColor: defaultContent.header.textColor,
+          }
+        : {};
+      return {
+        ...defaultContent.header,
+        ...headerPartial,
+        ...slimDefaults,
+        primaryNavItems: definedArray(
+          headerPartial.primaryNavItems,
+          defaultContent.header.primaryNavItems
+        ),
+        menuItems: normalizeRestaurantNavLinks(
+          ensureArticlesNavItem(
+            ensureMeetingsNavItem(
+              definedArray(headerPartial.menuItems, defaultContent.header.menuItems)
+            )
           )
-        )
-      ),
-      overlayMenuItems: partial.header?.overlayMenuItems ?? defaultContent.header.overlayMenuItems,
-    },
+        ),
+        overlayMenuItems:
+          headerPartial.overlayMenuItems ?? defaultContent.header.overlayMenuItems,
+      };
+    })(),
     hero: mergeHero(defaultContent.hero, partial.hero),
     homeSections: {
       ...defaultContent.homeSections,

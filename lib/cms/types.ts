@@ -161,6 +161,7 @@ export interface SiteContent {
     hideText: boolean;
     headerText: string;
     logoSrc: string;
+    /** Logo display width in px (horizontal lockup). */
     logoSize: number;
     height: number;
     sticky: boolean;
@@ -170,7 +171,13 @@ export interface SiteContent {
     showStars: boolean;
     phone: string;
     showPhone: boolean;
+    showBookButton: boolean;
+    showPrimaryNav: boolean;
     bookButtonText: string;
+    bookButtonHref: string;
+    /** Slim bar center links (e.g. Overview, Rooms, Restaurant, Contact). */
+    primaryNavItems: NavItem[];
+    /** Full menu drawer links. */
     menuItems: NavItem[];
     overlayMenuItems: NavItem[];
   };

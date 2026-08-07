@@ -57,7 +57,8 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
             showText={header.showText}
             hideText={header.hideText}
             logoSrc={header.logoSrc}
-            logoSize={header.logoSize}
+            logoSize={Math.min(header.logoSize || 180, 180)}
+            blendDarkBackground
           />
           <button
             onClick={onClose}

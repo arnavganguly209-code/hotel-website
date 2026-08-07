@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { cn } from "@/lib/utils";
-import { routes } from "@/lib/navigation";
 
 interface LogoProps {
   variant?: "light" | "dark";
@@ -15,9 +14,12 @@ interface LogoProps {
   showText?: boolean;
   hideText?: boolean;
   logoSrc?: string;
+  /** Width in px for horizontal logo lockups. */
   logoSize?: number;
   showStars?: boolean;
   centered?: boolean;
+  /** Soften solid black logo plates on dark headers. */
+  blendDarkBackground?: boolean;
 }
 
 function scrollToHero() {
@@ -38,9 +40,9 @@ export function Logo({
   showText = true,
   hideText = false,
   logoSrc = "",
-  logoSize = 48,
-  showStars = false,
+  logoSize = 220,
   centered = false,
+  blendDarkBackground = false,
 }: LogoProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -52,18 +54,17 @@ export function Logo({
   const showName = showText && !hideText && !useLogo;
   const showLogoImage = useLogo && logoSrc;
   const isHome = pathname === "/" || pathname === "";
+  const logoWidth = Math.max(80, logoSize || 220);
 
   function handleClick(e: React.MouseEvent<HTMLAnchorElement>) {
     if (isHome) {
       e.preventDefault();
       scrollToHero();
-      // Keep URL clean / sync hash for shareability
       if (typeof window !== "undefined" && window.location.hash !== "#hero") {
         window.history.replaceState(null, "", "/#hero");
       }
       return;
     }
-    // Other pages → home hero
     e.preventDefault();
     router.push("/#hero");
   }
@@ -73,8 +74,8 @@ export function Logo({
       href="/#hero"
       onClick={handleClick}
       className={cn(
-        "group flex flex-col items-center gap-1",
-        !centered && "sm:flex-row sm:gap-3",
+        "group flex items-center gap-2",
+        centered ? "flex-col justify-center" : "flex-row",
         className
       )}
       aria-label={`${brandLabel} — Home`}
@@ -84,16 +85,25 @@ export function Logo({
         <SafeImage
           src={logoSrc}
           alt={brandLabel}
-          width={logoSize * 2}
-          height={logoSize}
-          className="h-auto bg-transparent object-contain"
-          style={{ maxHeight: logoSize, background: "transparent" }}
+          width={logoWidth}
+          height={Math.round(logoWidth * 0.36)}
+          className={cn(
+            "h-auto w-auto max-w-full bg-transparent object-contain object-left",
+            blendDarkBackground && "mix-blend-lighten"
+          )}
+          style={{
+            width: logoWidth,
+            maxWidth: "min(220px, 42vw)",
+            height: "auto",
+            maxHeight: Math.min(56, Math.round(logoWidth * 0.34)),
+            background: "transparent",
+          }}
           priority
         />
       ) : showName ? (
         <span
           className={cn(
-            "text-center font-display text-[13px] font-extrabold leading-none tracking-[0.14em] min-[360px]:tracking-[0.18em] sm:text-[15px] sm:tracking-[0.22em] md:text-[15px] md:tracking-[0.22em] lg:text-[16px] lg:tracking-[0.22em]",
+            "text-left font-display text-[13px] font-extrabold leading-none tracking-[0.14em] min-[360px]:tracking-[0.18em] sm:text-[15px] sm:tracking-[0.22em] md:text-[15px] lg:text-[16px]",
             "text-[#111111] transition-colors duration-300 group-hover:text-[#000000]",
             variant === "light" && "text-[#F5F0E6] group-hover:text-white"
           )}

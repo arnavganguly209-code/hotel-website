@@ -1,5 +1,5 @@
 import type { SiteContent } from "./types";
-import { DRAWER_NAV_ITEMS, routes } from "@/lib/navigation";
+import { DRAWER_NAV_ITEMS, PRIMARY_NAV_ITEMS, routes } from "@/lib/navigation";
 import { defaultHeroBuilder } from "./hero-builder-defaults";
 import { CULTURE_HOME_CONTENT, CULTURE_PAGE_STORY } from "./culture-content";
 import { DEFAULT_ROOM_POLICIES } from "./room-helpers";
@@ -29,21 +29,25 @@ export const defaultContent: SiteContent = {
     },
   },
   header: {
-    useLogo: false,
-    showText: true,
-    hideText: false,
+    useLogo: true,
+    showText: false,
+    hideText: true,
     headerText: "HOTEL THAMEL PARK",
-    logoSrc: "/media/logo/hotel-logo.png",
-    logoSize: 48,
-    height: 72,
+    logoSrc: "/media/logo/header-logo.png",
+    logoSize: 220,
+    height: 64,
     sticky: true,
-    transparent: true,
-    backgroundColor: "#FDFBF7",
-    textColor: "#183426",
+    transparent: false,
+    backgroundColor: "#204732",
+    textColor: "#F5F0E6",
     showStars: false,
     phone: "+977 014701536",
     showPhone: true,
+    showBookButton: true,
+    showPrimaryNav: true,
     bookButtonText: "Book Now",
+    bookButtonHref: routes.rooms,
+    primaryNavItems: [...PRIMARY_NAV_ITEMS],
     menuItems: [...DRAWER_NAV_ITEMS],
     overlayMenuItems: [],
   },
