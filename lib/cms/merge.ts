@@ -206,7 +206,6 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
             logoSrc: defaultContent.header.logoSrc,
             logoSize: 370,
             height: 56,
-            logoSrc: defaultContent.header.logoSrc,
             transparent: false,
             showBookButton: true,
             showPrimaryNav: true,
