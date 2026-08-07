@@ -85,10 +85,11 @@ export function Header({ header, hotelName }: HeaderProps) {
 
   const phoneDisplay = header.phone || "+977 014701536";
   const phoneHref = `tel:${phoneDisplay.replace(/[^\d+]/g, "")}`;
-  const barHeight = Math.max(58, Math.min(64, header.height || 60));
-  const logoWidth = header.logoSize && header.logoSize > 0 ? header.logoSize : 407;
-  // Light top/bottom breathing room; logo stays one-line centered in the bar.
-  const logoFitH = Math.max(44, barHeight - 10);
+  // Slim bar, slightly taller so logo can grow ~10% with equal top/bottom air.
+  const barHeight = Math.max(60, Math.min(66, header.height || 63));
+  const logoWidth = header.logoSize && header.logoSize > 0 ? header.logoSize : 448;
+  // Equal empty space above & below logo (6px each side).
+  const logoFitH = Math.max(48, barHeight - 12);
   const primaryNav =
     header.primaryNavItems?.length > 0
       ? header.primaryNavItems

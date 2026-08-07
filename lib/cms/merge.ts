@@ -204,8 +204,8 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
             showText: false,
             hideText: true,
             logoSrc: defaultContent.header.logoSrc,
-            logoSize: 407,
-            height: 60,
+            logoSize: 448,
+            height: 63,
             transparent: false,
             showBookButton: true,
             showPrimaryNav: true,
@@ -218,15 +218,15 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       const logoBump =
         !legacyTextHeader &&
         (headerPartial.logoSize == null ||
-          headerPartial.logoSize <= 400 ||
-          headerPartial.logoSize >= 450 ||
+          headerPartial.logoSize <= 440 ||
+          headerPartial.logoSize >= 490 ||
           (headerPartial.height != null &&
-            (headerPartial.height < 58 || headerPartial.height >= 70)) ||
+            (headerPartial.height < 60 || headerPartial.height >= 70)) ||
           (typeof headerPartial.logoSrc === "string" &&
             !headerPartial.logoSrc.includes("clear-trim")))
           ? {
-              logoSize: 407,
-              height: 60,
+              logoSize: 448,
+              height: 63,
               logoSrc: defaultContent.header.logoSrc,
             }
           : {};
