@@ -42,7 +42,7 @@ export function Logo({
   showText = true,
   hideText = false,
   logoSrc = "",
-  logoSize = 252,
+  logoSize = 302,
   fitHeight,
   centered = false,
   blendDarkBackground = false,
@@ -57,8 +57,8 @@ export function Logo({
   const showName = showText && !hideText && !useLogo;
   const showLogoImage = useLogo && logoSrc;
   const isHome = pathname === "/" || pathname === "";
-  const logoWidth = Math.max(120, logoSize || 252);
-  const maxH = fitHeight ?? Math.min(48, Math.round(logoWidth * 0.2));
+  const logoWidth = Math.max(140, logoSize || 302);
+  const maxH = fitHeight ?? Math.min(52, Math.round(logoWidth * 0.18));
 
   function handleClick(e: React.MouseEvent<HTMLAnchorElement>) {
     if (isHome) {

@@ -204,7 +204,7 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
             showText: false,
             hideText: true,
             logoSrc: defaultContent.header.logoSrc,
-            logoSize: 252,
+            logoSize: 302,
             height: 56,
             transparent: false,
             showBookButton: true,
@@ -214,14 +214,15 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
             textColor: defaultContent.header.textColor,
           }
         : {};
+      // Migrate prior sizes (≤270 or oversized) to +20% readable lockup.
       const logoBump =
         !legacyTextHeader &&
-        ((headerPartial.logoSize != null && headerPartial.logoSize >= 280) ||
-          (headerPartial.height != null && headerPartial.height >= 70) ||
-          headerPartial.logoSize == null ||
-          headerPartial.logoSize <= 250)
+        (headerPartial.logoSize == null ||
+          headerPartial.logoSize <= 270 ||
+          headerPartial.logoSize >= 320 ||
+          (headerPartial.height != null && headerPartial.height >= 70))
           ? {
-              logoSize: 252,
+              logoSize: 302,
               height: 56,
             }
           : {};

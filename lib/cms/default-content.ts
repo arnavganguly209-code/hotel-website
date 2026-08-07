@@ -34,7 +34,7 @@ export const defaultContent: SiteContent = {
     hideText: true,
     headerText: "HOTEL THAMEL PARK",
     logoSrc: "/media/logo/header-logo.png",
-    logoSize: 252,
+    logoSize: 302,
     height: 56,
     sticky: true,
     transparent: false,
