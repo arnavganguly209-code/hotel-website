@@ -11,7 +11,7 @@
     "pm2:stop": "pm2 stop hotel-thamel-park",
     "lint": "next lint",
     "test": "node scripts/verify-production-guards.mjs",
-    "postinstall": "npx prisma generate",
+    "postinstall": "node -e \"process.exit(0)\"",
     "seed:media": "node scripts/seed-media.mjs",
     "sync:content": "npx tsx scripts/sync-content-run.ts"
   },

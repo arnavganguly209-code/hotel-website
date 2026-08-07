@@ -42,12 +42,14 @@ if [ -z "${UPLOADS_ROOT:-}" ]; then
 fi
 echo "UPLOADS_ROOT=$UPLOADS_ROOT (preserved)"
 
-echo "Installing packages (npm ci)"
+echo "Installing packages (npm ci --ignore-scripts)"
 if [ -f package-lock.json ]; then
-  npm ci
+  npm ci --ignore-scripts
 else
-  npm install
+  npm install --ignore-scripts
 fi
+echo "Generating Prisma client"
+npx prisma generate
 
 # Ensure localhost thamelpark
 set +e
