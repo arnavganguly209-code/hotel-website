@@ -42,11 +42,11 @@ if [ -z "${UPLOADS_ROOT:-}" ]; then
 fi
 echo "UPLOADS_ROOT=$UPLOADS_ROOT (preserved)"
 
-echo "Installing packages (npm ci --ignore-scripts)"
+echo "Installing packages (npm ci)"
 if [ -f package-lock.json ]; then
-  npm ci --ignore-scripts
+  npm ci
 else
-  npm install --ignore-scripts
+  npm install
 fi
 
 # Ensure localhost thamelpark

@@ -98,9 +98,6 @@ if echo "$CURRENT_URL" | grep -Eqi '(localhost|127\.0\.0\.1)' \
   echo "OK: DATABASE_URL already points at local thamelpark — ensure skipped"
   export DATABASE_URL="$CURRENT_URL"
   node scripts/assert-local-thamelpark-db.mjs
-  npx prisma generate
-  npx prisma migrate deploy || npx prisma db push --accept-data-loss=false
-  node scripts/ensure-thamelpark-bootstrap.mjs
   exit 0
 fi
 
