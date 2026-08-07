@@ -85,11 +85,11 @@ export function Header({ header, hotelName }: HeaderProps) {
 
   const phoneDisplay = header.phone || "+977 014701536";
   const phoneHref = `tel:${phoneDisplay.replace(/[^\d+]/g, "")}`;
-  // Slim bar, slightly taller so logo can grow ~10% with equal top/bottom air.
-  const barHeight = Math.max(60, Math.min(66, header.height || 63));
-  const logoWidth = header.logoSize && header.logoSize > 0 ? header.logoSize : 448;
-  // Equal empty space above & below logo (6px each side).
-  const logoFitH = Math.max(48, barHeight - 12);
+  // Slim bar: logo ~10% larger with equal top/bottom air (not bulky).
+  const barHeight = Math.max(64, Math.min(72, header.height || 68));
+  const logoWidth = header.logoSize && header.logoSize > 0 ? header.logoSize : 490;
+  // Equal empty space above & below; 6+8 padding on wrapper matches visually.
+  const logoFitH = Math.max(50, barHeight - 14);
   const primaryNav =
     header.primaryNavItems?.length > 0
       ? header.primaryNavItems
@@ -147,7 +147,10 @@ export function Header({ header, hotelName }: HeaderProps) {
           className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-2 px-3 min-[375px]:px-4 sm:gap-3 sm:px-5 lg:gap-5 lg:px-8"
           style={{ height: barHeight }}
         >
-          <div className="flex h-full min-w-0 shrink-0 items-center">
+          <div
+            className="flex h-full min-w-0 shrink-0 items-center"
+            style={{ paddingTop: 6, paddingBottom: 8 }}
+          >
             <Logo
               variant="light"
               name={hotelName}
