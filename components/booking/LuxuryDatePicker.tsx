@@ -386,8 +386,8 @@ export function LuxuryDatePicker({
         aria-labelledby={labelId}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "flex w-full items-center justify-between gap-1.5 rounded-[10px] text-left transition-all duration-400",
-          compact ? "py-0.5" : "py-0"
+          "flex h-full w-full items-center justify-between gap-1.5 rounded-[10px] text-left transition-all duration-400",
+          compact ? "py-0" : "py-0"
         )}
       >
         <span

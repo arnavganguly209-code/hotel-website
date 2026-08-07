@@ -106,7 +106,7 @@ function FieldCell({
         <span className="truncate">{label}</span>
       </label>
       <div
-        className="relative min-w-0 rounded-[10px] px-1.5 py-1 backdrop-blur-md transition-all duration-400 group-hover:border-[#D4AF37]/50"
+        className="relative flex h-[32px] min-w-0 items-center rounded-[10px] px-1.5 backdrop-blur-md transition-all duration-400 group-hover:border-[#D4AF37]/50 focus-within:border-[#D4AF37]/70 focus-within:shadow-[0_0_0_1px_rgba(212,175,55,0.35)]"
         style={{
           background: FIELD_GLASS,
           border: `1px solid ${FIELD_BORDER}`,
@@ -140,7 +140,16 @@ function MobileField({
         <Icon className="h-3 w-3 shrink-0" strokeWidth={2} />
         {label}
       </label>
-      {children}
+      <div
+        className="flex h-[32px] min-w-0 items-center rounded-[10px] px-1.5"
+        style={{
+          background: FIELD_GLASS,
+          border: `1px solid ${FIELD_BORDER}`,
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22)",
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -256,7 +265,7 @@ export function PremiumFloatingBookingBar({
       autoComplete="off"
       spellCheck={false}
       className={cn(
-        "w-full bg-transparent font-bold tracking-wide outline-none placeholder:font-medium placeholder:text-[#FFF9F0]/70",
+        "h-full w-full bg-transparent font-bold tracking-wide outline-none placeholder:font-medium placeholder:text-[#FFF9F0]/70",
         compact ? "text-[13px]" : "text-[13px] md:text-[14px]"
       )}
       style={{ color: VALUE_WHITE }}

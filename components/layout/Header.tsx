@@ -85,11 +85,11 @@ export function Header({ header, hotelName }: HeaderProps) {
 
   const phoneDisplay = header.phone || "+977 014701536";
   const phoneHref = `tel:${phoneDisplay.replace(/[^\d+]/g, "")}`;
-  // Slim bar: logo ~10% larger with equal top/bottom air (not bulky).
-  const barHeight = Math.max(64, Math.min(72, header.height || 68));
-  const logoWidth = header.logoSize && header.logoSize > 0 ? header.logoSize : 490;
-  // Equal empty space above & below; 6+8 padding on wrapper matches visually.
-  const logoFitH = Math.max(50, barHeight - 14);
+  // Luxury slim header: logo ~10% larger, less empty air, bar +~9%.
+  const barHeight = Math.max(70, Math.min(78, header.height || 74));
+  const logoWidth = header.logoSize && header.logoSize > 0 ? header.logoSize : 539;
+  // Tight equal top/bottom padding — logo fills the bar cleanly.
+  const logoFitH = Math.max(58, barHeight - 8);
   const primaryNav =
     header.primaryNavItems?.length > 0
       ? header.primaryNavItems
@@ -97,6 +97,7 @@ export function Header({ header, hotelName }: HeaderProps) {
           { label: "Overview", href: routes.home },
           { label: "Rooms", href: routes.rooms },
           { label: "Restaurant", href: routes.restaurant },
+          { label: "Meetings & Events", href: routes.meetingsEvents },
           { label: "Contact", href: routes.contact },
         ];
   const bookHref = header.bookButtonHref || routes.rooms;
@@ -147,10 +148,7 @@ export function Header({ header, hotelName }: HeaderProps) {
           className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-2 px-3 min-[375px]:px-4 sm:gap-3 sm:px-5 lg:gap-5 lg:px-8"
           style={{ height: barHeight }}
         >
-          <div
-            className="flex h-full min-w-0 shrink-0 items-center"
-            style={{ paddingTop: 6, paddingBottom: 8 }}
-          >
+          <div className="flex h-full min-w-0 shrink-0 items-center py-1">
             <Logo
               variant="light"
               name={hotelName}
@@ -186,7 +184,7 @@ export function Header({ header, hotelName }: HeaderProps) {
                     href={isOverview ? routes.home : item.href}
                     onClick={(e) => handlePrimaryClick(e, item)}
                     className={cn(
-                      "group/nav relative whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] lg:px-3 lg:text-[12px]",
+                      "group/nav relative whitespace-nowrap px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] lg:px-2.5 lg:text-[11px] xl:px-3 xl:text-[12px]",
                       "!text-white transition-[color,transform,text-shadow] duration-300 ease-out",
                       "hover:!text-[#E8C56A] hover:scale-[1.03]",
                       "hover:[text-shadow:0_0_18px_rgba(232,197,106,0.55)]",

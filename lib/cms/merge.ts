@@ -204,8 +204,8 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
             showText: false,
             hideText: true,
             logoSrc: defaultContent.header.logoSrc,
-            logoSize: 490,
-            height: 68,
+            logoSize: 539,
+            height: 74,
             transparent: false,
             showBookButton: true,
             showPrimaryNav: true,
@@ -218,22 +218,20 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       const logoBump =
         !legacyTextHeader &&
         (headerPartial.logoSize == null ||
-          headerPartial.logoSize <= 480 ||
-          headerPartial.logoSize >= 540 ||
+          headerPartial.logoSize <= 530 ||
+          headerPartial.logoSize >= 580 ||
           (headerPartial.height != null &&
-            (headerPartial.height < 64 || headerPartial.height >= 76)) ||
+            (headerPartial.height < 70 || headerPartial.height >= 82)) ||
           (typeof headerPartial.logoSrc === "string" &&
             !headerPartial.logoSrc.includes("clear-trim")))
           ? {
-              logoSize: 490,
-              height: 68,
+              logoSize: 539,
+              height: 74,
               logoSrc: defaultContent.header.logoSrc,
             }
           : {};
-      const primaryNavItems = definedArray(
-        headerPartial.primaryNavItems,
-        defaultContent.header.primaryNavItems
-      ).map((item) =>
+      // Exact luxury primary nav order (CMS may still hold the old 4-item list).
+      const primaryNavItems = defaultContent.header.primaryNavItems.map((item) =>
         /overview/i.test(item.label) ||
         item.href === "/#overview" ||
         item.href === "/#hero" ||
