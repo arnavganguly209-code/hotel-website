@@ -16,6 +16,8 @@ interface LogoProps {
   logoSrc?: string;
   /** Width in px for horizontal logo lockups. */
   logoSize?: number;
+  /** Cap rendered height so the bar stays slim (no empty green padding). */
+  fitHeight?: number;
   showStars?: boolean;
   centered?: boolean;
   /** Soften solid black logo plates on dark headers. */
@@ -40,7 +42,8 @@ export function Logo({
   showText = true,
   hideText = false,
   logoSrc = "",
-  logoSize = 308,
+  logoSize = 252,
+  fitHeight,
   centered = false,
   blendDarkBackground = false,
 }: LogoProps) {
@@ -54,8 +57,8 @@ export function Logo({
   const showName = showText && !hideText && !useLogo;
   const showLogoImage = useLogo && logoSrc;
   const isHome = pathname === "/" || pathname === "";
-  const logoWidth = Math.max(120, logoSize || 308);
-  const maxH = Math.max(52, Math.round(logoWidth * 0.38));
+  const logoWidth = Math.max(120, logoSize || 252);
+  const maxH = fitHeight ?? Math.min(48, Math.round(logoWidth * 0.2));
 
   function handleClick(e: React.MouseEvent<HTMLAnchorElement>) {
     if (isHome) {
@@ -75,7 +78,7 @@ export function Logo({
       href="/#hero"
       onClick={handleClick}
       className={cn(
-        "group flex items-center gap-2",
+        "group flex items-center gap-2 leading-none",
         centered ? "flex-col justify-center" : "flex-row",
         className
       )}
@@ -87,14 +90,14 @@ export function Logo({
           src={logoSrc}
           alt={brandLabel}
           width={logoWidth}
-          height={Math.round(logoWidth * 0.36)}
+          height={Math.round(logoWidth * 0.32)}
           className={cn(
-            "h-auto w-auto max-w-none bg-transparent object-contain object-left",
+            "block h-auto w-auto max-w-none bg-transparent object-contain object-left",
             blendDarkBackground && "mix-blend-lighten"
           )}
           style={{
             width: logoWidth,
-            maxWidth: `min(${logoWidth}px, 58vw)`,
+            maxWidth: `min(${logoWidth}px, 52vw)`,
             height: "auto",
             maxHeight: maxH,
             background: "transparent",

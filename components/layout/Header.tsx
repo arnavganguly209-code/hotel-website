@@ -35,21 +35,21 @@ function scrollToHero() {
 
 function HamburgerIcon({ open }: { open: boolean }) {
   return (
-    <div className="flex h-5 w-6 flex-col justify-between">
+    <div className="flex h-3.5 w-5 flex-col justify-between">
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="block h-[2px] w-full origin-center rounded-full bg-[#E8C56A] shadow-[0_0_8px_rgba(212,175,55,0.55)]"
+          className="block h-[1.5px] w-full origin-center rounded-full bg-[#E8C56A] shadow-[0_0_6px_rgba(212,175,55,0.45)]"
           animate={
             open
               ? i === 0
-                ? { rotate: 45, y: 9 }
+                ? { rotate: 45, y: 6.5 }
                 : i === 1
                   ? { opacity: 0, scaleX: 0 }
-                  : { rotate: -45, y: -9 }
+                  : { rotate: -45, y: -6.5 }
               : { rotate: 0, y: 0, opacity: 1, scaleX: 1 }
           }
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
         />
       ))}
     </div>
@@ -77,8 +77,9 @@ export function Header({ header, hotelName }: HeaderProps) {
 
   const phoneDisplay = header.phone || "+977 014701536";
   const phoneHref = `tel:${phoneDisplay.replace(/[^\d+]/g, "")}`;
-  const barHeight = Math.max(68, Math.min(88, header.height || 80));
-  const logoWidth = Math.max(308, header.logoSize || 308);
+  const barHeight = Math.max(52, Math.min(58, header.height || 56));
+  const logoWidth = header.logoSize && header.logoSize > 0 ? header.logoSize : 252;
+  const logoFitH = Math.max(40, barHeight - 8);
   const primaryNav =
     header.primaryNavItems?.length > 0
       ? header.primaryNavItems
@@ -132,12 +133,12 @@ export function Header({ header, hotelName }: HeaderProps) {
 
   return (
     <>
-      <header className={headerStyle} style={{ minHeight: barHeight, ...surfaceStyle }}>
+      <header className={headerStyle} style={{ height: barHeight, minHeight: barHeight, ...surfaceStyle }}>
         <div
-          className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-3 min-[375px]:px-4 sm:gap-4 sm:px-5 lg:gap-6 lg:px-8"
-          style={{ minHeight: barHeight }}
+          className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-2 px-3 min-[375px]:px-4 sm:gap-3 sm:px-5 lg:gap-5 lg:px-8"
+          style={{ height: barHeight }}
         >
-          <div className="flex min-w-0 shrink-0 items-center">
+          <div className="flex h-full min-w-0 shrink-0 items-center py-1">
             <Logo
               variant="light"
               name={hotelName}
@@ -147,6 +148,7 @@ export function Header({ header, hotelName }: HeaderProps) {
               hideText={header.hideText}
               logoSrc={header.logoSrc}
               logoSize={logoWidth}
+              fitHeight={logoFitH}
               blendDarkBackground
               className="min-w-0"
             />
@@ -172,9 +174,9 @@ export function Header({ header, hotelName }: HeaderProps) {
                     href={isOverview ? "/#hero" : item.href}
                     onClick={(e) => handlePrimaryClick(e, item)}
                     className={cn(
-                      "group/nav relative whitespace-nowrap px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.16em] lg:px-3.5 lg:text-[13px]",
+                      "group/nav relative whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] lg:px-3 lg:text-[12px]",
                       "!text-white transition-[color,transform,text-shadow] duration-300 ease-out",
-                      "hover:!text-[#E8C56A] hover:scale-[1.04]",
+                      "hover:!text-[#E8C56A] hover:scale-[1.03]",
                       "hover:[text-shadow:0_0_18px_rgba(232,197,106,0.55)]",
                       active && "!text-[#FFF8E7] [text-shadow:0_0_14px_rgba(212,175,55,0.35)]"
                     )}
@@ -194,11 +196,11 @@ export function Header({ header, hotelName }: HeaderProps) {
             </nav>
           )}
 
-          <div className="relative z-10 flex shrink-0 items-center justify-end gap-1.5 sm:gap-2.5">
+          <div className="relative z-10 flex h-full shrink-0 items-center justify-end gap-1.5 sm:gap-2">
             {header.showPhone && (
               <motion.a
                 href={phoneHref}
-                className="group/phone relative hidden items-center gap-2 rounded-full border border-[#D4AF37]/40 bg-white/[0.08] px-3 py-1.5 text-[12px] font-bold tracking-[0.04em] !text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] md:flex lg:px-3.5 lg:text-[13px]"
+                className="group/phone relative hidden items-center gap-1.5 rounded-full border border-[#D4AF37]/40 bg-white/[0.08] px-2.5 py-1 text-[11px] font-bold tracking-[0.04em] !text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] md:flex lg:px-3 lg:text-[12px]"
                 aria-label={`Call ${phoneDisplay}`}
                 initial={{ opacity: 0.92, x: 6 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -216,7 +218,7 @@ export function Header({ header, hotelName }: HeaderProps) {
             {showBook && (
               <Button
                 size="sm"
-                className="hidden h-9 rounded-full border-0 bg-gradient-to-r from-[#C89A3D] to-[#E9A546] px-3.5 text-[11px] uppercase tracking-[0.16em] text-white shadow-[0_6px_24px_rgba(200,154,61,0.35)] hover:opacity-95 sm:inline-flex lg:px-4 lg:text-[12px]"
+                className="hidden h-8 rounded-full border-0 bg-gradient-to-r from-[#C89A3D] to-[#E9A546] px-3 text-[10px] uppercase tracking-[0.14em] text-white shadow-[0_6px_20px_rgba(200,154,61,0.32)] hover:opacity-95 sm:inline-flex lg:px-3.5 lg:text-[11px]"
                 asChild
               >
                 <Link href={bookHref}>{header.bookButtonText || "Book Now"}</Link>
@@ -224,7 +226,7 @@ export function Header({ header, hotelName }: HeaderProps) {
             )}
             <button
               onClick={() => setMenuOpen(true)}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#E8C56A]/55 bg-white/[0.10] shadow-[0_0_16px_rgba(232,197,106,0.22)] transition-all active:scale-95 hover:border-[#E8C56A]/85 hover:bg-white/[0.14] sm:h-11 sm:w-11"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#E8C56A]/55 bg-white/[0.10] shadow-[0_0_12px_rgba(232,197,106,0.2)] transition-all active:scale-95 hover:border-[#E8C56A]/85 hover:bg-white/[0.14] sm:h-9 sm:w-9"
               aria-label="Open menu"
             >
               <HamburgerIcon open={false} />

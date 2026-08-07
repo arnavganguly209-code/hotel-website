@@ -57,7 +57,8 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
             showText={header.showText}
             hideText={header.hideText}
             logoSrc={header.logoSrc}
-            logoSize={Math.max(280, Math.min(header.logoSize || 308, 320))}
+            logoSize={Math.max(240, Math.min(header.logoSize || 252, 260))}
+            fitHeight={52}
             blendDarkBackground
           />
           <button
