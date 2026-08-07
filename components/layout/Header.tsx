@@ -88,7 +88,7 @@ export function Header({ header, hotelName }: HeaderProps) {
   // Luxury slim header: logo ~10% larger, less empty air, bar +~9%.
   const barHeight = Math.max(70, Math.min(78, header.height || 74));
   const logoWidth = header.logoSize && header.logoSize > 0 ? header.logoSize : 539;
-  // Tight equal top/bottom padding — logo fills the bar cleanly.
+  // Tight equal top/bottom air — optical center via slight upward nudge on logo.
   const logoFitH = Math.max(58, barHeight - 8);
   const primaryNav =
     header.primaryNavItems?.length > 0
@@ -148,7 +148,7 @@ export function Header({ header, hotelName }: HeaderProps) {
           className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-2 px-3 min-[375px]:px-4 sm:gap-3 sm:px-5 lg:gap-5 lg:px-8"
           style={{ height: barHeight }}
         >
-          <div className="flex h-full min-w-0 shrink-0 items-center py-1">
+          <div className="flex h-full min-w-0 shrink-0 items-center">
             <Logo
               variant="light"
               name={hotelName}
@@ -159,7 +159,7 @@ export function Header({ header, hotelName }: HeaderProps) {
               logoSrc={header.logoSrc}
               logoSize={logoWidth}
               fitHeight={logoFitH}
-              className="min-w-0"
+              className="min-w-0 -translate-y-[3px]"
             />
           </div>
 

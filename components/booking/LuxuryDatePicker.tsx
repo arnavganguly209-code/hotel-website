@@ -376,7 +376,7 @@ export function LuxuryDatePicker({
   );
 
   return (
-    <div ref={rootRef} className="relative min-w-0">
+    <div ref={rootRef} className="relative flex h-full min-h-0 w-full min-w-0 items-center">
       <button
         ref={triggerRef}
         type="button"
@@ -387,20 +387,24 @@ export function LuxuryDatePicker({
         onClick={() => setOpen((v) => !v)}
         className={cn(
           "flex h-full w-full items-center justify-between gap-1.5 rounded-[10px] text-left transition-all duration-400",
-          compact ? "py-0" : "py-0"
+          "pl-2.5 pr-2"
         )}
       >
         <span
           id={labelId}
           className={cn(
-            "truncate font-bold tracking-wide",
+            "truncate leading-none font-bold tracking-wide",
             compact ? "text-[13px]" : "text-[13px] md:text-[14px]"
           )}
           style={{ color: value ? "#FFFFFF" : "rgba(255,249,240,0.7)" }}
         >
           {value ? formatDisplayDate(value) : placeholder}
         </span>
-        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.3, ease: luxuryEase }}>
+        <motion.span
+          className="flex shrink-0 items-center"
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.3, ease: luxuryEase }}
+        >
           <ChevronDown className="h-3 w-3 shrink-0" style={{ color: GOLD, opacity: 0.9 }} />
         </motion.span>
       </button>
