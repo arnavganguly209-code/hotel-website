@@ -78,9 +78,9 @@ export function Header({ header, hotelName }: HeaderProps) {
   const phoneDisplay = header.phone || "+977 014701536";
   const phoneHref = `tel:${phoneDisplay.replace(/[^\d+]/g, "")}`;
   const barHeight = Math.max(52, Math.min(58, header.height || 56));
-  const logoWidth = header.logoSize && header.logoSize > 0 ? header.logoSize : 302;
-  // Use nearly full bar height so wordmark fills frame (no empty green above/below).
-  const logoFitH = Math.max(46, barHeight - 4);
+  const logoWidth = header.logoSize && header.logoSize > 0 ? header.logoSize : 370;
+  // Fill the slim bar edge-to-edge vertically — frame stays same height.
+  const logoFitH = Math.max(48, barHeight - 2);
   const primaryNav =
     header.primaryNavItems?.length > 0
       ? header.primaryNavItems
@@ -150,7 +150,6 @@ export function Header({ header, hotelName }: HeaderProps) {
               logoSrc={header.logoSrc}
               logoSize={logoWidth}
               fitHeight={logoFitH}
-              blendDarkBackground
               className="min-w-0"
             />
           </div>

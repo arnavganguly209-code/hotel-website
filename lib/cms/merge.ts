@@ -204,8 +204,9 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
             showText: false,
             hideText: true,
             logoSrc: defaultContent.header.logoSrc,
-            logoSize: 302,
+            logoSize: 370,
             height: 56,
+            logoSrc: defaultContent.header.logoSrc,
             transparent: false,
             showBookButton: true,
             showPrimaryNav: true,
@@ -214,16 +215,19 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
             textColor: defaultContent.header.textColor,
           }
         : {};
-      // Migrate prior sizes (≤270 or oversized) to +20% readable lockup.
+      // Migrate prior sizes to clear ~22% larger lockup; refresh black-plate logos.
       const logoBump =
         !legacyTextHeader &&
         (headerPartial.logoSize == null ||
-          headerPartial.logoSize <= 270 ||
-          headerPartial.logoSize >= 320 ||
-          (headerPartial.height != null && headerPartial.height >= 70))
+          headerPartial.logoSize <= 340 ||
+          headerPartial.logoSize >= 420 ||
+          (headerPartial.height != null && headerPartial.height >= 70) ||
+          (typeof headerPartial.logoSrc === "string" &&
+            !headerPartial.logoSrc.includes("clear-trim")))
           ? {
-              logoSize: 302,
+              logoSize: 370,
               height: 56,
+              logoSrc: defaultContent.header.logoSrc,
             }
           : {};
       const primaryNavItems = definedArray(
@@ -557,6 +561,11 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     footer: {
       ...defaultContent.footer,
       ...(partial.footer ?? {}),
+      logoSrc:
+        typeof partial.footer?.logoSrc === "string" &&
+        partial.footer.logoSrc.includes("clear-trim")
+          ? partial.footer.logoSrc
+          : defaultContent.footer.logoSrc,
       contact: { ...defaultContent.footer.contact, ...(partial.footer?.contact ?? {}) },
       newsletter: { ...defaultContent.footer.newsletter, ...(partial.footer?.newsletter ?? {}) },
       social: mergeFooterSocial(partial.footer?.social, partial.hotel?.social),

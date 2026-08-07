@@ -60,11 +60,14 @@ jobs:
           timeout: 120s
           command_timeout: 40m
           request_pty: true
-          script_stop: true
           envs: GITHUB_SHA
           script: |
             set -e
             APP_DIR="/var/www/hotel-website"
+            LOCK_FILE="/tmp/htp-prod-deploy.lock"
+            exec 9>"$LOCK_FILE"
+            # Wait for any concurrent SSH/manual deploy to finish (do not -n fail)
+            flock 9
             cd "$APP_DIR" || exit 1
 
             mkdir -p public/uploads/general

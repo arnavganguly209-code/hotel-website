@@ -26,9 +26,9 @@ export function FooterBrand({ logoSrc, brandName, description }: FooterBrandProp
       {showLogo ? (
         <Link
           href={routes.home}
-          className="relative mb-7 inline-block h-24 w-[170px] transition-opacity duration-500 hover:opacity-90 md:w-[200px] lg:w-[240px]"
+          className="relative mb-7 inline-block h-24 w-[200px] bg-transparent transition-opacity duration-500 hover:opacity-90 md:w-[230px] lg:w-[270px]"
           aria-label={`${brandName} — Home`}
-          style={{ background: "none", backgroundColor: "transparent" }}
+          style={{ background: "transparent", backgroundColor: "transparent", boxShadow: "none" }}
         >
           <SafeImage
             src={logoSrc}
@@ -38,10 +38,10 @@ export function FooterBrand({ logoSrc, brandName, description }: FooterBrandProp
             fadeIn={false}
             objectFit="contain"
             skeleton={false}
-            className="object-contain object-left"
-            sizes="240px"
+            className="bg-transparent object-contain object-left !bg-transparent"
+            sizes="270px"
             style={{
-              background: "none",
+              background: "transparent",
               backgroundColor: "transparent",
               boxShadow: "none",
               border: "none",

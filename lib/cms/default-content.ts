@@ -33,8 +33,8 @@ export const defaultContent: SiteContent = {
     showText: false,
     hideText: true,
     headerText: "HOTEL THAMEL PARK",
-    logoSrc: "/media/logo/header-logo.png",
-    logoSize: 302,
+    logoSrc: "/media/logo/header-logo.png?v=clear-trim",
+    logoSize: 370,
     height: 56,
     sticky: true,
     transparent: false,
@@ -3052,7 +3052,7 @@ export const defaultContent: SiteContent = {
     bookingEmail: "reservations@hotelthamelpark.com",
   },
   footer: {
-    logoSrc: "/media/logo/hotel-logo.png?v=transparent",
+    logoSrc: "/media/logo/hotel-logo.png?v=clear-trim",
     brandName: "HOTEL THAMEL PARK",
     description:
       "Experience timeless elegance, refined hospitality and exceptional comfort in the heart of Kathmandu.",

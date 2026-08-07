@@ -44,7 +44,15 @@ echo "UPLOADS_ROOT=$UPLOADS_ROOT (preserved)"
 
 echo "Installing packages (npm ci)"
 if [ -f package-lock.json ]; then
+  set +e
   npm ci
+  NPM_RC=$?
+  set -e
+  if [ "$NPM_RC" -ne 0 ]; then
+    echo "npm ci failed (rc=$NPM_RC) — cleaning node_modules and retrying once"
+    rm -rf node_modules
+    npm ci
+  fi
 else
   npm install
 fi

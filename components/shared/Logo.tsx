@@ -42,7 +42,7 @@ export function Logo({
   showText = true,
   hideText = false,
   logoSrc = "",
-  logoSize = 302,
+  logoSize = 370,
   fitHeight,
   centered = false,
   blendDarkBackground = false,
@@ -57,8 +57,9 @@ export function Logo({
   const showName = showText && !hideText && !useLogo;
   const showLogoImage = useLogo && logoSrc;
   const isHome = pathname === "/" || pathname === "";
-  const logoWidth = Math.max(140, logoSize || 302);
-  const maxH = fitHeight ?? Math.min(52, Math.round(logoWidth * 0.18));
+  const logoWidth = Math.max(160, logoSize || 370);
+  // Height-first: fill the slim bar so wordmark is crisp (no empty green).
+  const maxH = fitHeight ?? Math.min(54, Math.round(logoWidth * 0.22));
 
   function handleClick(e: React.MouseEvent<HTMLAnchorElement>) {
     if (isHome) {
@@ -90,16 +91,15 @@ export function Logo({
           src={logoSrc}
           alt={brandLabel}
           width={logoWidth}
-          height={Math.round(logoWidth * 0.32)}
+          height={maxH}
           className={cn(
-            "block h-auto w-auto max-w-none bg-transparent object-contain object-left",
+            "block max-w-none bg-transparent object-contain object-left",
             blendDarkBackground && "mix-blend-lighten"
           )}
           style={{
-            width: logoWidth,
-            maxWidth: `min(${logoWidth}px, 52vw)`,
-            height: "auto",
-            maxHeight: maxH,
+            height: maxH,
+            width: "auto",
+            maxWidth: `min(${logoWidth}px, 62vw)`,
             background: "transparent",
           }}
           priority
