@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { cn } from "@/lib/utils";
+import { routes } from "@/lib/navigation";
 
 interface LogoProps {
   variant?: "light" | "dark";
@@ -16,7 +17,7 @@ interface LogoProps {
   logoSrc?: string;
   /** Width in px for horizontal logo lockups. */
   logoSize?: number;
-  /** Cap rendered height so the bar stays slim (no empty green padding). */
+  /** Cap rendered height so the bar stays slim with light vertical padding. */
   fitHeight?: number;
   showStars?: boolean;
   centered?: boolean;
@@ -33,6 +34,14 @@ function scrollToHero() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function clearHeroHash() {
+  if (typeof window === "undefined") return;
+  if (!window.location.hash) return;
+  const path = window.location.pathname || "/";
+  const search = window.location.search || "";
+  window.history.replaceState(null, "", `${path}${search}`);
+}
+
 export function Logo({
   variant = "dark",
   className,
@@ -42,7 +51,7 @@ export function Logo({
   showText = true,
   hideText = false,
   logoSrc = "",
-  logoSize = 370,
+  logoSize = 407,
   fitHeight,
   centered = false,
   blendDarkBackground = false,
@@ -57,26 +66,22 @@ export function Logo({
   const showName = showText && !hideText && !useLogo;
   const showLogoImage = useLogo && logoSrc;
   const isHome = pathname === "/" || pathname === "";
-  const logoWidth = Math.max(160, logoSize || 370);
-  // Height-first: fill the slim bar so wordmark is crisp (no empty green).
-  const maxH = fitHeight ?? Math.min(54, Math.round(logoWidth * 0.22));
+  const logoWidth = Math.max(160, logoSize || 407);
+  const maxH = fitHeight ?? Math.min(50, Math.round(logoWidth * 0.2));
 
   function handleClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    e.preventDefault();
     if (isHome) {
-      e.preventDefault();
       scrollToHero();
-      if (typeof window !== "undefined" && window.location.hash !== "#hero") {
-        window.history.replaceState(null, "", "/#hero");
-      }
+      clearHeroHash();
       return;
     }
-    e.preventDefault();
-    router.push("/#hero");
+    router.push(routes.home);
   }
 
   return (
     <Link
-      href="/#hero"
+      href={routes.home}
       onClick={handleClick}
       className={cn(
         "group flex items-center gap-2 leading-none",

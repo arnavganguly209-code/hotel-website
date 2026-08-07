@@ -33,6 +33,14 @@ function scrollToHero() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function clearHeroHash() {
+  if (typeof window === "undefined") return;
+  if (!window.location.hash) return;
+  const path = window.location.pathname || "/";
+  const search = window.location.search || "";
+  window.history.replaceState(null, "", `${path}${search}`);
+}
+
 function HamburgerIcon({ open }: { open: boolean }) {
   return (
     <div className="flex h-3.5 w-5 flex-col justify-between">
@@ -77,15 +85,15 @@ export function Header({ header, hotelName }: HeaderProps) {
 
   const phoneDisplay = header.phone || "+977 014701536";
   const phoneHref = `tel:${phoneDisplay.replace(/[^\d+]/g, "")}`;
-  const barHeight = Math.max(52, Math.min(58, header.height || 56));
-  const logoWidth = header.logoSize && header.logoSize > 0 ? header.logoSize : 370;
-  // Fill the slim bar edge-to-edge vertically — frame stays same height.
-  const logoFitH = Math.max(48, barHeight - 2);
+  const barHeight = Math.max(58, Math.min(64, header.height || 60));
+  const logoWidth = header.logoSize && header.logoSize > 0 ? header.logoSize : 407;
+  // Light top/bottom breathing room; logo stays one-line centered in the bar.
+  const logoFitH = Math.max(44, barHeight - 10);
   const primaryNav =
     header.primaryNavItems?.length > 0
       ? header.primaryNavItems
       : [
-          { label: "Overview", href: "/#hero" },
+          { label: "Overview", href: routes.home },
           { label: "Rooms", href: routes.rooms },
           { label: "Restaurant", href: routes.restaurant },
           { label: "Contact", href: routes.contact },
@@ -102,17 +110,16 @@ export function Header({ header, hotelName }: HeaderProps) {
       /overview/i.test(item.label) ||
       item.href === "/#hero" ||
       item.href === "/#overview" ||
-      item.href === "/";
+      item.href === "/" ||
+      item.href === routes.home;
     if (!toHero) return;
     e.preventDefault();
     if (isHome) {
       scrollToHero();
-      if (typeof window !== "undefined" && window.location.hash !== "#hero") {
-        window.history.replaceState(null, "", "/#hero");
-      }
+      clearHeroHash();
       return;
     }
-    router.push("/#hero");
+    router.push(routes.home);
   }
 
   const headerStyle = cn(
@@ -164,14 +171,15 @@ export function Header({ header, hotelName }: HeaderProps) {
                   /overview/i.test(item.label) ||
                   item.href === "/#hero" ||
                   item.href === "/#overview" ||
-                  item.href === "/";
+                  item.href === "/" ||
+                  item.href === routes.home;
                 const active = isOverview
                   ? isHome
                   : pathname === item.href || pathname.startsWith(`${item.href}/`);
                 return (
                   <Link
                     key={`${item.label}-${item.href}`}
-                    href={isOverview ? "/#hero" : item.href}
+                    href={isOverview ? routes.home : item.href}
                     onClick={(e) => handlePrimaryClick(e, item)}
                     className={cn(
                       "group/nav relative whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] lg:px-3 lg:text-[12px]",

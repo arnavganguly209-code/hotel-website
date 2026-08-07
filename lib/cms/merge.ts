@@ -204,8 +204,8 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
             showText: false,
             hideText: true,
             logoSrc: defaultContent.header.logoSrc,
-            logoSize: 370,
-            height: 56,
+            logoSize: 407,
+            height: 60,
             transparent: false,
             showBookButton: true,
             showPrimaryNav: true,
@@ -214,18 +214,19 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
             textColor: defaultContent.header.textColor,
           }
         : {};
-      // Migrate prior sizes to clear ~22% larger lockup; refresh black-plate logos.
+      // Keep clear lockup + slight bar height; bump older CMS sizes.
       const logoBump =
         !legacyTextHeader &&
         (headerPartial.logoSize == null ||
-          headerPartial.logoSize <= 340 ||
-          headerPartial.logoSize >= 420 ||
-          (headerPartial.height != null && headerPartial.height >= 70) ||
+          headerPartial.logoSize <= 400 ||
+          headerPartial.logoSize >= 450 ||
+          (headerPartial.height != null &&
+            (headerPartial.height < 58 || headerPartial.height >= 70)) ||
           (typeof headerPartial.logoSrc === "string" &&
             !headerPartial.logoSrc.includes("clear-trim")))
           ? {
-              logoSize: 370,
-              height: 56,
+              logoSize: 407,
+              height: 60,
               logoSrc: defaultContent.header.logoSrc,
             }
           : {};
@@ -233,8 +234,11 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
         headerPartial.primaryNavItems,
         defaultContent.header.primaryNavItems
       ).map((item) =>
-        /overview/i.test(item.label) || item.href === "/#overview" || item.href === "/"
-          ? { ...item, href: "/#hero" }
+        /overview/i.test(item.label) ||
+        item.href === "/#overview" ||
+        item.href === "/#hero" ||
+        item.href === "/"
+          ? { ...item, href: "/" }
           : item
       );
       return {
