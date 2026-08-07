@@ -48,8 +48,6 @@ if [ -f package-lock.json ]; then
 else
   npm install --ignore-scripts
 fi
-echo "Generating Prisma client"
-npx prisma generate
 
 # Ensure localhost thamelpark
 set +e
