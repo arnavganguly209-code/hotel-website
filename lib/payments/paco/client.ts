@@ -1,5 +1,10 @@
 import { getPacoConfig, type PacoConfig } from "./config";
 import {
+  assertSameMoney,
+  normalizePacoCurrency,
+  sanitizePaymentRequestForLog,
+} from "./currency";
+import {
   buildJoseEnvelope,
   decryptToken,
   encryptPayload,
@@ -80,17 +85,19 @@ export type CreatePaymentUiInput = {
   cancelUrl: string;
   backendUrl: string;
   orderNo?: string | number;
-  /** Exact PHP ExecuteFormJose demo (Postman deviceDetails, TestField, ticket/NPR-1 line). */
+  /**
+   * Opt-in ONLY for dedicated UAT scripts.
+   * Never enable via env on live bookings — HBL sample hard-coded NPR/1 must not leak.
+   */
   sdkDemoShape?: boolean;
 };
 
 function sdkDemoShapeEnabled(input: CreatePaymentUiInput): boolean {
-  if (input.sdkDemoShape === true) return true;
-  if (input.sdkDemoShape === false) return false;
-  return process.env.HBL_PACO_SDK_DEMO_SHAPE === "1";
+  // Explicit opt-in only. Env flag must NOT affect /api/bookings live path.
+  return input.sdkDemoShape === true;
 }
 
-/** Live bookings: PHP purchaseItems shape; line price mirrors transactionAmount. */
+/** Live bookings: purchaseItemPrice MUST mirror transactionAmount (same currency + amountText). */
 function buildLivePurchaseItems(
   transactionAmount: PacoAmount,
   input: CreatePaymentUiInput
@@ -100,31 +107,24 @@ function buildLivePurchaseItems(
       purchaseItemType: "hotel",
       referenceNo: input.bookingNumber,
       purchaseItemDescription: input.productDescription,
-      purchaseItemPrice: transactionAmount,
+      purchaseItemPrice: { ...transactionAmount },
       subMerchantID: "string",
       passengerSeqNo: 1,
     },
   ];
 }
 
-/** Payment.php ExecuteFormJose demo line item (optional NPR 1 micro-UAT). */
+/**
+ * HBL PHP ExecuteFormJose sample shape — scripts/_hbl-sdk-npr1-uat.ts only.
+ * Still mirrors transactionAmount (no silent NPR override when currency is USD).
+ */
 function buildSdkDemoPurchaseItems(transactionAmount: PacoAmount): PacoPaymentRequestBody["purchaseItems"] {
-  const purchaseItemPrice =
-    transactionAmount.currencyCode === "NPR" && transactionAmount.amount <= 1
-      ? {
-          amountText: "000000000100",
-          currencyCode: "NPR",
-          decimalPlaces: 2,
-          amount: 1,
-        }
-      : transactionAmount;
-
   return [
     {
       purchaseItemType: "ticket",
       referenceNo: "2322460376026",
       purchaseItemDescription: "Bundled insurance",
-      purchaseItemPrice,
+      purchaseItemPrice: { ...transactionAmount },
       subMerchantID: "string",
       passengerSeqNo: 1,
     },
@@ -144,9 +144,15 @@ export async function createPrePaymentUi(input: CreatePaymentUiInput) {
   const config = getPacoConfig();
   const now = new Date();
   const orderNo = input.orderNo ?? Number(pacoOrderNo(now));
-  const currency = (input.currency || config.currency).toUpperCase();
+  // Authoritative currency: caller (booking tax) first; config default second. Never invent NPR.
+  const currency = normalizePacoCurrency(input.currency || config.currency);
   const amountBlock = formatPacoAmount(input.amount, currency);
   const sdkDemo = sdkDemoShapeEnabled(input);
+  const purchaseItems = sdkDemo
+    ? buildSdkDemoPurchaseItems(amountBlock)
+    : buildLivePurchaseItems(amountBlock, input);
+
+  assertSameMoney(amountBlock, purchaseItems[0].purchaseItemPrice, "prePaymentUi purchaseItems");
 
   const request: PacoPaymentRequestBody = {
     apiRequest: {
@@ -185,9 +191,7 @@ export async function createPrePaymentUi(input: CreatePaymentUiInput) {
           mobileDeviceFlag: "N",
         }
       : buildDeviceDetails(input),
-    purchaseItems: sdkDemo
-      ? buildSdkDemoPurchaseItems(amountBlock)
-      : buildLivePurchaseItems(amountBlock, input),
+    purchaseItems,
     customFieldList: sdkDemo
       ? [{ fieldName: "TestField", fieldValue: "This is test" }]
       : [
@@ -195,6 +199,17 @@ export async function createPrePaymentUi(input: CreatePaymentUiInput) {
           { fieldName: "bookingNumber", fieldValue: input.bookingNumber },
         ],
   };
+
+  // UAT diagnostic: prove final JOSE request currency before encrypt/send.
+  if (config.env === "uat") {
+    pacoLog("info", "prepayment_request_sanitized", {
+      bookingId: input.bookingId,
+      endpoint: "api/1.0/Payment/prePaymentUi",
+      apiVersion: "1.0",
+      hblEnv: config.env,
+      ...sanitizePaymentRequestForLog(request),
+    });
+  }
 
   const decrypted = await joseRequest("POST", "api/1.0/Payment/prePaymentUi", request, config);
   const parsed = JSON.parse(decrypted) as PacoPaymentPageResponse;
@@ -321,6 +336,8 @@ export function parseInquiryOutcome(inquiry: Record<string, unknown>): {
   approvalCode?: string;
   invoiceNo?: string;
   statusText?: string;
+  amount?: number;
+  currency?: string;
 } {
   const response = (inquiry.response || inquiry) as Record<string, unknown>;
   const data = (response.Data || response.data || response) as Record<string, unknown>;
@@ -349,7 +366,7 @@ export function parseInquiryOutcome(inquiry: Record<string, unknown>): {
   ).trim();
 
   const invoiceNo = String(
-    first.invoiceNo2C2P || first.invoiceNo || first.InvoiceNo || ""
+    first.invoiceNo2C2P || first.InvoiceNo2C2P || first.invoiceNo || first.InvoiceNo || ""
   ).trim();
 
   const paymentStatusInfo = (first.PaymentStatusInfo || first.paymentStatusInfo) as
@@ -358,6 +375,22 @@ export function parseInquiryOutcome(inquiry: Record<string, unknown>): {
   const pacoStatus = String(paymentStatusInfo?.PaymentStatus || "").toUpperCase();
   const pacoStep = String(paymentStatusInfo?.PaymentStep || "").toUpperCase();
 
+  const amountBlock = (first.TransactionAmount ||
+    first.transactionAmount ||
+    first.SettlementAmount ||
+    first.settlementAmount) as
+    | { Amount?: number; amount?: number; CurrencyCode?: string; currencyCode?: string }
+    | undefined;
+  const amount =
+    typeof amountBlock?.Amount === "number"
+      ? amountBlock.Amount
+      : typeof amountBlock?.amount === "number"
+        ? amountBlock.amount
+        : undefined;
+  const currency = String(amountBlock?.CurrencyCode || amountBlock?.currencyCode || "")
+    .trim()
+    .toUpperCase() || undefined;
+
   if (pacoStatus === "F") {
     return {
       paid: false,
@@ -365,6 +398,8 @@ export function parseInquiryOutcome(inquiry: Record<string, unknown>): {
       approvalCode: approvalCode || undefined,
       invoiceNo: invoiceNo || undefined,
       statusText: pacoStep || "F",
+      amount,
+      currency,
     };
   }
   if (pacoStatus === "A" || pacoStatus === "S") {
@@ -374,6 +409,8 @@ export function parseInquiryOutcome(inquiry: Record<string, unknown>): {
       approvalCode: approvalCode || undefined,
       invoiceNo: invoiceNo || undefined,
       statusText: pacoStep || pacoStatus,
+      amount,
+      currency,
     };
   }
 
@@ -389,5 +426,7 @@ export function parseInquiryOutcome(inquiry: Record<string, unknown>): {
     approvalCode: approvalCode || undefined,
     invoiceNo: invoiceNo || undefined,
     statusText: statusRaw || undefined,
+    amount,
+    currency,
   };
 }

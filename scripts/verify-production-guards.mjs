@@ -53,6 +53,26 @@ for (const rel of banned) {
 }
 ok("no banned deploy-beacon/deploy-log files in public/");
 
+// 5b) PACO live path must not enable HBL sample demo via env
+const pacoClient = fs.readFileSync(path.join(root, "lib/payments/paco/client.ts"), "utf8");
+if (/process\.env\.HBL_PACO_SDK_DEMO_SHAPE/.test(pacoClient)) {
+  fail("lib/payments/paco/client.ts still enables SDK demo shape via env (leaks sample NPR/Postman into live bookings)");
+} else {
+  ok("PACO SDK demo shape is not env-enabled");
+}
+if (/currencyCode:\s*["']NPR["']/.test(pacoClient) && /purchaseItemPrice/.test(pacoClient)) {
+  // Allow comments; fail only if NPR literal sits near purchaseItemPrice assignment in same line cluster
+  const lines = pacoClient.split(/\r?\n/);
+  const bad = lines.some(
+    (line) =>
+      /purchaseItemPrice/.test(line) && /["']NPR["']/.test(line) && !/^\s*\/\//.test(line) && !/\*/.test(line)
+  );
+  if (bad) fail("hard-coded NPR in purchaseItemPrice line");
+  else ok("no hard-coded NPR purchaseItemPrice assignment");
+} else {
+  ok("no hard-coded NPR purchaseItemPrice");
+}
+
 // 4) If a production build exists, middleware manifest must be empty
 const manifestPath = path.join(root, ".next/server/middleware-manifest.json");
 if (fs.existsSync(manifestPath)) {

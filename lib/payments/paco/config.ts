@@ -64,7 +64,13 @@ export function getPacoConfig(): PacoConfig {
     apiKey: required("HBL_PACO_API_KEY", process.env.HBL_PACO_API_KEY),
     encryptionKeyId: process.env.HBL_PACO_ENCRYPTION_KEY_ID?.trim() || defaultKid,
     request3ds: process.env.HBL_PACO_REQUEST_3DS === "N" ? "N" : "Y",
-    currency: (process.env.HBL_PACO_CURRENCY || "USD").toUpperCase(),
+    // Fallback only when caller omits currency. Live bookings pass booking.currency.
+    // Never invent NPR here — default USD; set HBL_PACO_CURRENCY=NPR only intentionally.
+    currency: (() => {
+      const raw = (process.env.HBL_PACO_CURRENCY || "USD").trim().toUpperCase();
+      if (raw === "USD" || raw === "NPR") return raw;
+      throw new Error(`HBL_PACO_CURRENCY must be USD or NPR (got "${process.env.HBL_PACO_CURRENCY}")`);
+    })(),
     merchantSigningPrivateKey: normalizePemKey(
       required("HBL_PACO_MERCHANT_SIGNING_PRIVATE_KEY", process.env.HBL_PACO_MERCHANT_SIGNING_PRIVATE_KEY),
       "private"

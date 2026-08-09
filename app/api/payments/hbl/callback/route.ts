@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
 import { db, isDatabaseAvailable } from "@/lib/db";
-import { markPaymentTerminal, pacoLog, syncPaymentFromInquiry } from "@/lib/payments/paco";
+import { pacoLog, syncPaymentFromInquiry } from "@/lib/payments/paco";
+import {
+  extractOrderNoFromRecord,
+  tryDecryptCallbackBody,
+} from "@/lib/payments/paco/order-resolve";
 
 export const dynamic = "force-dynamic";
 
 async function extractPayload(req: Request): Promise<Record<string, unknown>> {
   const contentType = req.headers.get("content-type") || "";
+  if (contentType.includes("application/jose") || contentType.includes("application/jwt")) {
+    const text = await req.text();
+    const decrypted = await tryDecryptCallbackBody(text);
+    return decrypted || { rawJose: true, length: text.length };
+  }
   if (contentType.includes("application/json")) {
     try {
       return (await req.json()) as Record<string, unknown>;
@@ -29,7 +38,8 @@ async function extractPayload(req: Request): Promise<Record<string, unknown>> {
   try {
     return JSON.parse(text) as Record<string, unknown>;
   } catch {
-    return { raw: text };
+    const decrypted = await tryDecryptCallbackBody(text);
+    return decrypted || { raw: text.slice(0, 200) };
   }
 }
 
@@ -38,16 +48,12 @@ function pickOrderNo(payload: Record<string, unknown>, url: URL): string | null 
     url.searchParams.get("orderNo"),
     url.searchParams.get("order_no"),
     url.searchParams.get("orderId"),
-    payload.orderNo,
-    payload.order_no,
-    payload.OrderNo,
-    payload.orderId,
-    (payload.request as Record<string, unknown> | undefined)?.orderNo,
+    url.searchParams.get("OrderNo"),
   ];
   for (const c of candidates) {
     if (typeof c === "string" && c.trim()) return c.trim();
   }
-  return null;
+  return extractOrderNoFromRecord(payload);
 }
 
 async function handleCallback(req: Request) {
@@ -57,7 +63,12 @@ async function handleCallback(req: Request) {
 
   const url = new URL(req.url);
   const payload = req.method === "GET" ? {} : await extractPayload(req);
-  const orderNo = pickOrderNo(payload, url);
+  let orderNo = pickOrderNo(payload, url);
+
+  if (!orderNo) {
+    const { readPacoOrderCookie } = await import("@/lib/payments/paco/order-resolve");
+    orderNo = await readPacoOrderCookie();
+  }
 
   pacoLog("info", "callback_received", {
     method: req.method,

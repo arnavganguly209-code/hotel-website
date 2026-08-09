@@ -8,7 +8,7 @@ import { pacoLog } from "./logger";
  * After callback / success redirect: inquire PACO, mark booking paid once, send emails.
  * Idempotent for duplicate callbacks.
  */
-export async function syncPaymentFromInquiry(orderNo: string, source: "callback" | "success" | "admin" | "retry") {
+export async function syncPaymentFromInquiry(orderNo: string, source: "callback" | "success" | "admin" | "retry" | "failed") {
   if (!isDatabaseAvailable()) {
     throw new Error("Database not configured");
   }
@@ -56,7 +56,57 @@ export async function syncPaymentFromInquiry(orderNo: string, source: "callback"
     paid: outcome.paid,
     failed: outcome.failed,
     statusText: outcome.statusText,
+    inquiryAmount: outcome.amount,
+    inquiryCurrency: outcome.currency,
+    bookingAmount: txn.amount,
+    bookingCurrency: txn.currency,
   });
+
+  // Never mark paid if HBL amount/currency disagrees with our PaymentTransaction.
+  if (outcome.paid) {
+    const expectedCurrency = String(txn.currency || booking.currency || "").toUpperCase();
+    const inquiryCurrency = String(outcome.currency || "").toUpperCase();
+    const expectedAmount = Number(txn.amount);
+    const inquiryAmount = outcome.amount;
+    const currencyMismatch =
+      inquiryCurrency && expectedCurrency && inquiryCurrency !== expectedCurrency;
+    const amountMismatch =
+      typeof inquiryAmount === "number" &&
+      Number.isFinite(expectedAmount) &&
+      Math.round(inquiryAmount * 100) !== Math.round(expectedAmount * 100);
+
+    if (currencyMismatch || amountMismatch) {
+      pacoLog("error", "inquiry_money_mismatch", {
+        orderNo,
+        source,
+        expectedAmount,
+        expectedCurrency,
+        inquiryAmount,
+        inquiryCurrency,
+      });
+      await db.paymentTransaction.update({
+        where: { id: txn.id },
+        data: {
+          rawInquiry: inquiry as object,
+          lastInquiryAt: new Date(),
+          status: "error",
+          errorMessage: `Amount/currency mismatch vs booking (expected ${expectedAmount} ${expectedCurrency}, got ${inquiryAmount} ${inquiryCurrency})`,
+        },
+      });
+      await db.booking.update({
+        where: { id: booking.id },
+        data: {
+          paymentStatus: "failed",
+          status: "payment_pending",
+        },
+      });
+      return {
+        ok: false as const,
+        error: "Amount/currency mismatch",
+        bookingId: booking.id,
+      };
+    }
+  }
 
   await db.paymentTransaction.update({
     where: { id: txn.id },

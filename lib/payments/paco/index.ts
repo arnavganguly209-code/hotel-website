@@ -10,4 +10,11 @@ export {
 export { encryptPayload, decryptToken, formatPacoAmount, pacoGuid, pacoOrderNo } from "./jose";
 export { syncPaymentFromInquiry, markPaymentTerminal } from "./fulfill";
 export { pacoLog } from "./logger";
+export {
+  normalizePacoCurrency,
+  formatPacoAmountFields,
+  assertSameMoney,
+  sanitizePaymentRequestForLog,
+  PACO_SUPPORTED_CURRENCIES,
+} from "./currency";
 export type * from "./types";

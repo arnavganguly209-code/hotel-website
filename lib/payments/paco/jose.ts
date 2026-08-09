@@ -10,6 +10,7 @@ import {
   compactDecrypt,
   compactVerify,
 } from "jose";
+import { formatPacoAmountFields } from "./currency";
 import { PACO_JOSE, type PacoConfig } from "./config";
 import type { PacoJoseEnvelope } from "./types";
 
@@ -113,6 +114,7 @@ export function buildJoseEnvelope(
   const unix = Math.floor(now.getTime() / 1000);
   return {
     request,
+    // HBL sample uses merchant API key for both iss and CompanyApiKey payload fields.
     iss: config.apiKey,
     aud: PACO_JOSE.audience,
     CompanyApiKey: config.apiKey,
@@ -124,12 +126,5 @@ export function buildJoseEnvelope(
 
 /** Format amount like PHP: str_pad(($amt)*100, 12, "0", STR_PAD_LEFT) */
 export function formatPacoAmount(amount: number, currencyCode: string) {
-  const safe = Number.isFinite(amount) ? Math.max(0, amount) : 0;
-  const minor = Math.round(safe * 100);
-  return {
-    amountText: String(minor).padStart(12, "0"),
-    currencyCode,
-    decimalPlaces: 2,
-    amount: safe,
-  };
+  return formatPacoAmountFields(amount, currencyCode);
 }

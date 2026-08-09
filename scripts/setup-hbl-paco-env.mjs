@@ -2,6 +2,10 @@
  * Appends HBL PACO UAT credentials from the official PHP SDK SecurityData.php
  * and 2c2papiint.txt into .env (gitignored). Does not print secrets.
  *
+ * IMPORTANT — AccessToken vs merchant api_key:
+ * SecurityData.php contains a sample AccessToken. Merchant UAT api_key comes from
+ * HBL notes (2c2papiint.txt). Prefer notes.api_key. Never put either in NEXT_PUBLIC_*.
+ *
  * Usage:
  *   node scripts/setup-hbl-paco-env.mjs
  *   node scripts/setup-hbl-paco-env.mjs --sdk "C:/path/to/SecurityData.php" --notes "C:/path/to/2c2papiint.txt"
@@ -87,11 +91,20 @@ if (!signing || !pacoEnc || !pacoSign || !decrypt || !encryptionKeyId) {
 }
 
 let officeId = "";
-let apiKey = accessToken || "";
+// Prefer merchant api_key from HBL notes. AccessToken from SecurityData is sample-only fallback.
+let apiKey = "";
 if (fs.existsSync(notesPath)) {
   const notes = parseNotes(fs.readFileSync(notesPath, "utf8"));
   officeId = notes.officeId || officeId;
   apiKey = notes.apiKey || apiKey;
+}
+if (!apiKey) {
+  apiKey = accessToken || "";
+  if (apiKey) {
+    console.warn(
+      "WARN: Using SecurityData AccessToken as HBL_PACO_API_KEY because notes api_key was missing. Confirm this matches the merchant UAT api_key from HBL."
+    );
+  }
 }
 
 const block = `

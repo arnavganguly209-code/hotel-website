@@ -126,7 +126,15 @@ export async function POST(req: Request) {
       nights,
       roomQuantity,
     });
-    const tax = taxFieldsFromInclusiveTotal(price.grandTotal);
+    // Settlement currency is server-owned (default USD).
+    // Use BOOKING_CURRENCY=NPR only for intentional NPR-site mode.
+    // Do NOT read HBL_PACO_CURRENCY here — that env is a payment fallback and NPR UAT
+    // scripts temporarily set it; coupling would silently convert USD bookings to NPR.
+    const bookingCurrency =
+      String(process.env.BOOKING_CURRENCY || "USD").trim().toUpperCase() === "NPR"
+        ? "NPR"
+        : "USD";
+    const tax = taxFieldsFromInclusiveTotal(price.grandTotal, bookingCurrency);
 
     const slug = roomPublicSlug(room);
     const { findRoomIdBySlug } = await import("@/lib/cms/sync-rooms");
@@ -186,9 +194,36 @@ export async function POST(req: Request) {
       try {
         const paco = getPacoConfig();
         const base = paco.siteUrl;
+        // Authoritative money: server-calculated tax snapshot only — never trust body.totalAmount.
+        const paymentAmount = tax.grandTotal;
+        const paymentCurrency = tax.currency;
+        if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) {
+          throw new Error(`Invalid payment amount: ${paymentAmount}`);
+        }
+        if (paymentCurrency !== "USD" && paymentCurrency !== "NPR") {
+          throw new Error(`Invalid payment currency: ${paymentCurrency}`);
+        }
+        // Ignore any client-supplied totalAmount / currency for gateway initiation.
+        if (
+          typeof body.totalAmount === "number" &&
+          Math.round(body.totalAmount * 100) !== Math.round(paymentAmount * 100)
+        ) {
+          pacoLog("warn", "client_amount_ignored", {
+            bookingId: booking.id,
+            clientTotal: body.totalAmount,
+            serverTotal: paymentAmount,
+            currency: paymentCurrency,
+          });
+        }
+        pacoLog("info", "payment_init_money", {
+          bookingId: booking.id,
+          requestedAmount: paymentAmount,
+          requestedCurrency: paymentCurrency,
+          clientTotalIgnored: body.totalAmount,
+        });
         const payment = await createPrePaymentUi({
-          amount: tax.grandTotal,
-          currency: tax.currency,
+          amount: paymentAmount,
+          currency: paymentCurrency,
           productDescription: `Hotel Thamel Park booking ${bookingNumber}`,
           bookingId: booking.id,
           bookingNumber,
@@ -208,8 +243,8 @@ export async function POST(req: Request) {
             gateway: "hbl_paco",
             orderNo: payment.orderNo,
             requestMessageId: payment.requestMessageId,
-            amount: tax.grandTotal,
-            currency: tax.currency,
+            amount: paymentAmount,
+            currency: paymentCurrency,
             status: "redirected",
             paymentPageUrl: payment.paymentPageURL,
             rawRequest: payment.request as object,
@@ -225,6 +260,10 @@ export async function POST(req: Request) {
         pacoLog("info", "payment_redirect_ready", {
           bookingId: booking.id,
           orderNo: payment.orderNo,
+          amount: paymentAmount,
+          currency: paymentCurrency,
+          transactionCurrency: payment.request.transactionAmount?.currencyCode,
+          purchaseItemCurrency: payment.request.purchaseItems?.[0]?.purchaseItemPrice?.currencyCode,
         });
 
         const { pacoOrderCookieOptions } = await import("@/lib/payments/paco/order-resolve");
