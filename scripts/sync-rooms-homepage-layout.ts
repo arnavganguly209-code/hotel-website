@@ -39,6 +39,14 @@ async function main() {
           exploreText: room.exploreText || "Explore Room",
           imageSrc: room.imageSrc,
           gallery: room.gallery,
+          seo: {
+            metaTitle: `${room.name} | Hotel Thamel Park`,
+            metaDescription: room.description,
+            canonical: `/rooms/${room.slug || room.id}`,
+            ogImage: room.imageSrc,
+            twitterImage: room.imageSrc,
+            altText: room.name,
+          },
         },
       ])
     );

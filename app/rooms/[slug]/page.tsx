@@ -86,7 +86,12 @@ export default async function RoomDetailRoute({ params, searchParams }: RoomDeta
       <RoomDetailPage
         room={room}
         search={hasSearch ? search : undefined}
-        suggestedRooms={content.rooms.filter((candidate) => candidate.id !== room.id)}
+        suggestedRooms={content.rooms.filter(
+          (candidate) =>
+            candidate.id !== room.id &&
+            candidate.available !== false &&
+            candidate.visible !== false
+        )}
         reviews={content.reviews}
       />
     </>
