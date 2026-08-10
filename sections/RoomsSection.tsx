@@ -14,9 +14,11 @@ interface RoomsSectionProps {
   section?: SiteContent["roomsSection"];
 }
 
+const HOME_ROOM_LIMIT = 3;
+
 /**
  * Accommodations / The Rooms — homepage section below Cultural Experience.
- * Atmosphere continues the cream → soft emerald mist of the section above.
+ * Desktop: exactly 3 room cards in one balanced row.
  */
 export function RoomsSection({
   rooms,
@@ -26,10 +28,12 @@ export function RoomsSection({
   const heading = section.headingColor || "#062C24";
   const topBg = section.backgroundTop || "#F9F6EF";
   const bottomBg = section.backgroundBottom || "#E8F0E9";
+  const body = section.bodyColor || "#5A635C";
 
   const visibleRooms = [...rooms]
     .filter((r) => r.visible !== false)
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .slice(0, HOME_ROOM_LIMIT);
 
   return (
     <section
@@ -47,13 +51,14 @@ export function RoomsSection({
         />
       </div>
 
-      <div className="relative mx-auto max-w-[1200px] px-4 py-8 sm:px-6 md:py-10 lg:px-8 lg:py-12">
-        <div className="mb-12 flex flex-col items-start justify-between gap-6 md:mb-14 md:flex-row md:items-end">
+      <div className="relative mx-auto max-w-[1180px] px-4 py-10 sm:px-6 md:py-12 lg:px-8 lg:py-14">
+        <div className="mb-10 flex flex-col items-start justify-between gap-6 md:mb-12 md:flex-row md:items-end">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.85, ease: luxuryEase }}
+            className="max-w-xl"
           >
             <p
               className="mb-3 font-display text-[11px] font-semibold uppercase"
@@ -67,6 +72,14 @@ export function RoomsSection({
             >
               {section.title}
             </h2>
+            {section.description ? (
+              <p
+                className="mt-4 max-w-md text-sm leading-relaxed md:text-[15px]"
+                style={{ color: body }}
+              >
+                {section.description}
+              </p>
+            ) : null}
             <div className="mt-5 flex items-center gap-3" aria-hidden>
               <span className="h-px w-10" style={{ backgroundColor: `${gold}88` }} />
               <span className="h-1.5 w-1.5 rotate-45" style={{ backgroundColor: gold }} />
@@ -80,14 +93,16 @@ export function RoomsSection({
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.08, ease: luxuryEase }}
+              className="shrink-0"
             >
               <Link
                 href={section.ctaHref || "/rooms"}
                 prefetch
-                className="inline-flex items-center gap-2 rounded-xl px-6 py-3 font-body text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(197,160,89,0.35)]"
+                className="inline-flex items-center gap-2 rounded-full px-6 py-3 font-body text-[11px] font-semibold uppercase tracking-[0.18em] transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(6,44,36,0.28)]"
                 style={{
-                  backgroundColor: gold,
-                  boxShadow: `0 10px 28px ${gold}44`,
+                  backgroundColor: heading,
+                  color: gold,
+                  boxShadow: `0 10px 28px rgba(6, 44, 36, 0.22)`,
                 }}
               >
                 {section.ctaText}
@@ -102,10 +117,10 @@ export function RoomsSection({
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-40px" }}
-          className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-7 xl:grid-cols-4 xl:gap-6"
+          className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3 lg:gap-8"
         >
           {visibleRooms.map((room) => (
-            <motion.div key={room.id} variants={luxuryFadeUp} className="h-full">
+            <motion.div key={room.id} variants={luxuryFadeUp} className="h-full min-w-0">
               <RoomCard room={room} goldColor={gold} headingColor={heading} />
             </motion.div>
           ))}
