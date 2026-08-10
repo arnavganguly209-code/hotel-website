@@ -284,13 +284,16 @@ export function ImagePicker({
             </button>
           ) : null}
           {value ? (
-            <button
+            <Button
               type="button"
-              className="text-left text-xs text-red-400 hover:underline"
+              size="sm"
+              variant="outline"
+              className="border-red-400/40 text-red-300 hover:bg-red-500/10"
               onClick={() => onChange("")}
             >
-              Clear image
-            </button>
+              <X className="h-4 w-4" />
+              Clear & replace
+            </Button>
           ) : null}
         </div>
       </div>
