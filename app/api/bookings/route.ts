@@ -16,6 +16,8 @@ import {
   getPacoConfig,
   isPacoConfigured,
   pacoLog,
+  PacoHttpError,
+  pacoHttpDiagnosticLogFields,
 } from "@/lib/payments/paco";
 
 export const dynamic = "force-dynamic";
@@ -298,6 +300,7 @@ export async function POST(req: Request) {
         pacoLog("error", "payment_init_failed", {
           bookingId: booking.id,
           error: err instanceof Error ? err.message : String(err),
+          ...(err instanceof PacoHttpError ? pacoHttpDiagnosticLogFields(err.diagnostic) : {}),
         });
         await db.booking.update({
           where: { id: booking.id },

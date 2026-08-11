@@ -13,6 +13,11 @@ import {
   pacoOrderNo,
   pacoRequestDateTime,
 } from "./jose";
+import {
+  diagnosePacoHttpError,
+  pacoHttpDiagnosticLogFields,
+  PacoHttpError,
+} from "./http-error";
 import { pacoLog } from "./logger";
 import type { PacoAmount, PacoPaymentPageResponse, PacoPaymentRequestBody } from "./types";
 
@@ -50,7 +55,14 @@ async function joseRequest(
 
       const token = await response.text();
       if (!response.ok) {
-        throw new Error(`PACO HTTP ${response.status}`);
+        const diagnostic = await diagnosePacoHttpError(response.status, token, config);
+        pacoLog("error", "api_http_error_diagnosed", {
+          path,
+          method,
+          attempt,
+          ...pacoHttpDiagnosticLogFields(diagnostic),
+        });
+        throw new PacoHttpError(diagnostic);
       }
 
       const decrypted = await decryptToken(token, config);
@@ -64,6 +76,10 @@ async function joseRequest(
         attempt,
         error: err instanceof Error ? err.message : String(err),
       });
+      // 4xx is a PACO application rejection — do not retry the same payload.
+      if (err instanceof PacoHttpError && err.httpStatus >= 400 && err.httpStatus < 500) {
+        break;
+      }
       if (attempt < retries) {
         await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
       }

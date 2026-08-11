@@ -8,7 +8,13 @@ export {
   settleTransaction,
   parseInquiryOutcome,
 } from "./client";
-export { encryptPayload, decryptToken, formatPacoAmount, pacoGuid, pacoOrderNo } from "./jose";
+export { encryptPayload, decryptToken, inspectPacoJoseToken, formatPacoAmount, pacoGuid, pacoOrderNo } from "./jose";
+export {
+  diagnosePacoHttpError,
+  detectPacoBodyFormat,
+  pacoHttpDiagnosticLogFields,
+  PacoHttpError,
+} from "./http-error";
 export { syncPaymentFromInquiry, markPaymentTerminal } from "./fulfill";
 export { pacoLog } from "./logger";
 export {

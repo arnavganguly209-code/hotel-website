@@ -86,9 +86,23 @@ if (!deploySrc.includes("pm2-reload-from-dotenv.mjs")) {
   fail("vps-deploy.sh still reloads PM2 by name without re-reading .env");
 } else ok("vps-deploy.sh reloads PM2 from .env");
 
+const clientNow = fs.readFileSync(path.join(root, "lib/payments/paco/client.ts"), "utf8");
+if (!clientNow.includes("diagnosePacoHttpError") || !clientNow.includes("api_http_error_diagnosed")) {
+  fail("PACO client does not diagnose non-2xx response bodies");
+} else ok("PACO client diagnoses non-2xx HTTP bodies");
+
 if (failures.length) {
   console.error(`\n${failures.length} static production-config check(s) failed`);
   process.exit(1);
+}
+
+const httpErr = spawnSync(
+  process.platform === "win32" ? "npx.cmd" : "npx",
+  ["tsx", "scripts/verify-paco-http-error.ts"],
+  { cwd: root, stdio: "inherit", shell: process.platform === "win32" }
+);
+if (httpErr.status !== 0) {
+  process.exit(httpErr.status || 1);
 }
 
 const runtime = spawnSync(

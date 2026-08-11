@@ -75,35 +75,92 @@ export async function encryptPayload(
  * Decrypt + verify response like PHP ActionRequest::DecryptToken:
  * JWE decrypt → JWS verify → claim checks (nbf, exp, aud=apiKey, iss=PacoIssuer)
  */
-export async function decryptToken(token: string, config: PacoConfig): Promise<string> {
+export type PacoJoseInspect = {
+  decrypted: boolean;
+  signatureVerified: boolean;
+  claimsOk: boolean;
+  payloadJson: string | null;
+  stageError: string | null;
+};
+
+/**
+ * Same JOSE pipeline as decryptToken (JWE RSA-OAEP + A128CBC-HS256 → JWS PS256),
+ * but reports each stage so HTTP 400 bodies can be diagnosed without throwing away the payload.
+ * Never returns the compact token.
+ */
+export async function inspectPacoJoseToken(token: string, config: PacoConfig): Promise<PacoJoseInspect> {
   const decryptingKey = importPrivateKey(config.merchantDecryptionPrivateKey);
   const signatureVerificationKey = importPublicKey(config.pacoSigningPublicKey);
 
-  const { plaintext } = await compactDecrypt(token.trim(), decryptingKey);
-  const jwsCompact = textDecoder.decode(plaintext);
-
-  const { payload } = await compactVerify(jwsCompact, signatureVerificationKey, {
-    algorithms: [PACO_JOSE.jwsAlgorithm],
-  });
-
-  const claimsJson = textDecoder.decode(payload);
-  const claims = JSON.parse(claimsJson) as Record<string, unknown>;
-
-  const now = Math.floor(Date.now() / 1000);
-  if (typeof claims.nbf === "number" && claims.nbf > now + 60) {
-    throw new Error("PACO response nbf claim is in the future");
-  }
-  if (typeof claims.exp === "number" && claims.exp < now - 60) {
-    throw new Error("PACO response token has expired");
-  }
-  if (claims.aud !== config.apiKey) {
-    throw new Error("PACO response audience mismatch");
-  }
-  if (claims.iss !== PACO_JOSE.responseIssuer) {
-    throw new Error("PACO response issuer mismatch");
+  let jwsCompact: string;
+  try {
+    const { plaintext } = await compactDecrypt(token.trim(), decryptingKey);
+    jwsCompact = textDecoder.decode(plaintext);
+  } catch (err) {
+    return {
+      decrypted: false,
+      signatureVerified: false,
+      claimsOk: false,
+      payloadJson: null,
+      stageError: err instanceof Error ? err.message : "JWE decrypt failed",
+    };
   }
 
-  return claimsJson;
+  let claimsJson: string;
+  try {
+    const { payload } = await compactVerify(jwsCompact, signatureVerificationKey, {
+      algorithms: [PACO_JOSE.jwsAlgorithm],
+    });
+    claimsJson = textDecoder.decode(payload);
+  } catch (err) {
+    return {
+      decrypted: true,
+      signatureVerified: false,
+      claimsOk: false,
+      payloadJson: null,
+      stageError: err instanceof Error ? err.message : "JWS verify failed",
+    };
+  }
+
+  try {
+    const claims = JSON.parse(claimsJson) as Record<string, unknown>;
+    const now = Math.floor(Date.now() / 1000);
+    if (typeof claims.nbf === "number" && claims.nbf > now + 60) {
+      throw new Error("PACO response nbf claim is in the future");
+    }
+    if (typeof claims.exp === "number" && claims.exp < now - 60) {
+      throw new Error("PACO response token has expired");
+    }
+    if (claims.aud !== config.apiKey) {
+      throw new Error("PACO response audience mismatch");
+    }
+    if (claims.iss !== PACO_JOSE.responseIssuer) {
+      throw new Error("PACO response issuer mismatch");
+    }
+    return {
+      decrypted: true,
+      signatureVerified: true,
+      claimsOk: true,
+      payloadJson: claimsJson,
+      stageError: null,
+    };
+  } catch (err) {
+    return {
+      decrypted: true,
+      signatureVerified: true,
+      claimsOk: false,
+      payloadJson: claimsJson,
+      stageError: err instanceof Error ? err.message : "PACO claim check failed",
+    };
+  }
+}
+
+export async function decryptToken(token: string, config: PacoConfig): Promise<string> {
+  const inspected = await inspectPacoJoseToken(token, config);
+  if (!inspected.payloadJson || !inspected.decrypted || !inspected.signatureVerified || !inspected.claimsOk) {
+    throw new Error(inspected.stageError || "PACO JOSE decrypt/verify failed");
+  }
+  return inspected.payloadJson;
 }
 
 export function buildJoseEnvelope(
