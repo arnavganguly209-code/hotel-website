@@ -9,16 +9,32 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { parse as parseDotenv } from "dotenv";
+import { createHash, createPublicKey } from "node:crypto";
 
 const PACO_PRODUCTION = {
   officeId: "9104539176",
   baseUrl: "https://core.paco.2c2p.com/",
   encryptionKeyId: "19f84b5655f04e25a99b09f1ee2fac78",
+  pacoEncryptionPublicFp: "4095797231f77a6d",
+  pacoSigningPublicFp: "8789612338cccf3b",
 };
 const PACO_UAT = {
   officeId: "9104137120",
   encryptionKeyId: "7664a2ed0dee4879bdfca0e8ce1ac313",
+  pacoEncryptionPublicFp: "e5912edc7b1d9cce",
+  pacoSigningPublicFp: "cbc81b358df61431",
 };
+
+function pacoPubFp(raw) {
+  try {
+    let key = String(raw || "").trim().replace(/\\n/g, "\n");
+    if (!key.includes("BEGIN")) key = `-----BEGIN PUBLIC KEY-----\n${key}\n-----END PUBLIC KEY-----`;
+    const pub = createPublicKey(key);
+    return createHash("sha256").update(pub.export({ type: "spki", format: "der" })).digest("hex").slice(0, 16);
+  } catch {
+    return null;
+  }
+}
 
 const ROOT = process.cwd();
 const APP_NAME = "hotel-thamel-park";
@@ -53,6 +69,8 @@ console.log("dotenv_nonsecret", {
   currency,
   request3ds: tds,
   sdkDemoShape: demoShape,
+  pacoEncFp: pacoPubFp(process.env.HBL_PACO_PACO_ENCRYPTION_PUBLIC_KEY),
+  pacoSignFp: pacoPubFp(process.env.HBL_PACO_PACO_SIGNING_PUBLIC_KEY),
 });
 
 if (mode === "production" || mode === "prod") {
@@ -66,6 +84,13 @@ if (mode === "production" || mode === "prod") {
   if (currency !== "USD") errors.push("currency must be USD");
   if (tds !== "Y") errors.push("request3dsFlag must be Y");
   if (demoShape) errors.push("SDK demo shape set");
+  const encFp = pacoPubFp(process.env.HBL_PACO_PACO_ENCRYPTION_PUBLIC_KEY);
+  const signFp = pacoPubFp(process.env.HBL_PACO_PACO_SIGNING_PUBLIC_KEY);
+  if (encFp === PACO_UAT.pacoEncryptionPublicFp || signFp === PACO_UAT.pacoSigningPublicFp) {
+    errors.push("UAT PACO public keys");
+  }
+  if (encFp !== PACO_PRODUCTION.pacoEncryptionPublicFp) errors.push("Production PACO encryption public mismatch");
+  if (signFp !== PACO_PRODUCTION.pacoSigningPublicFp) errors.push("Production PACO signing public mismatch");
   if (errors.length) {
     console.error("FAIL: refusing to reload PM2 with Production/UAT mismatch:", errors.join(", "));
     process.exit(1);
@@ -111,6 +136,8 @@ function readRunningPaco() {
       currency: map.HBL_PACO_CURRENCY || "(unset)",
       request3ds: map.HBL_PACO_REQUEST_3DS || "(unset)",
       sdkDemoShape: Boolean(String(map.HBL_PACO_SDK_DEMO_SHAPE || "").trim()),
+      pacoEncFp: pacoPubFp(map.HBL_PACO_PACO_ENCRYPTION_PUBLIC_KEY),
+      pacoSignFp: pacoPubFp(map.HBL_PACO_PACO_SIGNING_PUBLIC_KEY),
     },
   };
 }
@@ -128,7 +155,11 @@ function runtimeMatchesFile(runtime) {
       runtime.officeId !== PACO_UAT.officeId &&
       !/demo-paco/i.test(runtime.baseUrl) &&
       runtime.kid !== PACO_UAT.encryptionKeyId &&
-      !runtime.sdkDemoShape
+      !runtime.sdkDemoShape &&
+      runtime.pacoEncFp === PACO_PRODUCTION.pacoEncryptionPublicFp &&
+      runtime.pacoSignFp === PACO_PRODUCTION.pacoSigningPublicFp &&
+      runtime.pacoEncFp !== PACO_UAT.pacoEncryptionPublicFp &&
+      runtime.pacoSignFp !== PACO_UAT.pacoSigningPublicFp
     );
   }
   return runtime.env === mode || (mode === "" && runtime.env);

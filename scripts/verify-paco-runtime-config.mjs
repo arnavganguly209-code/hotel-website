@@ -72,6 +72,13 @@ const expected = {
   currency: "USD",
 };
 
+const keyFingerprints = {
+  merchantSigning: fpFromPrivate(process.env.HBL_PACO_MERCHANT_SIGNING_PRIVATE_KEY || ""),
+  merchantDecryption: fpFromPrivate(process.env.HBL_PACO_MERCHANT_DECRYPTION_PRIVATE_KEY || ""),
+  pacoEncryptionPublic: fpFromPublic(process.env.HBL_PACO_PACO_ENCRYPTION_PUBLIC_KEY || ""),
+  pacoSigningPublic: fpFromPublic(process.env.HBL_PACO_PACO_SIGNING_PUBLIC_KEY || ""),
+};
+
 const summary = {
   env,
   officeId,
@@ -88,12 +95,7 @@ const summary = {
     pacoEncryptionPublic: present("HBL_PACO_PACO_ENCRYPTION_PUBLIC_KEY").set,
     pacoSigningPublic: present("HBL_PACO_PACO_SIGNING_PUBLIC_KEY").set,
   },
-  keyFingerprints: {
-    merchantSigning: fpFromPrivate(process.env.HBL_PACO_MERCHANT_SIGNING_PRIVATE_KEY || ""),
-    merchantDecryption: fpFromPrivate(process.env.HBL_PACO_MERCHANT_DECRYPTION_PRIVATE_KEY || ""),
-    pacoEncryptionPublic: fpFromPublic(process.env.HBL_PACO_PACO_ENCRYPTION_PUBLIC_KEY || ""),
-    pacoSigningPublic: fpFromPublic(process.env.HBL_PACO_PACO_SIGNING_PUBLIC_KEY || ""),
-  },
+  keyFingerprints,
   matchesProduction: {
     env: env === expected.env || env === "prod",
     officeId: officeId === expected.officeId,
@@ -105,6 +107,10 @@ const summary = {
     noDemoEndpoint: !/demo-paco/i.test(baseUrl),
     noUatKid: kid !== "7664a2ed0dee4879bdfca0e8ce1ac313",
     noDemoShape: !demoShape,
+    pacoEncryptionFp: keyFingerprints.pacoEncryptionPublic.fingerprintPrefix === "4095797231f77a6d",
+    pacoSigningFp: keyFingerprints.pacoSigningPublic.fingerprintPrefix === "8789612338cccf3b",
+    notUatPacoEncryption: keyFingerprints.pacoEncryptionPublic.fingerprintPrefix !== "e5912edc7b1d9cce",
+    notUatPacoSigning: keyFingerprints.pacoSigningPublic.fingerprintPrefix !== "cbc81b358df61431",
   },
 };
 
@@ -128,7 +134,11 @@ const ok =
   summary.credentialsPresent.pacoEncryptionPublic &&
   summary.credentialsPresent.pacoSigningPublic &&
   summary.keyFingerprints.merchantSigning.bits === 4096 &&
-  summary.keyFingerprints.merchantDecryption.bits === 4096;
+  summary.keyFingerprints.merchantDecryption.bits === 4096 &&
+  prod.pacoEncryptionFp &&
+  prod.pacoSigningFp &&
+  prod.notUatPacoEncryption &&
+  prod.notUatPacoSigning;
 
 if (process.argv.includes("--require-production") && !ok) {
   console.error("FAIL: environment is not a valid HBL PACO Production config");

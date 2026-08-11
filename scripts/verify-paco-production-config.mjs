@@ -44,6 +44,13 @@ else ok("UAT endpoint kept separate in config.ts");
 if (!/rejected UAT merchant ID/.test(configSrc)) fail("Production does not reject UAT MID");
 else ok("Production rejects UAT MID");
 
+if (!/rejected UAT PACO public keys/.test(configSrc)) fail("Production does not reject UAT PACO public keys");
+else ok("Production rejects UAT PACO public keys");
+
+if (!configSrc.includes("4095797231f77a6d") || !configSrc.includes("8789612338cccf3b")) {
+  fail("Production PACO public-key fingerprints missing from config.ts");
+} else ok("Production PACO public-key fingerprints pinned in config.ts");
+
 if (!/SDK_DEMO_SHAPE must not be set in Production/.test(configSrc)) {
   fail("Production does not reject SDK demo shape");
 } else ok("Production rejects HBL_PACO_SDK_DEMO_SHAPE");

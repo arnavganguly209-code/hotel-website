@@ -6,9 +6,16 @@ import { generateKeyPairSync } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { getPacoConfig, PACO_PRODUCTION, PACO_UAT } from "../lib/payments/paco/config";
+import {
+  getPacoConfig,
+  pacoPublicKeyFingerprint,
+  PACO_PRODUCTION,
+  PACO_UAT,
+} from "../lib/payments/paco/config";
 import { parseInquiryOutcome } from "../lib/payments/paco/client";
 import { resetPacoEnvSyncCache, syncPacoEnvFromDotenvFile } from "../lib/payments/paco/load-env";
+import { HBL_PRODUCTION_PACO_PUBLICS } from "./fixtures/hbl-production-paco-publics";
+import { HBL_UAT_PACO_PUBLICS } from "./fixtures/hbl-uat-paco-publics";
 
 function pemBody(pem: string): string {
   return pem.replace(/-----[^-]+-----/g, "").replace(/\s+/g, "");
@@ -36,6 +43,11 @@ function dummyKeys() {
   };
 }
 
+const productionPacoPublics = {
+  HBL_PACO_PACO_ENCRYPTION_PUBLIC_KEY: HBL_PRODUCTION_PACO_PUBLICS.encryptionPublic,
+  HBL_PACO_PACO_SIGNING_PUBLIC_KEY: HBL_PRODUCTION_PACO_PUBLICS.signingPublic,
+};
+
 const keys = dummyKeys();
 const saved = { ...process.env };
 
@@ -60,6 +72,10 @@ assert.equal(PACO_PRODUCTION.request3ds, "Y");
 assert.equal(PACO_PRODUCTION.currency, "USD");
 assert.equal(PACO_UAT.officeId, "9104137120");
 assert.equal(PACO_UAT.baseUrl, "https://core.demo-paco.2c2p.com/");
+assert.equal(PACO_PRODUCTION.pacoEncryptionPublicFp, "4095797231f77a6d");
+assert.equal(PACO_PRODUCTION.pacoSigningPublicFp, "8789612338cccf3b");
+assert.equal(PACO_UAT.pacoEncryptionPublicFp, "e5912edc7b1d9cce");
+assert.equal(PACO_UAT.pacoSigningPublicFp, "cbc81b358df61431");
 console.log("OK: PACO_PRODUCTION / PACO_UAT constants");
 
 resetEnv({
@@ -69,6 +85,7 @@ resetEnv({
   HBL_PACO_ENCRYPTION_KEY_ID: PACO_PRODUCTION.encryptionKeyId,
   HBL_PACO_REQUEST_3DS: "Y",
   HBL_PACO_CURRENCY: "USD",
+  ...productionPacoPublics,
 });
 const prod = getPacoConfig();
 assert.equal(prod.env, "production");
@@ -77,6 +94,14 @@ assert.equal(prod.baseUrl, PACO_PRODUCTION.baseUrl);
 assert.equal(prod.encryptionKeyId, PACO_PRODUCTION.encryptionKeyId);
 assert.equal(prod.request3ds, "Y");
 assert.equal(prod.currency, "USD");
+assert.equal(
+  pacoPublicKeyFingerprint(prod.pacoEncryptionPublicKey),
+  PACO_PRODUCTION.pacoEncryptionPublicFp
+);
+assert.equal(
+  pacoPublicKeyFingerprint(prod.pacoSigningPublicKey),
+  PACO_PRODUCTION.pacoSigningPublicFp
+);
 console.log("OK: production config accepts confirmed HBL identifiers");
 
 expectThrow(
@@ -146,6 +171,30 @@ expectThrow(
     HBL_PACO_SDK_DEMO_SHAPE: "1",
   },
   /SDK_DEMO_SHAPE/
+);
+
+expectThrow(
+  "production rejects UAT PACO public keys",
+  {
+    HBL_PACO_ENV: "production",
+    HBL_PACO_OFFICE_ID: PACO_PRODUCTION.officeId,
+    HBL_PACO_BASE_URL: PACO_PRODUCTION.baseUrl,
+    HBL_PACO_ENCRYPTION_KEY_ID: PACO_PRODUCTION.encryptionKeyId,
+    HBL_PACO_PACO_ENCRYPTION_PUBLIC_KEY: HBL_UAT_PACO_PUBLICS.encryptionPublic,
+    HBL_PACO_PACO_SIGNING_PUBLIC_KEY: HBL_UAT_PACO_PUBLICS.signingPublic,
+  },
+  /UAT PACO public keys/
+);
+
+expectThrow(
+  "production rejects PACO public keys that are not Downloads\/SecurityData.php",
+  {
+    HBL_PACO_ENV: "production",
+    HBL_PACO_OFFICE_ID: PACO_PRODUCTION.officeId,
+    HBL_PACO_BASE_URL: PACO_PRODUCTION.baseUrl,
+    HBL_PACO_ENCRYPTION_KEY_ID: PACO_PRODUCTION.encryptionKeyId,
+  },
+  /PACO encryption public key mismatch|PACO signing public key mismatch/
 );
 
 expectThrow(

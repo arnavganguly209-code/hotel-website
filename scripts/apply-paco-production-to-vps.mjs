@@ -8,6 +8,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { createHash, createPublicKey } from "node:crypto";
 
 function arg(flag) {
   const i = process.argv.indexOf(flag);
@@ -49,6 +50,28 @@ for (const line of required) {
 }
 if (text.includes("9104137120") || /demo-paco/i.test(text) || text.includes("7664a2ed0dee4879bdfca0e8ce1ac313")) {
   console.error("FAIL: env fragment still contains UAT identifiers");
+  process.exit(1);
+}
+
+function envVal(name) {
+  const m = text.match(new RegExp(`^${name}=(.*)$`, "m"));
+  return m ? m[1].trim() : "";
+}
+function fpPub(raw) {
+  let key = raw.replace(/\\n/g, "\n");
+  if (!key.includes("BEGIN")) key = `-----BEGIN PUBLIC KEY-----\n${key}\n-----END PUBLIC KEY-----`;
+  const pub = createPublicKey(key);
+  const der = pub.export({ type: "spki", format: "der" });
+  return createHash("sha256").update(der).digest("hex").slice(0, 16);
+}
+const encFp = fpPub(envVal("HBL_PACO_PACO_ENCRYPTION_PUBLIC_KEY"));
+const signFp = fpPub(envVal("HBL_PACO_PACO_SIGNING_PUBLIC_KEY"));
+if (encFp === "e5912edc7b1d9cce" || signFp === "cbc81b358df61431") {
+  console.error("FAIL: env fragment still has UAT PACO public keys");
+  process.exit(1);
+}
+if (encFp !== "4095797231f77a6d" || signFp !== "8789612338cccf3b") {
+  console.error("FAIL: env fragment PACO public keys do not match Production SecurityData.php");
   process.exit(1);
 }
 if (/NEXT_PUBLIC_.*HBL|NEXT_PUBLIC_.*PACO|NEXT_PUBLIC_.*API_KEY/.test(text)) {

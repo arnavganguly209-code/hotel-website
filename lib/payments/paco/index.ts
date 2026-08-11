@@ -1,4 +1,11 @@
-export { isPacoConfigured, getPacoConfig, PACO_JOSE, PACO_PRODUCTION, PACO_UAT } from "./config";
+export {
+  isPacoConfigured,
+  getPacoConfig,
+  pacoPublicKeyFingerprint,
+  PACO_JOSE,
+  PACO_PRODUCTION,
+  PACO_UAT,
+} from "./config";
 export { syncPacoEnvFromDotenvFile } from "./load-env";
 export {
   createPrePaymentUi,

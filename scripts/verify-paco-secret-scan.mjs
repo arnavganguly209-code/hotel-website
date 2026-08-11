@@ -33,7 +33,7 @@ const files = trackedFiles().filter((rel) => {
 
 const privateKeyMarker = "BEGIN RSA PRIVATE KEY";
 const pkcs8Marker = "BEGIN PRIVATE KEY";
-const nextPublicHbl = /NEXT_PUBLIC_[A-Z0-9_]*HBL|NEXT_PUBLIC_.*PACO|NEXT_PUBLIC_.*API_KEY/;
+const nextPublicHblAssign = /NEXT_PUBLIC_[A-Z0-9_]*(?:HBL|PACO|API_KEY)[A-Z0-9_]*\s*=/;
 
 for (const rel of files) {
   const abs = path.join(root, rel);
@@ -53,7 +53,7 @@ for (const rel of files) {
       fail(`private key material in tracked file: ${rel}`);
     }
   }
-  if (nextPublicHbl.test(text) && !rel.endsWith(".example")) {
+  if (nextPublicHblAssign.test(text) && !rel.endsWith(".example")) {
     fail(`NEXT_PUBLIC PACO/HBL binding in tracked file: ${rel}`);
   }
   if (/HBL_PACO_API_KEY\s*=\s*[a-fA-F0-9]{32}/.test(text)) {

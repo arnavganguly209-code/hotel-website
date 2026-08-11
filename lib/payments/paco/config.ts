@@ -1,13 +1,18 @@
+import { createHash, createPublicKey } from "crypto";
 import type { PacoEnv } from "./types";
 import { syncPacoEnvFromDotenvFile } from "./load-env";
 
-/** Confirmed HBL PACO Production identifiers (non-secret). */
+/** Confirmed HBL PACO Production identifiers (non-secret). Fingerprints are SHA-256 SPKI, 16 hex. */
 export const PACO_PRODUCTION = {
   officeId: "9104539176",
   baseUrl: "https://core.paco.2c2p.com/",
   encryptionKeyId: "19f84b5655f04e25a99b09f1ee2fac78",
   request3ds: "Y" as const,
   currency: "USD",
+  /** Downloads/SecurityData.php PacoEncryptionPublicKey */
+  pacoEncryptionPublicFp: "4095797231f77a6d",
+  /** Downloads/SecurityData.php PacoSigningPublicKey */
+  pacoSigningPublicFp: "8789612338cccf3b",
 } as const;
 
 /** Confirmed HBL PACO UAT identifiers (non-secret). Never use these in Production. */
@@ -15,6 +20,10 @@ export const PACO_UAT = {
   officeId: "9104137120",
   baseUrl: "https://core.demo-paco.2c2p.com/",
   encryptionKeyId: "7664a2ed0dee4879bdfca0e8ce1ac313",
+  /** tmp/hbl UAT SDK PacoEncryptionPublicKey — rejected in Production */
+  pacoEncryptionPublicFp: "e5912edc7b1d9cce",
+  /** tmp/hbl UAT SDK PacoSigningPublicKey — rejected in Production */
+  pacoSigningPublicFp: "cbc81b358df61431",
 } as const;
 
 function required(name: string, value: string | undefined): string {
@@ -31,6 +40,13 @@ function normalizePemKey(raw: string, kind: "private" | "public"): string {
     return `-----BEGIN RSA PRIVATE KEY-----\n${key}\n-----END RSA PRIVATE KEY-----`;
   }
   return `-----BEGIN PUBLIC KEY-----\n${key}\n-----END PUBLIC KEY-----`;
+}
+
+/** SHA-256 of SPKI DER, first 16 hex chars. Never logs key material. */
+export function pacoPublicKeyFingerprint(pemOrBare: string): string {
+  const pub = createPublicKey(normalizePemKey(pemOrBare, "public"));
+  const der = pub.export({ type: "spki", format: "der" });
+  return createHash("sha256").update(der).digest("hex").slice(0, 16);
 }
 
 function normalizeBaseUrl(raw: string): string {
@@ -132,6 +148,40 @@ export function getPacoConfig(): PacoConfig {
     }
   }
 
+  const merchantSigningPrivateKey = normalizePemKey(
+    required("HBL_PACO_MERCHANT_SIGNING_PRIVATE_KEY", process.env.HBL_PACO_MERCHANT_SIGNING_PRIVATE_KEY),
+    "private"
+  );
+  const pacoEncryptionPublicKey = normalizePemKey(
+    required("HBL_PACO_PACO_ENCRYPTION_PUBLIC_KEY", process.env.HBL_PACO_PACO_ENCRYPTION_PUBLIC_KEY),
+    "public"
+  );
+  const pacoSigningPublicKey = normalizePemKey(
+    required("HBL_PACO_PACO_SIGNING_PUBLIC_KEY", process.env.HBL_PACO_PACO_SIGNING_PUBLIC_KEY),
+    "public"
+  );
+  const merchantDecryptionPrivateKey = normalizePemKey(
+    required(
+      "HBL_PACO_MERCHANT_DECRYPTION_PRIVATE_KEY",
+      process.env.HBL_PACO_MERCHANT_DECRYPTION_PRIVATE_KEY
+    ),
+    "private"
+  );
+
+  if (env === "production") {
+    const encFp = pacoPublicKeyFingerprint(pacoEncryptionPublicKey);
+    const signFp = pacoPublicKeyFingerprint(pacoSigningPublicKey);
+    if (encFp === PACO_UAT.pacoEncryptionPublicFp || signFp === PACO_UAT.pacoSigningPublicFp) {
+      throw new Error("HBL PACO Production rejected UAT PACO public keys");
+    }
+    if (encFp !== PACO_PRODUCTION.pacoEncryptionPublicFp) {
+      throw new Error("HBL PACO Production PACO encryption public key mismatch");
+    }
+    if (signFp !== PACO_PRODUCTION.pacoSigningPublicFp) {
+      throw new Error("HBL PACO Production PACO signing public key mismatch");
+    }
+  }
+
   return {
     env,
     baseUrl,
@@ -140,25 +190,10 @@ export function getPacoConfig(): PacoConfig {
     encryptionKeyId,
     request3ds,
     currency,
-    merchantSigningPrivateKey: normalizePemKey(
-      required("HBL_PACO_MERCHANT_SIGNING_PRIVATE_KEY", process.env.HBL_PACO_MERCHANT_SIGNING_PRIVATE_KEY),
-      "private"
-    ),
-    pacoEncryptionPublicKey: normalizePemKey(
-      required("HBL_PACO_PACO_ENCRYPTION_PUBLIC_KEY", process.env.HBL_PACO_PACO_ENCRYPTION_PUBLIC_KEY),
-      "public"
-    ),
-    pacoSigningPublicKey: normalizePemKey(
-      required("HBL_PACO_PACO_SIGNING_PUBLIC_KEY", process.env.HBL_PACO_PACO_SIGNING_PUBLIC_KEY),
-      "public"
-    ),
-    merchantDecryptionPrivateKey: normalizePemKey(
-      required(
-        "HBL_PACO_MERCHANT_DECRYPTION_PRIVATE_KEY",
-        process.env.HBL_PACO_MERCHANT_DECRYPTION_PRIVATE_KEY
-      ),
-      "private"
-    ),
+    merchantSigningPrivateKey,
+    pacoEncryptionPublicKey,
+    pacoSigningPublicKey,
+    merchantDecryptionPrivateKey,
     siteUrl,
   };
 }

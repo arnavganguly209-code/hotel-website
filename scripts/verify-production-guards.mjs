@@ -67,7 +67,11 @@ if (!pacoConfig.includes('officeId: "9104539176"') || !pacoConfig.includes("http
 } else {
   ok("Production PACO identifiers present");
 }
-if (!pacoConfig.includes("rejected UAT merchant ID") || !pacoConfig.includes("SDK_DEMO_SHAPE must not be set in Production")) {
+if (
+  !pacoConfig.includes("rejected UAT merchant ID") ||
+  !pacoConfig.includes("SDK_DEMO_SHAPE must not be set in Production") ||
+  !pacoConfig.includes("rejected UAT PACO public keys")
+) {
   fail("Production fail-closed guards missing from config.ts");
 } else {
   ok("Production fail-closed PACO guards present");

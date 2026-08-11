@@ -56,10 +56,15 @@ function fpPub(bare) {
   };
 }
 
+const PRODUCTION_KID = "19f84b5655f04e25a99b09f1ee2fac78";
+const UAT_KID = "7664a2ed0dee4879bdfca0e8ce1ac313";
+const PRODUCTION_PACO_ENC_FP = "4095797231f77a6d";
+const PRODUCTION_PACO_SIGN_FP = "8789612338cccf3b";
+const UAT_PACO_ENC_FP = "e5912edc7b1d9cce";
+const UAT_PACO_SIGN_FP = "cbc81b358df61431";
+
 const keyDir = arg("--keys") || "C:/Users/Admin/Desktop/hbl key";
-const sdkPath =
-  arg("--sdk") ||
-  path.join(process.cwd(), "tmp/hbl/hbldemo/hbldemo/src/SecurityData.php");
+const sdkPath = arg("--sdk") || "C:/Users/Admin/Downloads/SecurityData.php";
 const apiKeyFile = arg("--api-key-file") || path.join(keyDir, "paco-api-key.txt");
 const outPath = arg("--out") || path.join(keyDir, "paco-production.env");
 
@@ -89,10 +94,19 @@ const encPriv = pemToBare(
   )
 );
 const sdk = fs.readFileSync(sdkPath, "utf8");
+const sdkKid = extractStaticString(sdk, "EncryptionKeyId");
 const pacoEnc = extractStaticString(sdk, "PacoEncryptionPublicKey");
 const pacoSign = extractStaticString(sdk, "PacoSigningPublicKey");
 if (!pacoEnc || !pacoSign) {
   console.error("FAIL: could not extract PACO public keys from SecurityData.php");
+  process.exit(1);
+}
+if (sdkKid === UAT_KID) {
+  console.error("FAIL: SDK SecurityData.php is UAT (refusing to copy UAT PACO publics into Production env)");
+  process.exit(1);
+}
+if (sdkKid !== PRODUCTION_KID) {
+  console.error("FAIL: SDK EncryptionKeyId is not the confirmed Production kid");
   process.exit(1);
 }
 
@@ -108,6 +122,14 @@ const pacoEncMeta = fpPub(pacoEnc);
 const pacoSignMeta = fpPub(pacoSign);
 if (signMeta.bits !== 4096 || encMeta.bits !== 4096) {
   console.error("FAIL: merchant private keys are not RSA-4096");
+  process.exit(1);
+}
+if (pacoEncMeta.fp === UAT_PACO_ENC_FP || pacoSignMeta.fp === UAT_PACO_SIGN_FP) {
+  console.error("FAIL: SDK PACO public keys fingerprint-match UAT");
+  process.exit(1);
+}
+if (pacoEncMeta.fp !== PRODUCTION_PACO_ENC_FP || pacoSignMeta.fp !== PRODUCTION_PACO_SIGN_FP) {
+  console.error("FAIL: SDK PACO public keys do not match Downloads Production SecurityData.php fingerprints");
   process.exit(1);
 }
 
