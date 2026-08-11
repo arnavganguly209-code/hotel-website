@@ -21,7 +21,6 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "200mb",
     },
     middlewareClientMaxBodySize: "200mb",
-    proxyClientMaxBodySize: "200mb",
   },
   // Keep pdfkit/qrcode outside the bundler so AFM font data files resolve in production.
   serverExternalPackages: ["pdfkit", "qrcode"],
