@@ -9,6 +9,7 @@ import {
 import { mergeMediaSrc } from "./media-url";
 import { syncMediaLibraryFromContent } from "./collect-media";
 import { routes } from "@/lib/navigation";
+import { normalizeGoogleMapEmbedUrl } from "@/lib/google-map-embed";
 
 function ensureMeetingsNavItem(items: SiteContent["header"]["menuItems"]) {
   const hasMeetings = items.some(
@@ -76,13 +77,6 @@ function normalizeRestaurantCtaHref(href: string | undefined, fallback: string):
     return value.replace(/^\/dining/, "/restaurant");
   }
   return value;
-}
-
-function isBrokenMapEmbed(url: string | undefined): boolean {
-  if (!url?.trim()) return true;
-  if (!url.includes("google.com/maps/embed")) return true;
-  if (url.includes("0x0%3A0x0") || url.includes("4v1234567890")) return true;
-  return false;
 }
 
 /** Preserve explicit empty values — never fall back to defaults when the field was set. */
@@ -555,9 +549,10 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
     contact: {
       ...defaultContent.contact,
       ...(partial.contact ?? {}),
-      mapEmbedUrl: isBrokenMapEmbed(partial.contact?.mapEmbedUrl)
-        ? defaultContent.contact.mapEmbedUrl
-        : (partial.contact?.mapEmbedUrl || defaultContent.contact.mapEmbedUrl),
+      mapEmbedUrl: normalizeGoogleMapEmbedUrl(
+        partial.contact?.mapEmbedUrl,
+        defaultContent.contact.mapEmbedUrl
+      ),
     },
     seo: { ...defaultContent.seo, ...partial.seo },
     performanceSettings: {
@@ -1999,9 +1994,10 @@ function mergeContactPage(
       ...defaults.location,
       ...(partial.location ?? {}),
       nearby: definedArray(partial.location?.nearby, defaults.location.nearby),
-      mapEmbedUrl: isBrokenMapEmbed(partial.location?.mapEmbedUrl)
-        ? defaults.location.mapEmbedUrl
-        : (partial.location?.mapEmbedUrl || defaults.location.mapEmbedUrl),
+      mapEmbedUrl: normalizeGoogleMapEmbedUrl(
+        partial.location?.mapEmbedUrl,
+        defaults.location.mapEmbedUrl
+      ),
       mapsDirectionsUrl:
         !partial.location?.mapsDirectionsUrl ||
         /destination=Thamel,Kathmandu$/i.test(partial.location.mapsDirectionsUrl)

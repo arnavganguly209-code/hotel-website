@@ -21,6 +21,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { ContactEnquiryForm } from "@/components/contact/ContactEnquiryForm";
+import { normalizeGoogleMapEmbedUrl } from "@/lib/google-map-embed";
 import type { SiteContent } from "@/lib/cms/types";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +51,7 @@ export function ContactPage({ content }: ContactPageProps) {
     .filter((i) => i.enabled !== false)
     .sort((a, b) => a.order - b.order);
   const faqs = page.faq.items.filter((i) => i.enabled !== false).sort((a, b) => a.order - b.order);
+  const mapSrc = normalizeGoogleMapEmbedUrl(page.location.mapEmbedUrl);
 
   return (
     <div className="bg-[#F7F4EF]">
@@ -151,9 +153,9 @@ export function ContactPage({ content }: ContactPageProps) {
           />
           <div className="mt-12 grid gap-10 lg:grid-cols-[1.4fr_0.8fr]">
             <div className="overflow-hidden rounded-2xl border border-[#D4AF37]/25 shadow-[0_20px_50px_rgba(15,42,34,0.1)]">
-              {page.location.mapEmbedUrl ? (
+              {mapSrc ? (
                 <iframe
-                  src={page.location.mapEmbedUrl}
+                  src={mapSrc}
                   title="Hotel Thamel Park location map"
                   className="h-[360px] w-full border-0 md:h-[450px]"
                   loading="lazy"

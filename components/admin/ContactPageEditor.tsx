@@ -4,13 +4,8 @@ import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
+import { normalizeGoogleMapEmbedUrl } from "@/lib/google-map-embed";
 import type { SiteContent } from "@/lib/cms/types";
-
-function parseGoogleMapEmbed(value: string): string {
-  const trimmed = value.trim();
-  const src = trimmed.match(/src=["']([^"']+)["']/i)?.[1];
-  return (src || trimmed).trim();
-}
 
 interface ContactPageEditorProps {
   content: SiteContent;
@@ -286,7 +281,9 @@ export function ContactPageEditor({ content, update }: ContactPageEditorProps) {
           rows={3}
           value={page.location.mapEmbedUrl}
           onChange={(e) => {
-            const mapEmbedUrl = parseGoogleMapEmbed(e.target.value);
+            const raw = e.target.value;
+            const pastedIframe = /<iframe/i.test(raw) || /&lt;iframe/i.test(raw);
+            const mapEmbedUrl = pastedIframe ? normalizeGoogleMapEmbedUrl(raw) : raw;
             setPage({ ...page, location: { ...page.location, mapEmbedUrl } });
             update("contact", { ...content.contact, mapEmbedUrl });
           }}
