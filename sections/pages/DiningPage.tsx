@@ -11,6 +11,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { DiningReservationForm } from "@/components/dining/DiningReservationForm";
+import { ImageViewer, type ImageViewerItem } from "@/components/shared/ImageViewer";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { luxuryEase, luxuryFadeUp, luxuryStagger } from "@/lib/animations";
 import type { SiteContent } from "@/lib/cms/types";
@@ -69,6 +70,15 @@ export function DiningPage({ content }: DiningPageProps) {
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   const [reviewIndex, setReviewIndex] = useState(0);
+  const [viewerItems, setViewerItems] = useState<ImageViewerItem[]>([]);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+
+  const openViewer = (items: ImageViewerItem[], index = 0) => {
+    const usable = items.filter((item) => item.src);
+    if (!usable.length) return;
+    setViewerItems(usable);
+    setViewerIndex(Math.min(index, usable.length - 1));
+  };
 
   useEffect(() => {
     if (reviews.length <= 1) return;
@@ -102,13 +112,31 @@ export function DiningPage({ content }: DiningPageProps) {
               }}
             >
               {content.welcome.imageSrc ? (
-                <SafeImage
-                  src={content.welcome.imageSrc}
-                  alt={content.welcome.imageAlt || content.welcome.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 520px"
-                />
+                <button
+                  type="button"
+                  className="absolute inset-0"
+                  onClick={() =>
+                    openViewer(
+                      [
+                        {
+                          src: content.welcome.imageSrc,
+                          alt: content.welcome.imageAlt || content.welcome.title,
+                          title: content.welcome.title,
+                        },
+                      ],
+                      0
+                    )
+                  }
+                  aria-label="View restaurant welcome image"
+                >
+                  <SafeImage
+                    src={content.welcome.imageSrc}
+                    alt={content.welcome.imageAlt || content.welcome.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 520px"
+                  />
+                </button>
               ) : (
                 <div className="h-full w-full bg-[#EFE8DA]" />
               )}
@@ -203,13 +231,34 @@ export function DiningPage({ content }: DiningPageProps) {
               >
                 <div className="relative aspect-[16/10] overflow-hidden">
                   {venue.imageSrc ? (
-                    <SafeImage
-                      src={venue.imageSrc}
-                      alt={venue.imageAlt || venue.name}
-                      fill
-                      className="object-cover transition duration-700 group-hover:scale-105"
-                      sizes="(max-width: 1024px) 100vw, 560px"
-                    />
+                    <button
+                      type="button"
+                      className="absolute inset-0"
+                      onClick={() =>
+                        openViewer(
+                          venues
+                            .filter((entry) => entry.imageSrc)
+                            .map((entry) => ({
+                              src: entry.imageSrc,
+                              alt: entry.imageAlt || entry.name,
+                              title: entry.name,
+                            })),
+                          Math.max(
+                            0,
+                            venues.filter((entry) => entry.imageSrc).findIndex((entry) => entry.id === venue.id)
+                          )
+                        )
+                      }
+                      aria-label={`View ${venue.name} photo`}
+                    >
+                      <SafeImage
+                        src={venue.imageSrc}
+                        alt={venue.imageAlt || venue.name}
+                        fill
+                        className="object-cover transition duration-700 group-hover:scale-105"
+                        sizes="(max-width: 1024px) 100vw, 560px"
+                      />
+                    </button>
                   ) : (
                     <div className="h-full w-full bg-[#EFE8DA]" />
                   )}
@@ -311,7 +360,7 @@ export function DiningPage({ content }: DiningPageProps) {
                 key={cat.id}
                 type="button"
                 onClick={() => setActiveCategory(cat.id)}
-                className="rounded-full px-5 py-2.5 font-body text-[11px] font-semibold uppercase tracking-[0.16em] transition"
+                className="min-h-11 rounded-full px-5 py-2.5 font-body text-[11px] font-semibold uppercase tracking-[0.16em] transition"
                 style={
                   activeCategory === cat.id
                     ? { backgroundColor: heading, color: gold }
@@ -339,13 +388,36 @@ export function DiningPage({ content }: DiningPageProps) {
               >
                 <div className="relative aspect-[4/3]">
                   {item.imageSrc ? (
-                    <SafeImage
-                      src={item.imageSrc}
-                      alt={item.imageAlt || item.title}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
+                    <button
+                      type="button"
+                      className="absolute inset-0"
+                      onClick={() =>
+                        openViewer(
+                          activeItems
+                            .filter((entry) => entry.imageSrc)
+                            .map((entry) => ({
+                              src: entry.imageSrc,
+                              alt: entry.imageAlt || entry.title,
+                              title: entry.title,
+                            })),
+                          Math.max(
+                            0,
+                            activeItems
+                              .filter((entry) => entry.imageSrc)
+                              .findIndex((entry) => entry.id === item.id)
+                          )
+                        )
+                      }
+                      aria-label={`View ${item.title}`}
+                    >
+                      <SafeImage
+                        src={item.imageSrc}
+                        alt={item.imageAlt || item.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                      />
+                    </button>
                   ) : (
                     <div className="h-full w-full bg-[#EFE8DA]" />
                   )}
@@ -429,13 +501,36 @@ export function DiningPage({ content }: DiningPageProps) {
                       }}
                     >
                       {dish.imageSrc ? (
-                        <SafeImage
-                          src={dish.imageSrc}
-                          alt={dish.imageAlt || dish.title}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, 60vw"
-                        />
+                        <button
+                          type="button"
+                          className="absolute inset-0"
+                          onClick={() =>
+                            openViewer(
+                              chefDishes
+                                .filter((entry) => entry.imageSrc)
+                                .map((entry) => ({
+                                  src: entry.imageSrc,
+                                  alt: entry.imageAlt || entry.title,
+                                  title: entry.title,
+                                })),
+                              Math.max(
+                                0,
+                                chefDishes
+                                  .filter((entry) => entry.imageSrc)
+                                  .findIndex((entry) => entry.id === dish.id)
+                              )
+                            )
+                          }
+                          aria-label={`View ${dish.title}`}
+                        >
+                          <SafeImage
+                            src={dish.imageSrc}
+                            alt={dish.imageAlt || dish.title}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, 60vw"
+                          />
+                        </button>
                       ) : null}
                     </div>
                   </div>
@@ -499,10 +594,21 @@ export function DiningPage({ content }: DiningPageProps) {
               </p>
             </div>
             <div className="mt-12 columns-1 gap-4 sm:columns-2 lg:columns-3">
-              {gallery.map((img) => (
-                <div
+              {gallery.map((img, index) => (
+                <button
                   key={img.id}
-                  className="group mb-4 break-inside-avoid overflow-hidden rounded-[18px]"
+                  type="button"
+                  onClick={() =>
+                    openViewer(
+                      gallery.map((entry) => ({
+                        src: entry.src,
+                        alt: entry.alt || entry.title,
+                        title: entry.title,
+                      })),
+                      index
+                    )
+                  }
+                  className="group mb-4 block w-full break-inside-avoid overflow-hidden rounded-[18px] text-left"
                   style={{
                     border: `1px solid ${gold}77`,
                     boxShadow: "0 12px 28px rgba(15, 42, 34, 0.08)",
@@ -517,7 +623,7 @@ export function DiningPage({ content }: DiningPageProps) {
                       sizes="(max-width: 640px) 100vw, 33vw"
                     />
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -708,6 +814,12 @@ export function DiningPage({ content }: DiningPageProps) {
           </div>
         </div>
       </section>
+      <ImageViewer
+        items={viewerItems}
+        index={viewerIndex}
+        onClose={() => setViewerIndex(null)}
+        onChangeIndex={setViewerIndex}
+      />
     </div>
   );
 }

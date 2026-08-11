@@ -55,6 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   for (const room of content.rooms) {
+    if (room.available === false) continue;
     const slug = roomPublicSlug(room);
     if (!slug) continue;
     pushUnique(out, {

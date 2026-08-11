@@ -3,7 +3,7 @@ import { db, isDatabaseAvailable } from "@/lib/db";
 import { assertSameOrigin, getAdminSessionUser } from "@/lib/admin/auth";
 import { getAvailableCount } from "@/lib/admin/availability";
 import { getContent } from "@/lib/cms/store";
-import { roomPublicSlug } from "@/lib/booking/utils";
+import { isLiveRoomCategory, roomPublicSlug } from "@/lib/booking/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +34,7 @@ export async function GET() {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   const rooms = await Promise.all(
-    content.rooms.map(async (room) => {
+    content.rooms.filter(isLiveRoomCategory).map(async (room) => {
       const slug = roomPublicSlug(room);
       const inv = inventory.find((i) => i.roomSlug === slug);
       const totalRooms = inv?.totalRooms ?? 1;

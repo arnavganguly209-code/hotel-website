@@ -79,7 +79,7 @@ const SECTIONS = [
   { id: "meetingsEvents", label: "Meetings & Events Section", icon: MessageSquare },
   { id: "exploreKathmandu", label: "Explore Kathmandu Section", icon: Globe },
   { id: "rooms", label: "Rooms Section", icon: Bed },
-  { id: "dining", label: "Dining Page", icon: Utensils },
+  { id: "dining", label: "Restaurant Page", icon: Utensils },
   { id: "diningReservations", label: "Dining Reservations", icon: Utensils },
   { id: "roomBookings", label: "Room Bookings", icon: ClipboardList },
   { id: "spaInquiries", label: "Spa Inquiries", icon: Waves },
@@ -416,7 +416,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
               <div className="space-y-4 rounded border border-luxury-gold/10 p-6">
                 <p className="text-sm text-white/70">Welcome to Orbit CMS. Changes auto-save to the database as you edit.</p>
                 <div className="grid grid-cols-2 gap-4 text-sm text-white/50">
-                  <p>Rooms: {content.rooms.length}</p>
+                  <p>Rooms: {content.rooms.filter((room) => room.available !== false).length}</p>
                   <p>Gallery: {content.gallery.length}</p>
                   <p>Reviews: {content.reviews.length}</p>
                   <p>Media: {content.mediaLibrary.length}</p>

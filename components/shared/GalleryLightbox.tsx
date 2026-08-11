@@ -10,6 +10,7 @@ import {
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
+import { BodyPortal } from "@/components/shared/BodyPortal";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { SafeVideo } from "@/components/shared/SafeVideo";
 
@@ -88,6 +89,10 @@ export function GalleryLightbox({
     const onEnd = (e: TouchEvent) => {
       const dx = e.changedTouches[0].clientX - startX;
       const dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dy) > 80 && Math.abs(dy) > Math.abs(dx)) {
+        onClose();
+        return;
+      }
       if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
         if (dx > 0) goPrev();
         else goNext();
@@ -99,22 +104,28 @@ export function GalleryLightbox({
       window.removeEventListener("touchstart", onStart);
       window.removeEventListener("touchend", onEnd);
     };
-  }, [open, goPrev, goNext]);
+  }, [open, goPrev, goNext, onClose]);
 
   return (
+    <BodyPortal>
     <AnimatePresence>
       {open && current ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[300] flex flex-col bg-[#061813]/96 backdrop-blur-md"
+          className="fixed inset-0 z-[500] flex flex-col bg-[#061813]/96 backdrop-blur-md"
           role="dialog"
           aria-modal="true"
           aria-label={current.title}
           onContextMenu={(e) => e.preventDefault()}
+          onClick={onClose}
         >
-          <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6">
+          <div
+            className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6"
+            style={{ paddingTop: "max(16px, env(safe-area-inset-top))" }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <p className="font-body text-xs uppercase tracking-[0.2em] text-white/60">
               {(index ?? 0) + 1} / {items.length}
             </p>
@@ -124,7 +135,7 @@ export function GalleryLightbox({
                   <button
                     type="button"
                     onClick={() => setZoom((z) => Math.min(2.5, z + 0.25))}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition hover:border-white/50"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition hover:border-white/50"
                     aria-label="Zoom in"
                   >
                     <ZoomIn className="h-4 w-4" />
@@ -132,7 +143,7 @@ export function GalleryLightbox({
                   <button
                     type="button"
                     onClick={() => setZoom((z) => Math.max(1, z - 0.25))}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition hover:border-white/50"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white transition hover:border-white/50"
                     aria-label="Zoom out"
                   >
                     <ZoomOut className="h-4 w-4" />
@@ -142,15 +153,19 @@ export function GalleryLightbox({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition hover:border-white/50"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0f2420]"
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
+                Close
               </button>
             </div>
           </div>
 
-          <div className="relative flex min-h-0 flex-1 items-center justify-center px-4 sm:px-12">
+          <div
+            className="relative flex min-h-0 flex-1 items-center justify-center px-4 sm:px-12"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               type="button"
               onClick={goPrev}
@@ -208,7 +223,7 @@ export function GalleryLightbox({
             </button>
           </div>
 
-          <div className="px-4 pb-3 pt-4 text-center sm:px-6">
+          <div className="px-4 pb-3 pt-4 text-center sm:px-6" onClick={(e) => e.stopPropagation()}>
             <p
               className="font-body text-[10px] uppercase tracking-[0.28em]"
               style={{ color: goldColor }}
@@ -224,7 +239,11 @@ export function GalleryLightbox({
             ) : null}
           </div>
 
-          <div className="flex gap-2 overflow-x-auto px-4 pb-5 sm:justify-center sm:px-6">
+          <div
+            className="flex gap-2 overflow-x-auto px-4 pb-20 sm:justify-center sm:px-6 sm:pb-5"
+            onClick={(e) => e.stopPropagation()}
+            style={{ paddingBottom: "max(20px, calc(env(safe-area-inset-bottom) + 72px))" }}
+          >
             {items.map((item, i) => (
               <button
                 key={item.id}
@@ -267,8 +286,20 @@ export function GalleryLightbox({
               </button>
             ))}
           </div>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            className="absolute inset-x-4 z-20 flex min-h-12 items-center justify-center rounded-full bg-white text-sm font-semibold text-[#0f2420] shadow-lg sm:hidden"
+            style={{ bottom: "max(16px, env(safe-area-inset-bottom))" }}
+          >
+            Close
+          </button>
         </motion.div>
       ) : null}
     </AnimatePresence>
+    </BodyPortal>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -19,6 +20,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ImageViewer } from "@/components/shared/ImageViewer";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { hasMediaSrc } from "@/lib/cms/media-url";
 import {
@@ -80,6 +82,8 @@ function RoomListingRow({
   const features = buildFeatureList(room);
   const imageRight = index % 2 === 1;
   const hasImage = hasMediaSrc(room.imageSrc);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const gallery = (room.gallery?.length ? room.gallery : [room.imageSrc]).filter(Boolean);
 
   return (
     <motion.article
@@ -97,16 +101,23 @@ function RoomListingRow({
       >
         <div className="relative h-[260px] w-full shrink-0 overflow-hidden sm:h-[320px] lg:h-auto lg:min-h-[420px] lg:w-[48%]">
           {hasImage ? (
-            <SafeImage
-              src={room.imageSrc}
-              alt={room.seo?.altText || room.name}
-              fill
-              fadeIn={false}
-              objectFit="cover"
-              className="object-cover object-center"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority={index === 0}
-            />
+            <button
+              type="button"
+              className="absolute inset-0"
+              onClick={() => setViewerIndex(0)}
+              aria-label={`View ${room.name} photos`}
+            >
+              <SafeImage
+                src={room.imageSrc}
+                alt={room.seo?.altText || room.name}
+                fill
+                fadeIn={false}
+                objectFit="cover"
+                className="object-cover object-center"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority={index === 0}
+              />
+            </button>
           ) : (
             <div className="flex h-full min-h-[260px] w-full items-center justify-center bg-[#EFE8DA] lg:min-h-[420px]">
               <p className="font-display text-sm uppercase tracking-[0.28em]" style={{ color: `${GOLD}99` }}>
@@ -198,6 +209,12 @@ function RoomListingRow({
           </div>
         </div>
       </div>
+      <ImageViewer
+        items={gallery.map((src) => ({ src, alt: room.name, title: room.name }))}
+        index={viewerIndex}
+        onClose={() => setViewerIndex(null)}
+        onChangeIndex={setViewerIndex}
+      />
     </motion.article>
   );
 }

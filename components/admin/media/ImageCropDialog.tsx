@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { BodyPortal } from "@/components/shared/BodyPortal";
 
 interface ImageCropDialogProps {
   file: File;
@@ -100,7 +101,8 @@ export function ImageCropDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4">
+    <BodyPortal>
+    <div className="fixed inset-0 z-[520] flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4">
       <div className="w-full max-w-md space-y-4 border border-luxury-gold/20 bg-[#0F1C18] p-6 shadow-xl">
         <p className="font-display text-lg text-luxury-gold">{title}</p>
         <p className="text-xs text-white/50">
@@ -145,5 +147,6 @@ export function ImageCropDialog({
         </div>
       </div>
     </div>
+    </BodyPortal>
   );
 }

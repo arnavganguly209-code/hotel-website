@@ -1,18 +1,31 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, Pencil, X } from "lucide-react";
+import { Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
+import { ImagePicker } from "@/components/admin/media/ImagePicker";
+import type { MediaAsset } from "@/lib/cms/types";
 
 interface AdminRoom {
   id: string;
   slug: string;
   name: string;
   description: string;
+  longDescription: string;
   price: number;
   breakfastPrice: number;
   amenities: string[];
   available: boolean;
+  visible: boolean;
   maxGuests: number;
+  guests: string;
+  size: string;
+  bedType: string;
+  baseAdults: number;
+  baseChildren: number;
+  maxAdults: number;
+  maxChildren: number;
+  extraAdultPrice: number;
+  extraChildPrice: number;
   imageSrc: string;
   gallery: string[];
   totalRooms: number;
@@ -21,33 +34,56 @@ interface AdminRoom {
 type EditState = {
   name: string;
   description: string;
+  longDescription: string;
   price: string;
   breakfastPrice: string;
   maxGuests: string;
+  guests: string;
+  size: string;
+  bedType: string;
   available: boolean;
+  visible: boolean;
   imageSrc: string;
   amenities: string;
-  gallery: string;
+  gallery: string[];
   totalRooms: string;
+  baseAdults: string;
+  baseChildren: string;
+  maxAdults: string;
+  maxChildren: string;
+  extraAdultPrice: string;
+  extraChildPrice: string;
 };
 
 function toEditState(room: AdminRoom): EditState {
   return {
     name: room.name,
     description: room.description,
+    longDescription: room.longDescription || "",
     price: String(room.price),
     breakfastPrice: String(room.breakfastPrice),
     maxGuests: String(room.maxGuests),
+    guests: room.guests || "",
+    size: room.size || "",
+    bedType: room.bedType || "",
     available: room.available,
+    visible: room.visible,
     imageSrc: room.imageSrc,
     amenities: (room.amenities || []).join("\n"),
-    gallery: (room.gallery || []).join("\n"),
+    gallery: room.gallery?.length ? [...room.gallery] : room.imageSrc ? [room.imageSrc] : [],
     totalRooms: String(room.totalRooms),
+    baseAdults: String(room.baseAdults ?? 2),
+    baseChildren: String(room.baseChildren ?? 1),
+    maxAdults: String(room.maxAdults ?? 2),
+    maxChildren: String(room.maxChildren ?? 1),
+    extraAdultPrice: String(room.extraAdultPrice ?? 0),
+    extraChildPrice: String(room.extraChildPrice ?? 0),
   };
 }
 
 export default function AdminRoomsPage() {
   const [rooms, setRooms] = useState<AdminRoom[]>([]);
+  const [mediaLibrary, setMediaLibrary] = useState<MediaAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState<AdminRoom | null>(null);
@@ -63,6 +99,7 @@ export default function AdminRoomsPage() {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || "Failed to load rooms");
       setRooms(data.rooms ?? []);
+      setMediaLibrary(data.mediaLibrary ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load rooms");
     } finally {
@@ -92,20 +129,29 @@ export default function AdminRoomsPage() {
           roomSlug: editing.slug,
           name: form.name,
           description: form.description,
+          longDescription: form.longDescription,
           price: Number(form.price) || 0,
           breakfastPrice: Number(form.breakfastPrice) || 0,
           maxGuests: Number(form.maxGuests) || 1,
+          guests: form.guests,
+          size: form.size,
+          bedType: form.bedType,
           available: form.available,
+          visible: form.visible,
           imageSrc: form.imageSrc,
           amenities: form.amenities
             .split("\n")
             .map((a) => a.trim())
             .filter(Boolean),
-          gallery: form.gallery
-            .split("\n")
-            .map((a) => a.trim())
-            .filter(Boolean),
+          gallery: form.gallery.map((src) => src.trim()).filter(Boolean),
           totalRooms: Number(form.totalRooms) || 1,
+          baseAdults: Number(form.baseAdults) || 1,
+          baseChildren: Number(form.baseChildren) || 0,
+          maxAdults: Number(form.maxAdults) || 1,
+          maxChildren: Number(form.maxChildren) || 0,
+          extraAdultPrice: Number(form.extraAdultPrice) || 0,
+          extraChildPrice: Number(form.extraChildPrice) || 0,
+          mediaLibrary,
         }),
       });
       const data = await res.json();
@@ -129,7 +175,8 @@ export default function AdminRoomsPage() {
         <p className="text-[11px] uppercase tracking-[0.25em] text-[#c5a059]">Accommodations</p>
         <h1 className="mt-1 font-serif text-3xl font-light text-[#0f2420]">Rooms</h1>
         <p className="mt-2 text-sm text-[#5a635c]">
-          Update room details, pricing, and physical inventory. Changes sync to the public website.
+          Live room categories only. Edit cover, gallery, copy, and all prices — changes sync to the
+          public website and Orbit.
         </p>
       </div>
 
@@ -182,9 +229,7 @@ export default function AdminRoomsPage() {
               </div>
               <span
                 className={`mt-4 inline-flex rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-wider ${
-                  room.available
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-red-50 text-red-700"
+                  room.available ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
                 }`}
               >
                 {room.available ? "Available" : "Unavailable"}
@@ -192,15 +237,15 @@ export default function AdminRoomsPage() {
             </div>
           ))}
           {rooms.length === 0 ? (
-            <p className="text-sm text-[#5a635c]">No rooms configured yet.</p>
+            <p className="text-sm text-[#5a635c]">No live room categories yet.</p>
           ) : null}
         </div>
       )}
 
       {editing && form ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-[#fbf8f1] p-6 shadow-2xl">
-            <div className="flex items-center justify-between">
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4">
+          <div className="max-h-[96vh] w-full max-w-3xl overflow-y-auto rounded-t-2xl bg-[#fbf8f1] p-5 shadow-2xl sm:rounded-2xl sm:p-6">
+            <div className="flex items-center justify-between gap-3">
               <h2 className="font-serif text-xl text-[#0f2420]">Edit {editing.name}</h2>
               <button type="button" onClick={() => setEditing(null)} className="text-[#5a635c]">
                 <X className="h-5 w-5" />
@@ -208,6 +253,24 @@ export default function AdminRoomsPage() {
             </div>
 
             <div className="mt-5 space-y-4">
+              <div className="rounded-xl bg-[#0f2420] p-4">
+                <ImagePicker
+                  label="Cover Image"
+                  folder="rooms"
+                  category="Rooms"
+                  value={form.imageSrc}
+                  library={mediaLibrary}
+                  onLibraryChange={setMediaLibrary}
+                  enableCrop
+                  onChange={(url) => {
+                    const nextGallery = url
+                      ? [url, ...form.gallery.filter((src) => src && src !== form.imageSrc)]
+                      : form.gallery.filter((src) => src && src !== form.imageSrc);
+                    setForm({ ...form, imageSrc: url, gallery: nextGallery });
+                  }}
+                />
+              </div>
+
               <Field label="Name">
                 <input
                   className="input"
@@ -215,12 +278,20 @@ export default function AdminRoomsPage() {
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                 />
               </Field>
-              <Field label="Description">
+              <Field label="Short Description">
                 <textarea
                   rows={3}
                   className="input"
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
+                />
+              </Field>
+              <Field label="Long Description (room page)">
+                <textarea
+                  rows={5}
+                  className="input"
+                  value={form.longDescription}
+                  onChange={(e) => setForm({ ...form, longDescription: e.target.value })}
                 />
               </Field>
               <div className="grid grid-cols-2 gap-4">
@@ -240,12 +311,81 @@ export default function AdminRoomsPage() {
                     onChange={(e) => setForm({ ...form, breakfastPrice: e.target.value })}
                   />
                 </Field>
+                <Field label="Extra adult $/night">
+                  <input
+                    type="number"
+                    className="input"
+                    value={form.extraAdultPrice}
+                    onChange={(e) => setForm({ ...form, extraAdultPrice: e.target.value })}
+                  />
+                </Field>
+                <Field label="Extra child $/night">
+                  <input
+                    type="number"
+                    className="input"
+                    value={form.extraChildPrice}
+                    onChange={(e) => setForm({ ...form, extraChildPrice: e.target.value })}
+                  />
+                </Field>
+                <Field label="Size">
+                  <input
+                    className="input"
+                    value={form.size}
+                    onChange={(e) => setForm({ ...form, size: e.target.value })}
+                  />
+                </Field>
+                <Field label="Bed Type">
+                  <input
+                    className="input"
+                    value={form.bedType}
+                    onChange={(e) => setForm({ ...form, bedType: e.target.value })}
+                  />
+                </Field>
+                <Field label="Guests label">
+                  <input
+                    className="input"
+                    value={form.guests}
+                    onChange={(e) => setForm({ ...form, guests: e.target.value })}
+                  />
+                </Field>
                 <Field label="Max Guests">
                   <input
                     type="number"
                     className="input"
                     value={form.maxGuests}
                     onChange={(e) => setForm({ ...form, maxGuests: e.target.value })}
+                  />
+                </Field>
+                <Field label="Base adults">
+                  <input
+                    type="number"
+                    className="input"
+                    value={form.baseAdults}
+                    onChange={(e) => setForm({ ...form, baseAdults: e.target.value })}
+                  />
+                </Field>
+                <Field label="Base children">
+                  <input
+                    type="number"
+                    className="input"
+                    value={form.baseChildren}
+                    onChange={(e) => setForm({ ...form, baseChildren: e.target.value })}
+                  />
+                </Field>
+                <Field label="Max adults">
+                  <input
+                    type="number"
+                    className="input"
+                    value={form.maxAdults}
+                    onChange={(e) => setForm({ ...form, maxAdults: e.target.value })}
+                  />
+                </Field>
+                <Field label="Max children">
+                  <input
+                    type="number"
+                    className="input"
+                    value={form.maxChildren}
+                    onChange={(e) => setForm({ ...form, maxChildren: e.target.value })}
                   />
                 </Field>
                 <Field label="Total Physical Rooms">
@@ -257,13 +397,6 @@ export default function AdminRoomsPage() {
                   />
                 </Field>
               </div>
-              <Field label="Cover Image URL">
-                <input
-                  className="input"
-                  value={form.imageSrc}
-                  onChange={(e) => setForm({ ...form, imageSrc: e.target.value })}
-                />
-              </Field>
               <Field label="Amenities (one per line)">
                 <textarea
                   rows={4}
@@ -272,14 +405,49 @@ export default function AdminRoomsPage() {
                   onChange={(e) => setForm({ ...form, amenities: e.target.value })}
                 />
               </Field>
-              <Field label="Gallery Image URLs (one per line)">
-                <textarea
-                  rows={3}
-                  className="input"
-                  value={form.gallery}
-                  onChange={(e) => setForm({ ...form, gallery: e.target.value })}
-                />
-              </Field>
+
+              <div className="space-y-3 rounded-xl bg-[#0f2420] p-4">
+                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#e8d5a3]">
+                  Gallery images
+                </p>
+                {form.gallery.map((src, i) => (
+                  <div key={`${src}-${i}`} className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <ImagePicker
+                        label={`Gallery image ${i + 1}`}
+                        folder="rooms"
+                        category="Rooms"
+                        value={src}
+                        library={mediaLibrary}
+                        onLibraryChange={setMediaLibrary}
+                        enableCrop
+                        onChange={(url) => {
+                          const next = [...form.gallery];
+                          next[i] = url;
+                          setForm({ ...form, gallery: next });
+                        }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="mb-1 rounded-full p-2 text-red-300"
+                      onClick={() =>
+                        setForm({ ...form, gallery: form.gallery.filter((_, idx) => idx !== i) })
+                      }
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, gallery: [...form.gallery, ""] })}
+                  className="inline-flex items-center gap-2 rounded-full border border-[#c5a059]/40 px-4 py-2 text-xs text-[#e8d5a3]"
+                >
+                  <Plus className="h-4 w-4" /> Add gallery image
+                </button>
+              </div>
+
               <label className="flex items-center gap-2 text-sm text-[#3d5a4c]">
                 <input
                   type="checkbox"
@@ -288,6 +456,15 @@ export default function AdminRoomsPage() {
                   className="h-4 w-4 rounded border-[#c5a059]/50"
                 />
                 Room is available for booking
+              </label>
+              <label className="flex items-center gap-2 text-sm text-[#3d5a4c]">
+                <input
+                  type="checkbox"
+                  checked={form.visible}
+                  onChange={(e) => setForm({ ...form, visible: e.target.checked })}
+                  className="h-4 w-4 rounded border-[#c5a059]/50"
+                />
+                Show on homepage
               </label>
 
               {notice ? <p className="text-sm text-red-600">{notice}</p> : null}

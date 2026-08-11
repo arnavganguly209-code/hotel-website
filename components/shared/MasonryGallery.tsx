@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ImageViewer } from "@/components/shared/ImageViewer";
 import { MediaPlaceholder } from "@/components/shared/MediaPlaceholder";
 import { cn } from "@/lib/utils";
 import { GALLERY_CATEGORIES } from "@/lib/navigation";
@@ -28,7 +29,7 @@ const aspectMap: Record<string, "portrait" | "landscape" | "square"> = {
 };
 
 export function MasonryGallery({ items, columns = 3, showFilters = true }: MasonryGalleryProps) {
-  const [active, setActive] = useState<string | null>(null);
+  const [active, setActive] = useState<number | null>(null);
   const [category, setCategory] = useState<string>("All");
 
   const filtered = useMemo(
@@ -39,7 +40,11 @@ export function MasonryGallery({ items, columns = 3, showFilters = true }: Mason
     [items, category]
   );
 
-  const activeItem = items.find((i) => i.id === active);
+  const viewerItems = filtered.map((item) => ({
+    src: item.src,
+    alt: item.title,
+    title: item.title,
+  }));
 
   return (
     <>
@@ -81,7 +86,7 @@ export function MasonryGallery({ items, columns = 3, showFilters = true }: Mason
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              onClick={() => setActive(item.id)}
+              onClick={() => setActive(filtered.findIndex((entry) => entry.id === item.id))}
               className="group relative block w-full break-inside-avoid overflow-hidden border border-luxury-orange/10 text-left luxury-card"
             >
               <MediaPlaceholder
@@ -103,48 +108,12 @@ export function MasonryGallery({ items, columns = 3, showFilters = true }: Mason
         </AnimatePresence>
       </motion.div>
 
-      <AnimatePresence>
-        {activeItem && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center bg-luxury-green-dark/90 p-6 backdrop-blur-xl"
-            onClick={() => setActive(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.92, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.92, opacity: 0 }}
-              className="relative max-h-[85vh] max-w-4xl overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MediaPlaceholder
-                src={activeItem.src}
-                alt={activeItem.title}
-                variant="gallery"
-                aspect="landscape"
-                className="min-h-[50vh]"
-                hoverScale={false}
-                priority
-              />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-luxury-green-dark/90 to-transparent p-8">
-                <p className="text-xs uppercase tracking-[0.25em] text-luxury-orange-light">
-                  {activeItem.category}
-                </p>
-                <p className="mt-2 font-display text-3xl text-white">{activeItem.title}</p>
-              </div>
-              <button
-                onClick={() => setActive(null)}
-                className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center border border-white/20 bg-luxury-green-dark/60 text-white backdrop-blur-sm transition-colors hover:border-luxury-orange/50"
-                aria-label="Close"
-              >
-                ×
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ImageViewer
+        items={viewerItems}
+        index={active}
+        onClose={() => setActive(null)}
+        onChangeIndex={setActive}
+      />
     </>
   );
 }

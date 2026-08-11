@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { HeritageMistBackdrop } from "@/components/home/HeritageMistBackdrop";
+import { ImageViewer } from "@/components/shared/ImageViewer";
 import { SafeImage } from "@/components/shared/SafeImage";
 import type { SiteContent } from "@/lib/cms/types";
 import { luxuryEase, luxuryFadeUp, luxuryStagger } from "@/lib/animations";
@@ -36,6 +38,7 @@ export function GalleryHomeSection({ gallery, section }: GalleryHomeSectionProps
     .filter((item) => item.active !== false && Boolean(item.src) && item.showOnHome !== false)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     .slice(0, limit);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   return (
     <section
@@ -103,11 +106,13 @@ export function GalleryHomeSection({ gallery, section }: GalleryHomeSectionProps
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
           style={{ gap }}
         >
-          {items.map((item) => (
-            <motion.article
+          {items.map((item, index) => (
+            <motion.button
+              type="button"
               key={item.id}
               variants={luxuryFadeUp}
-              className="group relative overflow-hidden"
+              onClick={() => setViewerIndex(index)}
+              className="group relative overflow-hidden text-left"
               style={{
                 borderRadius: radius,
                 border: `1px solid ${border}`,
@@ -158,7 +163,7 @@ export function GalleryHomeSection({ gallery, section }: GalleryHomeSectionProps
                   ) : null}
                 </div>
               </div>
-            </motion.article>
+            </motion.button>
           ))}
         </motion.div>
 
@@ -190,6 +195,16 @@ export function GalleryHomeSection({ gallery, section }: GalleryHomeSectionProps
           </motion.div>
         ) : null}
       </div>
+      <ImageViewer
+        items={items.map((item) => ({
+          src: item.src,
+          alt: item.alt || item.title,
+          title: item.title,
+        }))}
+        index={viewerIndex}
+        onClose={() => setViewerIndex(null)}
+        onChangeIndex={setViewerIndex}
+      />
     </section>
   );
 }

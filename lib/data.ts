@@ -7,7 +7,7 @@ export const TRUST_INDICATORS = [
 
 export const STATS = [
   { value: 1000, suffix: "+", label: "Happy Guests" },
-  { value: 4, suffix: "", label: "Premium Room Categories" },
+  { value: 3, suffix: "", label: "Premium Room Categories" },
   { value: 1, suffix: "", label: "Premium Spa Experience" },
   { value: 1, suffix: "", label: "Prime Kathmandu Location" },
 ] as const;

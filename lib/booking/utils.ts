@@ -39,6 +39,11 @@ export function roomPublicSlug(room: SiteContent["rooms"][number]): string {
   return room.slug?.trim() || room.id;
 }
 
+/** Live bookable categories shown on /rooms, /admin, and Orbit (archived twin stays hidden). */
+export function isLiveRoomCategory(room: SiteContent["rooms"][number]): boolean {
+  return room.available !== false;
+}
+
 /** Nightly rate always includes breakfast. */
 export function breakfastIncludedNightlyPrice(room: SiteContent["rooms"][number]): number {
   return Math.max(0, Math.round(Number(room.price) || 0));

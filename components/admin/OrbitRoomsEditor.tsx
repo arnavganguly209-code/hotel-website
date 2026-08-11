@@ -1,6 +1,7 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
@@ -386,6 +387,7 @@ export function OrbitRoomsEditor({
   onRoomsChange,
   onLibraryChange,
 }: OrbitRoomsEditorProps) {
+  const [showArchived, setShowArchived] = useState(false);
   const indexed = rooms.map((room, index) => ({ room, index }));
   const active = indexed
     .filter(({ room }) => room.available !== false)
@@ -398,8 +400,8 @@ export function OrbitRoomsEditor({
         <div>
           <p className="font-display text-lg text-luxury-gold">Active Room Categories</p>
           <p className="mt-1 text-xs text-white/45">
-            Edit name, price, text, cover image, and amenities for the live categories only. Old
-            unavailable categories stay hidden below.
+            {active.length} live categor{active.length === 1 ? "y" : "ies"} — edit cover, gallery,
+            copy, and all prices. Archived categories stay hidden from the website.
           </p>
         </div>
         <Button
@@ -465,10 +467,18 @@ export function OrbitRoomsEditor({
 
       {archived.length > 0 ? (
         <div className="space-y-4 border border-white/10 p-4">
-          <p className="text-sm font-medium text-white/55">
-            Archived / old categories (hidden from site)
-          </p>
-          {archived.map(({ room, index }) => (
+          <button
+            type="button"
+            onClick={() => setShowArchived((open) => !open)}
+            className="flex w-full items-center justify-between text-left text-sm font-medium text-white/55"
+          >
+            <span>
+              Archived / old categories ({archived.length}) — hidden from site, /admin, and /rooms
+            </span>
+            <ChevronDown className={`h-4 w-4 transition ${showArchived ? "rotate-180" : ""}`} />
+          </button>
+          {showArchived
+            ? archived.map(({ room, index }) => (
             <div
               key={room.id}
               className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/20 px-4 py-3"
@@ -510,7 +520,8 @@ export function OrbitRoomsEditor({
                 </Button>
               </div>
             </div>
-          ))}
+          ))
+            : null}
         </div>
       ) : null}
     </>

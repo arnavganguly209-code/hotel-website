@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { CheckCircle2, ImagePlus, Library, Loader2, Search, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BodyPortal } from "@/components/shared/BodyPortal";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { ImageCropDialog } from "@/components/admin/media/ImageCropDialog";
 import {
@@ -311,8 +312,9 @@ export function ImagePicker({
       ) : null}
 
       {open ? (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-luxury-gold/20 bg-[#0f1c16] shadow-2xl">
+        <BodyPortal>
+        <div className="fixed inset-0 z-[500] flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+          <div className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-luxury-gold/20 bg-[#0f1c16] shadow-2xl sm:rounded-2xl">
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <div className="flex gap-2">
                 <Button
@@ -468,6 +470,7 @@ export function ImagePicker({
             </div>
           </div>
         </div>
+        </BodyPortal>
       ) : null}
 
       {cropFile ? (

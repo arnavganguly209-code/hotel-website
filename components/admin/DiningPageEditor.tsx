@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
@@ -36,8 +36,9 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
   return (
     <div className="space-y-6">
       <p className="text-sm text-white/50">
-        Dining Page Management — hero, venues, menu, reservations form, gallery, reviews, FAQ, CTA,
-        SEO. Changes auto-save.
+        Restaurant page (/restaurant) — upload, replace, or delete every image. Culinary menu
+        categories (Breakfast, Lunch, Dinner, Desserts, Beverages, Cocktails) can be renamed, added,
+        reordered, or deleted. Changes auto-save.
       </p>
 
       {/* Hero */}
@@ -473,7 +474,11 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
 
       {/* Menu */}
       <div className="space-y-4 border border-luxury-gold/10 p-6">
-        <p className="font-display text-lg text-luxury-gold">Menu Section</p>
+        <p className="font-display text-lg text-luxury-gold">Culinary — Signature Menu Highlights</p>
+        <p className="text-xs text-white/45">
+          Edit category tabs and dish photos for Breakfast, Lunch, Dinner, Desserts, Beverages, and
+          Cocktails. Add a new category or delete one that is no longer served.
+        </p>
         <AdminInput
           label="Eyebrow"
           value={page.menu.eyebrow}
@@ -530,6 +535,52 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
             <div className="flex items-center justify-between">
               <p className="text-sm text-luxury-gold">{category.name}</p>
               <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-white/60"
+                  disabled={ci === 0}
+                  onClick={() => {
+                    if (ci === 0) return;
+                    const categories = [...page.menu.categories];
+                    const current = categories[ci];
+                    categories[ci] = categories[ci - 1];
+                    categories[ci - 1] = current;
+                    setPage({
+                      ...page,
+                      menu: {
+                        ...page.menu,
+                        categories: categories.map((entry, order) => ({ ...entry, order })),
+                      },
+                    });
+                  }}
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-white/60"
+                  disabled={ci === page.menu.categories.length - 1}
+                  onClick={() => {
+                    if (ci >= page.menu.categories.length - 1) return;
+                    const categories = [...page.menu.categories];
+                    const current = categories[ci];
+                    categories[ci] = categories[ci + 1];
+                    categories[ci + 1] = current;
+                    setPage({
+                      ...page,
+                      menu: {
+                        ...page.menu,
+                        categories: categories.map((entry, order) => ({ ...entry, order })),
+                      },
+                    });
+                  }}
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
                 <label className="flex items-center gap-2 text-xs text-white/60">
                   <input
                     type="checkbox"
