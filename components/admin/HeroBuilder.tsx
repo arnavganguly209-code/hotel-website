@@ -153,6 +153,7 @@ export function HeroBuilder({
         videoSrc: hero.videoSrc && hero.videoSrc !== url ? hero.videoSrc : prevMedia.videoSrc,
       },
       videoSrc: url,
+      videoSrcMobile: "",
       poster: "",
     });
   };
@@ -169,6 +170,11 @@ export function HeroBuilder({
       const res = await fetch("/api/upload", { method: "POST", body: form });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.url) {
+        if (res.status === 413) {
+          throw new Error(
+            "Upload failed (HTTP 413): the reverse proxy still rejected this file. Server limit is 200MB after deploy — retry once, or paste a web-optimized H.264 MP4 URL."
+          );
+        }
         throw new Error(data.error || `Upload failed (HTTP ${res.status})`);
       }
       setHeroVideo((data.urlWithBust || data.url) as string);

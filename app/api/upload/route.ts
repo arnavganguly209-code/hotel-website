@@ -14,6 +14,7 @@ import {
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+export const maxDuration = 180;
 
 async function canManageUploads() {
   if (await isAuthenticated()) return true;

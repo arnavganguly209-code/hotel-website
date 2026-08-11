@@ -16,10 +16,12 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
   },
   experimental: {
-    // Orbit image uploads up to 10MB (App Router / Server Actions).
+    // Orbit hero videos can be large; nginx must also allow this (client_max_body_size).
     serverActions: {
-      bodySizeLimit: "10mb",
+      bodySizeLimit: "200mb",
     },
+    middlewareClientMaxBodySize: "200mb",
+    proxyClientMaxBodySize: "200mb",
   },
   // Keep pdfkit/qrcode outside the bundler so AFM font data files resolve in production.
   serverExternalPackages: ["pdfkit", "qrcode"],

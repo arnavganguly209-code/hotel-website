@@ -267,6 +267,8 @@ export interface HeroBuilderSettings {
   subtitle: string;
   description: string;
   videoSrc: string;
+  /** Optional lighter MP4 for phones/tablets. Falls back to videoSrc. */
+  videoSrcMobile?: string;
   imageSrc: string;
   poster: string;
   overlayOpacity: number;

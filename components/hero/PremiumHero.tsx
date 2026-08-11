@@ -34,9 +34,23 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const [videoAttempt, setVideoAttempt] = useState(0);
 
   const imageSrc = (hero.image?.src || hero.imageSrc || "").trim();
-  const videoSrc = (hero.videoSrc || "").trim();
+  const videoSrcDesktop = (hero.videoSrc || "").trim();
+  const videoSrcMobile = (hero.videoSrcMobile || "").trim();
+  const [preferMobileVideo, setPreferMobileVideo] = useState(false);
+  const [heroVideoReady, setHeroVideoReady] = useState(false);
+  const videoSrc =
+    preferMobileVideo && hasMediaSrc(videoSrcMobile) ? videoSrcMobile : videoSrcDesktop;
   const hasImage = hasMediaSrc(imageSrc);
-  const hasVideo = hasMediaSrc(videoSrc);
+  const hasVideo = hasMediaSrc(videoSrcDesktop) || hasMediaSrc(videoSrcMobile);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 900px)");
+    const apply = () => setPreferMobileVideo(mq.matches);
+    apply();
+    setHeroVideoReady(true);
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
 
   // Respect Orbit mediaMode explicitly — video mode never falls through to image.
   const mode =
@@ -92,6 +106,11 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
         : activeVideoUrl;
 
     try {
+      video.muted = hero.videoMuted !== false;
+      video.defaultMuted = hero.videoMuted !== false;
+      video.playsInline = true;
+      video.setAttribute("playsinline", "true");
+      video.setAttribute("webkit-playsinline", "true");
       video.setAttribute("src", url);
       video.load();
       const play = video.play();
@@ -157,7 +176,7 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
         />
       ) : null}
 
-      {mode === "video" && activeVideoUrl ? (
+      {mode === "video" && activeVideoUrl && heroVideoReady ? (
         videoFailed ? (
           gracefulVideoFallback
         ) : (
@@ -178,6 +197,8 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
               muted={hero.videoMuted !== false}
               playsInline
               preload="auto"
+              disablePictureInPicture
+              controls={false}
               // Intentionally NO poster — Orbit video mode must never flash an image
               className="absolute inset-0 h-full w-full transform-gpu object-cover"
               style={{ objectPosition: hero.image?.position || "center" }}

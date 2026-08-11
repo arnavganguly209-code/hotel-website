@@ -37,6 +37,15 @@ fi
 # Preserve existing uploads — mkdir -p never deletes files
 mkdir -p public/uploads
 chmod -R ug+rwX public/uploads || true
+
+# Orbit hero video uploads fail with HTTP 413 if nginx still uses the 1m default.
+if command -v nginx >/dev/null 2>&1; then
+  if [ "$(id -u)" -eq 0 ]; then
+    bash "$ROOT/scripts/ensure-nginx-upload-limit.sh" || echo "WARN: nginx upload limit not applied"
+  elif command -v sudo >/dev/null 2>&1; then
+    sudo bash "$ROOT/scripts/ensure-nginx-upload-limit.sh" || echo "WARN: nginx upload limit not applied"
+  fi
+fi
 if [ -z "${UPLOADS_ROOT:-}" ]; then
   export UPLOADS_ROOT="$ROOT/public/uploads"
 fi

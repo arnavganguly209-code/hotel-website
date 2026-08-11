@@ -1,5 +1,6 @@
-import { access, readFile, stat } from "node:fs/promises";
-import { constants } from "node:fs";
+import { access, stat } from "node:fs/promises";
+import { createReadStream, constants } from "node:fs";
+import { Readable } from "node:stream";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { resolveLocalUploadPath, uploadsRoot } from "@/lib/uploads";
@@ -13,6 +14,9 @@ export const dynamic = "force-dynamic";
  * Next.js production (`next start`) snapshots `public/` at boot — files written
  * after start 404 from the static file server. This route reads the uploads
  * directory on disk so new Orbit uploads are immediately available at /uploads/*.
+ *
+ * Videos are streamed with HTTP Range so hero playback does not wait for the
+ * full file (avoids stutter / RAM spikes).
  */
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -30,6 +34,10 @@ const CONTENT_TYPES: Record<string, string> = {
 function contentTypeFor(filePath: string): string {
   const ext = path.extname(filePath).toLowerCase();
   return CONTENT_TYPES[ext] || "application/octet-stream";
+}
+
+function streamFile(absolutePath: string, start: number, end: number) {
+  return Readable.toWeb(createReadStream(absolutePath, { start, end })) as ReadableStream<Uint8Array>;
 }
 
 async function resolveUploadFile(pathSegments: string[]) {
@@ -82,8 +90,6 @@ async function handle(
   const headers = new Headers({
     "Content-Type": contentTypeFor(file.absolutePath),
     "Content-Length": String(file.size),
-    // Soft TTL: browsers revalidate quickly; ?v=revision remains the hard bust.
-    // Deleted Orbit files must not stick; ETag still enables 304 when unchanged.
     "Cache-Control": "public, max-age=30, stale-while-revalidate=60, must-revalidate",
     "Last-Modified": new Date(file.mtimeMs).toUTCString(),
     ETag: etag,
@@ -99,24 +105,28 @@ async function handle(
     return new NextResponse(null, { status: 200, headers });
   }
 
-  const buffer = await readFile(file.absolutePath);
+  let start = 0;
+  let end = file.size - 1;
+  let status = 200;
   const range = request.headers.get("range");
   if (range) {
     const match = /^bytes=(\d*)-(\d*)$/.exec(range);
-    if (match) {
-      const start = match[1] ? Number(match[1]) : 0;
-      const end = match[2] ? Math.min(Number(match[2]), file.size - 1) : file.size - 1;
-      if (start <= end && start < file.size) {
-        const chunk = buffer.subarray(start, end + 1);
-        headers.set("Content-Length", String(chunk.length));
-        headers.set("Content-Range", `bytes ${start}-${end}/${file.size}`);
-        return new NextResponse(chunk, { status: 206, headers });
-      }
+    if (!match) {
+      headers.set("Content-Range", `bytes */${file.size}`);
+      return new NextResponse(null, { status: 416, headers });
     }
-    headers.set("Content-Range", `bytes */${file.size}`);
-    return new NextResponse(null, { status: 416, headers });
+    start = match[1] ? Number(match[1]) : 0;
+    end = match[2] ? Math.min(Number(match[2]), file.size - 1) : file.size - 1;
+    if (start > end || start >= file.size) {
+      headers.set("Content-Range", `bytes */${file.size}`);
+      return new NextResponse(null, { status: 416, headers });
+    }
+    status = 206;
+    headers.set("Content-Length", String(end - start + 1));
+    headers.set("Content-Range", `bytes ${start}-${end}/${file.size}`);
   }
-  return new NextResponse(buffer, { status: 200, headers });
+
+  return new NextResponse(streamFile(file.absolutePath, start, end), { status, headers });
 }
 
 export async function GET(

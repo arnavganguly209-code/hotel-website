@@ -58,7 +58,8 @@ export const defaultHeroBuilder: HeroBuilderSettings = {
   subtitle: "IN THE HEART OF KATHMANDU",
   description:
     "Where timeless elegance meets warm Nepali hospitality.\nYour perfect stay, every single time.",
-  videoSrc: "/media/hero/demo-luxury-lobby.mp4",
+  videoSrc: "/media/hero/hotel-thamel-park-hero.mp4",
+  videoSrcMobile: "/media/hero/hotel-thamel-park-hero-mobile.mp4",
   imageSrc: "/media/hero/hero-background.png",
   poster: "/media/hero/demo-luxury-lobby-poster.png",
   overlayOpacity: 0.18,

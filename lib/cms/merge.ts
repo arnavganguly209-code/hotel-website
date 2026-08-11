@@ -689,6 +689,13 @@ function mergeHero(
     : partial.videoSrc !== undefined
       ? partial.videoSrc.trim()
       : defaults.videoSrc;
+  const videoSrcMobile = isLegacyRecord
+    ? defaults.videoSrcMobile || ""
+    : partial.videoSrcMobile !== undefined
+      ? partial.videoSrcMobile.trim()
+      : videoSrc === defaults.videoSrc
+        ? defaults.videoSrcMobile || ""
+        : "";
   const poster = isLegacyRecord
     ? defaults.poster
     : partial.poster !== undefined
@@ -716,6 +723,7 @@ function mergeHero(
     schemaVersion: 2,
     mediaMode,
     videoSrc,
+    videoSrcMobile,
     poster,
     overlayOpacity: isLegacyRecord
       ? defaults.overlayOpacity
