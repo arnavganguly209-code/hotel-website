@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
+import { BodyPortal } from "@/components/shared/BodyPortal";
 import type { MediaAsset } from "@/lib/cms/types";
 
 interface AdminRoom {
@@ -243,11 +244,17 @@ export default function AdminRoomsPage() {
       )}
 
       {editing && form ? (
-        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4">
-          <div className="max-h-[96vh] w-full max-w-3xl overflow-y-auto rounded-t-2xl bg-[#fbf8f1] p-5 shadow-2xl sm:rounded-2xl sm:p-6">
+        <BodyPortal>
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4">
+          <div className="max-h-[100dvh] w-full max-w-3xl overflow-y-auto rounded-t-2xl bg-[#fbf8f1] p-5 shadow-2xl sm:max-h-[96vh] sm:rounded-2xl sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-serif text-xl text-[#0f2420]">Edit {editing.name}</h2>
-              <button type="button" onClick={() => setEditing(null)} className="text-[#5a635c]">
+              <button
+                type="button"
+                onClick={() => setEditing(null)}
+                className="rounded-full border border-[#c5a059]/30 p-2 text-[#5a635c]"
+                aria-label="Close editor"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -294,7 +301,7 @@ export default function AdminRoomsPage() {
                   onChange={(e) => setForm({ ...form, longDescription: e.target.value })}
                 />
               </Field>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Price / Night ($)">
                   <input
                     type="number"
@@ -411,7 +418,7 @@ export default function AdminRoomsPage() {
                   Gallery images
                 </p>
                 {form.gallery.map((src, i) => (
-                  <div key={`${src}-${i}`} className="flex items-end gap-2">
+                  <div key={`${src}-${i}`} className="flex flex-col gap-2 sm:flex-row sm:items-end">
                     <div className="flex-1">
                       <ImagePicker
                         label={`Gallery image ${i + 1}`}
@@ -469,7 +476,7 @@ export default function AdminRoomsPage() {
 
               {notice ? <p className="text-sm text-red-600">{notice}</p> : null}
 
-              <div className="flex justify-end gap-3 pt-2">
+              <div className="flex flex-col-reverse justify-end gap-3 pt-2 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => setEditing(null)}
@@ -490,6 +497,7 @@ export default function AdminRoomsPage() {
             </div>
           </div>
         </div>
+        </BodyPortal>
       ) : null}
 
       <style jsx global>{`

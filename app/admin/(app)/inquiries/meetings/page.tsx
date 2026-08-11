@@ -158,7 +158,7 @@ export default function AdminMeetingsInquiriesPage() {
                   value={replyDraft[item.id] ?? ""}
                   onChange={(e) => setReplyDraft({ ...replyDraft, [item.id]: e.target.value })}
                   placeholder="Admin reply"
-                  className="min-w-[220px] flex-1 rounded-lg border border-[#c5a059]/35 bg-white px-3 py-1.5 text-xs outline-none"
+                  className="min-w-0 w-full flex-1 rounded-lg border border-[#c5a059]/35 bg-white px-3 py-1.5 text-xs outline-none sm:min-w-[220px]"
                 />
                 <button
                   type="button"

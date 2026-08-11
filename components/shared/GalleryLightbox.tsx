@@ -114,7 +114,7 @@ export function GalleryLightbox({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[500] flex flex-col bg-[#061813]/96 backdrop-blur-md"
+          className="fixed inset-0 z-[500] flex h-[100dvh] w-screen flex-col bg-black"
           role="dialog"
           aria-modal="true"
           aria-label={current.title}
@@ -153,23 +153,23 @@ export function GalleryLightbox({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0f2420]"
-                aria-label="Close"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#0f2420]"
+                aria-label="Exit gallery"
               >
-                <X className="h-5 w-5" />
-                Close
+                <X className="h-4 w-4" />
+                Exit
               </button>
             </div>
           </div>
 
           <div
-            className="relative flex min-h-0 flex-1 items-center justify-center px-4 sm:px-12"
+            className="relative min-h-0 flex-1"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={goPrev}
-              className="absolute left-2 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/30 text-white backdrop-blur-sm transition hover:border-white/50 sm:left-4"
+              className="absolute left-2 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm transition hover:border-white/50 sm:left-4"
               aria-label="Previous"
             >
               <ChevronLeft className="h-6 w-6" />
@@ -177,27 +177,28 @@ export function GalleryLightbox({
 
             <motion.div
               key={current.id}
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.35 }}
-              className="relative max-h-[70vh] w-full max-w-5xl overflow-hidden rounded-2xl"
-              style={{ border: `1px solid ${goldColor}66` }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="absolute inset-0 overflow-hidden"
             >
               {isVideo ? (
-                <SafeVideo
-                  src={current.src}
-                  poster={current.poster}
-                  autoPlay
-                  muted={false}
-                  loop={false}
-                  controls
-                  className="max-h-[70vh] w-full bg-black object-contain"
-                  preload="auto"
-                />
+                <div className="flex h-full w-full items-center justify-center px-2">
+                  <SafeVideo
+                    src={current.src}
+                    poster={current.poster}
+                    autoPlay
+                    muted={false}
+                    loop={false}
+                    controls
+                    className="max-h-full w-full bg-black object-contain"
+                    preload="auto"
+                  />
+                </div>
               ) : (
                 <div
-                  className="relative aspect-[16/10] w-full transition-transform duration-500"
+                  className="relative h-full w-full transition-transform duration-500"
                   style={{ transform: `scale(${zoom})` }}
                 >
                   <SafeImage
@@ -216,7 +217,7 @@ export function GalleryLightbox({
             <button
               type="button"
               onClick={goNext}
-              className="absolute right-2 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/30 text-white backdrop-blur-sm transition hover:border-white/50 sm:right-4"
+              className="absolute right-2 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm transition hover:border-white/50 sm:right-4"
               aria-label="Next"
             >
               <ChevronRight className="h-6 w-6" />
@@ -240,9 +241,9 @@ export function GalleryLightbox({
           </div>
 
           <div
-            className="flex gap-2 overflow-x-auto px-4 pb-20 sm:justify-center sm:px-6 sm:pb-5"
+            className="flex gap-2 overflow-x-auto px-4 sm:justify-center sm:px-6"
             onClick={(e) => e.stopPropagation()}
-            style={{ paddingBottom: "max(20px, calc(env(safe-area-inset-bottom) + 72px))" }}
+            style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}
           >
             {items.map((item, i) => (
               <button
@@ -286,17 +287,6 @@ export function GalleryLightbox({
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose();
-            }}
-            className="absolute inset-x-4 z-20 flex min-h-12 items-center justify-center rounded-full bg-white text-sm font-semibold text-[#0f2420] shadow-lg sm:hidden"
-            style={{ bottom: "max(16px, env(safe-area-inset-bottom))" }}
-          >
-            Close
-          </button>
         </motion.div>
       ) : null}
     </AnimatePresence>

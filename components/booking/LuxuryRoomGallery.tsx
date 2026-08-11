@@ -69,7 +69,7 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.65, ease: luxuryEase }}
-            className="relative aspect-[4/3] w-full"
+            className="relative aspect-[4/3] w-full bg-[#0d241a]"
           >
             <SafeImage
               src={gallery[active]}
@@ -77,9 +77,9 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
               fill
               priority={active === 0}
               fadeIn={false}
-              className="object-cover"
+              objectFit="contain"
+              className="object-contain"
             />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-luxury-green-dark/35 via-transparent to-transparent" />
           </motion.button>
         </AnimatePresence>
 
@@ -128,15 +128,12 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
       </div>
 
       {gallery.length > 1 ? (
-        <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 sm:gap-3">
+        <div className="hidden grid-cols-4 gap-2 sm:grid sm:grid-cols-5 sm:gap-3">
           {gallery.map((src, i) => (
             <button
               key={`${src}-${i}`}
               type="button"
-              onClick={() => {
-                setActive(i);
-                setViewerIndex(i);
-              }}
+              onClick={() => setActive(i)}
               className={cn(
                 "relative aspect-[4/3] overflow-hidden rounded-[14px] border transition-all duration-500",
                 i === active ? "border-luxury-gold shadow-luxury-gold" : "border-white/50 opacity-75 hover:opacity-100"
@@ -149,7 +146,7 @@ export function LuxuryRoomGallery({ images, alt, className }: LuxuryRoomGalleryP
       ) : null}
 
       <ImageViewer
-        items={gallery.map((src, i) => ({ src, alt, title: `${alt} — ${i + 1}` }))}
+        items={gallery.map((src) => ({ src, alt }))}
         index={viewerIndex}
         onClose={() => setViewerIndex(null)}
         onChangeIndex={(next) => {

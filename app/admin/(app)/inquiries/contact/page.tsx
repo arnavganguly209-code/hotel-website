@@ -12,6 +12,7 @@ import {
   Trash2,
   RotateCcw,
   AlertTriangle,
+  X,
 } from "lucide-react";
 
 interface ContactEnquiry {
@@ -106,6 +107,16 @@ export default function AdminContactMessagesPage() {
   useEffect(() => {
     setNotesDraft(active?.adminNotes || "");
   }, [active?.id, active?.adminNotes]);
+
+  useEffect(() => {
+    if (!activeId || typeof window === "undefined") return;
+    if (!window.matchMedia("(max-width: 1023px)").matches) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [activeId]);
 
   async function patch(body: Record<string, unknown>) {
     setBusy(true);
@@ -254,7 +265,7 @@ export default function AdminContactMessagesPage() {
       </div>
 
       <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-[220px] flex-1">
+        <div className="min-w-0 w-full flex-1 sm:min-w-[220px]">
           <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-[#3d5a4c]">Search</p>
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7a8a82]" />
@@ -392,16 +403,32 @@ export default function AdminContactMessagesPage() {
           </div>
         </div>
 
-        <aside className="rounded-2xl border border-[#c5a059]/20 bg-white/80 p-5">
+        <aside
+          className={`rounded-2xl border border-[#c5a059]/20 bg-white/80 p-5 ${
+            active
+              ? "max-lg:fixed max-lg:inset-0 max-lg:z-[80] max-lg:overflow-y-auto max-lg:rounded-none max-lg:pb-8"
+              : "hidden lg:block"
+          }`}
+        >
           {!active ? (
             <p className="text-sm text-[#5a635c]">Select a message to view details.</p>
           ) : (
             <div className="space-y-4">
-              <div>
+              <div className="flex items-start justify-between gap-3">
+                <div>
                 <p className="font-serif text-xl text-[#0f2420]">#{active.id} · {active.fullName}</p>
                 <p className="mt-1 text-xs text-[#7a8a82]">
                   {new Date(active.createdAt).toLocaleString()}
                 </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveId(null)}
+                  className="rounded-full border border-[#c5a059]/30 p-2 text-[#5a635c] lg:hidden"
+                  aria-label="Close message"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
               <dl className="space-y-2 text-sm">
                 <div><dt className="text-[10px] uppercase tracking-wider text-[#c5a059]">Email</dt><dd>{active.email}</dd></div>

@@ -56,6 +56,15 @@ export function AdminShell({
   const [pending, setPending] = useState(0);
 
   useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
+
+  useEffect(() => {
     let alive = true;
     const load = () => {
       fetch("/api/admin/dashboard/stats", { cache: "no-store" })
@@ -188,17 +197,17 @@ export function AdminShell({
               </p>
               <p className="hidden text-[11px] text-[#7a8a82] sm:block">Live hotel operations · synced with Orbit</p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#c5a059]/25 bg-white/80 px-3 py-1.5 text-[11px] text-[#3d5a4c]">
-                <Bell className="h-3.5 w-3.5 text-[#c5a059]" />
-                {pending > 0 ? `${pending} alerts` : "All clear"}
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="inline-flex max-w-[9.5rem] items-center gap-1.5 truncate rounded-full border border-[#c5a059]/25 bg-white/80 px-2.5 py-1.5 text-[11px] text-[#3d5a4c] sm:max-w-none sm:px-3">
+                <Bell className="h-3.5 w-3.5 shrink-0 text-[#c5a059]" />
+                <span className="truncate">{pending > 0 ? `${pending} alerts` : "All clear"}</span>
               </span>
               <span className="hidden rounded-full border border-emerald-200/80 bg-emerald-50/80 px-3 py-1.5 text-[11px] text-emerald-800 sm:inline">
                 Secure session
               </span>
             </div>
           </header>
-          <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8">{children}</main>
+          <main className="min-w-0 flex-1 px-3 py-5 sm:px-4 lg:px-8 lg:py-8">{children}</main>
         </div>
       </div>
     </div>

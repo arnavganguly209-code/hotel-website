@@ -95,17 +95,17 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
 
   return (
     <main className="overflow-x-clip bg-[#f8f4eb]">
-      <section className="relative min-h-[540px] overflow-hidden lg:min-h-[680px]">
+      <section className="relative min-h-[42vh] overflow-hidden sm:min-h-[540px] lg:min-h-[680px]">
         <SafeImage src={room.imageSrc} alt={room.seo?.altText || room.name} fill priority fadeIn={false} objectFit="cover" sizes="100vw" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0d241a]/90 via-[#0d241a]/25 to-black/15" />
-        <div className="relative mx-auto flex min-h-[540px] max-w-7xl flex-col justify-end px-5 pb-16 pt-32 text-white lg:min-h-[680px] lg:px-8 lg:pb-20">
+        <div className="relative mx-auto flex min-h-[42vh] max-w-7xl flex-col justify-end px-5 pb-12 pt-28 text-white sm:min-h-[540px] sm:pb-16 sm:pt-32 lg:min-h-[680px] lg:px-8 lg:pb-20">
           <nav className="mb-5 text-[10px] uppercase tracking-[0.23em] text-white/65">
             <Link href="/">Home</Link><span className="mx-3 text-[#d7b878]">/</span>
             <Link href="/rooms">Rooms</Link><span className="mx-3 text-[#d7b878]">/</span>
             <span>{room.name}</span>
           </nav>
           <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[#dfbf80]">Accommodations</p>
-          <h1 className="mt-4 max-w-4xl font-display text-5xl font-light leading-none sm:text-6xl lg:text-7xl">{room.name}</h1>
+          <h1 className="mt-4 max-w-4xl font-display text-4xl font-light leading-none sm:text-6xl lg:text-7xl">{room.name}</h1>
           <div className="mt-6 flex flex-wrap gap-5 text-sm text-white/80">
             <span className="flex items-center gap-2"><Maximize2 className="h-4 w-4 text-[#dfbf80]" />{room.size}</span>
             <span className="flex items-center gap-2"><Users className="h-4 w-4 text-[#dfbf80]" />{room.guests}</span>
@@ -114,60 +114,13 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
         </div>
       </section>
 
-      <section className="px-4 py-16 sm:px-6 lg:py-24">
-        <div className="mx-auto grid min-w-0 max-w-7xl gap-12 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-14">
-          <div className="min-w-0 space-y-14">
+      <section className="px-4 py-10 sm:px-6 sm:py-16 lg:py-24">
+        <div className="mx-auto grid min-w-0 max-w-7xl gap-8 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start lg:gap-14">
+          <div className="min-w-0">
             <LuxuryRoomGallery images={gallery} alt={room.seo?.altText || room.name} />
-
-            <section>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a47e3f]">The experience</p>
-              <h2 className="mt-3 font-display text-3xl text-[#153a2a] sm:text-4xl">A considered space to settle in</h2>
-              <p className="mt-6 text-base leading-8 text-[#68736d]">{room.longDescription}</p>
-            </section>
-
-            <div className="grid gap-5 md:grid-cols-2">
-              <DetailList title="Room Amenities" items={room.amenities} />
-              <DetailList title="Facilities" items={room.facilities || room.features} />
-              <DetailList title="Services" items={room.services || []} />
-              <DetailList title="Room Features" items={room.features} />
-            </div>
-
-            <section className="rounded-[28px] bg-[#153a2a] p-7 text-white sm:p-10">
-              <div className="flex items-center gap-3 text-[#dfbf80]"><Clock3 className="h-5 w-5" /><span className="text-xs font-semibold uppercase tracking-[0.23em]">Stay information</span></div>
-              <div className="mt-6 grid gap-7 sm:grid-cols-2">
-                <div><p className="text-xs uppercase tracking-widest text-white/50">Check-in</p><p className="mt-2 font-display text-2xl">{room.checkInTime}</p></div>
-                <div><p className="text-xs uppercase tracking-widest text-white/50">Check-out</p><p className="mt-2 font-display text-2xl">{room.checkOutTime}</p></div>
-              </div>
-              <ul className="mt-7 space-y-3 border-t border-white/10 pt-6 text-sm leading-6 text-white/72">
-                {room.policies.map((policy) => <li key={policy}>• {policy}</li>)}
-              </ul>
-            </section>
-
-            <section>
-              <div className="flex items-center gap-3 text-[#a47e3f]"><MapPin className="h-5 w-5" /><p className="text-[11px] font-semibold uppercase tracking-[0.25em]">Nearby attractions</p></div>
-              <h2 className="mt-3 font-display text-3xl text-[#153a2a]">Explore Kathmandu from Thamel</h2>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {(room.nearbyAttractions || []).map((item) => <div key={item} className="rounded-2xl border border-[#d3bb8a]/25 bg-white/75 px-5 py-4 text-sm text-[#5f6d65]">{item}</div>)}
-              </div>
-            </section>
-
-            <section>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a47e3f]">Guest impressions</p>
-              <h2 className="mt-3 font-display text-3xl text-[#153a2a]">Reviews from recent stays</h2>
-              <div className="mt-7 grid gap-5 md:grid-cols-2">
-                {reviews.slice(0, 2).map((review) => (
-                  <article key={review.id} className="rounded-[24px] border border-[#d3bb8a]/25 bg-white/75 p-7">
-                    <Quote className="h-6 w-6 text-[#b18a49]" />
-                    <div className="mt-4 flex text-[#c69d54]">{[1,2,3,4,5].map((value) => <Star key={value} className="h-3.5 w-3.5 fill-current" />)}</div>
-                    <p className="mt-4 text-sm leading-7 text-[#68736d]">{review.review}</p>
-                    <p className="mt-5 text-sm font-semibold text-[#183b2c]">{review.name} · {review.country}</p>
-                  </article>
-                ))}
-              </div>
-            </section>
           </div>
 
-          <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+          <aside className="min-w-0 lg:sticky lg:top-24 lg:row-span-2 lg:self-start">
             <div className="overflow-hidden rounded-[28px] border border-[#d5b979]/30 bg-white/90 shadow-[0_25px_70px_rgba(15,45,32,0.16)] backdrop-blur-xl">
               <div className="bg-[#153a2a] px-6 py-6 text-white">
                 <p className="text-[10px] uppercase tracking-[0.24em] text-[#dabb7d]">Reserve this room</p>
@@ -215,6 +168,55 @@ export function RoomDetailPage({ room, search, suggestedRooms, reviews }: RoomDe
               </div>
             </div>
           </aside>
+
+          <div className="min-w-0 space-y-14">
+            <section>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a47e3f]">The experience</p>
+              <h2 className="mt-3 font-display text-3xl text-[#153a2a] sm:text-4xl">A considered space to settle in</h2>
+              <p className="mt-6 text-base leading-8 text-[#68736d]">{room.longDescription}</p>
+            </section>
+
+            <div className="grid gap-5 md:grid-cols-2">
+              <DetailList title="Room Amenities" items={room.amenities} />
+              <DetailList title="Facilities" items={room.facilities || room.features} />
+              <DetailList title="Services" items={room.services || []} />
+              <DetailList title="Room Features" items={room.features} />
+            </div>
+
+            <section className="rounded-[28px] bg-[#153a2a] p-7 text-white sm:p-10">
+              <div className="flex items-center gap-3 text-[#dfbf80]"><Clock3 className="h-5 w-5" /><span className="text-xs font-semibold uppercase tracking-[0.23em]">Stay information</span></div>
+              <div className="mt-6 grid gap-7 sm:grid-cols-2">
+                <div><p className="text-xs uppercase tracking-widest text-white/50">Check-in</p><p className="mt-2 font-display text-2xl">{room.checkInTime}</p></div>
+                <div><p className="text-xs uppercase tracking-widest text-white/50">Check-out</p><p className="mt-2 font-display text-2xl">{room.checkOutTime}</p></div>
+              </div>
+              <ul className="mt-7 space-y-3 border-t border-white/10 pt-6 text-sm leading-6 text-white/72">
+                {room.policies.map((policy) => <li key={policy}>• {policy}</li>)}
+              </ul>
+            </section>
+
+            <section>
+              <div className="flex items-center gap-3 text-[#a47e3f]"><MapPin className="h-5 w-5" /><p className="text-[11px] font-semibold uppercase tracking-[0.25em]">Nearby attractions</p></div>
+              <h2 className="mt-3 font-display text-3xl text-[#153a2a]">Explore Kathmandu from Thamel</h2>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                {(room.nearbyAttractions || []).map((item) => <div key={item} className="rounded-2xl border border-[#d3bb8a]/25 bg-white/75 px-5 py-4 text-sm text-[#5f6d65]">{item}</div>)}
+              </div>
+            </section>
+
+            <section>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a47e3f]">Guest impressions</p>
+              <h2 className="mt-3 font-display text-3xl text-[#153a2a]">Reviews from recent stays</h2>
+              <div className="mt-7 grid gap-5 md:grid-cols-2">
+                {reviews.slice(0, 2).map((review) => (
+                  <article key={review.id} className="rounded-[24px] border border-[#d3bb8a]/25 bg-white/75 p-7">
+                    <Quote className="h-6 w-6 text-[#b18a49]" />
+                    <div className="mt-4 flex text-[#c69d54]">{[1,2,3,4,5].map((value) => <Star key={value} className="h-3.5 w-3.5 fill-current" />)}</div>
+                    <p className="mt-4 text-sm leading-7 text-[#68736d]">{review.review}</p>
+                    <p className="mt-5 text-sm font-semibold text-[#183b2c]">{review.name} · {review.country}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </div>
         </div>
       </section>
 

@@ -113,7 +113,28 @@ export default function AdminDashboardPage() {
 
       <section className="rounded-2xl border border-[#c5a059]/20 bg-white/80 p-6">
         <h2 className="font-serif text-xl text-[#0f2420]">Recent Activity</h2>
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 space-y-3 md:hidden">
+          {recent.length === 0 ? (
+            <p className="text-sm text-[#5a635c]">No recent bookings yet.</p>
+          ) : (
+            recent.map((row) => (
+              <article
+                key={row.id}
+                className="rounded-xl border border-[#c5a059]/15 bg-[#fbf8f1] p-4"
+              >
+                <p className="font-medium text-[#0f2420]">{row.name}</p>
+                <p className="mt-1 text-sm text-[#5a635c]">{row.roomName || "—"}</p>
+                <p className="mt-2 text-xs capitalize text-[#7a8a82]">
+                  {row.status.replace(/_/g, " ")} · {row.source}
+                </p>
+                <div className="mt-2 text-sm">
+                  <AdminBookingMoney booking={row} />
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <table className="min-w-full text-left text-sm">
             <thead className="text-[11px] uppercase tracking-[0.14em] text-[#7a8a82]">
               <tr>

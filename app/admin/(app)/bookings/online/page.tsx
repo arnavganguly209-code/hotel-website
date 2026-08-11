@@ -151,7 +151,7 @@ export default function AdminOnlineBookingsPage() {
             ))}
           </select>
         </div>
-        <div className="min-w-[220px] flex-1">
+        <div className="min-w-0 w-full flex-1 sm:min-w-[220px]">
           <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-[#3d5a4c]">Search</p>
           <input
             value={q}

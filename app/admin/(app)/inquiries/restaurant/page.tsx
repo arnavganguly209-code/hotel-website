@@ -158,7 +158,7 @@ export default function AdminDiningInquiriesPage() {
                   value={notesDraft[item.id] ?? ""}
                   onChange={(e) => setNotesDraft({ ...notesDraft, [item.id]: e.target.value })}
                   placeholder="Admin notes"
-                  className="min-w-[220px] flex-1 rounded-lg border border-[#c5a059]/35 bg-white px-3 py-1.5 text-xs outline-none"
+                  className="min-w-0 w-full flex-1 rounded-lg border border-[#c5a059]/35 bg-white px-3 py-1.5 text-xs outline-none sm:min-w-[220px]"
                 />
                 <button
                   type="button"
