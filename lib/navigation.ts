@@ -4,8 +4,8 @@ export const routes = {
   rooms: "/rooms",
   availability: "/rooms/availability",
   book: "/book",
-  dining: "/restaurant",
-  restaurant: "/restaurant",
+  dining: "/dining",
+  restaurant: "/dining",
   spa: "/spa",
   meetingsEvents: "/meetings-events",
   gallery: "/gallery",
@@ -17,6 +17,16 @@ export const routes = {
   legal: "/legal",
   orbit: "/orbit",
 } as const;
+
+/** Public dining lives at /dining — rewrite legacy /restaurant links at render time. */
+export function normalizePublicNavItem<T extends { label: string; href: string }>(item: T): T {
+  const href =
+    item.href === "/restaurant" || item.href.startsWith("/restaurant/")
+      ? item.href.replace(/^\/restaurant/, "/dining")
+      : item.href;
+  const label = item.label.trim().toLowerCase() === "restaurant" ? "Dining" : item.label;
+  return { ...item, href, label };
+}
 
 export const LEGAL_SECTIONS = [
   "privacy",
@@ -48,7 +58,7 @@ export function articleDetailPath(slug: string) {
 export const PRIMARY_NAV_ITEMS = [
   { label: "Overview", href: routes.home },
   { label: "Rooms", href: routes.rooms },
-  { label: "Dining", href: routes.restaurant },
+  { label: "Dining", href: routes.dining },
   { label: "Meetings & Events", href: routes.meetingsEvents },
   { label: "Contact", href: routes.contact },
 ] as const;
@@ -56,7 +66,7 @@ export const PRIMARY_NAV_ITEMS = [
 export const DRAWER_NAV_ITEMS = [
   { label: "Overview", href: routes.home },
   { label: "Rooms", href: routes.rooms },
-  { label: "Dining", href: routes.restaurant },
+  { label: "Dining", href: routes.dining },
   { label: "Spa & Wellness", href: routes.spa },
   { label: "Meetings & Events", href: routes.meetingsEvents },
   { label: "Gallery", href: routes.gallery },
@@ -74,7 +84,7 @@ export const FOOTER_NAV = {
   explore: [
     { label: "Overview", href: routes.home },
     { label: "Rooms", href: routes.rooms },
-    { label: "Dining", href: routes.restaurant },
+    { label: "Dining", href: routes.dining },
     { label: "Spa & Wellness", href: routes.spa },
     { label: "Meetings & Events", href: routes.meetingsEvents },
     { label: "Gallery", href: routes.gallery },

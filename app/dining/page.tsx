@@ -8,24 +8,24 @@ import { DiningPage } from "@/sections/pages/DiningPage";
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getContent();
   const seo = content.diningPage.seo ?? {
-    title: "Restaurant | Hotel Thamel Park",
+    title: "Dining | Hotel Thamel Park",
     description: `Fine dining at ${content.hotel.name}, Kathmandu.`,
   };
-  const meta = buildPageMetadata(seo, "/restaurant", content.hotel.name);
+  const meta = buildPageMetadata(seo, "/dining", content.hotel.name);
   if (seo.keywords) {
     return { ...meta, keywords: seo.keywords };
   }
   return meta;
 }
 
-export default async function RestaurantRoute() {
+export default async function DiningRoute() {
   const content = await getContent();
   const page = content.diningPage;
   const hotel = content.hotel;
 
   const breadcrumb = buildBreadcrumbSchema([
     { name: page.hero.breadcrumbHome || "Home", url: "/" },
-    { name: page.hero.breadcrumbCurrent || "Restaurant", url: "/restaurant" },
+    { name: page.hero.breadcrumbCurrent || "Dining", url: "/dining" },
   ]);
 
   const restaurants = page.venues

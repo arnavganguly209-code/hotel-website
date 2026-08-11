@@ -234,24 +234,64 @@ export function collectMediaFromContent(content: SiteContent): CollectedMediaRef
   walkCmsMedia(out, seen, content.fineDiningSection?.media, "Home", "Fine Dining", "Dining");
 
   pushRef(out, seen, content.diningPage?.hero?.imageSrc, {
-    pageName: "Restaurant",
+    pageName: "Dining",
     sectionName: "Hero",
     category: "Dining",
     isBackground: true,
   });
   pushRef(out, seen, content.diningPage?.welcome?.imageSrc, {
-    pageName: "Restaurant",
+    pageName: "Dining",
     sectionName: "Welcome",
     category: "Dining",
     alt: content.diningPage?.welcome?.imageAlt,
   });
   for (const venue of content.diningPage?.venues ?? []) {
     pushRef(out, seen, (venue as { imageSrc?: string }).imageSrc, {
-      pageName: "Restaurant",
+      pageName: "Dining",
       sectionName: venue.name || "Venue",
       category: "Dining",
     });
   }
+  for (const cat of content.diningPage?.menu?.categories ?? []) {
+    for (const item of cat.items ?? []) {
+      pushRef(out, seen, item.imageSrc, {
+        pageName: "Dining",
+        sectionName: `${cat.name || "Menu"} · ${item.title || "Dish"}`,
+        category: "Dining",
+        alt: item.imageAlt,
+      });
+    }
+  }
+  for (const portrait of content.diningPage?.chefRecommendation?.portraits ?? []) {
+    pushRef(out, seen, portrait.imageSrc, {
+      pageName: "Dining",
+      sectionName: portrait.caption || "Chef Portrait",
+      category: "Dining",
+      alt: portrait.imageAlt,
+    });
+  }
+  for (const dish of content.diningPage?.chefRecommendation?.dishes ?? []) {
+    pushRef(out, seen, dish.imageSrc, {
+      pageName: "Dining",
+      sectionName: dish.title || "Chef Recommendation",
+      category: "Dining",
+      alt: dish.imageAlt,
+    });
+  }
+  for (const img of content.diningPage?.gallery ?? []) {
+    pushRef(out, seen, img.src, {
+      pageName: "Dining",
+      sectionName: img.title || "Gallery",
+      category: "Dining",
+      alt: img.alt,
+    });
+  }
+  pushRef(out, seen, content.diningPage?.cta?.backgroundImage, {
+    pageName: "Dining",
+    sectionName: "Final CTA",
+    category: "Dining",
+    isBackground: true,
+  });
 
   pushRef(out, seen, content.spaPage?.hero?.imageSrc, {
     pageName: "Spa",

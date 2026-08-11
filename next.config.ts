@@ -27,13 +27,13 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source: "/dining",
-        destination: "/restaurant",
+        source: "/restaurant",
+        destination: "/dining",
         permanent: true,
       },
       {
-        source: "/dining/:path*",
-        destination: "/restaurant/:path*",
+        source: "/restaurant/:path*",
+        destination: "/dining/:path*",
         permanent: true,
       },
       {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, X } from "lucide-react";
 import Link from "next/link";
@@ -23,6 +23,17 @@ export function DiningReservationForm({
   const [error, setError] = useState("");
   const [reference, setReference] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [restaurant, setRestaurant] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const preset = params.get("restaurant")?.trim() || "";
+    if (!preset) return;
+    const match = form.restaurantOptions.find(
+      (opt) => opt.toLowerCase() === preset.toLowerCase()
+    );
+    setRestaurant(match || preset);
+  }, [form.restaurantOptions]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -49,6 +60,7 @@ export function DiningReservationForm({
       setShowSuccess(true);
       setStatus("idle");
       formEl.reset();
+      setRestaurant("");
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -120,7 +132,14 @@ export function DiningReservationForm({
             <label className={labelClass} htmlFor="restaurant">
               Restaurant Selection *
             </label>
-            <select id="restaurant" name="restaurant" required className={inputClass} defaultValue="">
+            <select
+              id="restaurant"
+              name="restaurant"
+              required
+              className={inputClass}
+              value={restaurant}
+              onChange={(e) => setRestaurant(e.target.value)}
+            >
               <option value="" disabled>
                 Select a restaurant
               </option>
@@ -129,6 +148,9 @@ export function DiningReservationForm({
                   {opt}
                 </option>
               ))}
+              {restaurant && !form.restaurantOptions.includes(restaurant) ? (
+                <option value={restaurant}>{restaurant}</option>
+              ) : null}
             </select>
           </div>
           <div>
@@ -298,11 +320,11 @@ export function DiningReservationForm({
               ) : null}
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
                 <Link
-                  href="/restaurant"
+                  href="/dining"
                   className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#062C24] px-6 py-2.5 font-body text-[11px] font-semibold uppercase tracking-[0.16em] text-[#C5A059]"
                   onClick={() => setShowSuccess(false)}
                 >
-                  Return to Restaurant
+                  Return to Dining
                 </Link>
                 <button
                   type="button"

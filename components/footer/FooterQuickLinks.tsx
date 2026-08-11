@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { FooterAccordion } from "@/components/footer/FooterAccordion";
 import { FOOTER } from "@/components/footer/footer-theme";
 import { fadeUp } from "@/lib/animations";
+import { normalizePublicNavItem } from "@/lib/navigation";
 import type { SiteContent } from "@/lib/cms/types";
 
 interface FooterQuickLinksProps {
@@ -14,7 +15,7 @@ interface FooterQuickLinksProps {
 function LinkList({ links }: { links: SiteContent["footer"]["quickLinks"] }) {
   return (
     <ul className="space-y-4">
-      {links.map((link) => (
+      {links.map(normalizePublicNavItem).map((link) => (
         <li key={link.href}>
           <Link
             href={link.href}

@@ -56,14 +56,14 @@ function ensureArticlesNavItem(items: SiteContent["header"]["menuItems"]) {
   return [...items, entry];
 }
 
-/** Keep restaurant URLs on /restaurant, but show the public nav label as Dining. */
+/** Public dining URLs live at /dining; keep the nav label as Dining. */
 function normalizeRestaurantNavLinks<T extends { label: string; href: string }>(
   items: T[]
 ): T[] {
   return items.map((item) => {
     const href =
-      item.href === "/dining" || item.href.startsWith("/dining/")
-        ? item.href.replace(/^\/dining/, "/restaurant")
+      item.href === "/restaurant" || item.href.startsWith("/restaurant/")
+        ? item.href.replace(/^\/restaurant/, "/dining")
         : item.href;
     const label =
       item.label.trim().toLowerCase() === "restaurant" ? "Dining" : item.label;
@@ -73,9 +73,10 @@ function normalizeRestaurantNavLinks<T extends { label: string; href: string }>(
 
 function normalizeRestaurantCtaHref(href: string | undefined, fallback: string): string {
   const value = href !== undefined ? href : fallback;
-  if (value === "/dining" || value.startsWith("/dining/")) {
-    return value.replace(/^\/dining/, "/restaurant");
+  if (value === "/restaurant" || value.startsWith("/restaurant/")) {
+    return value.replace(/^\/restaurant/, "/dining");
   }
+  if (value === "/contact") return "/dining#reserve-table";
   return value;
 }
 
@@ -232,13 +233,15 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
             }
           : {};
       // Exact luxury primary nav order (CMS may still hold the old 4-item list).
-      const primaryNavItems = defaultContent.header.primaryNavItems.map((item) =>
-        /overview/i.test(item.label) ||
-        item.href === "/#overview" ||
-        item.href === "/#hero" ||
-        item.href === "/"
-          ? { ...item, href: "/" }
-          : item
+      const primaryNavItems = normalizeRestaurantNavLinks(
+        defaultContent.header.primaryNavItems.map((item) =>
+          /overview/i.test(item.label) ||
+          item.href === "/#overview" ||
+          item.href === "/#hero" ||
+          item.href === "/"
+            ? { ...item, href: "/" }
+            : item
+        )
       );
       return {
         ...defaultContent.header,
@@ -797,8 +800,25 @@ function mergeDiningPage(
 
   const legacyIntro = (partial as { intro?: { title?: string; content?: string } }).intro;
 
-  const venues = definedArray(partial.venues, defaults.venues).map((venue, i) => {
-    const base = defaults.venues[i] ?? defaults.venues[0];
+  const defaultVenueById = new Map(defaults.venues.map((venue) => [venue.id, venue]));
+  const sourceVenues = definedArray(partial.venues, defaults.venues);
+  const mergedVenueIds = new Set<string>();
+  const venues = sourceVenues.map((venue, i) => {
+    const base =
+      defaultVenueById.get(venue.id) ??
+      defaults.venues.find((item) =>
+        item.name.toLowerCase().includes(venue.name.slice(0, 12).toLowerCase())
+      ) ??
+      defaults.venues[0];
+    mergedVenueIds.add(venue.id || base.id);
+    const rawHref = definedString(venue.ctaHref, base.ctaHref);
+    const ctaHref =
+      !rawHref ||
+      rawHref === "/contact" ||
+      rawHref === "/restaurant" ||
+      rawHref === "/dining"
+        ? "#reserve-table"
+        : rawHref.replace(/^\/restaurant/, "/dining");
     return {
       id: venue.id || base.id,
       enabled: venue.enabled !== false,
@@ -815,19 +835,38 @@ function mergeDiningPage(
       imageSrc: definedString(venue.imageSrc, base.imageSrc),
       imageAlt: definedString(venue.imageAlt, base.imageAlt || venue.name || base.name),
       ctaText: definedString(venue.ctaText, base.ctaText),
-      ctaHref: definedString(venue.ctaHref, base.ctaHref),
+      ctaHref,
     };
   });
+  for (const missing of defaults.venues) {
+    if ([...mergedVenueIds].some((id) => id === missing.id)) continue;
+    const alreadyNamed = venues.some((venue) => {
+      const a = venue.name.toLowerCase().replace(/[^a-z0-9]+/g, "");
+      const b = missing.name.toLowerCase().replace(/[^a-z0-9]+/g, "");
+      return a === b || a.includes(b) || b.includes(a);
+    });
+    if (alreadyNamed) continue;
+    venues.push({ ...missing, order: venues.length });
+    mergedVenueIds.add(missing.id);
+  }
 
+  const retiredMenuIds = new Set(["desserts", "beverages", "cocktails"]);
+  const retiredMenuNames = new Set(["desserts", "beverages", "cocktails"]);
+  const defaultCategoryById = new Map(defaults.menu.categories.map((cat) => [cat.id, cat]));
   const menuCategories = definedArray(
     partial.menu?.categories,
     defaults.menu.categories
   ).map((cat, i) => {
-    const base = defaults.menu.categories[i] ?? defaults.menu.categories[0];
+    const base = defaultCategoryById.get(cat.id) ?? defaults.menu.categories[0];
+    const categoryId = (cat.id || base.id).toLowerCase();
+    const categoryName = definedString(cat.name, base.name).trim().toLowerCase();
     return {
       id: cat.id || base.id,
       name: definedString(cat.name, base.name),
-      enabled: cat.enabled !== false,
+      enabled:
+        retiredMenuIds.has(categoryId) || retiredMenuNames.has(categoryName)
+          ? false
+          : cat.enabled !== false,
       order: typeof cat.order === "number" ? cat.order : (base.order ?? i),
       items: definedArray(cat.items, base.items).map((item, j) => {
         const itemBase = base.items[j] ?? base.items[0];
@@ -865,28 +904,20 @@ function mergeDiningPage(
     hero: {
       ...defaults.hero,
       ...(partial.hero ?? {}),
-      subtitle:
-        partial.hero?.subtitle === "Dining" ||
-        partial.hero?.subtitle === "Dining Experience"
-          ? defaults.hero.subtitle
-          : definedString(partial.hero?.subtitle, defaults.hero.subtitle),
+      subtitle: definedString(partial.hero?.subtitle, defaults.hero.subtitle),
       breadcrumbCurrent:
-        partial.hero?.breadcrumbCurrent === "Dining"
+        partial.hero?.breadcrumbCurrent === "Restaurant"
           ? defaults.hero.breadcrumbCurrent
           : definedString(partial.hero?.breadcrumbCurrent, defaults.hero.breadcrumbCurrent),
     },
     seo: {
       ...defaults.seo,
       ...(partial.seo ?? {}),
-      title:
-        partial.seo?.title?.includes("Dining |") ||
-        partial.seo?.title?.startsWith("Dining Experience")
-          ? defaults.seo.title
-          : definedString(partial.seo?.title, defaults.seo.title),
-      canonical:
-        partial.seo?.canonical === "/dining"
-          ? (defaults.seo.canonical ?? "/restaurant")
-          : definedString(partial.seo?.canonical, defaults.seo.canonical ?? "/restaurant"),
+      title: definedString(partial.seo?.title, defaults.seo.title).replace(
+        /^Restaurant \|/,
+        "Dining |"
+      ),
+      canonical: "/dining",
     },
     welcome: {
       ...defaults.welcome,
@@ -917,6 +948,46 @@ function mergeDiningPage(
     chefRecommendation: {
       ...defaults.chefRecommendation,
       ...(partial.chefRecommendation ?? {}),
+      portraits: (() => {
+        const source =
+          partial.chefRecommendation?.portraits &&
+          partial.chefRecommendation.portraits.length > 0
+            ? partial.chefRecommendation.portraits
+            : defaults.chefRecommendation.portraits;
+        const mapped = source.map((portrait, i) => {
+          const base =
+            defaults.chefRecommendation.portraits[i] ??
+            defaults.chefRecommendation.portraits[0] ?? {
+              id: `chef-p${i + 1}`,
+              enabled: true,
+              order: i,
+              imageSrc: "",
+              imageAlt: "Chef in the kitchen",
+              caption: "",
+            };
+          return {
+            id: portrait.id || base.id,
+            enabled: portrait.enabled !== false,
+            order: typeof portrait.order === "number" ? portrait.order : (base.order ?? i),
+            imageSrc: definedString(portrait.imageSrc, base.imageSrc),
+            imageAlt: definedString(portrait.imageAlt, base.imageAlt),
+            caption: definedString(portrait.caption, base.caption),
+          };
+        });
+        while (mapped.length < 2) {
+          const i = mapped.length;
+          const base = defaults.chefRecommendation.portraits[i] ?? {
+            id: `chef-p${i + 1}`,
+            enabled: true,
+            order: i,
+            imageSrc: "",
+            imageAlt: "Chef in the kitchen",
+            caption: "",
+          };
+          mapped.push({ ...base, order: i });
+        }
+        return mapped;
+      })(),
       dishes: definedArray(
         partial.chefRecommendation?.dishes,
         defaults.chefRecommendation.dishes
@@ -937,10 +1008,18 @@ function mergeDiningPage(
     form: {
       ...defaults.form,
       ...(partial.form ?? {}),
-      restaurantOptions: definedArray(
-        partial.form?.restaurantOptions,
-        defaults.form.restaurantOptions
-      ),
+      restaurantOptions: (() => {
+        const fromVenues = venues
+          .filter((venue) => venue.enabled !== false)
+          .map((venue) => venue.name)
+          .filter(Boolean);
+        const stored = definedArray(
+          partial.form?.restaurantOptions,
+          defaults.form.restaurantOptions
+        );
+        const names = fromVenues.length ? fromVenues : stored;
+        return Array.from(new Set(names));
+      })(),
       occasionOptions: definedArray(
         partial.form?.occasionOptions,
         defaults.form.occasionOptions
@@ -985,6 +1064,18 @@ function mergeDiningPage(
     cta: {
       ...defaults.cta,
       ...(partial.cta ?? {}),
+      buttonHref: (() => {
+        const raw = definedString(partial.cta?.buttonHref, defaults.cta.buttonHref);
+        if (
+          !raw ||
+          raw === "/contact" ||
+          raw === "/restaurant" ||
+          raw === "/dining"
+        ) {
+          return "#reserve-table";
+        }
+        return raw.replace(/^\/restaurant/, "/dining");
+      })(),
     },
   };
 }

@@ -6,7 +6,7 @@ import { X, Phone, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/Logo";
 import { HEADER_SEARCH_MATCH } from "@/lib/header-theme";
-import { routes } from "@/lib/navigation";
+import { routes, normalizePublicNavItem } from "@/lib/navigation";
 import type { SiteContent } from "@/lib/cms/types";
 
 interface PremiumNavDrawerProps {
@@ -74,7 +74,7 @@ export function PremiumNavDrawer({ open, onClose, header, hotelName }: PremiumNa
           <p className="mb-4 text-[10px] font-medium uppercase tracking-[0.35em] text-[#D4AF37]">
             Explore
           </p>
-          {header.menuItems.map((item, i) => (
+          {header.menuItems.map(normalizePublicNavItem).map((item, i) => (
             <motion.div
               key={item.href}
               custom={i}

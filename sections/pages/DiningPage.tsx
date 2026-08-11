@@ -60,6 +60,9 @@ export function DiningPage({ content }: DiningPageProps) {
   const chefDishes = [...content.chefRecommendation.dishes]
     .filter((d) => d.enabled !== false)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const chefPortraits = [...(content.chefRecommendation.portraits || [])]
+    .filter((p) => p.enabled !== false && p.imageSrc)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   const gallery = [...content.gallery]
     .filter((g) => g.enabled !== false)
@@ -215,7 +218,7 @@ export function DiningPage({ content }: DiningPageProps) {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-8 lg:grid-cols-2">
+          <div className="mt-12 grid grid-cols-1 items-stretch gap-6 md:grid-cols-3 md:gap-6">
             {venues.map((venue, i) => (
               <motion.article
                 key={venue.id}
@@ -223,13 +226,13 @@ export function DiningPage({ content }: DiningPageProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.7, delay: i * 0.08, ease: luxuryEase }}
-                className="group overflow-hidden rounded-[24px] border bg-[#FBF8F1] transition duration-[350ms] hover:-translate-y-1.5"
+                className="group flex h-full min-h-0 flex-col overflow-hidden rounded-[22px] border bg-[#FBF8F1] transition duration-[350ms] hover:-translate-y-1"
                 style={{
                   borderColor: `${gold}66`,
                   boxShadow: "0 18px 44px rgba(15, 42, 34, 0.1)",
                 }}
               >
-                <div className="relative aspect-[16/10] overflow-hidden">
+                <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden">
                   {venue.imageSrc ? (
                     <button
                       type="button"
@@ -256,31 +259,30 @@ export function DiningPage({ content }: DiningPageProps) {
                         alt={venue.imageAlt || venue.name}
                         fill
                         className="object-cover transition duration-700 group-hover:scale-105"
-                        sizes="(max-width: 1024px) 100vw, 560px"
+                        sizes="(max-width: 768px) 100vw, 33vw"
                       />
                     </button>
                   ) : (
                     <div className="h-full w-full bg-[#EFE8DA]" />
                   )}
                 </div>
-                <div className="p-6 md:p-8">
-                  <p className="font-body text-xs italic" style={{ color: gold }}>
+                <div className="flex flex-1 flex-col p-5 md:p-6">
+                  <p className="min-h-[1.25rem] font-body text-xs italic leading-snug" style={{ color: gold }}>
                     {venue.tagline}
                   </p>
                   <h3
-                    className="mt-2 font-display text-2xl font-light md:text-[1.75rem]"
+                    className="mt-2 line-clamp-2 min-h-[3.4rem] font-display text-xl font-light leading-snug md:text-[1.35rem]"
                     style={{ color: heading }}
                   >
                     {venue.name}
                   </h3>
-                  <p className="mt-3 font-body text-sm leading-relaxed" style={{ color: body }}>
+                  <p className="mt-3 line-clamp-3 min-h-[4.2rem] font-body text-sm leading-relaxed" style={{ color: body }}>
                     {venue.description}
                   </p>
-                  <dl className="mt-6 grid gap-3 text-sm sm:grid-cols-2">
+                  <dl className="mt-5 grid min-h-[4.75rem] gap-3 text-sm">
                     {[
                       ["Cuisine", venue.cuisine],
-                      ["Opening Hours", venue.hours],
-                      ["Capacity", venue.capacity],
+                      ["Hours", venue.hours],
                     ].map(([label, value]) =>
                       value ? (
                         <div key={label}>
@@ -297,30 +299,32 @@ export function DiningPage({ content }: DiningPageProps) {
                       ) : null
                     )}
                   </dl>
-                  {venue.signatures?.length ? (
-                    <div className="mt-5">
-                      <p
-                        className="font-body text-[10px] uppercase tracking-[0.18em]"
-                        style={{ color: gold }}
-                      >
-                        {venue.signaturesLabel}
-                      </p>
-                      <ul className="mt-2 flex flex-wrap gap-2">
-                        {venue.signatures.map((s) => (
-                          <li
-                            key={s}
-                            className="rounded-full border px-3 py-1 font-body text-xs"
-                            style={{ borderColor: `${gold}55`, color: heading }}
-                          >
-                            {s}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
+                  <div className="mt-4 min-h-[4.5rem]">
+                    {venue.signatures?.length ? (
+                      <>
+                        <p
+                          className="font-body text-[10px] uppercase tracking-[0.18em]"
+                          style={{ color: gold }}
+                        >
+                          {venue.signaturesLabel}
+                        </p>
+                        <ul className="mt-2 flex flex-wrap gap-2">
+                          {venue.signatures.slice(0, 3).map((s) => (
+                            <li
+                              key={s}
+                              className="rounded-full border px-3 py-1 font-body text-xs"
+                              style={{ borderColor: `${gold}55`, color: heading }}
+                            >
+                              {s}
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    ) : null}
+                  </div>
                   <a
-                    href={venue.ctaHref || "/contact"}
-                    className="mt-8 inline-flex items-center gap-2 rounded-full px-7 py-3 font-body text-[11px] font-semibold uppercase tracking-[0.18em] transition hover:-translate-y-0.5"
+                    href={`/dining?restaurant=${encodeURIComponent(venue.name)}#reserve-table`}
+                    className="mt-auto inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-6 py-3 font-body text-[11px] font-semibold uppercase tracking-[0.18em] transition hover:-translate-y-0.5"
                     style={{ backgroundColor: heading, color: gold }}
                   >
                     {venue.ctaText || "Reserve Table"}
@@ -377,16 +381,21 @@ export function DiningPage({ content }: DiningPageProps) {
           </div>
 
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {activeItems.length === 0 ? (
+              <p className="col-span-full text-center font-body text-sm" style={{ color: body }}>
+                Add dishes and images for this category in Orbit — they appear here when guests open the tab.
+              </p>
+            ) : null}
             {activeItems.map((item, i) => (
               <motion.article
-                key={item.id}
+                key={`${activeCategory}-${item.id}`}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, delay: i * 0.04 }}
-                className="overflow-hidden rounded-[20px] border bg-white/50"
+                className="flex h-full flex-col overflow-hidden rounded-[20px] border bg-white/50"
                 style={{ borderColor: `${gold}44` }}
               >
-                <div className="relative aspect-[4/3]">
+                <div className="relative aspect-[4/5] w-full shrink-0 overflow-hidden">
                   {item.imageSrc ? (
                     <button
                       type="button"
@@ -450,7 +459,8 @@ export function DiningPage({ content }: DiningPageProps) {
       </section>
 
       {/* Chef recommendation */}
-      {content.chefRecommendation.enabled !== false && chefDishes.length > 0 ? (
+      {content.chefRecommendation.enabled !== false &&
+      (chefDishes.length > 0 || chefPortraits.length > 0) ? (
         <section
           className="relative overflow-hidden px-4 py-16 sm:px-6 md:py-24 lg:px-8"
           style={{
@@ -458,6 +468,49 @@ export function DiningPage({ content }: DiningPageProps) {
           }}
         >
           <div className="mx-auto max-w-[1200px]">
+            {chefPortraits.length ? (
+              <div className="mx-auto mb-14 grid max-w-[720px] grid-cols-2 gap-3 sm:mb-16 sm:gap-6 md:mb-20 md:gap-8">
+                {chefPortraits.map((portrait, index) => (
+                  <figure key={portrait.id} className="min-w-0">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openViewer(
+                          chefPortraits.map((entry) => ({
+                            src: entry.imageSrc,
+                            alt: entry.imageAlt || entry.caption,
+                            title: entry.caption,
+                          })),
+                          index
+                        )
+                      }
+                      className="relative aspect-[9/16] w-full overflow-hidden rounded-[22px]"
+                      style={{
+                        border: `1px solid ${gold}77`,
+                        boxShadow: "0 22px 48px rgba(15, 42, 34, 0.14)",
+                      }}
+                      aria-label={portrait.imageAlt || "Chef portrait"}
+                    >
+                      <SafeImage
+                        src={portrait.imageSrc}
+                        alt={portrait.imageAlt || portrait.caption || "Chef in the kitchen"}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 50vw, 360px"
+                      />
+                    </button>
+                    {portrait.caption ? (
+                      <figcaption
+                        className="mt-3 text-center font-body text-[10px] uppercase tracking-[0.2em] sm:text-[11px]"
+                        style={{ color: gold }}
+                      >
+                        {portrait.caption}
+                      </figcaption>
+                    ) : null}
+                  </figure>
+                ))}
+              </div>
+            ) : null}
             <div className="mx-auto max-w-2xl text-center">
               <p
                 className="font-display text-[11px] font-semibold uppercase tracking-[0.32em]"
@@ -568,7 +621,14 @@ export function DiningPage({ content }: DiningPageProps) {
       {/* Reservation */}
       <section className="px-4 py-16 sm:px-6 md:py-24 lg:px-8">
         <div className="mx-auto max-w-[900px]">
-          <DiningReservationForm form={content.form} />
+          <DiningReservationForm
+            form={{
+              ...content.form,
+              restaurantOptions: venues.length
+                ? venues.map((venue) => venue.name)
+                : content.form.restaurantOptions,
+            }}
+          />
         </div>
       </section>
 
@@ -796,7 +856,7 @@ export function DiningPage({ content }: DiningPageProps) {
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <a
-              href={content.cta.buttonHref || "/contact"}
+              href={content.cta.buttonHref || "#reserve-table"}
               className="inline-flex min-h-12 items-center gap-2 rounded-full px-8 py-3.5 font-body text-[11px] font-semibold uppercase tracking-[0.18em] transition hover:-translate-y-0.5"
               style={{ backgroundColor: gold, color: heading }}
             >

@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/Logo";
-import { routes } from "@/lib/navigation";
+import { routes, normalizePublicNavItem } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { HEADER_SEARCH_MATCH } from "@/lib/header-theme";
 import { useScrolled } from "@/hooks/useScrolled";
@@ -90,16 +90,17 @@ export function Header({ header, hotelName }: HeaderProps) {
   const logoWidth = header.logoSize && header.logoSize > 0 ? header.logoSize : 539;
   // Tight equal top/bottom air — optical center via slight upward nudge on logo.
   const logoFitH = Math.max(58, barHeight - 8);
-  const primaryNav =
+  const primaryNav = (
     header.primaryNavItems?.length > 0
       ? header.primaryNavItems
       : [
           { label: "Overview", href: routes.home },
           { label: "Rooms", href: routes.rooms },
-          { label: "Dining", href: routes.restaurant },
+          { label: "Dining", href: routes.dining },
           { label: "Meetings & Events", href: routes.meetingsEvents },
           { label: "Contact", href: routes.contact },
-        ];
+        ]
+  ).map(normalizePublicNavItem);
   const bookHref = header.bookButtonHref || routes.rooms;
   const showPrimaryNav = header.showPrimaryNav !== false;
   const showBook = header.showBookButton !== false;

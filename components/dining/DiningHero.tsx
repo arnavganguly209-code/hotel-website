@@ -24,7 +24,7 @@ export function DiningHero({ hero }: DiningHeroProps) {
   return (
     <section
       ref={ref}
-      className="relative flex min-h-[78vh] items-end overflow-hidden md:min-h-[85vh]"
+      className="relative flex min-h-[62vh] items-end overflow-hidden sm:min-h-[78vh] md:min-h-[85vh]"
     >
       <motion.div style={{ y }} className="absolute inset-0 scale-110">
         {hero.imageSrc ? (
@@ -65,7 +65,7 @@ export function DiningHero({ hero }: DiningHeroProps) {
             <span className="text-[#C5A059]" aria-hidden>
               ›
             </span>
-            <span className="text-white/90">{hero.breadcrumbCurrent || "Restaurant"}</span>
+            <span className="text-white/90">{hero.breadcrumbCurrent || "Dining"}</span>
           </nav>
 
           <motion.p

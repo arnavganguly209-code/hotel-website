@@ -1138,27 +1138,27 @@ export const defaultContent: SiteContent = {
   diningPage: {
     hero: {
       title: "Garden View & Sky Lounge",
-      subtitle: "Restaurant Experience",
+      subtitle: "Dining",
       description:
         "Experience exceptional cuisine, handcrafted beverages and unforgettable dining moments in the heart of Kathmandu.",
       imageSrc: "/media/dining/korean-restaurant.jpg",
       breadcrumbHome: "Home",
-      breadcrumbCurrent: "Restaurant",
+      breadcrumbCurrent: "Dining",
       overlayOpacity: 0.45,
       scrollHint: "Discover",
     },
     seo: {
-      title: "Restaurant | Hotel Thamel Park & Spa",
+      title: "Dining | Hotel Thamel Park & Spa",
       description:
-        "Reserve a table at Garden View Korean Restaurant or Sky Lounge Restaurant & Bar — fine dining and rooftop evenings in Thamel, Kathmandu.",
+        "Reserve a table at Garden View Korean Restaurant, Lobby Cafe, or Sky Lounge Restaurant & Bar — fine dining and rooftop evenings in Thamel, Kathmandu.",
       keywords:
-        "hotel restaurant Kathmandu, Korean restaurant Thamel, sky lounge Kathmandu, fine dining Nepal, Hotel Thamel Park restaurant",
-      canonical: "/restaurant",
+        "hotel restaurant Kathmandu, Korean restaurant Thamel, sky lounge Kathmandu, lobby cafe Thamel, fine dining Nepal, Hotel Thamel Park dining",
+      canonical: "/dining",
       ogImage: "/media/dining/korean-restaurant.jpg",
     },
     welcome: {
       eyebrow: "Welcome",
-      title: "Welcome to Our Restaurants",
+      title: "A World of Flavors",
       content:
         "At Hotel Thamel Park, dining is an art of hospitality. From garden-view Korean classics to elevated evenings at Sky Lounge, every setting is curated for warmth, elegance, and memorable flavours.",
       quote: "Cuisine is memory served with grace — and every table is an invitation to linger.",
@@ -1170,14 +1170,14 @@ export const defaultContent: SiteContent = {
       eyebrow: "Destinations",
       title: "Our Restaurant Destinations",
       description:
-        "Two distinctive restaurants — each with its own character, cuisine, and atmosphere — awaiting your reservation.",
+        "Three distinctive rooms — each with its own character, cuisine, and atmosphere — awaiting your reservation.",
     },
     venues: [
       {
         id: "korean-restaurant",
         enabled: true,
         order: 0,
-        name: "Garden View & Korean Restaurant",
+        name: "Garden View Korean Restaurant",
         tagline: "Authentic flavours in an elegant garden sanctuary",
         description:
           "Savor authentic Korean cuisine in a serene garden setting, where premium ingredients and warm hospitality create unforgettable meals.",
@@ -1190,12 +1190,31 @@ export const defaultContent: SiteContent = {
         imageSrc: "/media/dining/korean-restaurant.jpg",
         imageAlt: "Garden View Korean Restaurant",
         ctaText: "Reserve Table",
-        ctaHref: "/contact",
+        ctaHref: "#reserve-table",
+      },
+      {
+        id: "lobby-cafe",
+        enabled: true,
+        order: 1,
+        name: "Lobby Cafe",
+        tagline: "A quiet luxury pause in the heart of the hotel",
+        description:
+          "Morning espresso, afternoon meetings, and unhurried conversation — artisan pastries and premium beans in an atmosphere of understated elegance.",
+        cuisine: "Cafe & Light Bites",
+        hours: "Daily · 7:00 AM – 9:00 PM",
+        capacity: "Up to 40 guests",
+        signaturesLabel: "Signatures",
+        signatures: ["Single-origin espresso", "Artisan pastries", "Highland teas", "Light all-day plates"],
+        features: ["Lobby Setting", "Specialty Coffee", "Pastries", "All-day Menu"],
+        imageSrc: "/media/dining/lobby-cafe.jpg",
+        imageAlt: "Lobby Cafe at Hotel Thamel Park",
+        ctaText: "Reserve Table",
+        ctaHref: "#reserve-table",
       },
       {
         id: "sky-lounge",
         enabled: true,
-        order: 1,
+        order: 2,
         name: "Sky Lounge Restaurant & Bar",
         tagline: "Elevated evenings above the Kathmandu skyline",
         description:
@@ -1209,7 +1228,7 @@ export const defaultContent: SiteContent = {
         imageSrc: "/media/dining/skyz-lounge.jpg",
         imageAlt: "Sky Lounge Restaurant and Bar",
         ctaText: "Reserve Table",
-        ctaHref: "/contact",
+        ctaHref: "#reserve-table",
       },
     ],
     menu: {
@@ -1310,7 +1329,7 @@ export const defaultContent: SiteContent = {
         {
           id: "desserts",
           name: "Desserts",
-          enabled: true,
+          enabled: false,
           order: 3,
           items: [
             {
@@ -1329,7 +1348,7 @@ export const defaultContent: SiteContent = {
         {
           id: "beverages",
           name: "Beverages",
-          enabled: true,
+          enabled: false,
           order: 4,
           items: [
             {
@@ -1348,7 +1367,7 @@ export const defaultContent: SiteContent = {
         {
           id: "cocktails",
           name: "Cocktails",
-          enabled: true,
+          enabled: false,
           order: 5,
           items: [
             {
@@ -1382,6 +1401,24 @@ export const defaultContent: SiteContent = {
       eyebrow: "From the Kitchen",
       title: "Chef’s Recommendation",
       description: "Signature creations our culinary team loves to share — elegant, generous, unforgettable.",
+      portraits: [
+        {
+          id: "chef-p1",
+          enabled: true,
+          order: 0,
+          imageSrc: "",
+          imageAlt: "Chef cooking over kitchen fire",
+          caption: "",
+        },
+        {
+          id: "chef-p2",
+          enabled: true,
+          order: 1,
+          imageSrc: "",
+          imageAlt: "Chef at the pass with open flame",
+          caption: "",
+        },
+      ],
       dishes: [
         {
           id: "cr1",
@@ -1424,7 +1461,8 @@ export const defaultContent: SiteContent = {
       successMessage: "Your table reservation has been received successfully.",
       successSecondary: "Our dining team will contact you shortly to confirm your reservation.",
       restaurantOptions: [
-        "Garden View & Korean Restaurant",
+        "Garden View Korean Restaurant",
+        "Lobby Cafe",
         "Sky Lounge Restaurant & Bar",
       ],
       occasionOptions: [
@@ -1584,7 +1622,7 @@ export const defaultContent: SiteContent = {
       description:
         "Whether a quiet garden lunch or a celebratory rooftop evening, our tables are ready for you.",
       buttonText: "Reserve Table",
-      buttonHref: "/contact",
+      buttonHref: "#reserve-table",
       secondaryText: "Contact Us",
       secondaryHref: "/contact",
       backgroundImage: "/media/dining/skyz-lounge.jpg",

@@ -36,9 +36,9 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
   return (
     <div className="space-y-6">
       <p className="text-sm text-white/50">
-        Restaurant page (/restaurant) — upload, replace, or delete every image. Culinary menu
-        categories (Breakfast, Lunch, Dinner, Desserts, Beverages, Cocktails) can be renamed, added,
-        reordered, or deleted. Changes auto-save.
+        Dining page (/dining) — full JW-style control. Public tabs default to Breakfast, Lunch, and
+        Dinner; add more categories anytime. Upload chef portraits (9:16) and every dish image.
+        Changes auto-save.
       </p>
 
       {/* Hero */}
@@ -476,8 +476,8 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
       <div className="space-y-4 border border-luxury-gold/10 p-6">
         <p className="font-display text-lg text-luxury-gold">Culinary — Signature Menu Highlights</p>
         <p className="text-xs text-white/45">
-          Edit category tabs and dish photos for Breakfast, Lunch, Dinner, Desserts, Beverages, and
-          Cocktails. Add a new category or delete one that is no longer served.
+          Public page shows Breakfast, Lunch, and Dinner. Add another category here if you want more
+          tabs. Each item’s Orbit image appears when that tab is selected.
         </p>
         <AdminInput
           label="Eyebrow"
@@ -832,6 +832,122 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
             })
           }
         />
+        <p className="text-xs text-white/45">
+          Two 9:16 chef portraits sit above this section on /dining. Upload kitchen / fire-cooking
+          images. Leave empty to hide.
+        </p>
+        {(page.chefRecommendation.portraits || []).map((portrait, i) => (
+          <div key={portrait.id} className="space-y-2 border border-luxury-gold/10 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-luxury-gold">Chef portrait {i + 1} (9:16)</p>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 text-xs text-white/60">
+                  <input
+                    type="checkbox"
+                    checked={portrait.enabled !== false}
+                    className="accent-luxury-gold"
+                    onChange={(e) => {
+                      const portraits = [...(page.chefRecommendation.portraits || [])];
+                      portraits[i] = { ...portrait, enabled: e.target.checked };
+                      setPage({
+                        ...page,
+                        chefRecommendation: { ...page.chefRecommendation, portraits },
+                      });
+                    }}
+                  />
+                  Enabled
+                </label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-400"
+                  onClick={() =>
+                    setPage({
+                      ...page,
+                      chefRecommendation: {
+                        ...page.chefRecommendation,
+                        portraits: (page.chefRecommendation.portraits || []).filter(
+                          (_, idx) => idx !== i
+                        ),
+                      },
+                    })
+                  }
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <ImagePicker
+              label="Portrait Image — kitchen / fire cooking, 9:16"
+              folder="dining"
+              category="Dining"
+              value={portrait.imageSrc}
+              library={content.mediaLibrary}
+              onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+              enableCrop
+              onChange={(url) => {
+                const portraits = [...(page.chefRecommendation.portraits || [])];
+                portraits[i] = { ...portrait, imageSrc: url };
+                setPage({
+                  ...page,
+                  chefRecommendation: { ...page.chefRecommendation, portraits },
+                });
+              }}
+            />
+            <AdminInput
+              label="Alt text"
+              value={portrait.imageAlt}
+              onChange={(e) => {
+                const portraits = [...(page.chefRecommendation.portraits || [])];
+                portraits[i] = { ...portrait, imageAlt: e.target.value };
+                setPage({
+                  ...page,
+                  chefRecommendation: { ...page.chefRecommendation, portraits },
+                });
+              }}
+            />
+            <AdminInput
+              label="Caption (optional)"
+              value={portrait.caption}
+              onChange={(e) => {
+                const portraits = [...(page.chefRecommendation.portraits || [])];
+                portraits[i] = { ...portrait, caption: e.target.value };
+                setPage({
+                  ...page,
+                  chefRecommendation: { ...page.chefRecommendation, portraits },
+                });
+              }}
+            />
+          </div>
+        ))}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="border-luxury-gold/30 text-luxury-gold"
+          onClick={() =>
+            setPage({
+              ...page,
+              chefRecommendation: {
+                ...page.chefRecommendation,
+                portraits: [
+                  ...(page.chefRecommendation.portraits || []),
+                  {
+                    id: `chef-p${Date.now()}`,
+                    enabled: true,
+                    order: (page.chefRecommendation.portraits || []).length,
+                    imageSrc: "",
+                    imageAlt: "Chef in the kitchen",
+                    caption: "",
+                  },
+                ],
+              },
+            })
+          }
+        >
+          <Plus className="h-4 w-4" /> Add Chef Portrait
+        </Button>
         <Button
           type="button"
           variant="outline"

@@ -631,6 +631,14 @@ export interface SiteContent {
       eyebrow: string;
       title: string;
       description: string;
+      portraits: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        imageSrc: string;
+        imageAlt: string;
+        caption: string;
+      }>;
       dishes: Array<{
         id: string;
         enabled: boolean;

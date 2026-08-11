@@ -505,7 +505,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-display text-lg text-luxury-gold">Center Primary Nav</p>
-                      <p className="text-xs text-white/40">Shown in the slim bar middle (desktop). Typical: Overview, Rooms, Restaurant, Contact.</p>
+                      <p className="text-xs text-white/40">Shown in the slim bar middle (desktop). Typical: Overview, Rooms, Dining, Contact.</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <label className="flex items-center gap-2 text-sm text-white/70">
@@ -2903,7 +2903,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                 <div className="mb-4 space-y-1">
                   <p className="font-display text-lg text-luxury-gold">Dining Reservations</p>
                   <p className="text-xs text-white/40">
-                    Table reservations from /restaurant — permanently stored in the database. Deletes sync to Admin PMS.
+                    Table reservations from /dining — permanently stored in the database. Deletes sync to Admin PMS.
                   </p>
                 </div>
                 <DiningReservationsPanel />

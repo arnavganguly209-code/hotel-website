@@ -192,7 +192,7 @@ export function AboutPage({ content }: AboutPageProps) {
           content={dining.content}
           imageSrc={dining.imageSrc}
           alt="Dining at Hotel Thamel Park"
-          href="/restaurant"
+          href="/dining"
           linkLabel="Explore Dining"
         />
       ) : null}

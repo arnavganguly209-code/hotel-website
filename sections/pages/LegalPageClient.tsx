@@ -18,7 +18,7 @@ const SECTIONS = [
 const SITEMAP_LINKS = [
   { label: "Overview", href: routes.home },
   { label: "Rooms", href: routes.rooms },
-  { label: "Restaurant", href: routes.restaurant },
+  { label: "Dining", href: routes.dining },
   { label: "Spa & Wellness", href: routes.spa },
   { label: "Meetings & Events", href: routes.meetingsEvents },
   { label: "Gallery", href: routes.gallery },
