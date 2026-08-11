@@ -9,6 +9,10 @@ export function pacoLog(level: Level, event: string, meta?: Record<string, unkno
         safe[k] = "[redacted]";
         continue;
       }
+      if (typeof v === "string" && /BEGIN (RSA )?PRIVATE KEY|BEGIN PUBLIC KEY/.test(v)) {
+        safe[k] = "[redacted-pem]";
+        continue;
+      }
       if (typeof v === "string" && v.length > 500) {
         safe[k] = `${v.slice(0, 120)}…[${v.length} chars]`;
         continue;

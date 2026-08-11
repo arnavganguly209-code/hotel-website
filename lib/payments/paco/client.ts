@@ -50,7 +50,7 @@ async function joseRequest(
 
       const token = await response.text();
       if (!response.ok) {
-        throw new Error(`PACO HTTP ${response.status}: ${token.slice(0, 400)}`);
+        throw new Error(`PACO HTTP ${response.status}`);
       }
 
       const decrypted = await decryptToken(token, config);
@@ -146,8 +146,14 @@ export async function createPrePaymentUi(input: CreatePaymentUiInput) {
   const orderNo = input.orderNo ?? Number(pacoOrderNo(now));
   // Authoritative currency: caller (booking tax) first; config default second. Never invent NPR.
   const currency = normalizePacoCurrency(input.currency || config.currency);
+  if (config.env === "production" && currency !== "USD") {
+    throw new Error("HBL PACO Production payments must use USD");
+  }
   const amountBlock = formatPacoAmount(input.amount, currency);
   const sdkDemo = sdkDemoShapeEnabled(input);
+  if (sdkDemo && config.env === "production") {
+    throw new Error("HBL PACO SDK demo shape is not allowed in Production");
+  }
   const purchaseItems = sdkDemo
     ? buildSdkDemoPurchaseItems(amountBlock)
     : buildLivePurchaseItems(amountBlock, input);
@@ -200,16 +206,13 @@ export async function createPrePaymentUi(input: CreatePaymentUiInput) {
         ],
   };
 
-  // UAT diagnostic: prove final JOSE request currency before encrypt/send.
-  if (config.env === "uat") {
-    pacoLog("info", "prepayment_request_sanitized", {
-      bookingId: input.bookingId,
-      endpoint: "api/1.0/Payment/prePaymentUi",
-      apiVersion: "1.0",
-      hblEnv: config.env,
-      ...sanitizePaymentRequestForLog(request),
-    });
-  }
+  pacoLog("info", "prepayment_request_sanitized", {
+    bookingId: input.bookingId,
+    endpoint: "api/1.0/Payment/prePaymentUi",
+    apiVersion: "1.0",
+    hblEnv: config.env,
+    ...sanitizePaymentRequestForLog(request),
+  });
 
   const decrypted = await joseRequest("POST", "api/1.0/Payment/prePaymentUi", request, config);
   const parsed = JSON.parse(decrypted) as PacoPaymentPageResponse;
@@ -338,6 +341,7 @@ export function parseInquiryOutcome(inquiry: Record<string, unknown>): {
   statusText?: string;
   amount?: number;
   currency?: string;
+  officeId?: string;
 } {
   const response = (inquiry.response || inquiry) as Record<string, unknown>;
   const data = (response.Data || response.data || response) as Record<string, unknown>;
@@ -391,6 +395,10 @@ export function parseInquiryOutcome(inquiry: Record<string, unknown>): {
     .trim()
     .toUpperCase() || undefined;
 
+  const officeIdRaw = first.officeId ?? first.OfficeId;
+  const officeId =
+    officeIdRaw != null && String(officeIdRaw).trim() ? String(officeIdRaw).trim() : undefined;
+
   if (pacoStatus === "F") {
     return {
       paid: false,
@@ -400,6 +408,7 @@ export function parseInquiryOutcome(inquiry: Record<string, unknown>): {
       statusText: pacoStep || "F",
       amount,
       currency,
+      officeId,
     };
   }
   if (pacoStatus === "A" || pacoStatus === "S") {
@@ -411,6 +420,7 @@ export function parseInquiryOutcome(inquiry: Record<string, unknown>): {
       statusText: pacoStep || pacoStatus,
       amount,
       currency,
+      officeId,
     };
   }
 
@@ -428,5 +438,6 @@ export function parseInquiryOutcome(inquiry: Record<string, unknown>): {
     statusText: statusRaw || undefined,
     amount,
     currency,
+    officeId,
   };
 }

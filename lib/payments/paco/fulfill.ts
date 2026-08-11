@@ -2,6 +2,7 @@ import { db, isDatabaseAvailable } from "@/lib/db";
 import { formatBookingNumber } from "@/lib/booking/booking-number";
 import { sendRoomBookingEmails } from "@/lib/mail";
 import { inquireTransaction, parseInquiryOutcome } from "./client";
+import { getPacoConfig } from "./config";
 import { pacoLog } from "./logger";
 
 /**
@@ -58,12 +59,36 @@ export async function syncPaymentFromInquiry(orderNo: string, source: "callback"
     statusText: outcome.statusText,
     inquiryAmount: outcome.amount,
     inquiryCurrency: outcome.currency,
+    inquiryOfficeId: outcome.officeId,
     bookingAmount: txn.amount,
     bookingCurrency: txn.currency,
   });
 
   // Never mark paid if HBL amount/currency disagrees with our PaymentTransaction.
   if (outcome.paid) {
+    const merchantId = getPacoConfig().officeId;
+    if (outcome.officeId && outcome.officeId !== merchantId) {
+      pacoLog("error", "inquiry_merchant_mismatch", {
+        orderNo,
+        source,
+        expectedOfficeId: merchantId,
+        inquiryOfficeId: outcome.officeId,
+      });
+      await db.paymentTransaction.update({
+        where: { id: txn.id },
+        data: {
+          rawInquiry: inquiry as object,
+          lastInquiryAt: new Date(),
+          status: "error",
+          errorMessage: "Merchant/MID mismatch vs PACO inquiry",
+        },
+      });
+      return {
+        ok: false as const,
+        error: "Merchant/MID mismatch",
+        bookingId: booking.id,
+      };
+    }
     const expectedCurrency = String(txn.currency || booking.currency || "").toUpperCase();
     const inquiryCurrency = String(outcome.currency || "").toUpperCase();
     const expectedAmount = Number(txn.amount);

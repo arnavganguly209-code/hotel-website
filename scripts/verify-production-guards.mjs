@@ -60,6 +60,18 @@ if (/process\.env\.HBL_PACO_SDK_DEMO_SHAPE/.test(pacoClient)) {
 } else {
   ok("PACO SDK demo shape is not env-enabled");
 }
+
+const pacoConfig = fs.readFileSync(path.join(root, "lib/payments/paco/config.ts"), "utf8");
+if (!pacoConfig.includes('officeId: "9104539176"') || !pacoConfig.includes("https://core.paco.2c2p.com/")) {
+  fail("Production PACO identifiers missing from config.ts");
+} else {
+  ok("Production PACO identifiers present");
+}
+if (!pacoConfig.includes("rejected UAT merchant ID") || !pacoConfig.includes("SDK_DEMO_SHAPE must not be set in Production")) {
+  fail("Production fail-closed guards missing from config.ts");
+} else {
+  ok("Production fail-closed PACO guards present");
+}
 if (/currencyCode:\s*["']NPR["']/.test(pacoClient) && /purchaseItemPrice/.test(pacoClient)) {
   // Allow comments; fail only if NPR literal sits near purchaseItemPrice assignment in same line cluster
   const lines = pacoClient.split(/\r?\n/);

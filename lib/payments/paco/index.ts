@@ -1,4 +1,4 @@
-export { isPacoConfigured, getPacoConfig, PACO_JOSE } from "./config";
+export { isPacoConfigured, getPacoConfig, PACO_JOSE, PACO_PRODUCTION, PACO_UAT } from "./config";
 export {
   createPrePaymentUi,
   inquireTransaction,
