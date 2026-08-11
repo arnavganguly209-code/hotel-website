@@ -1,4 +1,5 @@
 import type { PacoEnv } from "./types";
+import { syncPacoEnvFromDotenvFile } from "./load-env";
 
 /** Confirmed HBL PACO Production identifiers (non-secret). */
 export const PACO_PRODUCTION = {
@@ -60,6 +61,7 @@ export type PacoConfig = {
 };
 
 export function isPacoConfigured(): boolean {
+  syncPacoEnvFromDotenvFile();
   return Boolean(
     process.env.HBL_PACO_OFFICE_ID?.trim() &&
       process.env.HBL_PACO_API_KEY?.trim() &&
@@ -71,6 +73,7 @@ export function isPacoConfigured(): boolean {
 }
 
 export function getPacoConfig(): PacoConfig {
+  syncPacoEnvFromDotenvFile();
   const envRaw = (process.env.HBL_PACO_ENV || "uat").toLowerCase();
   const env: PacoEnv = envRaw === "production" || envRaw === "prod" ? "production" : "uat";
 

@@ -140,16 +140,11 @@ if [ "$BUILD_STATUS" -ne 0 ]; then
   exit "$BUILD_STATUS"
 fi
 
-echo "Reloading PM2 ($APP_NAME)"
-if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
-  pm2 reload "$APP_NAME" --update-env || pm2 restart "$APP_NAME" --update-env
-else
-  if pm2 describe hotel-thamel-park-spa >/dev/null 2>&1; then
-    pm2 delete hotel-thamel-park-spa || true
-  fi
-  pm2 start ecosystem.config.js
+echo "Reloading PM2 ($APP_NAME) from current .env (not stale PM2 dump)"
+if pm2 describe hotel-thamel-park-spa >/dev/null 2>&1; then
+  pm2 delete hotel-thamel-park-spa || true
 fi
-pm2 save
+node scripts/pm2-reload-from-dotenv.mjs
 
 echo "Waiting 10 seconds before health check..."
 sleep 10
@@ -167,7 +162,7 @@ if [ "$HTTP_CODE" != "200" ]; then
   if [ -d .next.prev ]; then
     rm -rf .next
     mv .next.prev .next
-    pm2 reload "$APP_NAME" --update-env || pm2 restart "$APP_NAME" --update-env || true
+    node scripts/pm2-reload-from-dotenv.mjs || true
   fi
   exit 1
 fi

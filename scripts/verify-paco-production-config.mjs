@@ -22,6 +22,9 @@ const configSrc = fs.readFileSync(path.join(root, "lib/payments/paco/config.ts")
 const clientSrc = fs.readFileSync(path.join(root, "lib/payments/paco/client.ts"), "utf8");
 const joseSrc = fs.readFileSync(path.join(root, "lib/payments/paco/jose.ts"), "utf8");
 const cutover = fs.readFileSync(path.join(root, "scripts/vps-hbl-paco-cutover.sh"), "utf8");
+const loadEnvSrc = fs.readFileSync(path.join(root, "lib/payments/paco/load-env.ts"), "utf8");
+const ecosystemSrc = fs.readFileSync(path.join(root, "ecosystem.config.js"), "utf8");
+const deploySrc = fs.readFileSync(path.join(root, "scripts/vps-deploy.sh"), "utf8");
 
 if (!configSrc.includes('officeId: "9104539176"')) fail("Production MID missing from config.ts");
 else ok("Production MID 9104539176 in config.ts");
@@ -66,6 +69,22 @@ if (/HBL_PACO_BASE_URL:-\s*https:\/\/core\.demo-paco/.test(cutover) && /producti
 if (!/PACO_PRODUCTION|core\.paco\.2c2p\.com/.test(cutover)) {
   fail("cutover.sh does not mention Production endpoint");
 } else ok("cutover.sh is Production-aware");
+
+if (!configSrc.includes("syncPacoEnvFromDotenvFile()")) {
+  fail("getPacoConfig does not re-read PACO values from .env");
+} else ok("getPacoConfig syncs PACO env from .env file");
+
+if (!loadEnvSrc.includes('if (key.startsWith(PACO_PREFIX)) delete process.env[key]')) {
+  fail("load-env.ts does not clear stale HBL_PACO_* process env before applying .env");
+} else ok("stale HBL_PACO_* process env is cleared before .env apply");
+
+if (!ecosystemSrc.includes("dotenv.parse") || !ecosystemSrc.includes("HBL_PACO_")) {
+  fail("ecosystem.config.js does not load HBL_PACO_* from .env");
+} else ok("PM2 ecosystem loads PACO env from .env");
+
+if (!deploySrc.includes("pm2-reload-from-dotenv.mjs")) {
+  fail("vps-deploy.sh still reloads PM2 by name without re-reading .env");
+} else ok("vps-deploy.sh reloads PM2 from .env");
 
 if (failures.length) {
   console.error(`\n${failures.length} static production-config check(s) failed`);

@@ -45,13 +45,7 @@ if pm2 describe hotel-thamel-park-spa >/dev/null 2>&1; then
   pm2 delete hotel-thamel-park-spa || true
 fi
 
-if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
-  pm2 reload "$APP_NAME" --update-env || pm2 restart "$APP_NAME" --update-env
-else
-  pm2 start ecosystem.config.js
-fi
-
-pm2 save
+node scripts/pm2-reload-from-dotenv.mjs
 pm2 startup || true
 
 echo "ONE-TIME BOOTSTRAP COMPLETE — use git push origin main only from now on."

@@ -3,8 +3,12 @@
  */
 import assert from "node:assert/strict";
 import { generateKeyPairSync } from "node:crypto";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { getPacoConfig, PACO_PRODUCTION, PACO_UAT } from "../lib/payments/paco/config";
 import { parseInquiryOutcome } from "../lib/payments/paco/client";
+import { resetPacoEnvSyncCache, syncPacoEnvFromDotenvFile } from "../lib/payments/paco/load-env";
 
 function pemBody(pem: string): string {
   return pem.replace(/-----[^-]+-----/g, "").replace(/\s+/g, "");
@@ -36,6 +40,7 @@ const keys = dummyKeys();
 const saved = { ...process.env };
 
 function resetEnv(overrides: Record<string, string | undefined>) {
+  process.env.PACO_SKIP_DOTENV_SYNC = "1";
   for (const k of Object.keys(process.env)) {
     if (k.startsWith("HBL_PACO_")) delete process.env[k];
   }
@@ -213,6 +218,56 @@ const approved = parseInquiryOutcome({
 assert.equal(approved.paid, true);
 assert.equal(approved.failed, false);
 console.log("OK: PACO A inquiry is eligible for paid (subject to money/MID match)");
+
+{
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "paco-env-"));
+  fs.writeFileSync(
+    path.join(dir, ".env"),
+    [
+      "HBL_PACO_ENV=production",
+      "HBL_PACO_OFFICE_ID=9104539176",
+      "HBL_PACO_BASE_URL=https://core.paco.2c2p.com/",
+      "HBL_PACO_ENCRYPTION_KEY_ID=19f84b5655f04e25a99b09f1ee2fac78",
+      "HBL_PACO_REQUEST_3DS=Y",
+      "HBL_PACO_CURRENCY=USD",
+    ].join("\n")
+  );
+  delete process.env.PACO_SKIP_DOTENV_SYNC;
+  resetPacoEnvSyncCache();
+  process.env.HBL_PACO_ENV = "uat";
+  process.env.HBL_PACO_OFFICE_ID = PACO_UAT.officeId;
+  process.env.HBL_PACO_BASE_URL = PACO_UAT.baseUrl;
+  process.env.HBL_PACO_ENCRYPTION_KEY_ID = PACO_UAT.encryptionKeyId;
+  process.env.HBL_PACO_SDK_DEMO_SHAPE = "1";
+  syncPacoEnvFromDotenvFile(dir);
+  assert.equal(process.env.HBL_PACO_ENV, "production");
+  assert.equal(process.env.HBL_PACO_OFFICE_ID, PACO_PRODUCTION.officeId);
+  assert.equal(process.env.HBL_PACO_BASE_URL, PACO_PRODUCTION.baseUrl);
+  assert.equal(process.env.HBL_PACO_ENCRYPTION_KEY_ID, PACO_PRODUCTION.encryptionKeyId);
+  assert.equal(process.env.HBL_PACO_SDK_DEMO_SHAPE, undefined);
+  console.log("OK: .env file overrides stale UAT process env");
+
+  fs.writeFileSync(
+    path.join(dir, ".env"),
+    [
+      "HBL_PACO_ENV=uat",
+      "HBL_PACO_OFFICE_ID=9104137120",
+      "HBL_PACO_BASE_URL=https://core.demo-paco.2c2p.com/",
+      "HBL_PACO_ENCRYPTION_KEY_ID=7664a2ed0dee4879bdfca0e8ce1ac313",
+      "HBL_PACO_REQUEST_3DS=Y",
+      "HBL_PACO_CURRENCY=USD",
+    ].join("\n")
+  );
+  resetPacoEnvSyncCache();
+  process.env.HBL_PACO_ENV = "production";
+  process.env.HBL_PACO_OFFICE_ID = PACO_PRODUCTION.officeId;
+  syncPacoEnvFromDotenvFile(dir);
+  assert.equal(process.env.HBL_PACO_ENV, "uat");
+  assert.equal(process.env.HBL_PACO_OFFICE_ID, PACO_UAT.officeId);
+  console.log("OK: UAT .env remains authoritative when HBL_PACO_ENV=uat");
+  process.env.PACO_SKIP_DOTENV_SYNC = "1";
+  fs.rmSync(dir, { recursive: true, force: true });
+}
 
 process.env = saved;
 console.log("\nProduction config runtime checks passed.");
