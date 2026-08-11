@@ -48,7 +48,7 @@ export function articleDetailPath(slug: string) {
 export const PRIMARY_NAV_ITEMS = [
   { label: "Overview", href: routes.home },
   { label: "Rooms", href: routes.rooms },
-  { label: "Restaurant", href: routes.restaurant },
+  { label: "Dining", href: routes.restaurant },
   { label: "Meetings & Events", href: routes.meetingsEvents },
   { label: "Contact", href: routes.contact },
 ] as const;
@@ -56,7 +56,7 @@ export const PRIMARY_NAV_ITEMS = [
 export const DRAWER_NAV_ITEMS = [
   { label: "Overview", href: routes.home },
   { label: "Rooms", href: routes.rooms },
-  { label: "Restaurant", href: routes.restaurant },
+  { label: "Dining", href: routes.restaurant },
   { label: "Spa & Wellness", href: routes.spa },
   { label: "Meetings & Events", href: routes.meetingsEvents },
   { label: "Gallery", href: routes.gallery },
@@ -74,7 +74,7 @@ export const FOOTER_NAV = {
   explore: [
     { label: "Overview", href: routes.home },
     { label: "Rooms", href: routes.rooms },
-    { label: "Restaurant", href: routes.restaurant },
+    { label: "Dining", href: routes.restaurant },
     { label: "Spa & Wellness", href: routes.spa },
     { label: "Meetings & Events", href: routes.meetingsEvents },
     { label: "Gallery", href: routes.gallery },

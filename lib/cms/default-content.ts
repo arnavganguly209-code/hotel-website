@@ -2758,7 +2758,7 @@ export const defaultContent: SiteContent = {
       "Whether you seek a reservation, spa appointment, or bespoke arrangement, our concierge team is dedicated to exceeding your expectations.",
     frontDesk: "24 Hours, 7 Days",
     mapEmbedUrl:
-      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.234567890123!2d85.3105!3d27.7172!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sThamel%2C%20Kathmandu!5e0!3m2!1sen!2snp!4v1234567890",
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3531.9982317257204!2d85.30579297371897!3d27.71734087241958!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb18e32929697d%3A0x1901ac458c23db67!2sHotel%20Thamel%20Park%20Pvt.%20Ltd.!5e0!3m2!1sen!2snp!4v1786467122394!5m2!1sen!2snp",
     workingHours: "Front Desk: 24/7 | Restaurant: 7:00 AM – 11:00 PM | Spa: 9:00 AM – 9:00 PM",
   },
   galleryPage: {
@@ -2871,7 +2871,7 @@ export const defaultContent: SiteContent = {
         title: "Hotel Address",
         value: "Thamel, Kathmandu 44600, Nepal",
         description: "In the heart of Kathmandu’s vibrant cultural district.",
-        href: "https://maps.google.com/?q=Thamel+Kathmandu",
+        href: "https://www.google.com/maps/search/?api=1&query=Hotel+Thamel+Park+Pvt.+Ltd.",
       },
       {
         id: "phone",
@@ -2985,8 +2985,9 @@ export const defaultContent: SiteContent = {
       title: "Hotel Location",
       description: "Ideally situated in Thamel — steps from culture, cuisine, and Kathmandu’s landmarks.",
       mapEmbedUrl:
-        "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.234567890123!2d85.3105!3d27.7172!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sThamel%2C%20Kathmandu!5e0!3m2!1sen!2snp!4v1234567890",
-      mapsDirectionsUrl: "https://www.google.com/maps/dir/?api=1&destination=Thamel,Kathmandu",
+        "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3531.9982317257204!2d85.30579297371897!3d27.71734087241958!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb18e32929697d%3A0x1901ac458c23db67!2sHotel%20Thamel%20Park%20Pvt.%20Ltd.!5e0!3m2!1sen!2snp!4v1786467122394!5m2!1sen!2snp",
+      mapsDirectionsUrl:
+        "https://www.google.com/maps/dir/?api=1&destination=Hotel+Thamel+Park+Pvt.+Ltd.,+Thamel,+Kathmandu",
       nearbyTitle: "Nearby Attractions",
       nearby: [
         { id: "n1", title: "Thamel Market", distance: "2 min walk" },
@@ -3137,7 +3138,7 @@ export const defaultContent: SiteContent = {
     quickLinks: [
       { label: "Overview", href: routes.home },
       { label: "Rooms", href: routes.rooms },
-      { label: "Restaurant", href: routes.dining },
+      { label: "Dining", href: routes.dining },
       { label: "Spa & Wellness", href: routes.spa },
       { label: "Gallery", href: routes.gallery },
       { label: "About Us", href: routes.about },

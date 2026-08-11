@@ -154,10 +154,10 @@ export function ContactPage({ content }: ContactPageProps) {
               {page.location.mapEmbedUrl ? (
                 <iframe
                   src={page.location.mapEmbedUrl}
-                  title="Hotel location map"
-                  className="h-[360px] w-full md:h-[440px]"
+                  title="Hotel Thamel Park location map"
+                  className="h-[360px] w-full border-0 md:h-[450px]"
                   loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
+                  referrerPolicy="strict-origin-when-cross-origin"
                   allowFullScreen
                 />
               ) : null}

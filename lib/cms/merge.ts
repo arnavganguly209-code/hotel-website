@@ -55,7 +55,7 @@ function ensureArticlesNavItem(items: SiteContent["header"]["menuItems"]) {
   return [...items, entry];
 }
 
-/** Migrate legacy /dining nav labels & hrefs to /restaurant. */
+/** Keep restaurant URLs on /restaurant, but show the public nav label as Dining. */
 function normalizeRestaurantNavLinks<T extends { label: string; href: string }>(
   items: T[]
 ): T[] {
@@ -65,7 +65,7 @@ function normalizeRestaurantNavLinks<T extends { label: string; href: string }>(
         ? item.href.replace(/^\/dining/, "/restaurant")
         : item.href;
     const label =
-      item.label.trim().toLowerCase() === "dining" ? "Restaurant" : item.label;
+      item.label.trim().toLowerCase() === "restaurant" ? "Dining" : item.label;
     return { ...item, href, label };
   });
 }
@@ -76,6 +76,13 @@ function normalizeRestaurantCtaHref(href: string | undefined, fallback: string):
     return value.replace(/^\/dining/, "/restaurant");
   }
   return value;
+}
+
+function isBrokenMapEmbed(url: string | undefined): boolean {
+  if (!url?.trim()) return true;
+  if (!url.includes("google.com/maps/embed")) return true;
+  if (url.includes("0x0%3A0x0") || url.includes("4v1234567890")) return true;
+  return false;
 }
 
 /** Preserve explicit empty values — never fall back to defaults when the field was set. */
@@ -545,7 +552,13 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       },
     },
     contactPage: mergeContactPage(partial.contactPage),
-    contact: { ...defaultContent.contact, ...(partial.contact ?? {}) },
+    contact: {
+      ...defaultContent.contact,
+      ...(partial.contact ?? {}),
+      mapEmbedUrl: isBrokenMapEmbed(partial.contact?.mapEmbedUrl)
+        ? defaultContent.contact.mapEmbedUrl
+        : (partial.contact?.mapEmbedUrl || defaultContent.contact.mapEmbedUrl),
+    },
     seo: { ...defaultContent.seo, ...partial.seo },
     performanceSettings: {
       ...defaultContent.performanceSettings,
@@ -1986,6 +1999,14 @@ function mergeContactPage(
       ...defaults.location,
       ...(partial.location ?? {}),
       nearby: definedArray(partial.location?.nearby, defaults.location.nearby),
+      mapEmbedUrl: isBrokenMapEmbed(partial.location?.mapEmbedUrl)
+        ? defaults.location.mapEmbedUrl
+        : (partial.location?.mapEmbedUrl || defaults.location.mapEmbedUrl),
+      mapsDirectionsUrl:
+        !partial.location?.mapsDirectionsUrl ||
+        /destination=Thamel,Kathmandu$/i.test(partial.location.mapsDirectionsUrl)
+          ? defaults.location.mapsDirectionsUrl
+          : partial.location.mapsDirectionsUrl,
     },
     business: {
       ...defaults.business,

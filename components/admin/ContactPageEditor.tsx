@@ -6,6 +6,12 @@ import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
 import type { SiteContent } from "@/lib/cms/types";
 
+function parseGoogleMapEmbed(value: string): string {
+  const trimmed = value.trim();
+  const src = trimmed.match(/src=["']([^"']+)["']/i)?.[1];
+  return (src || trimmed).trim();
+}
+
 interface ContactPageEditorProps {
   content: SiteContent;
   update: <K extends keyof SiteContent>(key: K, value: SiteContent[K]) => void;
@@ -276,11 +282,11 @@ export function ContactPageEditor({ content, update }: ContactPageEditorProps) {
           }
         />
         <AdminTextarea
-          label="Google Map Embed URL"
-          rows={2}
+          label="Google Map Embed URL (paste the iframe or the src URL)"
+          rows={3}
           value={page.location.mapEmbedUrl}
           onChange={(e) => {
-            const mapEmbedUrl = e.target.value;
+            const mapEmbedUrl = parseGoogleMapEmbed(e.target.value);
             setPage({ ...page, location: { ...page.location, mapEmbedUrl } });
             update("contact", { ...content.contact, mapEmbedUrl });
           }}

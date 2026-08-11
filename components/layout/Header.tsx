@@ -96,7 +96,7 @@ export function Header({ header, hotelName }: HeaderProps) {
       : [
           { label: "Overview", href: routes.home },
           { label: "Rooms", href: routes.rooms },
-          { label: "Restaurant", href: routes.restaurant },
+          { label: "Dining", href: routes.restaurant },
           { label: "Meetings & Events", href: routes.meetingsEvents },
           { label: "Contact", href: routes.contact },
         ];
