@@ -311,6 +311,289 @@ export function ChefRecommendationEditor({ content, update }: DiningPageEditorPr
   );
 }
 
+export function CulinaryMenuEditor({ content, update }: DiningPageEditorProps) {
+  const page = content.diningPage;
+  if (!page) return null;
+
+  const setPage = (next: SiteContent["diningPage"]) => update("diningPage", next);
+  const menu = page.menu ?? { eyebrow: "", title: "", description: "", categories: [] };
+  const categories = Array.isArray(menu.categories) ? menu.categories : [];
+
+  const setMenu = (next: SiteContent["diningPage"]["menu"]) =>
+    setPage({ ...page, menu: next });
+
+  const setCategories = (next: typeof categories) =>
+    setMenu({ ...menu, categories: next });
+
+  const patchItem = (
+    categoryIndex: number,
+    itemIndex: number,
+    patch: Partial<(typeof categories)[number]["items"][number]>
+  ) => {
+    const next = categories.map((category, ci) => {
+      if (ci !== categoryIndex) return category;
+      const items = [...(category.items || [])];
+      items[itemIndex] = { ...items[itemIndex], ...patch };
+      return { ...category, items };
+    });
+    setCategories(next);
+  };
+
+  return (
+    <div
+      id="orbit-culinary"
+      className="space-y-4 border border-luxury-gold/30 bg-luxury-gold/[0.04] p-6"
+    >
+      <div>
+        <p className="font-display text-lg text-luxury-gold">
+          Culinary — Signature Menu Highlights
+        </p>
+        <p className="mt-1 text-xs text-white/55">
+          This is the Breakfast / Lunch / Dinner card grid on /dining. Every photo, name, description,
+          and price below is editable. Add more images with Add Image / Dish.
+        </p>
+      </div>
+      <AdminInput
+        label="Small label (eyebrow)"
+        value={menu.eyebrow || ""}
+        onChange={(e) => setMenu({ ...menu, eyebrow: e.target.value })}
+      />
+      <AdminInput
+        label="Title"
+        value={menu.title || ""}
+        onChange={(e) => setMenu({ ...menu, title: e.target.value })}
+      />
+      <AdminTextarea
+        label="Description"
+        rows={2}
+        value={menu.description || ""}
+        onChange={(e) => setMenu({ ...menu, description: e.target.value })}
+      />
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-white/70">Meal tabs</p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="border-luxury-gold/30 text-luxury-gold"
+          onClick={() =>
+            setCategories([
+              ...categories,
+              {
+                id: `cat-${Date.now()}`,
+                name: "New Category",
+                enabled: true,
+                order: categories.length,
+                items: [],
+              },
+            ])
+          }
+        >
+          <Plus className="h-4 w-4" /> Add Category
+        </Button>
+      </div>
+      {categories.map((category, ci) => {
+        const items = Array.isArray(category.items) ? category.items : [];
+        return (
+          <div key={category.id || `cat-${ci}`} className="space-y-3 border border-luxury-gold/15 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-display text-base text-luxury-gold">
+                {category.name || `Category ${ci + 1}`}
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="flex items-center gap-2 text-xs text-white/60">
+                  <input
+                    type="checkbox"
+                    checked={category.enabled !== false}
+                    className="accent-luxury-gold"
+                    onChange={(e) => {
+                      const next = [...categories];
+                      next[ci] = { ...category, enabled: e.target.checked };
+                      setCategories(next);
+                    }}
+                  />
+                  Show tab
+                </label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="border-luxury-gold/30 text-luxury-gold"
+                  onClick={() => {
+                    const next = [...categories];
+                    next[ci] = {
+                      ...category,
+                      items: [
+                        ...items,
+                        {
+                          id: `item-${Date.now()}`,
+                          enabled: true,
+                          order: items.length,
+                          title: "New Dish",
+                          description: "",
+                          price: "",
+                          imageSrc: "",
+                          imageAlt: "",
+                          chefRecommended: false,
+                        },
+                      ],
+                    };
+                    setCategories(next);
+                  }}
+                >
+                  <Plus className="h-4 w-4" /> Add Image / Dish
+                </Button>
+              </div>
+            </div>
+            <AdminInput
+              label="Tab name"
+              value={category.name || ""}
+              onChange={(e) => {
+                const next = [...categories];
+                next[ci] = { ...category, name: e.target.value };
+                setCategories(next);
+              }}
+            />
+            {items.length === 0 ? (
+              <p className="text-xs text-white/45">
+                No images in this tab yet. Click Add Image / Dish.
+              </p>
+            ) : null}
+            {items.map((item, ii) => (
+              <div
+                key={item.id || `item-${ci}-${ii}`}
+                className="space-y-3 border border-luxury-gold/10 bg-black/20 p-4"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-luxury-gold">
+                    Image {ii + 1}
+                    {item.title ? ` — ${item.title}` : ""}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-2 text-xs text-white/60">
+                      <input
+                        type="checkbox"
+                        checked={item.enabled !== false}
+                        className="accent-luxury-gold"
+                        onChange={(e) => patchItem(ci, ii, { enabled: e.target.checked })}
+                      />
+                      Show on /dining
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-white/60">
+                      <input
+                        type="checkbox"
+                        checked={item.chefRecommended === true}
+                        className="accent-luxury-gold"
+                        onChange={(e) =>
+                          patchItem(ci, ii, { chefRecommended: e.target.checked })
+                        }
+                      />
+                      Chef’s Pick
+                    </label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-white/60"
+                      disabled={ii === 0}
+                      onClick={() => {
+                        if (ii === 0) return;
+                        const nextItems = [...items];
+                        const current = nextItems[ii];
+                        nextItems[ii] = nextItems[ii - 1];
+                        nextItems[ii - 1] = current;
+                        const next = [...categories];
+                        next[ci] = {
+                          ...category,
+                          items: nextItems.map((entry, order) => ({ ...entry, order })),
+                        };
+                        setCategories(next);
+                      }}
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-white/60"
+                      disabled={ii === items.length - 1}
+                      onClick={() => {
+                        if (ii >= items.length - 1) return;
+                        const nextItems = [...items];
+                        const current = nextItems[ii];
+                        nextItems[ii] = nextItems[ii + 1];
+                        nextItems[ii + 1] = current;
+                        const next = [...categories];
+                        next[ci] = {
+                          ...category,
+                          items: nextItems.map((entry, order) => ({ ...entry, order })),
+                        };
+                        setCategories(next);
+                      }}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-400"
+                      onClick={() => {
+                        const next = [...categories];
+                        next[ci] = {
+                          ...category,
+                          items: items.filter((_, idx) => idx !== ii),
+                        };
+                        setCategories(next);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <ImagePicker
+                  label="Photo — upload or replace"
+                  folder="dining"
+                  category="Dining"
+                  value={item.imageSrc || ""}
+                  library={content.mediaLibrary}
+                  onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                  enableCrop
+                  onChange={(url) =>
+                    patchItem(ci, ii, { imageSrc: url, imageAlt: item.imageAlt || item.title })
+                  }
+                />
+                <AdminInput
+                  label="Name / title"
+                  value={item.title || ""}
+                  onChange={(e) => patchItem(ci, ii, { title: e.target.value })}
+                />
+                <AdminTextarea
+                  label="Description"
+                  rows={3}
+                  value={item.description || ""}
+                  onChange={(e) => patchItem(ci, ii, { description: e.target.value })}
+                />
+                <AdminInput
+                  label="Price"
+                  value={item.price || ""}
+                  onChange={(e) => patchItem(ci, ii, { price: e.target.value })}
+                />
+                <AdminInput
+                  label="Image alt text"
+                  value={item.imageAlt || ""}
+                  onChange={(e) => patchItem(ci, ii, { imageAlt: e.target.value })}
+                />
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
   const page = content.diningPage;
   const setPage = (next: SiteContent["diningPage"]) => update("diningPage", next);
@@ -318,10 +601,12 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
   return (
     <div className="space-y-6">
       <p className="text-sm text-white/50">
-        Dining page (/dining) — full control of every section: hero, welcome, venues, breakfast/lunch/dinner
-        menus, Chef’s Recommendation (image + name + text, no price), gallery, reviews, FAQ, and the reserve
-        form. Upload or replace any image. Changes auto-save.
+        Dining page (/dining) — Culinary Signature Menu Highlights is at the top (Breakfast / Lunch / Dinner
+        photos, names, descriptions, prices). Then hero, welcome, venues, Chef’s Recommendation, gallery,
+        reviews, FAQ, and the reserve form. Upload or replace any image. Changes auto-save.
       </p>
+
+      <CulinaryMenuEditor content={content} update={update} />
 
       {/* Hero */}
       <div className="space-y-4 border border-luxury-gold/10 p-6">
@@ -750,337 +1035,6 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
                 }}
               />
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Menu */}
-      <div className="space-y-4 border border-luxury-gold/10 p-6">
-        <p className="font-display text-lg text-luxury-gold">Culinary — Signature Menu Highlights</p>
-        <p className="text-xs text-white/45">
-          Breakfast, Lunch, and Dinner each show 3 photos by default. Upload or replace any image, then
-          Add Item for a 4th (or more). Only enabled items with a photo appear on /dining.
-        </p>
-        <AdminInput
-          label="Eyebrow"
-          value={page.menu.eyebrow}
-          onChange={(e) =>
-            setPage({ ...page, menu: { ...page.menu, eyebrow: e.target.value } })
-          }
-        />
-        <AdminInput
-          label="Title"
-          value={page.menu.title}
-          onChange={(e) =>
-            setPage({ ...page, menu: { ...page.menu, title: e.target.value } })
-          }
-        />
-        <AdminTextarea
-          label="Description"
-          rows={2}
-          value={page.menu.description}
-          onChange={(e) =>
-            setPage({ ...page, menu: { ...page.menu, description: e.target.value } })
-          }
-        />
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-white/60">Categories</p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="border-luxury-gold/30 text-luxury-gold"
-            onClick={() =>
-              setPage({
-                ...page,
-                menu: {
-                  ...page.menu,
-                  categories: [
-                    ...page.menu.categories,
-                    {
-                      id: `cat-${Date.now()}`,
-                      name: "New Category",
-                      enabled: true,
-                      order: page.menu.categories.length,
-                      items: [],
-                    },
-                  ],
-                },
-              })
-            }
-          >
-            <Plus className="h-4 w-4" /> Add Category
-          </Button>
-        </div>
-        {page.menu.categories.map((category, ci) => (
-          <div key={category.id} className="space-y-3 border border-luxury-gold/10 p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-luxury-gold">{category.name}</p>
-              <div className="flex items-center gap-3">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-white/60"
-                  disabled={ci === 0}
-                  onClick={() => {
-                    if (ci === 0) return;
-                    const categories = [...page.menu.categories];
-                    const current = categories[ci];
-                    categories[ci] = categories[ci - 1];
-                    categories[ci - 1] = current;
-                    setPage({
-                      ...page,
-                      menu: {
-                        ...page.menu,
-                        categories: categories.map((entry, order) => ({ ...entry, order })),
-                      },
-                    });
-                  }}
-                >
-                  <ChevronUp className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-white/60"
-                  disabled={ci === page.menu.categories.length - 1}
-                  onClick={() => {
-                    if (ci >= page.menu.categories.length - 1) return;
-                    const categories = [...page.menu.categories];
-                    const current = categories[ci];
-                    categories[ci] = categories[ci + 1];
-                    categories[ci + 1] = current;
-                    setPage({
-                      ...page,
-                      menu: {
-                        ...page.menu,
-                        categories: categories.map((entry, order) => ({ ...entry, order })),
-                      },
-                    });
-                  }}
-                >
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-                <label className="flex items-center gap-2 text-xs text-white/60">
-                  <input
-                    type="checkbox"
-                    checked={category.enabled !== false}
-                    className="accent-luxury-gold"
-                    onChange={(e) => {
-                      const categories = [...page.menu.categories];
-                      categories[ci] = { ...category, enabled: e.target.checked };
-                      setPage({ ...page, menu: { ...page.menu, categories } });
-                    }}
-                  />
-                  Enabled
-                </label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-400"
-                  onClick={() =>
-                    setPage({
-                      ...page,
-                      menu: {
-                        ...page.menu,
-                        categories: page.menu.categories.filter((_, idx) => idx !== ci),
-                      },
-                    })
-                  }
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            <AdminInput
-              label="Category Name"
-              value={category.name}
-              onChange={(e) => {
-                const categories = [...page.menu.categories];
-                categories[ci] = { ...category, name: e.target.value };
-                setPage({ ...page, menu: { ...page.menu, categories } });
-              }}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="border-luxury-gold/30 text-luxury-gold"
-              onClick={() => {
-                const categories = [...page.menu.categories];
-                categories[ci] = {
-                  ...category,
-                  items: [
-                    ...category.items,
-                    {
-                      id: `item-${Date.now()}`,
-                      enabled: true,
-                      order: category.items.length,
-                      title: "New Dish",
-                      description: "",
-                      price: "",
-                      imageSrc: "",
-                      imageAlt: "",
-                      chefRecommended: false,
-                    },
-                  ],
-                };
-                setPage({ ...page, menu: { ...page.menu, categories } });
-              }}
-            >
-              <Plus className="h-4 w-4" /> Add Image / Dish
-            </Button>
-            {category.items.map((item, ii) => (
-              <div key={item.id} className="space-y-2 border border-luxury-gold/10 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs text-luxury-gold">
-                    Image {ii + 1}
-                    {item.title ? ` — ${item.title}` : ""}
-                  </p>
-                  <div className="flex items-center gap-1">
-                    <label className="mr-2 flex items-center gap-2 text-xs text-white/60">
-                      <input
-                        type="checkbox"
-                        checked={item.enabled !== false}
-                        className="accent-luxury-gold"
-                        onChange={(e) => {
-                          const categories = [...page.menu.categories];
-                          const items = [...category.items];
-                          items[ii] = { ...item, enabled: e.target.checked };
-                          categories[ci] = { ...category, items };
-                          setPage({ ...page, menu: { ...page.menu, categories } });
-                        }}
-                      />
-                      Show on /dining
-                    </label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="text-white/60"
-                      disabled={ii === 0}
-                      onClick={() => {
-                        if (ii === 0) return;
-                        const categories = [...page.menu.categories];
-                        const items = [...category.items];
-                        const current = items[ii];
-                        items[ii] = items[ii - 1];
-                        items[ii - 1] = current;
-                        categories[ci] = {
-                          ...category,
-                          items: items.map((entry, order) => ({ ...entry, order })),
-                        };
-                        setPage({ ...page, menu: { ...page.menu, categories } });
-                      }}
-                    >
-                      <ChevronUp className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="text-white/60"
-                      disabled={ii === category.items.length - 1}
-                      onClick={() => {
-                        if (ii >= category.items.length - 1) return;
-                        const categories = [...page.menu.categories];
-                        const items = [...category.items];
-                        const current = items[ii];
-                        items[ii] = items[ii + 1];
-                        items[ii + 1] = current;
-                        categories[ci] = {
-                          ...category,
-                          items: items.map((entry, order) => ({ ...entry, order })),
-                        };
-                        setPage({ ...page, menu: { ...page.menu, categories } });
-                      }}
-                    >
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-400"
-                      onClick={() => {
-                        const categories = [...page.menu.categories];
-                        categories[ci] = {
-                          ...category,
-                          items: category.items.filter((_, idx) => idx !== ii),
-                        };
-                        setPage({ ...page, menu: { ...page.menu, categories } });
-                      }}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-                <ImagePicker
-                  label="Upload / replace image"
-                  folder="dining"
-                  category="Dining"
-                  value={item.imageSrc}
-                  library={content.mediaLibrary}
-                  onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
-                  enableCrop
-                  onChange={(url) => {
-                    const categories = [...page.menu.categories];
-                    const items = [...category.items];
-                    items[ii] = { ...item, imageSrc: url, imageAlt: item.imageAlt || item.title };
-                    categories[ci] = { ...category, items };
-                    setPage({ ...page, menu: { ...page.menu, categories } });
-                  }}
-                />
-                <AdminInput
-                  label="Name"
-                  value={item.title}
-                  onChange={(e) => {
-                    const categories = [...page.menu.categories];
-                    const items = [...category.items];
-                    items[ii] = { ...item, title: e.target.value };
-                    categories[ci] = { ...category, items };
-                    setPage({ ...page, menu: { ...page.menu, categories } });
-                  }}
-                />
-                <AdminTextarea
-                  label="Description"
-                  rows={2}
-                  value={item.description}
-                  onChange={(e) => {
-                    const categories = [...page.menu.categories];
-                    const items = [...category.items];
-                    items[ii] = { ...item, description: e.target.value };
-                    categories[ci] = { ...category, items };
-                    setPage({ ...page, menu: { ...page.menu, categories } });
-                  }}
-                />
-                <AdminInput
-                  label="Price (optional)"
-                  value={item.price}
-                  onChange={(e) => {
-                    const categories = [...page.menu.categories];
-                    const items = [...category.items];
-                    items[ii] = { ...item, price: e.target.value };
-                    categories[ci] = { ...category, items };
-                    setPage({ ...page, menu: { ...page.menu, categories } });
-                  }}
-                />
-                <AdminInput
-                  label="Image alt text"
-                  value={item.imageAlt}
-                  onChange={(e) => {
-                    const categories = [...page.menu.categories];
-                    const items = [...category.items];
-                    items[ii] = { ...item, imageAlt: e.target.value };
-                    categories[ci] = { ...category, items };
-                    setPage({ ...page, menu: { ...page.menu, categories } });
-                  }}
-                />
-              </div>
-            ))}
           </div>
         ))}
       </div>

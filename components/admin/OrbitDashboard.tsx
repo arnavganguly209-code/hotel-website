@@ -46,6 +46,7 @@ import { DiningReservationsPanel } from "@/components/admin/DiningReservationsPa
 import {
   DiningPageEditor,
   ChefRecommendationEditor,
+  CulinaryMenuEditor,
 } from "@/components/admin/DiningPageEditor";
 import { SpaPageEditor } from "@/components/admin/SpaPageEditor";
 import { ContactPageEditor } from "@/components/admin/ContactPageEditor";
@@ -76,13 +77,13 @@ const SECTIONS = [
   { id: "culture", label: "Cultural Experience", icon: Globe },
   { id: "facilities", label: "Amenities Section", icon: Grid3X3 },
   { id: "fineDining", label: "Fine Dining Section", icon: Utensils },
+  { id: "dining", label: "Dining Page", icon: Utensils },
   { id: "lobbyCafe", label: "Lobby Café Section", icon: Utensils },
   { id: "rooftopExperience", label: "Rooftop Experience Section", icon: Utensils },
   { id: "spaWellness", label: "Spa & Wellness Section", icon: Waves },
   { id: "meetingsEvents", label: "Meetings & Events Section", icon: MessageSquare },
   { id: "exploreKathmandu", label: "Explore Kathmandu Section", icon: Globe },
   { id: "rooms", label: "Rooms Section", icon: Bed },
-  { id: "dining", label: "Dining Page", icon: Utensils },
   { id: "diningReservations", label: "Dining Reservations", icon: Utensils },
   { id: "roomBookings", label: "Room Bookings", icon: ClipboardList },
   { id: "spaInquiries", label: "Spa Inquiries", icon: Waves },
@@ -1552,7 +1553,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   <p className="font-display text-lg text-luxury-gold">Fine Dining Section</p>
                   <p className="text-xs text-white/40">
                     Homepage Fine Dining section — Garden View &amp; Korean Restaurant (below World-Class Amenities).
-                    Chef’s Recommendation on /dining is edited in the block at the bottom of this tab, and also in Dining Page.
+                    Culinary Signature Menu Highlights (Breakfast / Lunch / Dinner photos, names, and prices) and Chef’s Recommendation on /dining are edited in this tab, and also in Dining Page.
                   </p>
                   <label className="flex items-center gap-3 text-sm text-white/70">
                     <input
@@ -1653,6 +1654,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   />
                 </div>
 
+                <CulinaryMenuEditor content={content} update={update} />
                 <ChefRecommendationEditor content={content} update={update} />
               </>
             )}
