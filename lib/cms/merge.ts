@@ -868,20 +868,34 @@ function mergeDiningPage(
           ? false
           : cat.enabled !== false,
       order: typeof cat.order === "number" ? cat.order : (base.order ?? i),
-      items: definedArray(cat.items, base.items).map((item, j) => {
-        const itemBase = base.items[j] ?? base.items[0];
-        return {
-          id: item.id || itemBase?.id || `mi-${i}-${j}`,
-          enabled: item.enabled !== false,
-          order: typeof item.order === "number" ? item.order : (itemBase?.order ?? j),
-          title: definedString(item.title, itemBase?.title ?? ""),
-          description: definedString(item.description, itemBase?.description ?? ""),
-          price: definedString(item.price, itemBase?.price ?? ""),
-          imageSrc: definedString(item.imageSrc, itemBase?.imageSrc ?? ""),
-          imageAlt: definedString(item.imageAlt, itemBase?.imageAlt ?? item.title ?? ""),
-          chefRecommended: item.chefRecommended === true,
-        };
-      }),
+      items: (() => {
+        const defaultItems = base.items ?? [];
+        const defaultItemById = new Map(defaultItems.map((item) => [item.id, item]));
+        const sourceItems = definedArray(cat.items, defaultItems);
+        const mergedItemIds = new Set<string>();
+        const items = sourceItems.map((item, j) => {
+          const itemBase = defaultItemById.get(item.id) ?? defaultItems[j] ?? defaultItems[0];
+          mergedItemIds.add(item.id || itemBase?.id || `mi-${i}-${j}`);
+          const storedImage = definedString(item.imageSrc, itemBase?.imageSrc ?? "").trim();
+          return {
+            id: item.id || itemBase?.id || `mi-${i}-${j}`,
+            enabled: item.enabled !== false,
+            order: typeof item.order === "number" ? item.order : (itemBase?.order ?? j),
+            title: definedString(item.title, itemBase?.title ?? ""),
+            description: definedString(item.description, itemBase?.description ?? ""),
+            price: definedString(item.price, itemBase?.price ?? ""),
+            imageSrc: storedImage || itemBase?.imageSrc || "",
+            imageAlt: definedString(item.imageAlt, itemBase?.imageAlt ?? item.title ?? ""),
+            chefRecommended: item.chefRecommended === true,
+          };
+        });
+        for (const missing of defaultItems) {
+          if (mergedItemIds.has(missing.id)) continue;
+          items.push({ ...missing, order: items.length });
+          mergedItemIds.add(missing.id);
+        }
+        return items;
+      })(),
     };
   });
 

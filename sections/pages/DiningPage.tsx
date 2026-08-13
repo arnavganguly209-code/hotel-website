@@ -54,7 +54,7 @@ export function DiningPage({ content }: DiningPageProps) {
   const activeItems = (
     categories.find((c) => c.id === activeCategory)?.items ?? []
   )
-    .filter((i) => i.enabled !== false)
+    .filter((i) => i.enabled !== false && (i.imageSrc?.trim() || i.title?.trim()))
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   const chefDishes = [...content.chefRecommendation.dishes]

@@ -758,8 +758,8 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
       <div className="space-y-4 border border-luxury-gold/10 p-6">
         <p className="font-display text-lg text-luxury-gold">Culinary — Signature Menu Highlights</p>
         <p className="text-xs text-white/45">
-          Public page shows Breakfast, Lunch, and Dinner. Add another category here if you want more
-          tabs. Each item’s Orbit image appears when that tab is selected.
+          Breakfast, Lunch, and Dinner each show 3 photos by default. Upload or replace any image, then
+          Add Item for a 4th (or more). Only enabled items with a photo appear on /dining.
         </p>
         <AdminInput
           label="Eyebrow"
@@ -919,7 +919,7 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
                       id: `item-${Date.now()}`,
                       enabled: true,
                       order: category.items.length,
-                      title: "New Item",
+                      title: "New Dish",
                       description: "",
                       price: "",
                       imageSrc: "",
@@ -931,14 +931,17 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
                 setPage({ ...page, menu: { ...page.menu, categories } });
               }}
             >
-              <Plus className="h-4 w-4" /> Add Item
+              <Plus className="h-4 w-4" /> Add Image / Dish
             </Button>
             {category.items.map((item, ii) => (
-              <div key={item.id} className="space-y-2 border border-luxury-gold/5 p-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs text-white/50">{item.title}</p>
-                  <div className="flex items-center gap-2">
-                    <label className="flex items-center gap-2 text-xs text-white/60">
+              <div key={item.id} className="space-y-2 border border-luxury-gold/10 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs text-luxury-gold">
+                    Image {ii + 1}
+                    {item.title ? ` — ${item.title}` : ""}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <label className="mr-2 flex items-center gap-2 text-xs text-white/60">
                       <input
                         type="checkbox"
                         checked={item.enabled !== false}
@@ -951,23 +954,52 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
                           setPage({ ...page, menu: { ...page.menu, categories } });
                         }}
                       />
-                      Enabled
+                      Show on /dining
                     </label>
-                    <label className="flex items-center gap-2 text-xs text-white/60">
-                      <input
-                        type="checkbox"
-                        checked={item.chefRecommended}
-                        className="accent-luxury-gold"
-                        onChange={(e) => {
-                          const categories = [...page.menu.categories];
-                          const items = [...category.items];
-                          items[ii] = { ...item, chefRecommended: e.target.checked };
-                          categories[ci] = { ...category, items };
-                          setPage({ ...page, menu: { ...page.menu, categories } });
-                        }}
-                      />
-                      Chef Recommended
-                    </label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-white/60"
+                      disabled={ii === 0}
+                      onClick={() => {
+                        if (ii === 0) return;
+                        const categories = [...page.menu.categories];
+                        const items = [...category.items];
+                        const current = items[ii];
+                        items[ii] = items[ii - 1];
+                        items[ii - 1] = current;
+                        categories[ci] = {
+                          ...category,
+                          items: items.map((entry, order) => ({ ...entry, order })),
+                        };
+                        setPage({ ...page, menu: { ...page.menu, categories } });
+                      }}
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-white/60"
+                      disabled={ii === category.items.length - 1}
+                      onClick={() => {
+                        if (ii >= category.items.length - 1) return;
+                        const categories = [...page.menu.categories];
+                        const items = [...category.items];
+                        const current = items[ii];
+                        items[ii] = items[ii + 1];
+                        items[ii + 1] = current;
+                        categories[ci] = {
+                          ...category,
+                          items: items.map((entry, order) => ({ ...entry, order })),
+                        };
+                        setPage({ ...page, menu: { ...page.menu, categories } });
+                      }}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
                     <Button
                       type="button"
                       variant="ghost"
@@ -986,8 +1018,24 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
                     </Button>
                   </div>
                 </div>
+                <ImagePicker
+                  label="Upload / replace image"
+                  folder="dining"
+                  category="Dining"
+                  value={item.imageSrc}
+                  library={content.mediaLibrary}
+                  onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                  enableCrop
+                  onChange={(url) => {
+                    const categories = [...page.menu.categories];
+                    const items = [...category.items];
+                    items[ii] = { ...item, imageSrc: url, imageAlt: item.imageAlt || item.title };
+                    categories[ci] = { ...category, items };
+                    setPage({ ...page, menu: { ...page.menu, categories } });
+                  }}
+                />
                 <AdminInput
-                  label="Title"
+                  label="Name"
                   value={item.title}
                   onChange={(e) => {
                     const categories = [...page.menu.categories];
@@ -1010,7 +1058,7 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
                   }}
                 />
                 <AdminInput
-                  label="Price"
+                  label="Price (optional)"
                   value={item.price}
                   onChange={(e) => {
                     const categories = [...page.menu.categories];
@@ -1020,23 +1068,8 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
                     setPage({ ...page, menu: { ...page.menu, categories } });
                   }}
                 />
-                <ImagePicker
-                  label="Item Image"
-                  folder="dining"
-                  category="Dining"
-                  value={item.imageSrc}
-                  library={content.mediaLibrary}
-                  onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
-                  onChange={(url) => {
-                    const categories = [...page.menu.categories];
-                    const items = [...category.items];
-                    items[ii] = { ...item, imageSrc: url };
-                    categories[ci] = { ...category, items };
-                    setPage({ ...page, menu: { ...page.menu, categories } });
-                  }}
-                />
                 <AdminInput
-                  label="Image Alt"
+                  label="Image alt text"
                   value={item.imageAlt}
                   onChange={(e) => {
                     const categories = [...page.menu.categories];
