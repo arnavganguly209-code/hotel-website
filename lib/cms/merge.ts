@@ -1191,11 +1191,59 @@ function mergeSpaPage(
     };
   });
 
+  const defaultFacilityById = new Map(defaults.facilities.items.map((item) => [item.id, item]));
+  const storedFacilities = partial.facilities?.items;
+  const facilitySource =
+    !storedFacilities || storedFacilities.length === 0
+      ? defaults.facilities.items
+      : storedFacilities;
+  const mergedFacilityIds = new Set<string>();
+  const facilityItems = facilitySource.map((item, i) => {
+    const base = (item.id ? defaultFacilityById.get(item.id) : undefined) ??
+      defaults.facilities.items[i] ??
+      defaults.facilities.items[0];
+    const id = item.id || base.id || `spa-facility-${i}`;
+    mergedFacilityIds.add(id);
+    return {
+      id,
+      enabled: item.enabled !== false,
+      order: typeof item.order === "number" ? item.order : (base.order ?? i),
+      name: definedString(item.name, base.name),
+      tagline: definedString(item.tagline, base.tagline),
+      description: definedString(item.description, base.description),
+      imageSrc: definedString(item.imageSrc, base.imageSrc),
+      imageAlt: definedString(item.imageAlt, base.imageAlt),
+    };
+  });
+  for (const missing of defaults.facilities.items) {
+    if (mergedFacilityIds.has(missing.id)) continue;
+    facilityItems.push({ ...missing, order: facilityItems.length });
+    mergedFacilityIds.add(missing.id);
+  }
+
   return {
     ...defaults,
     ...partial,
-    hero: { ...defaults.hero, ...(partial.hero ?? {}) },
-    seo: { ...defaults.seo, ...(partial.seo ?? {}) },
+    hero: {
+      ...defaults.hero,
+      ...(partial.hero ?? {}),
+      imageSrc: (() => {
+        const src = definedString(partial.hero?.imageSrc, defaults.hero.imageSrc);
+        if (!src || src === "/media/spa/wellness.jpg" || src === "/media/pages/spa.jpg") {
+          return defaults.hero.imageSrc;
+        }
+        return src;
+      })(),
+    },
+    seo: {
+      ...defaults.seo,
+      ...(partial.seo ?? {}),
+      ogImage: (() => {
+        const src = definedString(partial.seo?.ogImage, defaults.seo.ogImage);
+        if (!src || src === "/media/spa/wellness.jpg") return defaults.seo.ogImage;
+        return src;
+      })(),
+    },
     introduction: {
       ...defaults.introduction,
       ...(partial.introduction ?? {}),
@@ -1207,10 +1255,21 @@ function mergeSpaPage(
         partial.introduction?.content ?? legacyPhilosophy?.content,
         defaults.introduction.content
       ),
-      imageSrc: definedString(
-        partial.introduction?.imageSrc ?? legacyPhilosophy?.imageSrc,
-        defaults.introduction.imageSrc
-      ),
+      imageSrc: (() => {
+        const src = definedString(
+          partial.introduction?.imageSrc ?? legacyPhilosophy?.imageSrc,
+          defaults.introduction.imageSrc
+        );
+        if (!src || src === "/media/spa/treatment.jpg" || src === "/media/spa/wellness.jpg") {
+          return defaults.introduction.imageSrc;
+        }
+        return src;
+      })(),
+    },
+    facilities: {
+      ...defaults.facilities,
+      ...(partial.facilities ?? {}),
+      items: facilityItems,
     },
     treatments: {
       ...defaults.treatments,
@@ -1221,12 +1280,22 @@ function mergeSpaPage(
       ...defaults.experiences,
       ...(partial.experiences ?? {}),
       items: definedArray(partial.experiences?.items, defaults.experiences.items).map((item, i) => {
-        const base = defaults.experiences.items[i] ?? defaults.experiences.items[0];
+        const base = defaults.experiences.items[i] ?? defaults.experiences.items[0] ?? {
+          id: `e${i}`,
+          enabled: false,
+          order: i,
+          title: "",
+          description: "",
+          imageSrc: "",
+          imageAlt: "",
+        };
+        const title = definedString(item.title, base.title);
+        const retiredTitle = /^(yoga|meditation)$/i.test(title.trim());
         return {
           id: item.id || base.id,
-          enabled: item.enabled !== false,
+          enabled: retiredTitle ? false : item.enabled !== false,
           order: typeof item.order === "number" ? item.order : (base.order ?? i),
-          title: definedString(item.title, base.title),
+          title,
           description: definedString(item.description, base.description),
           imageSrc: definedString(item.imageSrc, base.imageSrc),
           imageAlt: definedString(item.imageAlt, base.imageAlt),
@@ -1240,7 +1309,7 @@ function mergeSpaPage(
         const base = defaults.packages.items[i] ?? defaults.packages.items[0];
         return {
           id: item.id || base.id,
-          enabled: item.enabled !== false,
+          enabled: false,
           order: typeof item.order === "number" ? item.order : (base.order ?? i),
           name: definedString(item.name, base.name),
           duration: definedString(item.duration, base.duration),
@@ -1293,14 +1362,28 @@ function mergeSpaPage(
     booking: {
       ...defaults.booking,
       ...(partial.booking ?? {}),
-      buttonHref: definedString(
-        partial.booking?.buttonHref,
-        defaults.booking.buttonHref
+      buttonText: definedString(partial.booking?.buttonText, defaults.booking.buttonText),
+      buttonHref: (() => {
+        const href = definedString(partial.booking?.buttonHref, defaults.booking.buttonHref);
+        if (!href || href.startsWith("/spa") || href.includes("#spa-booking")) {
+          return defaults.booking.buttonHref;
+        }
+        return href;
+      })(),
+      secondaryText: definedString(
+        partial.booking?.secondaryText,
+        defaults.booking.secondaryText
       ),
-      secondaryHref: definedString(
-        partial.booking?.secondaryHref,
-        defaults.booking.secondaryHref
-      ),
+      secondaryHref: (() => {
+        const href = definedString(
+          partial.booking?.secondaryHref,
+          defaults.booking.secondaryHref
+        );
+        if (!href || href.startsWith("/spa") || href.includes("#spa-booking")) {
+          return defaults.booking.secondaryHref;
+        }
+        return href;
+      })(),
     },
     faq: {
       ...defaults.faq,

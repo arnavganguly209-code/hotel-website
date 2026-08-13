@@ -728,6 +728,21 @@ export interface SiteContent {
       imageSrc: string;
       imageAlt: string;
     };
+    facilities: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      items: Array<{
+        id: string;
+        enabled: boolean;
+        order: number;
+        name: string;
+        tagline: string;
+        description: string;
+        imageSrc: string;
+        imageAlt: string;
+      }>;
+    };
     treatments: {
       eyebrow: string;
       title: string;

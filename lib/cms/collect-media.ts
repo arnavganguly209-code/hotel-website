@@ -305,6 +305,14 @@ export function collectMediaFromContent(content: SiteContent): CollectedMediaRef
     category: "Spa",
     alt: content.spaPage?.introduction?.imageAlt,
   });
+  for (const room of content.spaPage?.facilities?.items ?? []) {
+    pushRef(out, seen, room.imageSrc, {
+      pageName: "Spa",
+      sectionName: room.name || "Facility",
+      category: "Spa",
+      alt: room.imageAlt,
+    });
+  }
   for (const t of content.spaPage?.treatments?.items ?? []) {
     pushRef(out, seen, t.imageSrc, {
       pageName: "Spa",
@@ -313,6 +321,20 @@ export function collectMediaFromContent(content: SiteContent): CollectedMediaRef
       alt: t.imageAlt,
     });
   }
+  for (const g of content.spaPage?.gallery ?? []) {
+    pushRef(out, seen, g.src, {
+      pageName: "Spa",
+      sectionName: g.title || "Gallery",
+      category: "Spa",
+      alt: g.alt,
+    });
+  }
+  pushRef(out, seen, content.spaPage?.cta?.backgroundImage, {
+    pageName: "Spa",
+    sectionName: "Final CTA",
+    category: "Spa",
+    isBackground: true,
+  });
 
   pushRef(out, seen, content.meetingsEventsPage?.hero?.imageSrc, {
     pageName: "Meetings",

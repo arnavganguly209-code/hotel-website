@@ -24,9 +24,9 @@ export function SpaHero({ hero }: SpaHeroProps) {
   return (
     <section
       ref={ref}
-      className="relative flex min-h-[78vh] items-end overflow-hidden md:min-h-[85vh]"
+      className="relative flex min-h-[min(72vh,640px)] items-end overflow-hidden sm:min-h-[78vh] md:min-h-[85vh]"
     >
-      <motion.div style={{ y }} className="absolute inset-0 scale-110">
+      <motion.div style={{ y }} className="absolute inset-0 scale-[1.08] sm:scale-110">
         {hero.imageSrc ? (
           <SafeImage
             src={hero.imageSrc}
@@ -52,12 +52,12 @@ export function SpaHero({ hero }: SpaHeroProps) {
 
       <motion.div
         style={{ opacity }}
-        className="relative z-10 w-full px-4 pb-20 pt-32 sm:px-6 sm:pb-24 lg:px-8 lg:pb-28"
+        className="relative z-10 w-full px-4 pb-24 pt-28 sm:px-6 sm:pb-24 sm:pt-32 lg:px-8 lg:pb-28"
       >
         <div className="mx-auto max-w-5xl text-center">
           <nav
             aria-label="Breadcrumb"
-            className="mb-8 flex items-center justify-center gap-2 font-body text-[11px] uppercase tracking-[0.28em] text-white/65"
+            className="mb-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-body text-[10px] uppercase tracking-[0.18em] text-white/65 sm:mb-8 sm:text-[11px] sm:tracking-[0.28em]"
           >
             <Link href="/" className="transition hover:text-[#C5A059]">
               {hero.breadcrumbHome || "Home"}
@@ -72,7 +72,7 @@ export function SpaHero({ hero }: SpaHeroProps) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
-            className="font-display text-[11px] font-semibold uppercase tracking-[0.4em] text-[#C5A059]"
+            className="break-words px-1 font-display text-[10px] font-semibold uppercase tracking-[0.22em] text-[#C5A059] sm:text-[11px] sm:tracking-[0.4em]"
           >
             {hero.subtitle}
           </motion.p>
@@ -81,7 +81,7 @@ export function SpaHero({ hero }: SpaHeroProps) {
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.85, delay: 0.08 }}
-            className="mt-5 font-display text-4xl font-light leading-[1.15] text-white sm:text-5xl md:text-6xl lg:text-[4.25rem]"
+            className="mt-4 break-words px-1 font-display text-[2.15rem] font-light leading-[1.15] text-white sm:mt-5 sm:text-5xl md:text-6xl lg:text-[4.25rem]"
           >
             {hero.title}
           </motion.h1>
@@ -91,7 +91,7 @@ export function SpaHero({ hero }: SpaHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.75, delay: 0.18 }}
-              className="mx-auto mt-7 max-w-2xl font-body text-base leading-relaxed text-white/75 md:text-lg"
+              className="mx-auto mt-5 max-w-2xl break-words px-1 font-body text-[15px] leading-relaxed text-white/75 sm:mt-7 sm:text-base md:text-lg"
             >
               {hero.description}
             </motion.p>
@@ -101,10 +101,10 @@ export function SpaHero({ hero }: SpaHeroProps) {
 
       <a
         href="#spa-introduction"
-        className="absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 text-white/60 transition hover:text-[#C5A059]"
+        className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 text-white/60 transition hover:text-[#C5A059] sm:bottom-8"
         aria-label={hero.scrollHint || "Scroll"}
       >
-        <span className="font-body text-[10px] uppercase tracking-[0.3em]">
+        <span className="font-body text-[10px] uppercase tracking-[0.22em] sm:tracking-[0.3em]">
           {hero.scrollHint || "Discover"}
         </span>
         <motion.span
