@@ -58,7 +58,7 @@ export function DiningPage({ content }: DiningPageProps) {
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   const chefDishes = [...content.chefRecommendation.dishes]
-    .filter((d) => d.enabled !== false && (d.title?.trim() || d.imageSrc?.trim()))
+    .filter((d) => Boolean(d.title?.trim() || d.imageSrc?.trim()))
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const chefPortraits = [...(content.chefRecommendation.portraits || [])]
     .filter((p) => p.enabled !== false && p.imageSrc)

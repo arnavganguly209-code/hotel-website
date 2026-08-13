@@ -41,7 +41,12 @@ export function ChefRecommendationEditor({ content, update }: DiningPageEditorPr
 
   const patchDish = (index: number, patch: Partial<(typeof dishes)[number]>) => {
     const next = [...dishes];
-    next[index] = { ...next[index], ...patch };
+    const merged = { ...next[index], ...patch };
+    const hasContent = Boolean(merged.title?.trim() || merged.imageSrc?.trim());
+    next[index] = {
+      ...merged,
+      enabled: patch.enabled !== undefined ? patch.enabled : hasContent || merged.enabled !== false,
+    };
     setChef({ ...chef, dishes: next });
   };
 
@@ -65,8 +70,8 @@ export function ChefRecommendationEditor({ content, update }: DiningPageEditorPr
           <p className="font-display text-lg text-luxury-gold">From the Kitchen — Chef’s Recommendation</p>
           <p className="mt-1 text-xs text-white/50">
             This is the overlapping image + text block on /dining. Upload a photo, write the name and
-            description. Layout alternates left / right. Price is not shown on the public page. Add up
-            to 10 dishes — extra slots stay hidden until you enable them.
+            description. Layout alternates left / right. Price is not shown on the public page. Fill up
+            to 8 dishes — every dish with a name or photo appears on the website.
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-white/60">
@@ -194,7 +199,7 @@ export function ChefRecommendationEditor({ content, update }: DiningPageEditorPr
 
       <div className="flex flex-wrap items-center justify-between gap-3 pt-4">
         <p className="text-sm text-white/70">
-          Dishes ({dishes.length}) — image, name, and text. Alternating left / right on the page.
+          Dishes ({dishes.filter((d) => d.title?.trim() || d.imageSrc?.trim()).length} filled / {dishes.length} slots) — image, name, and text. All filled dishes show left / right on /dining.
         </p>
         <Button
           type="button"

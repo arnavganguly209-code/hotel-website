@@ -1010,27 +1010,56 @@ function mergeDiningPage(
         );
         const mergedIds = new Set<string>();
         const dishes = source.map((dish, i) => {
-          const base =
-            defaultById.get(dish.id) ??
-            defaults.chefRecommendation.dishes[i] ??
-            defaults.chefRecommendation.dishes[0];
-          mergedIds.add(dish.id || base.id);
-          const storedImage = definedString(dish.imageSrc, base.imageSrc).trim();
+          const base = dish.id ? defaultById.get(dish.id) : undefined;
+          const id = dish.id || base?.id || `cr-custom-${i}`;
+          mergedIds.add(id);
+          const storedImage = definedString(dish.imageSrc, "").trim();
+          const title = definedString(dish.title, base?.title ?? "");
+          const imageSrc = storedImage || base?.imageSrc || "";
+          const hasContent = Boolean(title.trim() || imageSrc.trim());
           return {
-            id: dish.id || base.id,
-            enabled: dish.enabled !== false,
-            order: typeof dish.order === "number" ? dish.order : (base.order ?? i),
-            title: definedString(dish.title, base.title),
-            description: definedString(dish.description, base.description),
-            price: definedString(dish.price, base.price),
-            imageSrc: storedImage || base.imageSrc || "",
-            imageAlt: definedString(dish.imageAlt, base.imageAlt),
+            id,
+            enabled: hasContent ? true : dish.enabled === true,
+            order: typeof dish.order === "number" ? dish.order : (base?.order ?? i),
+            title,
+            description: definedString(dish.description, base?.description ?? ""),
+            price: definedString(dish.price, base?.price ?? ""),
+            imageSrc,
+            imageAlt: definedString(dish.imageAlt, base?.imageAlt ?? ""),
           };
         });
         for (const missing of defaults.chefRecommendation.dishes) {
           if (mergedIds.has(missing.id)) continue;
           dishes.push({ ...missing, order: dishes.length });
           mergedIds.add(missing.id);
+        }
+        while (dishes.length < 8) {
+          const slot = dishes.length + 1;
+          const id = `cr${slot}`;
+          if (mergedIds.has(id)) {
+            dishes.push({
+              id: `cr-slot-${slot}`,
+              enabled: true,
+              order: dishes.length,
+              title: "",
+              description: "",
+              price: "",
+              imageSrc: "",
+              imageAlt: "",
+            });
+          } else {
+            dishes.push({
+              id,
+              enabled: true,
+              order: dishes.length,
+              title: "",
+              description: "",
+              price: "",
+              imageSrc: "",
+              imageAlt: "",
+            });
+          }
+          mergedIds.add(dishes[dishes.length - 1].id);
         }
         return dishes;
       })(),
