@@ -68,15 +68,15 @@ export function DiningReservationForm({
   }
 
   const inputClass =
-    "w-full min-h-12 rounded-xl border border-[#C5A059]/40 bg-white/95 px-4 py-3 font-body text-sm text-[#1A2E26] outline-none transition focus:border-[#C5A059] focus:ring-2 focus:ring-[#C5A059]/25";
+    "w-full min-h-12 max-w-full rounded-xl border border-[#C5A059]/40 bg-white/95 px-3.5 py-3 font-body text-sm text-[#1A2E26] outline-none transition focus:border-[#C5A059] focus:ring-2 focus:ring-[#C5A059]/25 sm:px-4";
   const labelClass =
-    "mb-1.5 block font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-[#062C24]/80";
+    "mb-1.5 block break-words font-body text-[11px] font-semibold uppercase tracking-[0.12em] text-[#062C24]/80 sm:tracking-[0.14em]";
 
   return (
     <>
       <div
         id="reserve-table"
-        className="scroll-mt-28 rounded-[24px] border p-6 sm:p-8 md:p-10"
+        className="scroll-mt-28 rounded-[18px] border p-4 sm:rounded-[24px] sm:p-8 md:p-10"
         style={{
           backgroundColor: "#FBF8F1",
           borderColor: `${goldColor}55`,
@@ -85,13 +85,13 @@ export function DiningReservationForm({
       >
         <div className="mx-auto max-w-3xl text-center">
           <h2
-            className="font-display text-3xl font-light md:text-4xl"
+            className="break-words font-display text-[1.75rem] font-light leading-snug sm:text-3xl md:text-4xl"
             style={{ color: headingColor }}
           >
             {form.title}
           </h2>
           <p
-            className="mx-auto mt-4 max-w-xl font-body text-sm leading-relaxed md:text-base"
+            className="mx-auto mt-3 max-w-xl break-words font-body text-sm leading-relaxed sm:mt-4 md:text-base"
             style={{ color: bodyColor }}
           >
             {form.description}
@@ -103,7 +103,7 @@ export function DiningReservationForm({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="mx-auto mt-2 grid max-w-3xl gap-4 sm:grid-cols-2">
+        <form onSubmit={handleSubmit} className="mx-auto mt-2 grid max-w-3xl gap-3.5 sm:grid-cols-2 sm:gap-4">
           <div className="sm:col-span-1">
             <label className={labelClass} htmlFor="fullName">
               Full Name *
@@ -232,15 +232,15 @@ export function DiningReservationForm({
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="flex items-start gap-3 font-body text-sm" style={{ color: bodyColor }}>
+            <label className="flex items-start gap-3 font-body text-sm leading-relaxed" style={{ color: bodyColor }}>
               <input
                 type="checkbox"
                 name="consent"
                 value="true"
                 required
-                className="mt-1 accent-[#C5A059]"
+                className="mt-1 h-4 w-4 shrink-0 accent-[#C5A059]"
               />
-              <span>{form.consentLabel}</span>
+              <span className="min-w-0 break-words">{form.consentLabel}</span>
             </label>
           </div>
 
@@ -248,11 +248,11 @@ export function DiningReservationForm({
             <p className="sm:col-span-2 text-sm text-red-700">{error}</p>
           ) : null}
 
-          <div className="sm:col-span-2 flex justify-center pt-2">
+          <div className="flex justify-center pt-2 sm:col-span-2">
             <button
               type="submit"
               disabled={status === "loading"}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-10 py-3.5 font-body text-[11px] font-semibold uppercase tracking-[0.2em] text-[#062C24] transition hover:-translate-y-0.5 disabled:opacity-60"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-8 py-3.5 font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-[#062C24] transition hover:-translate-y-0.5 disabled:opacity-60 sm:w-auto sm:px-10 sm:tracking-[0.2em]"
               style={{
                 backgroundColor: goldColor,
                 boxShadow: "0 14px 32px rgba(197, 160, 89, 0.35)",
@@ -284,7 +284,7 @@ export function DiningReservationForm({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16 }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="relative w-full max-w-lg rounded-[24px] border border-[#C5A059]/50 bg-[#FBF8F1] p-8 text-center shadow-2xl"
+              className="relative w-full max-w-lg rounded-[20px] border border-[#C5A059]/50 bg-[#FBF8F1] p-5 text-center shadow-2xl sm:rounded-[24px] sm:p-8"
               role="dialog"
               aria-modal="true"
               aria-labelledby="dining-success-title"
