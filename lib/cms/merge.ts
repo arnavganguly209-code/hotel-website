@@ -1239,8 +1239,9 @@ function mergeSpaPage(
       ...defaults.seo,
       ...(partial.seo ?? {}),
       ogImage: (() => {
-        const src = definedString(partial.seo?.ogImage, defaults.seo.ogImage);
-        if (!src || src === "/media/spa/wellness.jpg") return defaults.seo.ogImage;
+        const fallback = defaults.seo.ogImage ?? defaults.hero.imageSrc;
+        const src = definedString(partial.seo?.ogImage, fallback);
+        if (!src || src === "/media/spa/wellness.jpg") return fallback;
         return src;
       })(),
     },
