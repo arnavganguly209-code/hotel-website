@@ -58,7 +58,7 @@ export function DiningPage({ content }: DiningPageProps) {
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   const chefDishes = [...content.chefRecommendation.dishes]
-    .filter((d) => d.enabled !== false)
+    .filter((d) => d.enabled !== false && (d.title?.trim() || d.imageSrc?.trim()))
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const chefPortraits = [...(content.chefRecommendation.portraits || [])]
     .filter((p) => p.enabled !== false && p.imageSrc)
@@ -547,7 +547,7 @@ export function DiningPage({ content }: DiningPageProps) {
                     }`}
                   >
                     <div
-                      className="relative aspect-[16/11] overflow-hidden rounded-[24px]"
+                      className="relative aspect-[16/11] overflow-hidden rounded-[24px] bg-[#EFE8DA]"
                       style={{
                         border: `1px solid ${gold}77`,
                         boxShadow: "0 24px 50px rgba(15, 42, 34, 0.14)",
@@ -598,11 +598,8 @@ export function DiningPage({ content }: DiningPageProps) {
                       boxShadow: "0 18px 40px rgba(15, 42, 34, 0.1)",
                     }}
                   >
-                    <p className="font-body text-sm" style={{ color: gold }}>
-                      {dish.price}
-                    </p>
                     <h3
-                      className="mt-2 font-display text-2xl font-light"
+                      className="font-display text-2xl font-light uppercase tracking-[0.04em]"
                       style={{ color: heading }}
                     >
                       {dish.title}

@@ -29,6 +29,288 @@ function splitComma(value: string): string[] {
     .filter(Boolean);
 }
 
+export function ChefRecommendationEditor({ content, update }: DiningPageEditorProps) {
+  const page = content.diningPage;
+  const setPage = (next: SiteContent["diningPage"]) => update("diningPage", next);
+  const chef = page.chefRecommendation;
+  const dishes = chef.dishes || [];
+  const portraits = chef.portraits || [];
+
+  const setChef = (next: SiteContent["diningPage"]["chefRecommendation"]) =>
+    setPage({ ...page, chefRecommendation: next });
+
+  const patchDish = (index: number, patch: Partial<(typeof dishes)[number]>) => {
+    const next = [...dishes];
+    next[index] = { ...next[index], ...patch };
+    setChef({ ...chef, dishes: next });
+  };
+
+  const moveDish = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= dishes.length) return;
+    const next = [...dishes];
+    const current = next[index];
+    next[index] = next[target];
+    next[target] = current;
+    setChef({
+      ...chef,
+      dishes: next.map((dish, order) => ({ ...dish, order })),
+    });
+  };
+
+  return (
+    <div className="space-y-4 border border-luxury-gold/20 bg-luxury-gold/[0.03] p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="font-display text-lg text-luxury-gold">From the Kitchen — Chef’s Recommendation</p>
+          <p className="mt-1 text-xs text-white/50">
+            This is the overlapping image + text block on /dining. Upload a photo, write the name and
+            description. Layout alternates left / right. Price is not shown on the public page. Add up
+            to 10 dishes — extra slots stay hidden until you enable them.
+          </p>
+        </div>
+        <label className="flex items-center gap-2 text-xs text-white/60">
+          <input
+            type="checkbox"
+            checked={chef.enabled !== false}
+            className="accent-luxury-gold"
+            onChange={(e) => setChef({ ...chef, enabled: e.target.checked })}
+          />
+          Section Enabled
+        </label>
+      </div>
+      <AdminInput
+        label="Small label (eyebrow)"
+        value={chef.eyebrow}
+        onChange={(e) => setChef({ ...chef, eyebrow: e.target.value })}
+      />
+      <AdminInput
+        label="Title"
+        value={chef.title}
+        onChange={(e) => setChef({ ...chef, title: e.target.value })}
+      />
+      <AdminTextarea
+        label="Description"
+        rows={2}
+        value={chef.description}
+        onChange={(e) => setChef({ ...chef, description: e.target.value })}
+      />
+
+      <p className="pt-2 text-xs text-white/45">
+        Optional 9:16 chef portraits sit above the dishes. Leave empty to hide.
+      </p>
+      {portraits.map((portrait, i) => (
+        <div key={portrait.id} className="space-y-2 border border-luxury-gold/10 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-luxury-gold">Chef portrait {i + 1} (9:16)</p>
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 text-xs text-white/60">
+                <input
+                  type="checkbox"
+                  checked={portrait.enabled !== false}
+                  className="accent-luxury-gold"
+                  onChange={(e) => {
+                    const next = [...portraits];
+                    next[i] = { ...portrait, enabled: e.target.checked };
+                    setChef({ ...chef, portraits: next });
+                  }}
+                />
+                Enabled
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-red-400"
+                onClick={() =>
+                  setChef({
+                    ...chef,
+                    portraits: portraits.filter((_, idx) => idx !== i),
+                  })
+                }
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <ImagePicker
+            label="Portrait Image — kitchen / fire cooking, 9:16"
+            folder="dining"
+            category="Dining"
+            value={portrait.imageSrc}
+            library={content.mediaLibrary}
+            onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+            enableCrop
+            onChange={(url) => {
+              const next = [...portraits];
+              next[i] = { ...portrait, imageSrc: url };
+              setChef({ ...chef, portraits: next });
+            }}
+          />
+          <AdminInput
+            label="Alt text"
+            value={portrait.imageAlt}
+            onChange={(e) => {
+              const next = [...portraits];
+              next[i] = { ...portrait, imageAlt: e.target.value };
+              setChef({ ...chef, portraits: next });
+            }}
+          />
+          <AdminInput
+            label="Caption (optional)"
+            value={portrait.caption}
+            onChange={(e) => {
+              const next = [...portraits];
+              next[i] = { ...portrait, caption: e.target.value };
+              setChef({ ...chef, portraits: next });
+            }}
+          />
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="border-luxury-gold/30 text-luxury-gold"
+        onClick={() =>
+          setChef({
+            ...chef,
+            portraits: [
+              ...portraits,
+              {
+                id: `chef-p${Date.now()}`,
+                enabled: true,
+                order: portraits.length,
+                imageSrc: "",
+                imageAlt: "Chef in the kitchen",
+                caption: "",
+              },
+            ],
+          })
+        }
+      >
+        <Plus className="h-4 w-4" /> Add Chef Portrait
+      </Button>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-4">
+        <p className="text-sm text-white/70">
+          Dishes ({dishes.length}) — image, name, and text. Alternating left / right on the page.
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="border-luxury-gold/30 text-luxury-gold"
+          onClick={() =>
+            setChef({
+              ...chef,
+              dishes: [
+                ...dishes,
+                {
+                  id: `dish-${Date.now()}`,
+                  enabled: true,
+                  order: dishes.length,
+                  title: "New Signature Dish",
+                  description: "",
+                  price: "",
+                  imageSrc: "",
+                  imageAlt: "",
+                },
+              ],
+            })
+          }
+        >
+          <Plus className="h-4 w-4" /> Add Dish
+        </Button>
+      </div>
+      {dishes.map((dish, i) => (
+        <div key={dish.id} className="space-y-3 border border-luxury-gold/10 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-luxury-gold">
+              Dish {i + 1}
+              {dish.title ? ` — ${dish.title}` : ""}
+              <span className="ml-2 text-[10px] uppercase tracking-[0.14em] text-white/40">
+                {i % 2 === 0 ? "Image left · text right" : "Text left · image right"}
+              </span>
+            </p>
+            <div className="flex items-center gap-1">
+              <label className="mr-2 flex items-center gap-2 text-xs text-white/60">
+                <input
+                  type="checkbox"
+                  checked={dish.enabled !== false}
+                  className="accent-luxury-gold"
+                  onChange={(e) => patchDish(i, { enabled: e.target.checked })}
+                />
+                Show on /dining
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-white/60"
+                disabled={i === 0}
+                onClick={() => moveDish(i, -1)}
+              >
+                <ChevronUp className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-white/60"
+                disabled={i === dishes.length - 1}
+                onClick={() => moveDish(i, 1)}
+              >
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-red-400"
+                onClick={() =>
+                  setChef({
+                    ...chef,
+                    dishes: dishes.filter((_, idx) => idx !== i).map((item, order) => ({ ...item, order })),
+                  })
+                }
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <ImagePicker
+            label="Menu / dish image — upload or replace"
+            folder="dining"
+            category="Dining"
+            value={dish.imageSrc}
+            library={content.mediaLibrary}
+            onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+            enableCrop
+            onChange={(url) => patchDish(i, { imageSrc: url, imageAlt: dish.imageAlt || dish.title })}
+          />
+          <AdminInput
+            label="Name"
+            value={dish.title}
+            onChange={(e) => patchDish(i, { title: e.target.value })}
+          />
+          <AdminTextarea
+            label="Description"
+            rows={3}
+            value={dish.description}
+            onChange={(e) => patchDish(i, { description: e.target.value })}
+          />
+          <AdminInput
+            label="Image alt text"
+            value={dish.imageAlt}
+            onChange={(e) => patchDish(i, { imageAlt: e.target.value })}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
   const page = content.diningPage;
   const setPage = (next: SiteContent["diningPage"]) => update("diningPage", next);
@@ -36,9 +318,9 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
   return (
     <div className="space-y-6">
       <p className="text-sm text-white/50">
-        Dining page (/dining) — full JW-style control. Public tabs default to Breakfast, Lunch, and
-        Dinner; add more categories anytime. Upload chef portraits (9:16) and every dish image.
-        Changes auto-save.
+        Dining page (/dining) — full control of every section: hero, welcome, venues, breakfast/lunch/dinner
+        menus, Chef’s Recommendation (image + name + text, no price), gallery, reviews, FAQ, and the reserve
+        form. Upload or replace any image. Changes auto-save.
       </p>
 
       {/* Hero */}
@@ -770,321 +1052,7 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
         ))}
       </div>
 
-      {/* Chef Recommendation */}
-      <div className="space-y-4 border border-luxury-gold/10 p-6">
-        <div className="flex items-center justify-between">
-          <p className="font-display text-lg text-luxury-gold">Chef Recommendation</p>
-          <label className="flex items-center gap-2 text-xs text-white/60">
-            <input
-              type="checkbox"
-              checked={page.chefRecommendation.enabled !== false}
-              className="accent-luxury-gold"
-              onChange={(e) =>
-                setPage({
-                  ...page,
-                  chefRecommendation: {
-                    ...page.chefRecommendation,
-                    enabled: e.target.checked,
-                  },
-                })
-              }
-            />
-            Section Enabled
-          </label>
-        </div>
-        <AdminInput
-          label="Eyebrow"
-          value={page.chefRecommendation.eyebrow}
-          onChange={(e) =>
-            setPage({
-              ...page,
-              chefRecommendation: {
-                ...page.chefRecommendation,
-                eyebrow: e.target.value,
-              },
-            })
-          }
-        />
-        <AdminInput
-          label="Title"
-          value={page.chefRecommendation.title}
-          onChange={(e) =>
-            setPage({
-              ...page,
-              chefRecommendation: {
-                ...page.chefRecommendation,
-                title: e.target.value,
-              },
-            })
-          }
-        />
-        <AdminTextarea
-          label="Description"
-          rows={2}
-          value={page.chefRecommendation.description}
-          onChange={(e) =>
-            setPage({
-              ...page,
-              chefRecommendation: {
-                ...page.chefRecommendation,
-                description: e.target.value,
-              },
-            })
-          }
-        />
-        <p className="text-xs text-white/45">
-          Two 9:16 chef portraits sit above this section on /dining. Upload kitchen / fire-cooking
-          images. Leave empty to hide.
-        </p>
-        {(page.chefRecommendation.portraits || []).map((portrait, i) => (
-          <div key={portrait.id} className="space-y-2 border border-luxury-gold/10 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm text-luxury-gold">Chef portrait {i + 1} (9:16)</p>
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-2 text-xs text-white/60">
-                  <input
-                    type="checkbox"
-                    checked={portrait.enabled !== false}
-                    className="accent-luxury-gold"
-                    onChange={(e) => {
-                      const portraits = [...(page.chefRecommendation.portraits || [])];
-                      portraits[i] = { ...portrait, enabled: e.target.checked };
-                      setPage({
-                        ...page,
-                        chefRecommendation: { ...page.chefRecommendation, portraits },
-                      });
-                    }}
-                  />
-                  Enabled
-                </label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-400"
-                  onClick={() =>
-                    setPage({
-                      ...page,
-                      chefRecommendation: {
-                        ...page.chefRecommendation,
-                        portraits: (page.chefRecommendation.portraits || []).filter(
-                          (_, idx) => idx !== i
-                        ),
-                      },
-                    })
-                  }
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            <ImagePicker
-              label="Portrait Image — kitchen / fire cooking, 9:16"
-              folder="dining"
-              category="Dining"
-              value={portrait.imageSrc}
-              library={content.mediaLibrary}
-              onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
-              enableCrop
-              onChange={(url) => {
-                const portraits = [...(page.chefRecommendation.portraits || [])];
-                portraits[i] = { ...portrait, imageSrc: url };
-                setPage({
-                  ...page,
-                  chefRecommendation: { ...page.chefRecommendation, portraits },
-                });
-              }}
-            />
-            <AdminInput
-              label="Alt text"
-              value={portrait.imageAlt}
-              onChange={(e) => {
-                const portraits = [...(page.chefRecommendation.portraits || [])];
-                portraits[i] = { ...portrait, imageAlt: e.target.value };
-                setPage({
-                  ...page,
-                  chefRecommendation: { ...page.chefRecommendation, portraits },
-                });
-              }}
-            />
-            <AdminInput
-              label="Caption (optional)"
-              value={portrait.caption}
-              onChange={(e) => {
-                const portraits = [...(page.chefRecommendation.portraits || [])];
-                portraits[i] = { ...portrait, caption: e.target.value };
-                setPage({
-                  ...page,
-                  chefRecommendation: { ...page.chefRecommendation, portraits },
-                });
-              }}
-            />
-          </div>
-        ))}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="border-luxury-gold/30 text-luxury-gold"
-          onClick={() =>
-            setPage({
-              ...page,
-              chefRecommendation: {
-                ...page.chefRecommendation,
-                portraits: [
-                  ...(page.chefRecommendation.portraits || []),
-                  {
-                    id: `chef-p${Date.now()}`,
-                    enabled: true,
-                    order: (page.chefRecommendation.portraits || []).length,
-                    imageSrc: "",
-                    imageAlt: "Chef in the kitchen",
-                    caption: "",
-                  },
-                ],
-              },
-            })
-          }
-        >
-          <Plus className="h-4 w-4" /> Add Chef Portrait
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="border-luxury-gold/30 text-luxury-gold"
-          onClick={() =>
-            setPage({
-              ...page,
-              chefRecommendation: {
-                ...page.chefRecommendation,
-                dishes: [
-                  ...page.chefRecommendation.dishes,
-                  {
-                    id: `dish-${Date.now()}`,
-                    enabled: true,
-                    order: page.chefRecommendation.dishes.length,
-                    title: "New Dish",
-                    description: "",
-                    price: "",
-                    imageSrc: "",
-                    imageAlt: "",
-                  },
-                ],
-              },
-            })
-          }
-        >
-          <Plus className="h-4 w-4" /> Add Dish
-        </Button>
-        {page.chefRecommendation.dishes.map((dish, i) => (
-          <div key={dish.id} className="space-y-2 border border-luxury-gold/10 p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-luxury-gold">{dish.title}</p>
-              <div className="flex items-center gap-2">
-                <label className="flex items-center gap-2 text-xs text-white/60">
-                  <input
-                    type="checkbox"
-                    checked={dish.enabled !== false}
-                    className="accent-luxury-gold"
-                    onChange={(e) => {
-                      const dishes = [...page.chefRecommendation.dishes];
-                      dishes[i] = { ...dish, enabled: e.target.checked };
-                      setPage({
-                        ...page,
-                        chefRecommendation: { ...page.chefRecommendation, dishes },
-                      });
-                    }}
-                  />
-                  Enabled
-                </label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-400"
-                  onClick={() =>
-                    setPage({
-                      ...page,
-                      chefRecommendation: {
-                        ...page.chefRecommendation,
-                        dishes: page.chefRecommendation.dishes.filter((_, idx) => idx !== i),
-                      },
-                    })
-                  }
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            <AdminInput
-              label="Title"
-              value={dish.title}
-              onChange={(e) => {
-                const dishes = [...page.chefRecommendation.dishes];
-                dishes[i] = { ...dish, title: e.target.value };
-                setPage({
-                  ...page,
-                  chefRecommendation: { ...page.chefRecommendation, dishes },
-                });
-              }}
-            />
-            <AdminTextarea
-              label="Description"
-              rows={2}
-              value={dish.description}
-              onChange={(e) => {
-                const dishes = [...page.chefRecommendation.dishes];
-                dishes[i] = { ...dish, description: e.target.value };
-                setPage({
-                  ...page,
-                  chefRecommendation: { ...page.chefRecommendation, dishes },
-                });
-              }}
-            />
-            <AdminInput
-              label="Price"
-              value={dish.price}
-              onChange={(e) => {
-                const dishes = [...page.chefRecommendation.dishes];
-                dishes[i] = { ...dish, price: e.target.value };
-                setPage({
-                  ...page,
-                  chefRecommendation: { ...page.chefRecommendation, dishes },
-                });
-              }}
-            />
-            <ImagePicker
-              label="Dish Image"
-              folder="dining"
-              category="Dining"
-              value={dish.imageSrc}
-              library={content.mediaLibrary}
-              onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
-              onChange={(url) => {
-                const dishes = [...page.chefRecommendation.dishes];
-                dishes[i] = { ...dish, imageSrc: url };
-                setPage({
-                  ...page,
-                  chefRecommendation: { ...page.chefRecommendation, dishes },
-                });
-              }}
-            />
-            <AdminInput
-              label="Image Alt"
-              value={dish.imageAlt}
-              onChange={(e) => {
-                const dishes = [...page.chefRecommendation.dishes];
-                dishes[i] = { ...dish, imageAlt: e.target.value };
-                setPage({
-                  ...page,
-                  chefRecommendation: { ...page.chefRecommendation, dishes },
-                });
-              }}
-            />
-          </div>
-        ))}
-      </div>
+      <ChefRecommendationEditor content={content} update={update} />
 
       {/* Form */}
       <div className="space-y-4 border border-luxury-gold/10 p-6">

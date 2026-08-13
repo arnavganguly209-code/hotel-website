@@ -43,7 +43,10 @@ import { OrbitRoomsEditor } from "@/components/admin/OrbitRoomsEditor";
 import { EventInquiriesPanel } from "@/components/admin/EventInquiriesPanel";
 import { ContactEnquiriesPanel } from "@/components/admin/ContactEnquiriesPanel";
 import { DiningReservationsPanel } from "@/components/admin/DiningReservationsPanel";
-import { DiningPageEditor } from "@/components/admin/DiningPageEditor";
+import {
+  DiningPageEditor,
+  ChefRecommendationEditor,
+} from "@/components/admin/DiningPageEditor";
 import { SpaPageEditor } from "@/components/admin/SpaPageEditor";
 import { ContactPageEditor } from "@/components/admin/ContactPageEditor";
 import { AboutPageEditor } from "@/components/admin/AboutPageEditor";
@@ -79,7 +82,7 @@ const SECTIONS = [
   { id: "meetingsEvents", label: "Meetings & Events Section", icon: MessageSquare },
   { id: "exploreKathmandu", label: "Explore Kathmandu Section", icon: Globe },
   { id: "rooms", label: "Rooms Section", icon: Bed },
-  { id: "dining", label: "Restaurant Page", icon: Utensils },
+  { id: "dining", label: "Dining Page", icon: Utensils },
   { id: "diningReservations", label: "Dining Reservations", icon: Utensils },
   { id: "roomBookings", label: "Room Bookings", icon: ClipboardList },
   { id: "spaInquiries", label: "Spa Inquiries", icon: Waves },
@@ -1549,6 +1552,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   <p className="font-display text-lg text-luxury-gold">Fine Dining Section</p>
                   <p className="text-xs text-white/40">
                     Homepage Fine Dining section — Garden View &amp; Korean Restaurant (below World-Class Amenities).
+                    Chef’s Recommendation on /dining is edited in the block at the bottom of this tab, and also in Dining Page.
                   </p>
                   <label className="flex items-center gap-3 text-sm text-white/70">
                     <input
@@ -1606,8 +1610,41 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
                   <p className="font-display text-lg text-luxury-gold">Main Image</p>
+                  <p className="text-xs text-white/40">
+                    Upload or replace the homepage Fine Dining photo. This is the Garden View &amp; Korean
+                    Restaurant image on the home page.
+                  </p>
+                  <ImagePicker
+                    label="Fine Dining Image — upload / replace"
+                    folder="dining"
+                    category="Dining"
+                    value={content.fineDiningSection.media.imageSrc}
+                    library={content.mediaLibrary}
+                    onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                    enableCrop
+                    onChange={(url) =>
+                      update("fineDiningSection", {
+                        ...content.fineDiningSection,
+                        media: {
+                          ...content.fineDiningSection.media,
+                          type: "image",
+                          imageSrc: url,
+                        },
+                      })
+                    }
+                  />
+                  <AdminInput
+                    label="Image alt text"
+                    value={content.fineDiningSection.media.alt}
+                    onChange={(e) =>
+                      update("fineDiningSection", {
+                        ...content.fineDiningSection,
+                        media: { ...content.fineDiningSection.media, alt: e.target.value },
+                      })
+                    }
+                  />
                   <AdminMediaField
-                    label="Fine Dining Image"
+                    label="Fine Dining Media (image or video)"
                     folder="dining"
                     value={content.fineDiningSection.media}
                     onChange={(media) => update("fineDiningSection", { ...content.fineDiningSection, media })}
@@ -1615,6 +1652,8 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                     onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
                   />
                 </div>
+
+                <ChefRecommendationEditor content={content} update={update} />
               </>
             )}
 
@@ -1681,6 +1720,21 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
                   <p className="font-display text-lg text-luxury-gold">Main Image</p>
+                  <ImagePicker
+                    label="Lobby Café Image — upload / replace"
+                    folder="dining"
+                    category="Dining"
+                    value={content.lobbyCafeSection.media.imageSrc}
+                    library={content.mediaLibrary}
+                    onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                    enableCrop
+                    onChange={(url) =>
+                      update("lobbyCafeSection", {
+                        ...content.lobbyCafeSection,
+                        media: { ...content.lobbyCafeSection.media, type: "image", imageSrc: url },
+                      })
+                    }
+                  />
                   <AdminMediaField
                     label="Lobby Café Image"
                     folder="dining"
@@ -1756,6 +1810,21 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
                   <p className="font-display text-lg text-luxury-gold">Main Image</p>
+                  <ImagePicker
+                    label="Rooftop Experience Image — upload / replace"
+                    folder="dining"
+                    category="Dining"
+                    value={content.rooftopExperienceSection.media.imageSrc}
+                    library={content.mediaLibrary}
+                    onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
+                    enableCrop
+                    onChange={(url) =>
+                      update("rooftopExperienceSection", {
+                        ...content.rooftopExperienceSection,
+                        media: { ...content.rooftopExperienceSection.media, type: "image", imageSrc: url },
+                      })
+                    }
+                  />
                   <AdminMediaField
                     label="Rooftop Experience Image"
                     folder="dining"

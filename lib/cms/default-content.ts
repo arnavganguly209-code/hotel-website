@@ -1450,6 +1450,16 @@ export const defaultContent: SiteContent = {
           imageSrc: "/media/dining/korean-restaurant.jpg",
           imageAlt: "Chef recommended bibimbap",
         },
+        ...Array.from({ length: 7 }, (_, i) => ({
+          id: `cr${i + 4}`,
+          enabled: false,
+          order: i + 3,
+          title: "",
+          description: "",
+          price: "",
+          imageSrc: "",
+          imageAlt: "",
+        })),
       ],
     },
     form: {
