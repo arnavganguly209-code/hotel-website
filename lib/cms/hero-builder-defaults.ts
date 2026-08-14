@@ -61,7 +61,7 @@ export const defaultHeroBuilder: HeroBuilderSettings = {
   videoSrc: "/media/hero/hotel-thamel-park-hero.mp4",
   videoSrcMobile: "/media/hero/hotel-thamel-park-hero-mobile.mp4",
   imageSrc: "/media/hero/hero-background.png",
-  poster: "/media/hero/demo-luxury-lobby-poster.png",
+  poster: "/media/hero/hotel-thamel-park-hero-poster.jpg",
   overlayOpacity: 0.18,
   overlayColor: "#000000",
   height: "screen",
