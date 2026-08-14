@@ -343,6 +343,19 @@ export function collectMediaFromContent(content: SiteContent): CollectedMediaRef
     isBackground: true,
   });
   walkCmsMedia(out, seen, content.meetingsEventsPage?.hero?.media, "Meetings", "Hero Media", "Events");
+  walkCmsMedia(out, seen, content.meetingsEventsPage?.about?.media, "Meetings", "About", "Events");
+  for (const space of content.meetingsEventsPage?.spaces ?? []) {
+    walkCmsMedia(out, seen, space.media, "Meetings", space.title || "Venue", "Events");
+  }
+  for (const item of content.meetingsEventsPage?.gallery ?? []) {
+    pushRef(out, seen, item.src, {
+      pageName: "Meetings",
+      sectionName: "Event Moments",
+      category: "Events",
+      folder: "events",
+      alt: item.alt || item.title,
+    });
+  }
 
   walkCmsMedia(out, seen, content.galleryPage?.hero?.media, "Gallery", "Hero", "Gallery");
   pushRef(out, seen, content.galleryPage?.hero?.imageSrc, {

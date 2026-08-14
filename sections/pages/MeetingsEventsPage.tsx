@@ -31,7 +31,7 @@ export function MeetingsEventsPage({ content }: MeetingsEventsPageProps) {
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   const gallery = [...content.gallery]
-    .filter((g) => g.enabled !== false)
+    .filter((g) => g.enabled !== false && Boolean(g.src?.trim()))
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   const whyChooseUs = [...content.whyChooseUs]
@@ -203,7 +203,20 @@ export function MeetingsEventsPage({ content }: MeetingsEventsPageProps) {
             {/* Gallery */}
             {gallery.length > 0 ? (
               <div>
-                <SectionLabel gold={gold} heading={heading} eyebrow="Gallery" title="Event Moments" />
+                <SectionLabel
+                  gold={gold}
+                  heading={heading}
+                  eyebrow={content.gallerySection?.eyebrow || "Gallery"}
+                  title={content.gallerySection?.title || "Event Moments"}
+                />
+                {content.gallerySection?.description ? (
+                  <p
+                    className="mx-auto mt-4 max-w-2xl text-center font-body text-sm leading-relaxed"
+                    style={{ color: body }}
+                  >
+                    {content.gallerySection.description}
+                  </p>
+                ) : null}
                 <motion.div
                   variants={luxuryStagger}
                   initial="hidden"

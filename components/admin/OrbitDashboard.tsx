@@ -39,6 +39,7 @@ import { HeroBuilder } from "@/components/admin/HeroBuilder";
 import { MediaLibrary } from "@/components/admin/media/MediaLibrary";
 import { GalleryManager } from "@/components/admin/media/GalleryManager";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
+import { EventMomentsGalleryEditor } from "@/components/admin/EventMomentsGalleryEditor";
 import { OrbitRoomsEditor } from "@/components/admin/OrbitRoomsEditor";
 import { EventInquiriesPanel } from "@/components/admin/EventInquiriesPanel";
 import { ContactEnquiriesPanel } from "@/components/admin/ContactEnquiriesPanel";
@@ -2304,6 +2305,8 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   <AdminInput label="Large Image Description" value={content.meetingsEventsSection.featuredDescription} onChange={(e) => update("meetingsEventsSection", { ...content.meetingsEventsSection, featuredDescription: e.target.value })} />
                 </div>
 
+                <EventMomentsGalleryEditor content={content} update={update} />
+
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
                   <p className="font-display text-lg text-luxury-gold">Feature Cards (Left Column)</p>
                   {content.meetingsEventsSection.featureCards.map((card, i) => (
@@ -3073,6 +3076,8 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                     }} library={content.mediaLibrary} onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)} />
                   </div>
                 ))}
+
+                <EventMomentsGalleryEditor content={content} update={update} />
 
                 <div className="space-y-4 border border-luxury-gold/10 p-6">
                   <p className="font-display text-lg text-luxury-gold">Booking Form</p>

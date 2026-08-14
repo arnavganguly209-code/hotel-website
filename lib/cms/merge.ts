@@ -1856,12 +1856,50 @@ function mergeMeetingsEventsPage(
       enabled: f.enabled !== false,
       order: typeof f.order === "number" ? f.order : i,
     })),
-    gallery: (partial.gallery ?? defaults.gallery).map((g, i) => ({
-      ...(defaults.gallery[i] ?? defaults.gallery[0]),
-      ...g,
-      enabled: g.enabled !== false,
-      order: typeof g.order === "number" ? g.order : i,
-    })),
+    gallerySection: {
+      ...defaults.gallerySection,
+      ...(partial.gallerySection ?? {}),
+      eyebrow: definedString(partial.gallerySection?.eyebrow, defaults.gallerySection.eyebrow),
+      title: definedString(partial.gallerySection?.title, defaults.gallerySection.title),
+      description: definedString(
+        partial.gallerySection?.description,
+        defaults.gallerySection.description
+      ),
+    },
+    gallery: (() => {
+      const missingEventFiles = new Set([
+        "/media/events/ballroom.jpg",
+        "/media/events/wedding.jpg",
+        "/media/events/conference.jpg",
+      ]);
+      const defaultById = new Map(defaults.gallery.map((item) => [item.id, item]));
+      const source = definedArray(partial.gallery, defaults.gallery);
+      const mergedIds = new Set<string>();
+      const items = source.map((g, i) => {
+        const base =
+          (g.id ? defaultById.get(g.id) : undefined) ??
+          defaults.gallery[i] ??
+          defaults.gallery[0];
+        const id = g.id || base.id || `g${i + 1}`;
+        mergedIds.add(id);
+        const stored = (g.src || "").trim();
+        const src = !stored || missingEventFiles.has(stored) ? base.src || stored : stored;
+        return {
+          id,
+          enabled: g.enabled !== false,
+          order: typeof g.order === "number" ? g.order : (base.order ?? i),
+          src,
+          title: definedString(g.title, base.title),
+          alt: definedString(g.alt, base.alt || g.title || base.title),
+        };
+      });
+      for (const missing of defaults.gallery) {
+        if (mergedIds.has(missing.id)) continue;
+        items.push({ ...missing, order: items.length });
+        mergedIds.add(missing.id);
+      }
+      return items;
+    })(),
     whyChooseUs: (partial.whyChooseUs ?? defaults.whyChooseUs).map((w, i) => ({
       ...(defaults.whyChooseUs[i] ?? defaults.whyChooseUs[0]),
       ...w,

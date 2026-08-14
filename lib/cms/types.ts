@@ -894,6 +894,11 @@ export interface SiteContent {
       description: string;
       icon: string;
     }>;
+    gallerySection: {
+      eyebrow: string;
+      title: string;
+      description: string;
+    };
     gallery: Array<{
       id: string;
       enabled: boolean;

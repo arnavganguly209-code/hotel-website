@@ -2291,12 +2291,17 @@ export const defaultContent: SiteContent = {
       { id: "f9", enabled: true, order: 8, title: "Air Conditioning", description: "Climate-controlled comfort year-round", icon: "Wind" },
       { id: "f10", enabled: true, order: 9, title: "Photography", description: "Preferred photographer partnerships", icon: "Camera" },
     ],
+    gallerySection: {
+      eyebrow: "Gallery",
+      title: "Event Moments",
+      description: "",
+    },
     gallery: [
-      { id: "g1", enabled: true, order: 0, src: "/media/events/ballroom.jpg", title: "Grand Ballroom", alt: "Grand ballroom setup" },
-      { id: "g2", enabled: true, order: 1, src: "/media/events/wedding.jpg", title: "Wedding Reception", alt: "Wedding reception" },
-      { id: "g3", enabled: true, order: 2, src: "/media/events/conference.jpg", title: "Conference Setup", alt: "Conference seating" },
+      { id: "g1", enabled: true, order: 0, src: "/media/gallery/01.jpg", title: "Grand Ballroom", alt: "Grand ballroom setup" },
+      { id: "g2", enabled: true, order: 1, src: "/media/gallery/02.jpg", title: "Wedding Reception", alt: "Wedding reception" },
+      { id: "g3", enabled: true, order: 2, src: "/media/gallery/03.jpg", title: "Conference Setup", alt: "Conference seating" },
       { id: "g4", enabled: true, order: 3, src: "/media/dining/skyz-lounge.jpg", title: "Rooftop Evening", alt: "Rooftop event" },
-      { id: "g5", enabled: true, order: 4, src: "/media/gallery/01.jpg", title: "Elegant Details", alt: "Event table setting" },
+      { id: "g5", enabled: true, order: 4, src: "/media/gallery/04.jpg", title: "Elegant Details", alt: "Event table setting" },
     ],
     whyChooseUs: [
       {
