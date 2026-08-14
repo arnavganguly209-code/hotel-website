@@ -127,11 +127,13 @@ export async function POST(req: Request) {
     });
 
     const content = await getContent();
-    const adminEmail =
-      (content.settings?.bookingEmail || "").trim() ||
-      (content.contactPage?.email || "").trim() ||
-      (content.hotel?.email || "").trim() ||
-      getBookingNotifyEmail();
+    // Prefer the live SMTP/booking inbox. CMS defaults like reservations@… are often
+    // rejected by the mail server (550 mailbox unknown).
+    const cmsBooking = (content.settings?.bookingEmail || "").trim();
+    const cmsContact = (content.contactPage?.email || "").trim();
+    const cmsHotel = (content.hotel?.email || "").trim();
+    const envNotify = getBookingNotifyEmail();
+    const adminEmail = envNotify || cmsBooking || cmsContact || cmsHotel;
 
     const mail = await sendDiningReservationEmails(
       {
