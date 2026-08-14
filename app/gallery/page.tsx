@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function GalleryRoute() {
   const content = await getContent();
   const page = content.galleryPage;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hotel.theglobalorbit.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hotelthamelpark.com";
 
   const items = content.gallery
     .filter((g) => g.active !== false && Boolean(g.src) && g.type !== "video")

@@ -39,7 +39,7 @@ export async function GET(req: Request, { params }: Params) {
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.SITE_URL ||
-    "https://hotel.theglobalorbit.com";
+    "https://hotelthamelpark.com";
 
   const inclusive =
     Number(booking.grandTotal) > 0

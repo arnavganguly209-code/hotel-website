@@ -20,7 +20,7 @@ export function getPublicAppUrl(): string {
     env("SITE_URL") ||
     env("HOTEL_APP_URL") ||
     // Prefer the live app host over a marketing domain that may not proxy /api.
-    "https://hotel.theglobalorbit.com";
+    "https://hotelthamelpark.com";
   return raw.replace(/\/+$/, "");
 }
 

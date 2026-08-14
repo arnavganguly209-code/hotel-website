@@ -7,7 +7,7 @@ import {
 
 export const SITE_URL =
   (typeof process !== "undefined" && process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "")) ||
-  "https://hotel.theglobalorbit.com";
+  "https://hotelthamelpark.com";
 
 export const SITE_NAME = "Hotel Thamel Park";
 

@@ -5,7 +5,7 @@
 set -euxo pipefail
 
 APP_NAME="hotel-thamel-park"
-SITE_URL="${SITE_URL:-https://hotel.theglobalorbit.com}"
+SITE_URL="${SITE_URL:-https://hotelthamelpark.com}"
 HEALTH_URL="${HEALTH_URL:-$SITE_URL}"
 EXPECTED_SHA="${GITHUB_SHA:-}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

@@ -31,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ArticlesRoute() {
   const content = await getContent();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hotel.theglobalorbit.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hotelthamelpark.com";
 
   const breadcrumb = {
     "@context": "https://schema.org",

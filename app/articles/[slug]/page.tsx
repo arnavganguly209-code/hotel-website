@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ArticleDetailRoute({ params }: Props) {
   const { slug } = await params;
   const content = await getContent();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hotel.theglobalorbit.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hotelthamelpark.com";
 
   const published = content.articles
     .filter((a) => a.status === "published")

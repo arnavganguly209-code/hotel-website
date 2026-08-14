@@ -34,7 +34,7 @@ function eventSchema(content: Awaited<ReturnType<typeof getContent>>) {
     "@type": "EventVenue",
     name: `${content.hotel.name} — Meetings & Events`,
     description: page.seo.description,
-    url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://hotel.theglobalorbit.com"}/meetings-events`,
+    url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://hotelthamelpark.com"}/meetings-events`,
     image: page.hero.media.imageSrc || page.hero.imageSrc,
     address: {
       "@type": "PostalAddress",
