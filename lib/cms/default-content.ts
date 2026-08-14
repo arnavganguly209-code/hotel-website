@@ -1523,10 +1523,11 @@ export const defaultContent: SiteContent = {
       title: "Restaurant Gallery",
       description: "A glimpse into our restaurants, tablescapes, and evenings above the city.",
     },
+    /** Always 3 Orbit boxes — empty until photos are uploaded in Fine Dining / Dining Page. */
     gallery: [
       {
         id: "d1",
-        src: "/media/dining/korean-restaurant.jpg",
+        src: "",
         title: "Garden Restaurant",
         alt: "Garden View Korean Restaurant",
         enabled: true,
@@ -1534,7 +1535,7 @@ export const defaultContent: SiteContent = {
       },
       {
         id: "d2",
-        src: "/media/dining/skyz-lounge.jpg",
+        src: "",
         title: "Sky Lounge",
         alt: "Sky Lounge Restaurant and Bar",
         enabled: true,
@@ -1542,35 +1543,11 @@ export const defaultContent: SiteContent = {
       },
       {
         id: "d3",
-        src: "/media/dining/lobby-cafe.jpg",
+        src: "",
         title: "Lobby Moments",
         alt: "Lobby cafe dining ambience",
         enabled: true,
         order: 2,
-      },
-      {
-        id: "d4",
-        src: "/media/dining/korean-restaurant.jpg",
-        title: "Evening Service",
-        alt: "Evening dining service",
-        enabled: true,
-        order: 3,
-      },
-      {
-        id: "d5",
-        src: "/media/dining/skyz-lounge.jpg",
-        title: "Rooftop Views",
-        alt: "Kathmandu rooftop lounge views",
-        enabled: true,
-        order: 4,
-      },
-      {
-        id: "d6",
-        src: "/media/dining/lobby-cafe.jpg",
-        title: "Artisan Details",
-        alt: "Artisan coffee and light fare",
-        enabled: true,
-        order: 5,
       },
     ],
     reviews: {

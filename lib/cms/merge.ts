@@ -899,16 +899,18 @@ function mergeDiningPage(
     };
   });
 
-  const gallery = definedArray(partial.gallery, defaults.gallery).map((item, i) => {
+  const gallerySource = definedArray(partial.gallery, defaults.gallery);
+  const gallery = [0, 1, 2].map((i) => {
+    const item = gallerySource[i];
     const base = defaults.gallery[i] ?? defaults.gallery[0];
-    const legacy = item as { src?: string; title?: string; alt?: string };
+    const legacy = (item || {}) as { id?: string; src?: string; title?: string; alt?: string; enabled?: boolean; order?: number };
     return {
-      id: item.id || base.id,
+      id: legacy.id || base.id,
       src: definedString(legacy.src, base.src),
       title: definedString(legacy.title, base.title),
       alt: definedString(legacy.alt, base.alt || legacy.title || base.title),
-      enabled: item.enabled !== false,
-      order: typeof item.order === "number" ? item.order : (base.order ?? i),
+      enabled: legacy.enabled !== false,
+      order: typeof legacy.order === "number" ? legacy.order : (base.order ?? i),
     };
   });
 

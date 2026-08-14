@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminInput, AdminTextarea } from "@/components/admin/AdminFields";
 import { ImagePicker } from "@/components/admin/media/ImagePicker";
+import { RestaurantGalleryEditor } from "@/components/admin/RestaurantGalleryEditor";
 import type { SiteContent } from "@/lib/cms/types";
 
 interface DiningPageEditorProps {
@@ -1126,135 +1127,7 @@ export function DiningPageEditor({ content, update }: DiningPageEditorProps) {
         />
       </div>
 
-      {/* Gallery Section */}
-      <div className="space-y-4 border border-luxury-gold/10 p-6">
-        <p className="font-display text-lg text-luxury-gold">Gallery Section</p>
-        <AdminInput
-          label="Eyebrow"
-          value={page.gallerySection.eyebrow}
-          onChange={(e) =>
-            setPage({
-              ...page,
-              gallerySection: { ...page.gallerySection, eyebrow: e.target.value },
-            })
-          }
-        />
-        <AdminInput
-          label="Title"
-          value={page.gallerySection.title}
-          onChange={(e) =>
-            setPage({
-              ...page,
-              gallerySection: { ...page.gallerySection, title: e.target.value },
-            })
-          }
-        />
-        <AdminTextarea
-          label="Description"
-          rows={2}
-          value={page.gallerySection.description}
-          onChange={(e) =>
-            setPage({
-              ...page,
-              gallerySection: { ...page.gallerySection, description: e.target.value },
-            })
-          }
-        />
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-white/60">Gallery Items</p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="border-luxury-gold/30 text-luxury-gold"
-            onClick={() =>
-              setPage({
-                ...page,
-                gallery: [
-                  ...page.gallery,
-                  {
-                    id: `g-${Date.now()}`,
-                    src: "",
-                    title: "New Image",
-                    alt: "",
-                    enabled: true,
-                    order: page.gallery.length,
-                  },
-                ],
-              })
-            }
-          >
-            <Plus className="h-4 w-4" /> Add Image
-          </Button>
-        </div>
-        {page.gallery.map((item, i) => (
-          <div key={item.id} className="space-y-2 border border-luxury-gold/10 p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-luxury-gold">{item.title}</p>
-              <div className="flex items-center gap-2">
-                <label className="flex items-center gap-2 text-xs text-white/60">
-                  <input
-                    type="checkbox"
-                    checked={item.enabled !== false}
-                    className="accent-luxury-gold"
-                    onChange={(e) => {
-                      const gallery = [...page.gallery];
-                      gallery[i] = { ...item, enabled: e.target.checked };
-                      setPage({ ...page, gallery });
-                    }}
-                  />
-                  Enabled
-                </label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-400"
-                  onClick={() =>
-                    setPage({
-                      ...page,
-                      gallery: page.gallery.filter((_, idx) => idx !== i),
-                    })
-                  }
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            <ImagePicker
-              label="Gallery Image"
-              folder="dining"
-              category="Dining"
-              value={item.src}
-              library={content.mediaLibrary}
-              onLibraryChange={(mediaLibrary) => update("mediaLibrary", mediaLibrary)}
-              onChange={(url) => {
-                const gallery = [...page.gallery];
-                gallery[i] = { ...item, src: url };
-                setPage({ ...page, gallery });
-              }}
-            />
-            <AdminInput
-              label="Title"
-              value={item.title}
-              onChange={(e) => {
-                const gallery = [...page.gallery];
-                gallery[i] = { ...item, title: e.target.value };
-                setPage({ ...page, gallery });
-              }}
-            />
-            <AdminInput
-              label="Alt Text"
-              value={item.alt}
-              onChange={(e) => {
-                const gallery = [...page.gallery];
-                gallery[i] = { ...item, alt: e.target.value };
-                setPage({ ...page, gallery });
-              }}
-            />
-          </div>
-        ))}
-      </div>
+      <RestaurantGalleryEditor content={content} update={update} />
 
       {/* Reviews */}
       <div className="space-y-4 border border-luxury-gold/10 p-6">

@@ -49,6 +49,7 @@ import {
   ChefRecommendationEditor,
   CulinaryMenuEditor,
 } from "@/components/admin/DiningPageEditor";
+import { RestaurantGalleryEditor } from "@/components/admin/RestaurantGalleryEditor";
 import { SpaPageEditor } from "@/components/admin/SpaPageEditor";
 import { ContactPageEditor } from "@/components/admin/ContactPageEditor";
 import { AboutPageEditor } from "@/components/admin/AboutPageEditor";
@@ -1554,7 +1555,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
                   <p className="font-display text-lg text-luxury-gold">Fine Dining Section</p>
                   <p className="text-xs text-white/40">
                     Homepage Fine Dining section — Garden View &amp; Korean Restaurant (below World-Class Amenities).
-                    Culinary Signature Menu Highlights (Breakfast / Lunch / Dinner photos, names, and prices) and Chef’s Recommendation on /dining are edited in this tab, and also in Dining Page.
+                    Culinary Signature Menu Highlights (Breakfast / Lunch / Dinner photos, names, and prices), Chef’s Recommendation, and Atmosphere / Restaurant Gallery (3 image boxes) on /dining are edited in this tab, and also in Dining Page.
                   </p>
                   <label className="flex items-center gap-3 text-sm text-white/70">
                     <input
@@ -1657,6 +1658,7 @@ export function OrbitDashboard({ initialContent }: OrbitDashboardProps) {
 
                 <CulinaryMenuEditor content={content} update={update} />
                 <ChefRecommendationEditor content={content} update={update} />
+                <RestaurantGalleryEditor content={content} update={update} />
               </>
             )}
 

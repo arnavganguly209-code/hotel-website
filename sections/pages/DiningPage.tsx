@@ -14,6 +14,7 @@ import { DiningReservationForm } from "@/components/dining/DiningReservationForm
 import { ImageViewer, type ImageViewerItem } from "@/components/shared/ImageViewer";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { luxuryEase, luxuryFadeUp, luxuryStagger } from "@/lib/animations";
+import { hasMediaSrc } from "@/lib/cms/media-url";
 import type { SiteContent } from "@/lib/cms/types";
 
 interface DiningPageProps {
@@ -31,6 +32,53 @@ function GoldDivider() {
       <span className="h-1.5 w-1.5 rotate-45" style={{ backgroundColor: gold }} />
       <span className="h-px w-10" style={{ backgroundColor: `${gold}77` }} />
     </div>
+  );
+}
+
+function DiningGalleryTile({
+  img,
+  index,
+  gallery,
+  onOpen,
+}: {
+  img: SiteContent["diningPage"]["gallery"][number];
+  index: number;
+  gallery: SiteContent["diningPage"]["gallery"];
+  onOpen: (items: ImageViewerItem[], index: number) => void;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={() =>
+        onOpen(
+          gallery.map((entry) => ({
+            src: entry.src,
+            alt: entry.alt || entry.title,
+            title: entry.title,
+          })),
+          index
+        )
+      }
+      className="group block w-full min-w-0 overflow-hidden rounded-[16px] text-left sm:rounded-[18px]"
+      style={{
+        border: `1px solid ${gold}77`,
+        boxShadow: "0 12px 28px rgba(15, 42, 34, 0.08)",
+      }}
+    >
+      <div className="relative aspect-[4/5] overflow-hidden">
+        <SafeImage
+          src={img.src}
+          alt={img.alt || img.title}
+          fill
+          className="object-cover transition duration-700 group-hover:scale-110"
+          sizes="(max-width: 640px) 100vw, 33vw"
+          onError={() => setFailed(true)}
+        />
+      </div>
+    </button>
   );
 }
 
@@ -65,7 +113,7 @@ export function DiningPage({ content }: DiningPageProps) {
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   const gallery = [...content.gallery]
-    .filter((g) => g.enabled !== false)
+    .filter((g) => g.enabled !== false && hasMediaSrc(g.src))
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   const reviews = [...content.reviews.items]
@@ -653,35 +701,13 @@ export function DiningPage({ content }: DiningPageProps) {
             </div>
             <div className="mt-8 grid grid-cols-1 gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
               {gallery.map((img, index) => (
-                <button
+                <DiningGalleryTile
                   key={img.id}
-                  type="button"
-                  onClick={() =>
-                    openViewer(
-                      gallery.map((entry) => ({
-                        src: entry.src,
-                        alt: entry.alt || entry.title,
-                        title: entry.title,
-                      })),
-                      index
-                    )
-                  }
-                  className="group block w-full min-w-0 overflow-hidden rounded-[16px] text-left sm:rounded-[18px]"
-                  style={{
-                    border: `1px solid ${gold}77`,
-                    boxShadow: "0 12px 28px rgba(15, 42, 34, 0.08)",
-                  }}
-                >
-                  <div className="relative aspect-[4/5] overflow-hidden">
-                    <SafeImage
-                      src={img.src}
-                      alt={img.alt || img.title}
-                      fill
-                      className="object-cover transition duration-700 group-hover:scale-110"
-                      sizes="(max-width: 640px) 100vw, 33vw"
-                    />
-                  </div>
-                </button>
+                  img={img}
+                  index={index}
+                  gallery={gallery}
+                  onOpen={openViewer}
+                />
               ))}
             </div>
           </div>
