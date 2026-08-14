@@ -3,6 +3,7 @@ import { isAuthenticated } from "@/lib/cms/auth";
 import { db, isDatabaseAvailable } from "@/lib/db";
 import { getContent } from "@/lib/cms/store";
 import { sendDiningReservationEmails } from "@/lib/mail";
+import { getBookingNotifyEmail } from "@/lib/email/config";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -127,7 +128,10 @@ export async function POST(req: Request) {
 
     const content = await getContent();
     const adminEmail =
-      content.settings.bookingEmail || content.contactPage.email || content.hotel.email;
+      (content.settings?.bookingEmail || "").trim() ||
+      (content.contactPage?.email || "").trim() ||
+      (content.hotel?.email || "").trim() ||
+      getBookingNotifyEmail();
 
     const mail = await sendDiningReservationEmails(
       {
