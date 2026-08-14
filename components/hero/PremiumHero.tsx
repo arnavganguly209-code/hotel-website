@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Volume2, VolumeX } from "lucide-react";
 import { PremiumFloatingBookingBar } from "@/components/booking/PremiumFloatingBookingBar";
 import { SafeImage } from "@/components/shared/SafeImage";
 import { hasMediaSrc, mediaUrl, stripMediaQuery } from "@/lib/cms/media-url";
@@ -24,7 +23,7 @@ function videoMime(src: string) {
 
 /**
  * Homepage hero — when Orbit media mode is VIDEO, only the video is ever shown.
- * Autoplay starts muted (required by browsers); guests can unmute with one tap.
+ * Always muted autoplay (no sound controls).
  */
 export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -33,7 +32,6 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const revision = perf.mediaRevision || "";
   const [videoFailed, setVideoFailed] = useState(false);
   const [videoAttempt, setVideoAttempt] = useState(0);
-  const [soundOn, setSoundOn] = useState(false);
 
   const imageSrc = (hero.image?.src || hero.imageSrc || "").trim();
   const videoSrcDesktop = (hero.videoSrc || "").trim();
@@ -95,7 +93,6 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   useEffect(() => {
     setVideoFailed(false);
     setVideoAttempt(0);
-    setSoundOn(false);
   }, [activeMediaKey]);
 
   useEffect(() => {
@@ -108,10 +105,8 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
         : activeVideoUrl;
 
     try {
-      // Autoplay must start muted; browsers block autoplay with sound.
       video.muted = true;
       video.defaultMuted = true;
-      video.volume = 1;
       video.playsInline = true;
       video.setAttribute("playsinline", "true");
       video.setAttribute("webkit-playsinline", "true");
@@ -127,14 +122,6 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   }, [activeMediaKey, mode, activeVideoUrl, videoAttempt, videoFailed]);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video || mode !== "video") return;
-    video.muted = !soundOn;
-    video.defaultMuted = !soundOn;
-    if (soundOn) video.volume = 1;
-  }, [soundOn, mode]);
-
-  useEffect(() => {
     if (!videoFailed || mode !== "video" || !activeVideoUrl) return;
     const id = window.setTimeout(() => {
       setVideoFailed(false);
@@ -142,20 +129,6 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
     }, 2800);
     return () => window.clearTimeout(id);
   }, [videoFailed, mode, activeVideoUrl]);
-
-  const toggleSound = () => {
-    const video = videoRef.current;
-    const next = !soundOn;
-    setSoundOn(next);
-    if (!video) return;
-    video.muted = !next;
-    video.defaultMuted = !next;
-    if (next) video.volume = 1;
-    video.play().catch(() => {
-      video.muted = true;
-      setSoundOn(false);
-    });
-  };
 
   const overlayOpacity = Math.min(Math.max(hero.overlayOpacity ?? 0.18, 0), 0.85);
   const overlayColor = hero.overlayColor || "#000000";
@@ -218,7 +191,7 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
               }
               autoPlay={hero.videoAutoplay !== false}
               loop={hero.videoLoop !== false}
-              muted={!soundOn}
+              muted
               playsInline
               preload="auto"
               disablePictureInPicture
@@ -273,17 +246,6 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
           className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-[22%] bg-gradient-to-t from-black/45 via-black/15 to-transparent"
           aria-hidden
         />
-
-        {mode === "video" && activeVideoUrl && !videoFailed ? (
-          <button
-            type="button"
-            onClick={toggleSound}
-            className="absolute bottom-[18%] left-4 z-30 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-black/45 text-white backdrop-blur-md transition hover:bg-black/60 sm:left-6 lg:bottom-28"
-            aria-label={soundOn ? "Mute hero video" : "Unmute hero video"}
-          >
-            {soundOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-          </button>
-        ) : null}
 
         {showBooking ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-[3.5%] z-20 hidden lg:block">
