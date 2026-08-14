@@ -123,6 +123,8 @@ export function DiningPage({ content }: DiningPageProps) {
   const [reviewIndex, setReviewIndex] = useState(0);
   const [viewerItems, setViewerItems] = useState<ImageViewerItem[]>([]);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const [reserveOpen, setReserveOpen] = useState(false);
+  const [reserveRestaurant, setReserveRestaurant] = useState("");
 
   const openViewer = (items: ImageViewerItem[], index = 0) => {
     const usable = items.filter((item) => item.src);
@@ -130,6 +132,20 @@ export function DiningPage({ content }: DiningPageProps) {
     setViewerItems(usable);
     setViewerIndex(Math.min(index, usable.length - 1));
   };
+
+  const openReserve = (restaurantName = "") => {
+    setReserveRestaurant(restaurantName);
+    setReserveOpen(true);
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const preset = params.get("restaurant")?.trim() || "";
+    if (window.location.hash === "#reserve-table" || preset) {
+      openReserve(preset);
+    }
+  }, []);
 
   useEffect(() => {
     if (reviews.length <= 1) return;
@@ -371,14 +387,15 @@ export function DiningPage({ content }: DiningPageProps) {
                       </>
                     ) : null}
                   </div>
-                  <a
-                    href={`/dining?restaurant=${encodeURIComponent(venue.name)}#reserve-table`}
+                  <button
+                    type="button"
+                    onClick={() => openReserve(venue.name)}
                     className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-6 py-3 font-body text-[11px] font-semibold uppercase tracking-[0.14em] transition hover:-translate-y-0.5 sm:mt-auto sm:tracking-[0.18em]"
                     style={{ backgroundColor: heading, color: gold }}
                   >
                     {venue.ctaText || "Reserve Table"}
                     <ArrowRight className="h-4 w-4 shrink-0" />
-                  </a>
+                  </button>
                 </div>
               </motion.article>
             ))}
@@ -664,7 +681,7 @@ export function DiningPage({ content }: DiningPageProps) {
         </section>
       ) : null}
 
-      {/* Reservation */}
+      {/* Reservation form (inline + popup) */}
       <section className="px-4 py-12 sm:px-6 sm:py-16 md:py-24 lg:px-8">
         <div className="mx-auto max-w-[900px]">
           <DiningReservationForm
@@ -677,6 +694,19 @@ export function DiningPage({ content }: DiningPageProps) {
           />
         </div>
       </section>
+
+      <DiningReservationForm
+        mode="modal"
+        open={reserveOpen}
+        onOpenChange={setReserveOpen}
+        presetRestaurant={reserveRestaurant}
+        form={{
+          ...content.form,
+          restaurantOptions: venues.length
+            ? venues.map((venue) => venue.name)
+            : content.form.restaurantOptions,
+        }}
+      />
 
       {/* Gallery */}
       {gallery.length > 0 ? (
@@ -879,14 +909,15 @@ export function DiningPage({ content }: DiningPageProps) {
             {content.cta.description}
           </p>
           <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:mt-10 sm:flex-row sm:items-center sm:gap-4">
-            <a
-              href={content.cta.buttonHref || "#reserve-table"}
+            <button
+              type="button"
+              onClick={() => openReserve()}
               className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-8 py-3.5 font-body text-[11px] font-semibold uppercase tracking-[0.14em] transition hover:-translate-y-0.5 sm:w-auto sm:tracking-[0.18em]"
               style={{ backgroundColor: gold, color: heading }}
             >
               {content.cta.buttonText}
               <ArrowRight className="h-4 w-4 shrink-0" />
-            </a>
+            </button>
             {content.cta.secondaryText ? (
               <Link
                 href={content.cta.secondaryHref || "/contact"}

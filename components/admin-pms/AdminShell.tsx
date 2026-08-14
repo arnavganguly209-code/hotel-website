@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ArticlesNavGroup } from "@/components/admin-pms/ArticlesNavGroup";
+import { AdminLiveAlerts } from "@/components/admin-pms/AdminLiveAlerts";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -54,6 +55,7 @@ export function AdminShell({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(0);
+  const [newDining, setNewDining] = useState(0);
 
   useEffect(() => {
     if (!open) return;
@@ -71,7 +73,12 @@ export function AdminShell({
         .then((r) => r.json())
         .then((d) => {
           if (!alive || !d.success) return;
-          setPending(Number(d.stats?.pendingBooking || 0) + Number(d.stats?.todaysInquiries || 0));
+          setPending(
+            Number(d.stats?.pendingBooking || 0) +
+              Number(d.stats?.todaysInquiries || 0) +
+              Number(d.stats?.newDiningReservations || 0)
+          );
+          setNewDining(Number(d.stats?.newDiningReservations || 0));
         })
         .catch(() => null);
     };
@@ -143,6 +150,7 @@ export function AdminShell({
             {NAV.slice(8).map((item) => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
               const Icon = item.icon;
+              const showDiningBadge = item.href === "/admin/inquiries/restaurant" && newDining > 0;
               return (
                 <Link
                   key={item.href}
@@ -156,7 +164,12 @@ export function AdminShell({
                   )}
                 >
                   <Icon className={cn("h-4 w-4 shrink-0", active && "text-[#c5a059]")} />
-                  {item.label}
+                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                  {showDiningBadge ? (
+                    <span className="rounded-full bg-[#c5a059] px-1.5 py-0.5 text-[10px] font-semibold text-[#0c1f1b]">
+                      {newDining}
+                    </span>
+                  ) : null}
                 </Link>
               );
             })}
@@ -208,6 +221,7 @@ export function AdminShell({
             </div>
           </header>
           <main className="min-w-0 flex-1 px-3 py-5 sm:px-4 lg:px-8 lg:py-8">{children}</main>
+          <AdminLiveAlerts />
         </div>
       </div>
     </div>

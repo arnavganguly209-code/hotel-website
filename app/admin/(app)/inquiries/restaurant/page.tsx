@@ -9,11 +9,13 @@ interface DiningReservation {
   fullName: string;
   email: string;
   phone: string;
+  country?: string;
   restaurant: string;
   reservationDate: string | null;
   reservationTime: string;
   adults: number;
   children: number;
+  specialOccasion?: string;
   specialRequest: string;
   status: string;
   adminNotes: string;
@@ -30,8 +32,8 @@ export default function AdminDiningInquiriesPage() {
   const [q, setQ] = useState("");
   const [notesDraft, setNotesDraft] = useState<Record<number, string>>({});
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     setError("");
     try {
       const params = new URLSearchParams();
@@ -47,12 +49,22 @@ export default function AdminDiningInquiriesPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [status, q]);
 
   useEffect(() => {
     void load();
+  }, [load]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => void load(true), 15000);
+    const onFocus = () => void load(true);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("focus", onFocus);
+    };
   }, [load]);
 
   async function update(id: number, patch: Record<string, unknown>) {
@@ -123,20 +135,54 @@ export default function AdminDiningInquiriesPage() {
               className="rounded-2xl border border-[#c5a059]/20 bg-white/80 p-5 shadow-[0_10px_40px_rgba(15,36,32,0.04)]"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="font-serif text-lg text-[#0f2420]">
-                    {item.referenceNumber} · {item.fullName}
-                  </p>
-                  <p className="mt-1 text-xs text-[#7a8a82]">
-                    {item.restaurant} · {item.email} · {item.phone || "—"}
-                  </p>
-                  <p className="mt-1 text-sm text-[#3d5a4c]">
-                    {item.reservationDate ? new Date(item.reservationDate).toLocaleDateString() : "—"}{" "}
-                    {item.reservationTime} · {item.adults} adults / {item.children} children
-                  </p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {item.status === "new" ? (
+                      <span className="rounded-full bg-[#c5a059]/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8a6b2e]">
+                        New
+                      </span>
+                    ) : null}
+                    <p className="font-serif text-lg text-[#0f2420]">
+                      {item.referenceNumber} · {item.fullName}
+                    </p>
+                  </div>
+                  <dl className="mt-3 grid gap-2 text-sm text-[#3d5a4c] sm:grid-cols-2">
+                    <div>
+                      <dt className="text-[10px] uppercase tracking-[0.14em] text-[#7a8a82]">Restaurant</dt>
+                      <dd className="mt-0.5 font-medium text-[#0f2420]">{item.restaurant}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10px] uppercase tracking-[0.14em] text-[#7a8a82]">When</dt>
+                      <dd className="mt-0.5">
+                        {item.reservationDate ? new Date(item.reservationDate).toLocaleDateString() : "—"}{" "}
+                        {item.reservationTime || ""}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10px] uppercase tracking-[0.14em] text-[#7a8a82]">Guest</dt>
+                      <dd className="mt-0.5 break-all">
+                        {item.email}
+                        <br />
+                        {item.phone || "—"}
+                        {item.country ? ` · ${item.country}` : ""}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-[10px] uppercase tracking-[0.14em] text-[#7a8a82]">Party</dt>
+                      <dd className="mt-0.5">
+                        {item.adults} adults / {item.children} children
+                        {item.specialOccasion ? ` · ${item.specialOccasion}` : ""}
+                      </dd>
+                    </div>
+                  </dl>
                   {item.specialRequest ? (
-                    <p className="mt-1 text-sm text-[#5a635c]">{item.specialRequest}</p>
+                    <p className="mt-3 rounded-xl bg-[#f7f2e9] px-3 py-2 text-sm text-[#5a635c]">
+                      {item.specialRequest}
+                    </p>
                   ) : null}
+                  <p className="mt-2 text-[11px] text-[#7a8a82]">
+                    Received {new Date(item.createdAt).toLocaleString()}
+                  </p>
                 </div>
                 <button type="button" onClick={() => void remove(item.id)} className="text-red-600">
                   <Trash2 className="h-4 w-4" />

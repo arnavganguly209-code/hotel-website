@@ -47,6 +47,7 @@ export async function GET() {
     blocks,
     visitToday,
     recentBookings,
+    newDiningReservations,
   ] = await Promise.all([
     db.booking.count({ where: { createdAt: { gte: today } } }),
     db.booking.count({ where: { status: "pending" } }),
@@ -101,6 +102,7 @@ export async function GET() {
         createdAt: true,
       },
     }),
+    db.diningReservation.count({ where: { status: "new" } }),
   ]);
 
   const content = await getContent();
@@ -146,6 +148,7 @@ export async function GET() {
         spaBookings: spaToday,
         meetingBookings: meetingsToday,
         newsletterSubscribers: newsletter,
+        newDiningReservations,
       },
       recent: recentBookings,
     },
