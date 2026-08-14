@@ -43,9 +43,9 @@ export function AdminLoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
+    <form onSubmit={onSubmit} className="space-y-3.5 sm:space-y-4">
       <div>
-        <label className="mb-1.5 block font-sans text-[11px] font-medium uppercase tracking-[0.18em] text-[#3d5a4c]">
+        <label className="mb-1 block font-sans text-[11px] font-medium uppercase tracking-[0.18em] text-[#3d5a4c]">
           Username
         </label>
         <input
@@ -53,12 +53,12 @@ export function AdminLoginForm() {
           autoComplete="username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="w-full rounded-xl border border-[#c5a059]/35 bg-white/70 px-4 py-3 text-sm text-[#0f2420] outline-none transition focus:border-[#c5a059] focus:ring-2 focus:ring-[#c5a059]/25"
+          className="w-full rounded-xl border border-[#c5a059]/35 bg-white/80 px-4 py-2.5 text-sm text-[#0f2420] outline-none transition focus:border-[#c5a059] focus:ring-2 focus:ring-[#c5a059]/25 sm:py-3"
           placeholder="Enter username"
         />
       </div>
       <div>
-        <label className="mb-1.5 block font-sans text-[11px] font-medium uppercase tracking-[0.18em] text-[#3d5a4c]">
+        <label className="mb-1 block font-sans text-[11px] font-medium uppercase tracking-[0.18em] text-[#3d5a4c]">
           Password
         </label>
         <div className="relative">
@@ -67,7 +67,7 @@ export function AdminLoginForm() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-[#c5a059]/35 bg-white/70 px-4 py-3 pr-12 text-sm text-[#0f2420] outline-none transition focus:border-[#c5a059] focus:ring-2 focus:ring-[#c5a059]/25"
+            className="w-full rounded-xl border border-[#c5a059]/35 bg-white/80 px-4 py-2.5 pr-12 text-sm text-[#0f2420] outline-none transition focus:border-[#c5a059] focus:ring-2 focus:ring-[#c5a059]/25 sm:py-3"
             placeholder="Enter password"
           />
           <button
@@ -104,7 +104,7 @@ export function AdminLoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0f2420] px-6 py-3.5 font-sans text-[12px] font-semibold uppercase tracking-[0.2em] text-[#e8d5a3] shadow-[0_12px_40px_rgba(15,36,32,0.25)] transition hover:bg-[#16352e] disabled:opacity-70"
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0f2420] px-6 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.2em] text-[#e8d5a3] shadow-[0_12px_40px_rgba(15,36,32,0.25)] transition hover:bg-[#16352e] disabled:opacity-70"
       >
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
         {loading ? "Signing in…" : "Login"}

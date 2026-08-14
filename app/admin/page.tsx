@@ -18,61 +18,62 @@ export default async function AdminLoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      {/* Cream + soft sky + green luxury atmosphere */}
+    <div className="relative h-dvh max-h-dvh overflow-hidden">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/brand/admin-login-bg.png"
+        alt=""
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+        aria-hidden
+      />
+      {/* Light wash so the photo stays faint and the form stays readable */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 90% 55% at 50% -8%, rgba(168,205,230,0.55), transparent 58%), radial-gradient(ellipse 60% 40% at 85% 20%, rgba(197,160,89,0.14), transparent 50%), linear-gradient(165deg, #eaf4f9 0%, #f8f3ea 38%, #edf3ee 72%, #e7efe9 100%)",
+            "linear-gradient(180deg, rgba(248,243,234,0.78) 0%, rgba(242,236,224,0.72) 45%, rgba(232,239,233,0.8) 100%)",
         }}
-      />
-      {/* Soft floating light orbs */}
-      <div className="pointer-events-none absolute -left-24 top-24 h-72 w-72 animate-[pulse_8s_ease-in-out_infinite] rounded-full bg-[#c5a059]/10 blur-3xl" />
-      <div className="pointer-events-none absolute -right-16 top-40 h-80 w-80 animate-[pulse_11s_ease-in-out_infinite] rounded-full bg-[#7eb6d4]/20 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-32 left-1/3 h-64 w-64 animate-[pulse_9s_ease-in-out_infinite] rounded-full bg-[#2f5d4a]/08 blur-3xl" />
-
-      {/* Mountain silhouette */}
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[46vh] opacity-[0.38]"
         aria-hidden
-        style={{
-          background:
-            "linear-gradient(to top, rgba(15,36,32,0.08), transparent 70%), url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23244638' fill-opacity='0.22' d='M0 224l80-21.3C160 181 320 139 480 144s320 59 480 64 320-21 400-32l80-10.7V320H0z'/%3E%3Cpath fill='%2314352c' fill-opacity='0.28' d='M0 256l96-16c96-16 288-48 480-37.3 192 10.3 384 64.3 576 69.3s384-27 480-42l96-16v106H0z'/%3E%3C/svg%3E\") bottom center / cover no-repeat",
-        }}
       />
 
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-14">
-        {/* Transparent logo — PNG alpha only, no box / no fill behind it */}
-        <div className="mb-9 flex w-full max-w-[380px] items-center justify-center bg-transparent p-0">
-        <style dangerouslySetInnerHTML={{ __html: `.admin-login-logo{background:transparent!important;background-color:transparent!important;background-image:none!important}` }} />
+      <div className="relative z-10 flex h-full min-h-0 flex-col items-center justify-center px-4 py-3 sm:py-5">
+        <div className="mb-3 flex w-full max-w-[280px] items-center justify-center bg-transparent p-0 sm:mb-4 sm:max-w-[300px]">
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `.admin-login-logo{background:transparent!important;background-color:transparent!important;background-image:none!important;box-shadow:none!important}`,
+            }}
+          />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brand/htp-admin-mark.png?v=nobox-3"
+            src="/brand/htp-admin-mark.png?v=nobox-4"
             alt="Hotel Thamel Park & Spa"
-            width={720}
-            height={360}
-            className="admin-login-logo mx-auto h-auto w-full max-w-[360px] bg-transparent object-contain"
-            style={{ background: "transparent", backgroundColor: "transparent", backgroundImage: "none" }}
+            width={600}
+            height={300}
+            className="admin-login-logo mx-auto h-auto max-h-[12vh] w-full bg-transparent object-contain sm:max-h-[14vh]"
+            style={{
+              background: "transparent",
+              backgroundColor: "transparent",
+              backgroundImage: "none",
+            }}
           />
         </div>
 
-        <div className="w-full max-w-[440px] rounded-[28px] border border-white/60 bg-white/40 p-8 shadow-[0_40px_100px_rgba(15,36,32,0.14)] backdrop-blur-2xl sm:p-10">
-          <p className="text-center font-[family-name:var(--font-jost)] text-[10px] font-medium uppercase tracking-[0.32em] text-[#b8934a]">
+        <div className="w-full max-w-[400px] rounded-[22px] border border-white/70 bg-white/55 p-5 shadow-[0_24px_70px_rgba(15,36,32,0.12)] backdrop-blur-xl sm:max-w-[420px] sm:rounded-[26px] sm:p-7">
+          <p className="text-center font-[family-name:var(--font-jost)] text-[10px] font-medium uppercase tracking-[0.28em] text-[#b8934a]">
             Enterprise Hospitality Console
           </p>
-          <h1 className="mt-3 text-center font-[family-name:var(--font-cormorant)] text-[2rem] font-light leading-tight tracking-wide text-[#0f2420]">
+          <h1 className="mt-1.5 text-center font-[family-name:var(--font-cormorant)] text-[1.65rem] font-light leading-tight tracking-wide text-[#0f2420] sm:text-[1.85rem]">
             Hotel Management
           </h1>
-          <p className="mx-auto mt-2 max-w-sm text-center font-[family-name:var(--font-jost)] text-[13px] leading-relaxed text-[#5a635c]">
+          <p className="mx-auto mt-1 max-w-sm text-center font-[family-name:var(--font-jost)] text-[12px] leading-snug text-[#5a635c] sm:text-[13px]">
             Secure access for reservations, inventory, and guest operations.
           </p>
-          <div className="mt-8">
+          <div className="mt-4 sm:mt-5">
             <AdminLoginForm />
           </div>
         </div>
 
-        <p className="mt-12 text-center font-[family-name:var(--font-jost)] text-[11px] tracking-wide text-[#5a635c]">
+        <p className="mt-3 shrink-0 text-center font-[family-name:var(--font-jost)] text-[10px] tracking-wide text-[#5a635c] sm:mt-4 sm:text-[11px]">
           Software Developed by{" "}
           <a
             href="https://theglobalorbit.com/"
