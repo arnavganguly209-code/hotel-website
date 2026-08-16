@@ -22,8 +22,8 @@ function videoMime(src: string) {
 }
 
 /**
- * Homepage hero — poster paints immediately; same-quality video fades in when ready.
- * Always muted autoplay (no sound controls).
+ * Homepage hero — video mode shows ONLY the configured video (no poster flash).
+ * Always muted autoplay.
  */
 export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -32,28 +32,14 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const revision = perf.mediaRevision || "";
   const [videoFailed, setVideoFailed] = useState(false);
   const [videoAttempt, setVideoAttempt] = useState(0);
-  const [videoVisible, setVideoVisible] = useState(false);
 
   const imageSrc = (hero.image?.src || hero.imageSrc || "").trim();
-  const posterSrc = (hero.poster || imageSrc || "").trim();
   const videoSrcDesktop = (hero.videoSrc || "").trim();
   const videoSrcMobile = (hero.videoSrcMobile || "").trim();
-  const [preferMobileVideo, setPreferMobileVideo] = useState(false);
-  const [heroVideoReady, setHeroVideoReady] = useState(false);
-  const videoSrc =
-    preferMobileVideo && hasMediaSrc(videoSrcMobile) ? videoSrcMobile : videoSrcDesktop;
   const hasImage = hasMediaSrc(imageSrc);
-  const hasPoster = hasMediaSrc(posterSrc);
-  const hasVideo = hasMediaSrc(videoSrcDesktop) || hasMediaSrc(videoSrcMobile);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 900px)");
-    const apply = () => setPreferMobileVideo(mq.matches);
-    apply();
-    setHeroVideoReady(true);
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
-  }, []);
+  const hasDesktopVideo = hasMediaSrc(videoSrcDesktop);
+  const hasMobileVideo = hasMediaSrc(videoSrcMobile);
+  const hasVideo = hasDesktopVideo || hasMobileVideo;
 
   const mode =
     hero.mediaMode === "none"
@@ -68,15 +54,16 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
               ? "image"
               : "none";
 
-  const activeVideoUrl = mode === "video" ? mediaUrl(videoSrc, revision || videoSrc) : "";
+  const desktopVideoUrl = hasDesktopVideo
+    ? mediaUrl(videoSrcDesktop, revision || videoSrcDesktop)
+    : "";
+  const mobileVideoUrl = hasMobileVideo
+    ? mediaUrl(videoSrcMobile, revision || videoSrcMobile)
+    : "";
+  /** Primary URL for play()/retry — desktop preferred; mobile-only setups use mobile. */
+  const primaryVideoUrl = desktopVideoUrl || mobileVideoUrl;
   const activeImageUrl =
     mode === "image" ? mediaUrl(imageSrc, revision || imageSrc) : "";
-  const activePosterUrl =
-    mode === "video" && hasPoster
-      ? mediaUrl(posterSrc, revision || posterSrc)
-      : mode === "image" && hasImage
-        ? activeImageUrl
-        : "";
 
   useEffect(() => {
     function goHero() {
@@ -96,23 +83,17 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
     mode === "image"
       ? `image:${activeImageUrl}`
       : mode === "video"
-        ? `video:${activeVideoUrl}`
+        ? `video:${primaryVideoUrl}|${mobileVideoUrl}`
         : "none";
 
   useEffect(() => {
     setVideoFailed(false);
     setVideoAttempt(0);
-    setVideoVisible(false);
   }, [activeMediaKey]);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || mode !== "video" || !activeVideoUrl || videoFailed) return;
-
-    const url =
-      videoAttempt > 0
-        ? `${activeVideoUrl}${activeVideoUrl.includes("?") ? "&" : "?"}r=${videoAttempt}`
-        : activeVideoUrl;
+    if (!video || mode !== "video" || !primaryVideoUrl || videoFailed) return;
 
     try {
       video.muted = true;
@@ -120,10 +101,7 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
       video.playsInline = true;
       video.setAttribute("playsinline", "true");
       video.setAttribute("webkit-playsinline", "true");
-      if (video.getAttribute("src") !== url) {
-        video.setAttribute("src", url);
-        video.load();
-      }
+      video.load();
       const play = video.play();
       if (play && typeof play.catch === "function") {
         play.catch(() => undefined);
@@ -131,16 +109,16 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
     } catch {
       /* ignore abort while swapping Orbit media */
     }
-  }, [activeMediaKey, mode, activeVideoUrl, videoAttempt, videoFailed]);
+  }, [activeMediaKey, mode, primaryVideoUrl, videoAttempt, videoFailed]);
 
   useEffect(() => {
-    if (!videoFailed || mode !== "video" || !activeVideoUrl) return;
+    if (!videoFailed || mode !== "video" || !primaryVideoUrl) return;
     const id = window.setTimeout(() => {
       setVideoFailed(false);
       setVideoAttempt((n) => n + 1);
     }, 2800);
     return () => window.clearTimeout(id);
-  }, [videoFailed, mode, activeVideoUrl]);
+  }, [videoFailed, mode, primaryVideoUrl]);
 
   const overlayOpacity = Math.min(Math.max(hero.overlayOpacity ?? 0.18, 0), 0.85);
   const overlayColor = hero.overlayColor || "#000000";
@@ -170,28 +148,12 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
     />
   );
 
-  const revealVideo = () => {
-    setVideoFailed(false);
-    setVideoVisible(true);
-  };
+  const bust = (url: string) =>
+    videoAttempt > 0 ? `${url}${url.includes("?") ? "&" : "?"}r=${videoAttempt}` : url;
 
   const mediaLayer = (
     <>
-      {/* Instant paint layer — poster/image while full-quality video buffers */}
-      {mode === "video" && activePosterUrl ? (
-        <SafeImage
-          src={posterSrc}
-          alt={hero.image?.alt || hero.seo?.altText || "Hotel Thamel Park"}
-          fill
-          priority
-          fadeIn={false}
-          objectFit="cover"
-          sizes="100vw"
-          className="transform-gpu"
-          style={{ objectPosition: hero.image?.position || "center" }}
-        />
-      ) : null}
-
+      {/* Image mode only — never show a still under video mode */}
       {mode === "image" && activeImageUrl ? (
         <SafeImage
           src={imageSrc}
@@ -206,41 +168,40 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
         />
       ) : null}
 
-      {mode === "video" && activeVideoUrl && heroVideoReady ? (
+      {mode === "video" && primaryVideoUrl ? (
         videoFailed ? (
-          activePosterUrl ? null : gracefulVideoFallback
+          gracefulVideoFallback
         ) : (
           // eslint-disable-next-line jsx-a11y/media-has-caption
           <video
             ref={videoRef}
-            key={`${activeVideoUrl}-${videoAttempt}`}
+            key={`${activeMediaKey}-${videoAttempt}`}
             autoPlay={hero.videoAutoplay !== false}
             loop={hero.videoLoop !== false}
             muted
             playsInline
             preload="auto"
-            poster={activePosterUrl || undefined}
             disablePictureInPicture
             controls={false}
-            className={`absolute inset-0 h-full w-full transform-gpu object-cover transition-opacity duration-700 ease-out ${
-              videoVisible ? "opacity-100" : "opacity-0"
-            }`}
+            className="absolute inset-0 h-full w-full transform-gpu object-cover"
             style={{ objectPosition: hero.image?.position || "center center" }}
             aria-label="Hotel ambience"
             onError={() => setVideoFailed(true)}
-            onLoadedData={revealVideo}
-            onCanPlay={revealVideo}
-            onPlaying={revealVideo}
+            onPlaying={() => setVideoFailed(false)}
             {...({ fetchPriority: "high" } as Record<string, string>)}
           >
-            <source
-              src={
-                videoAttempt > 0
-                  ? `${activeVideoUrl}${activeVideoUrl.includes("?") ? "&" : "?"}r=${videoAttempt}`
-                  : activeVideoUrl
-              }
-              type={videoMime(videoSrc)}
-            />
+            {mobileVideoUrl ? (
+              <source
+                src={bust(mobileVideoUrl)}
+                type={videoMime(videoSrcMobile)}
+                media="(max-width: 900px)"
+              />
+            ) : null}
+            {desktopVideoUrl ? (
+              <source src={bust(desktopVideoUrl)} type={videoMime(videoSrcDesktop)} />
+            ) : mobileVideoUrl ? (
+              <source src={bust(mobileVideoUrl)} type={videoMime(videoSrcMobile)} />
+            ) : null}
           </video>
         )
       ) : null}
