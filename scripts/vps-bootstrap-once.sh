@@ -50,4 +50,4 @@ pm2 startup || true
 
 echo "ONE-TIME BOOTSTRAP COMPLETE — use git push origin main only from now on."
 pm2 status
-curl -sS -o /dev/null -w "Health HTTP %{http_code}\n" "https://hotel.theglobalorbit.com" || true
+curl -sS -o /dev/null -w "Health HTTP %{http_code}\n" "https://hotelthamelpark.com" || true

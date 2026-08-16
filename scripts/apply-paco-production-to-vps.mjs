@@ -135,7 +135,7 @@ set -e
 node scripts/pm2-reload-from-dotenv.mjs
 sleep 8
 node scripts/verify-paco-runtime-config.mjs .env --require-production
-curl -sS -o /dev/null -w "http_status=%{http_code}\\n" --max-time 20 https://hotel.theglobalorbit.com/
+curl -sS -o /dev/null -w "http_status=%{http_code}\\n" --max-time 20 https://hotelthamelpark.com/
 pm2 describe hotel-thamel-park | head -18
 pm2 logs hotel-thamel-park --lines 20 --nostream 2>/dev/null | sed -E 's/(HBL_PACO_API_KEY|BEGIN (RSA )?PRIVATE KEY|CompanyApiKey)[^ ]*/[redacted]/g' || true
 `;
