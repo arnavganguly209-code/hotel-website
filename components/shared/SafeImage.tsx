@@ -84,15 +84,18 @@ export function SafeImage({
     return false;
   }, []);
 
-  // Path change = new asset. Revision-only change keeps visibility if already painted.
+  // Path change = new asset. Keep prior frame visible until the new one loads
+  // (avoids images "disappearing" for a beat on remount/revision churn).
   useEffect(() => {
     genRef.current += 1;
     clearTimers();
     setAttempt(0);
     setRetryToken(0);
-    setLoaded(false);
     const raf = window.requestAnimationFrame(() => {
-      syncLoadedFromDom();
+      if (!syncLoadedFromDom()) {
+        // Only blank if the new path is not already cached/complete.
+        setLoaded(false);
+      }
     });
     return () => {
       window.cancelAnimationFrame(raf);

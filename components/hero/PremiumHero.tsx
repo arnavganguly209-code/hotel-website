@@ -14,24 +14,17 @@ interface PremiumHeroProps {
   preview?: boolean;
 }
 
-function videoMime(src: string) {
-  const path = stripMediaQuery(src).toLowerCase();
-  if (path.endsWith(".webm")) return "video/webm";
-  if (path.endsWith(".mov")) return "video/quicktime";
-  return "video/mp4";
-}
-
 /**
- * Homepage hero — video mode shows ONLY the configured video (no poster flash).
- * Always muted autoplay.
+ * Homepage hero — video mode keeps the <video> mounted at all times (no poster,
+ * no image flash, no error→gradient blank). Soft-retries playback in place.
  */
 export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const perf = usePerformanceSettings();
   const revision = perf.mediaRevision || "";
-  const [videoFailed, setVideoFailed] = useState(false);
-  const [videoAttempt, setVideoAttempt] = useState(0);
+  const retryTimer = useRef<number | null>(null);
+  const retryCount = useRef(0);
 
   const imageSrc = (hero.image?.src || hero.imageSrc || "").trim();
   const videoSrcDesktop = (hero.videoSrc || "").trim();
@@ -60,8 +53,27 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const mobileVideoUrl = hasMobileVideo
     ? mediaUrl(videoSrcMobile, revision || videoSrcMobile)
     : "";
-  /** Primary URL for play()/retry — desktop preferred; mobile-only setups use mobile. */
-  const primaryVideoUrl = desktopVideoUrl || mobileVideoUrl;
+
+  // SSR + first paint: prefer desktop (or only available). Client may switch to mobile.
+  const [playUrl, setPlayUrl] = useState(
+    () => desktopVideoUrl || mobileVideoUrl
+  );
+
+  useEffect(() => {
+    const desktop = desktopVideoUrl;
+    const mobile = mobileVideoUrl;
+    const pick = () => {
+      if (typeof window === "undefined") return desktop || mobile;
+      if (window.matchMedia("(max-width: 900px)").matches && mobile) return mobile;
+      return desktop || mobile;
+    };
+    setPlayUrl(pick());
+    const mq = window.matchMedia("(max-width: 900px)");
+    const onChange = () => setPlayUrl(pick());
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [desktopVideoUrl, mobileVideoUrl]);
+
   const activeImageUrl =
     mode === "image" ? mediaUrl(imageSrc, revision || imageSrc) : "";
 
@@ -79,46 +91,80 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
     return () => window.removeEventListener("hashchange", goHero);
   }, []);
 
-  const activeMediaKey =
-    mode === "image"
-      ? `image:${activeImageUrl}`
-      : mode === "video"
-        ? `video:${primaryVideoUrl}|${mobileVideoUrl}`
-        : "none";
-
   useEffect(() => {
-    setVideoFailed(false);
-    setVideoAttempt(0);
-  }, [activeMediaKey]);
+    retryCount.current = 0;
+    if (retryTimer.current) {
+      window.clearTimeout(retryTimer.current);
+      retryTimer.current = null;
+    }
+  }, [playUrl]);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || mode !== "video" || !primaryVideoUrl || videoFailed) return;
+    if (!video || mode !== "video" || !playUrl) return;
 
-    try {
+    const clearRetry = () => {
+      if (retryTimer.current) {
+        window.clearTimeout(retryTimer.current);
+        retryTimer.current = null;
+      }
+    };
+
+    const forceMuted = () => {
       video.muted = true;
       video.defaultMuted = true;
       video.playsInline = true;
       video.setAttribute("playsinline", "true");
       video.setAttribute("webkit-playsinline", "true");
-      video.load();
-      const play = video.play();
-      if (play && typeof play.catch === "function") {
-        play.catch(() => undefined);
-      }
-    } catch {
-      /* ignore abort while swapping Orbit media */
-    }
-  }, [activeMediaKey, mode, primaryVideoUrl, videoAttempt, videoFailed]);
+      video.setAttribute("muted", "");
+    };
 
-  useEffect(() => {
-    if (!videoFailed || mode !== "video" || !primaryVideoUrl) return;
-    const id = window.setTimeout(() => {
-      setVideoFailed(false);
-      setVideoAttempt((n) => n + 1);
-    }, 2800);
-    return () => window.clearTimeout(id);
-  }, [videoFailed, mode, primaryVideoUrl]);
+    const tryPlay = () => {
+      forceMuted();
+      const p = video.play();
+      if (p && typeof p.catch === "function") {
+        p.catch(() => undefined);
+      }
+    };
+
+    const scheduleRetry = () => {
+      if (retryCount.current >= 8) return;
+      clearRetry();
+      const delay = Math.min(800 * 2 ** retryCount.current, 6000);
+      retryTimer.current = window.setTimeout(() => {
+        retryCount.current += 1;
+        const bust = `${playUrl}${playUrl.includes("?") ? "&" : "?"}r=${Date.now()}`;
+        forceMuted();
+        // In-place retry — never unmount the video element
+        video.setAttribute("src", bust);
+        video.load();
+        tryPlay();
+      }, delay);
+    };
+
+    forceMuted();
+    // JSX already sets `src={playUrl}` — do NOT call load() on mount (aborts
+    // the first request and was wiping the hero to a blank gradient).
+    tryPlay();
+
+    const onPlaying = () => {
+      retryCount.current = 0;
+      clearRetry();
+    };
+    const onCanPlay = () => tryPlay();
+    const onError = () => scheduleRetry();
+
+    video.addEventListener("playing", onPlaying);
+    video.addEventListener("canplay", onCanPlay);
+    video.addEventListener("error", onError);
+
+    return () => {
+      clearRetry();
+      video.removeEventListener("playing", onPlaying);
+      video.removeEventListener("canplay", onCanPlay);
+      video.removeEventListener("error", onError);
+    };
+  }, [mode, playUrl]);
 
   const overlayOpacity = Math.min(Math.max(hero.overlayOpacity ?? 0.18, 0), 0.85);
   const overlayColor = hero.overlayColor || "#000000";
@@ -141,19 +187,15 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
     },
   };
 
-  const gracefulVideoFallback = (
+  const gracefulEmpty = (
     <div
       className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(201,169,110,0.14)_0%,transparent_55%),linear-gradient(160deg,#162A20_0%,#0f1f18_100%)]"
       aria-hidden
     />
   );
 
-  const bust = (url: string) =>
-    videoAttempt > 0 ? `${url}${url.includes("?") ? "&" : "?"}r=${videoAttempt}` : url;
-
   const mediaLayer = (
     <>
-      {/* Image mode only — never show a still under video mode */}
       {mode === "image" && activeImageUrl ? (
         <SafeImage
           src={imageSrc}
@@ -168,45 +210,26 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
         />
       ) : null}
 
-      {mode === "video" && primaryVideoUrl ? (
-        videoFailed ? (
-          gracefulVideoFallback
-        ) : (
-          // eslint-disable-next-line jsx-a11y/media-has-caption
-          <video
-            ref={videoRef}
-            key={`${activeMediaKey}-${videoAttempt}`}
-            autoPlay={hero.videoAutoplay !== false}
-            loop={hero.videoLoop !== false}
-            muted
-            playsInline
-            preload="auto"
-            disablePictureInPicture
-            controls={false}
-            className="absolute inset-0 h-full w-full transform-gpu object-cover"
-            style={{ objectPosition: hero.image?.position || "center center" }}
-            aria-label="Hotel ambience"
-            onError={() => setVideoFailed(true)}
-            onPlaying={() => setVideoFailed(false)}
-            {...({ fetchPriority: "high" } as Record<string, string>)}
-          >
-            {mobileVideoUrl ? (
-              <source
-                src={bust(mobileVideoUrl)}
-                type={videoMime(videoSrcMobile)}
-                media="(max-width: 900px)"
-              />
-            ) : null}
-            {desktopVideoUrl ? (
-              <source src={bust(desktopVideoUrl)} type={videoMime(videoSrcDesktop)} />
-            ) : mobileVideoUrl ? (
-              <source src={bust(mobileVideoUrl)} type={videoMime(videoSrcMobile)} />
-            ) : null}
-          </video>
-        )
+      {mode === "video" && playUrl ? (
+        // eslint-disable-next-line jsx-a11y/media-has-caption
+        <video
+          ref={videoRef}
+          src={playUrl}
+          autoPlay={hero.videoAutoplay !== false}
+          loop={hero.videoLoop !== false}
+          muted
+          playsInline
+          preload="auto"
+          disablePictureInPicture
+          controls={false}
+          className="absolute inset-0 h-full w-full transform-gpu object-cover"
+          style={{ objectPosition: hero.image?.position || "center center" }}
+          aria-label="Hotel ambience"
+          {...({ fetchPriority: "high" } as Record<string, string>)}
+        />
       ) : null}
 
-      {mode === "none" ? gracefulVideoFallback : null}
+      {mode === "none" ? gracefulEmpty : null}
     </>
   );
 
@@ -219,8 +242,13 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
         style={heroStyle}
       >
         <div
-          key={activeMediaKey}
-          data-active-hero-media={activeMediaKey}
+          data-active-hero-media={
+            mode === "video"
+              ? `video:${playUrl}`
+              : mode === "image"
+                ? `image:${activeImageUrl}`
+                : "none"
+          }
           className="absolute inset-0 z-0 overflow-hidden bg-[#0f1f18]"
         >
           {mediaLayer}
