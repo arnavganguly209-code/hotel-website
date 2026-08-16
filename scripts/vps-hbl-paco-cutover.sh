@@ -121,8 +121,8 @@ upsert() {
   fi
 }
 
-upsert SITE_URL "${SITE_URL:-https://hotel.theglobalorbit.com}"
-upsert NEXT_PUBLIC_SITE_URL "${NEXT_PUBLIC_SITE_URL:-https://hotel.theglobalorbit.com}"
+upsert SITE_URL "${SITE_URL:-https://hotelthamelpark.com}"
+upsert NEXT_PUBLIC_SITE_URL "${NEXT_PUBLIC_SITE_URL:-https://hotelthamelpark.com}"
 upsert COOKIE_SECURE "${COOKIE_SECURE:-true}"
 
 chmod 600 "$ENV_FILE"
