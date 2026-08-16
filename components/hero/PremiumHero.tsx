@@ -22,7 +22,7 @@ function videoMime(src: string) {
 }
 
 /**
- * Homepage hero — when Orbit media mode is VIDEO, only the video is ever shown.
+ * Homepage hero — poster paints immediately; same-quality video fades in when ready.
  * Always muted autoplay (no sound controls).
  */
 export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
@@ -32,8 +32,10 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const revision = perf.mediaRevision || "";
   const [videoFailed, setVideoFailed] = useState(false);
   const [videoAttempt, setVideoAttempt] = useState(0);
+  const [videoVisible, setVideoVisible] = useState(false);
 
   const imageSrc = (hero.image?.src || hero.imageSrc || "").trim();
+  const posterSrc = (hero.poster || imageSrc || "").trim();
   const videoSrcDesktop = (hero.videoSrc || "").trim();
   const videoSrcMobile = (hero.videoSrcMobile || "").trim();
   const [preferMobileVideo, setPreferMobileVideo] = useState(false);
@@ -41,6 +43,7 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const videoSrc =
     preferMobileVideo && hasMediaSrc(videoSrcMobile) ? videoSrcMobile : videoSrcDesktop;
   const hasImage = hasMediaSrc(imageSrc);
+  const hasPoster = hasMediaSrc(posterSrc);
   const hasVideo = hasMediaSrc(videoSrcDesktop) || hasMediaSrc(videoSrcMobile);
 
   useEffect(() => {
@@ -68,6 +71,12 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   const activeVideoUrl = mode === "video" ? mediaUrl(videoSrc, revision || videoSrc) : "";
   const activeImageUrl =
     mode === "image" ? mediaUrl(imageSrc, revision || imageSrc) : "";
+  const activePosterUrl =
+    mode === "video" && hasPoster
+      ? mediaUrl(posterSrc, revision || posterSrc)
+      : mode === "image" && hasImage
+        ? activeImageUrl
+        : "";
 
   useEffect(() => {
     function goHero() {
@@ -93,6 +102,7 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
   useEffect(() => {
     setVideoFailed(false);
     setVideoAttempt(0);
+    setVideoVisible(false);
   }, [activeMediaKey]);
 
   useEffect(() => {
@@ -110,8 +120,10 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
       video.playsInline = true;
       video.setAttribute("playsinline", "true");
       video.setAttribute("webkit-playsinline", "true");
-      video.setAttribute("src", url);
-      video.load();
+      if (video.getAttribute("src") !== url) {
+        video.setAttribute("src", url);
+        video.load();
+      }
       const play = video.play();
       if (play && typeof play.catch === "function") {
         play.catch(() => undefined);
@@ -158,8 +170,28 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
     />
   );
 
+  const revealVideo = () => {
+    setVideoFailed(false);
+    setVideoVisible(true);
+  };
+
   const mediaLayer = (
     <>
+      {/* Instant paint layer — poster/image while full-quality video buffers */}
+      {mode === "video" && activePosterUrl ? (
+        <SafeImage
+          src={posterSrc}
+          alt={hero.image?.alt || hero.seo?.altText || "Hotel Thamel Park"}
+          fill
+          priority
+          fadeIn={false}
+          objectFit="cover"
+          sizes="100vw"
+          className="transform-gpu"
+          style={{ objectPosition: hero.image?.position || "center" }}
+        />
+      ) : null}
+
       {mode === "image" && activeImageUrl ? (
         <SafeImage
           src={imageSrc}
@@ -176,43 +208,40 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
 
       {mode === "video" && activeVideoUrl && heroVideoReady ? (
         videoFailed ? (
-          gracefulVideoFallback
+          activePosterUrl ? null : gracefulVideoFallback
         ) : (
-          <>
-            <link rel="preload" as="video" href={activeVideoUrl} />
-            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-            <video
-              ref={videoRef}
-              key={`${activeVideoUrl}-${videoAttempt}`}
+          // eslint-disable-next-line jsx-a11y/media-has-caption
+          <video
+            ref={videoRef}
+            key={`${activeVideoUrl}-${videoAttempt}`}
+            autoPlay={hero.videoAutoplay !== false}
+            loop={hero.videoLoop !== false}
+            muted
+            playsInline
+            preload="auto"
+            poster={activePosterUrl || undefined}
+            disablePictureInPicture
+            controls={false}
+            className={`absolute inset-0 h-full w-full transform-gpu object-cover transition-opacity duration-700 ease-out ${
+              videoVisible ? "opacity-100" : "opacity-0"
+            }`}
+            style={{ objectPosition: hero.image?.position || "center center" }}
+            aria-label="Hotel ambience"
+            onError={() => setVideoFailed(true)}
+            onLoadedData={revealVideo}
+            onCanPlay={revealVideo}
+            onPlaying={revealVideo}
+            {...({ fetchPriority: "high" } as Record<string, string>)}
+          >
+            <source
               src={
                 videoAttempt > 0
                   ? `${activeVideoUrl}${activeVideoUrl.includes("?") ? "&" : "?"}r=${videoAttempt}`
                   : activeVideoUrl
               }
-              autoPlay={hero.videoAutoplay !== false}
-              loop={hero.videoLoop !== false}
-              muted
-              playsInline
-              preload="auto"
-              disablePictureInPicture
-              controls={false}
-              className="absolute inset-0 h-full w-full transform-gpu object-cover"
-              style={{ objectPosition: hero.image?.position || "center center" }}
-              aria-label="Hotel ambience"
-              onError={() => setVideoFailed(true)}
-              onPlaying={() => setVideoFailed(false)}
-              {...({ fetchPriority: "high" } as Record<string, string>)}
-            >
-              <source
-                src={
-                  videoAttempt > 0
-                    ? `${activeVideoUrl}${activeVideoUrl.includes("?") ? "&" : "?"}r=${videoAttempt}`
-                    : activeVideoUrl
-                }
-                type={videoMime(videoSrc)}
-              />
-            </video>
-          </>
+              type={videoMime(videoSrc)}
+            />
+          </video>
         )
       ) : null}
 

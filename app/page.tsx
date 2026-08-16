@@ -23,21 +23,26 @@ function isEnabled(section: { enabled: boolean }) {
   return section.enabled !== false;
 }
 
-function heroVideoPreloadHref(
+/** Prefer poster for LCP — full-quality video still loads via <video>, not link-preload. */
+function heroPosterPreloadHref(
   hero: SiteContent["hero"],
   mediaRevision?: string
 ): string {
-  const videoSrc = (hero.videoSrc || "").trim();
-  if (!hasMediaSrc(videoSrc)) return "";
-  if (hero.mediaMode === "image" || hero.mediaMode === "none") return "";
-  return mediaUrl(videoSrc, mediaRevision || videoSrc);
+  if (hero.mediaMode === "none") return "";
+  const poster = (hero.poster || hero.image?.src || hero.imageSrc || "").trim();
+  if (hasMediaSrc(poster)) return mediaUrl(poster, mediaRevision || poster);
+  if (hero.mediaMode === "image") {
+    const imageSrc = (hero.image?.src || hero.imageSrc || "").trim();
+    if (hasMediaSrc(imageSrc)) return mediaUrl(imageSrc, mediaRevision || imageSrc);
+  }
+  return "";
 }
 
 export default async function HomePage() {
   const content = await getContent();
   const { homeSections: hs } = content;
-  const videoPreload = isEnabled(hs.hero)
-    ? heroVideoPreloadHref(content.hero, content.performanceSettings?.mediaRevision)
+  const posterPreload = isEnabled(hs.hero)
+    ? heroPosterPreloadHref(content.hero, content.performanceSettings?.mediaRevision)
     : "";
 
   const sections: Array<{ key: string; order: number; node: React.ReactNode }> = [];
@@ -164,8 +169,8 @@ export default async function HomePage() {
 
   return (
     <>
-      {videoPreload ? (
-        <link rel="preload" as="video" href={videoPreload} fetchPriority="high" />
+      {posterPreload ? (
+        <link rel="preload" as="image" href={posterPreload} fetchPriority="high" />
       ) : null}
       {sections.map((s) => (
         <div key={s.key}>{s.node}</div>
