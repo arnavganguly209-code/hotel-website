@@ -1,5 +1,4 @@
 import { getContent } from "@/lib/cms/store";
-import { mediaUrl, hasMediaSrc } from "@/lib/cms/media-url";
 import { Hero } from "@/sections/Hero";
 import { Overview } from "@/sections/Overview";
 import { RoomsSection } from "@/sections/RoomsSection";
@@ -17,29 +16,16 @@ import { ReviewsSection } from "@/sections/ReviewsSection";
 import { ArticlesHomeSection } from "@/sections/ArticlesHomeSection";
 import { ContactHomeSection } from "@/sections/ContactHomeSection";
 import { FinalCTA } from "@/sections/FinalCTA";
-import type { SiteContent } from "@/lib/cms/types";
 
 function isEnabled(section: { enabled: boolean }) {
   return section.enabled !== false;
 }
 
-/** Preload hero video early so Orbit video mode starts without a still-image flash. */
-function heroVideoPreloadHref(
-  hero: SiteContent["hero"],
-  mediaRevision?: string
-): string {
-  if (hero.mediaMode === "image" || hero.mediaMode === "none") return "";
-  const videoSrc = (hero.videoSrc || "").trim();
-  if (!hasMediaSrc(videoSrc)) return "";
-  return mediaUrl(videoSrc, mediaRevision || videoSrc);
-}
+export const revalidate = 60;
 
 export default async function HomePage() {
   const content = await getContent();
   const { homeSections: hs } = content;
-  const videoPreload = isEnabled(hs.hero)
-    ? heroVideoPreloadHref(content.hero, content.performanceSettings?.mediaRevision)
-    : "";
 
   const sections: Array<{ key: string; order: number; node: React.ReactNode }> = [];
 
@@ -165,9 +151,6 @@ export default async function HomePage() {
 
   return (
     <>
-      {videoPreload ? (
-        <link rel="preload" as="video" href={videoPreload} fetchPriority="high" />
-      ) : null}
       {sections.map((s) => (
         <div key={s.key}>{s.node}</div>
       ))}

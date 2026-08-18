@@ -15,6 +15,7 @@ import {
   BRAND_OG_IMAGE_PATH,
   brandAsset,
 } from "@/lib/brand";
+import { after } from "next/server";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { trackSiteVisit } from "@/lib/analytics/track-visit";
@@ -42,8 +43,7 @@ const jost = Jost({
   variable: "--font-jost",
 });
 
-export const dynamic = "force-dynamic";
-export const fetchCache = "force-no-store";
+export const revalidate = 60;
 
 export const viewport: Viewport = {
   themeColor: "#0F2420",
@@ -154,7 +154,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  trackSiteVisit();
+  after(() => {
+    trackSiteVisit();
+  });
   const content = await getContent();
   const hotelSchema = generateHotelSchema(content.hotel);
   const localBusinessSchema = generateLocalBusinessSchema(content.hotel);

@@ -39,12 +39,12 @@ const nextConfig: NextConfig = {
       // Legacy WordPress/CMS URLs still indexed in Google Search Console.
       {
         source: "/accommodation-facility",
-        destination: "/#facilities",
+        destination: "/",
         permanent: true,
       },
       {
         source: "/accommodation-facility/:path*",
-        destination: "/#facilities",
+        destination: "/",
         permanent: true,
       },
       {
@@ -92,7 +92,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Cache-Control",
-            value: "public, max-age=60, must-revalidate",
+            value: "public, max-age=3600, must-revalidate",
           },
         ],
       },
