@@ -36,6 +36,17 @@ const nextConfig: NextConfig = {
         destination: "/dining/:path*",
         permanent: true,
       },
+      // Legacy WordPress/CMS URLs still indexed in Google Search Console.
+      {
+        source: "/accommodation-facility",
+        destination: "/#facilities",
+        permanent: true,
+      },
+      {
+        source: "/accommodation-facility/:path*",
+        destination: "/#facilities",
+        permanent: true,
+      },
       {
         source: "/privacy-policy",
         destination: "/legal/privacy",
