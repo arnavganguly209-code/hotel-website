@@ -150,6 +150,9 @@ export function enrichRoom(defaults: Room, partial: Partial<Room>): Room {
         partial.seo?.altText ||
         defaults.seo?.altText ||
         `${merged.name} at Hotel Thamel Park`,
+      ogTitle: partial.seo?.ogTitle || defaults.seo?.ogTitle,
+      ogDescription: partial.seo?.ogDescription || defaults.seo?.ogDescription,
+      robots: partial.seo?.robots || defaults.seo?.robots || "index,follow",
     },
   };
 }

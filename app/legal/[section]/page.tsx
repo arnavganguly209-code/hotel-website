@@ -61,12 +61,17 @@ export async function generateMetadata({
   const content = await getContent();
   const meta = SECTION_META[section];
   const path = legalSectionPath(section);
+  const override = content.pageSeo?.[path];
 
   return buildPageMetadata(
     {
-      title: `${meta.title} | ${content.hotel.name}`,
-      description: meta.description,
-      canonical: path,
+      title: override?.title || `${meta.title} | ${content.hotel.name}`,
+      description: override?.description || meta.description,
+      canonical: override?.canonical || path,
+      ogImage: override?.ogImage,
+      ogTitle: override?.ogTitle,
+      ogDescription: override?.ogDescription,
+      robots: override?.robots || "index,follow",
     },
     path,
     content.hotel.name

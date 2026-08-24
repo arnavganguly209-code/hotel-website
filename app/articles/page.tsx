@@ -1,32 +1,11 @@
 import type { Metadata } from "next";
 import { getContent } from "@/lib/cms/store";
 import { ArticlesPageView } from "@/components/articles/ArticlesPageView";
+import { metadataForPath } from "@/lib/seo/page-catalog";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getContent();
-  const { seo, hero } = content.articlesPage;
-  const title = seo.title || "Articles";
-  const description = seo.description || hero.description;
-
-  return {
-    title,
-    description,
-    keywords: seo.keywords,
-    alternates: seo.canonical ? { canonical: seo.canonical } : undefined,
-    openGraph: {
-      title,
-      description,
-      url: seo.canonical || "/articles",
-      type: "website",
-      images: seo.ogImage ? [{ url: seo.ogImage, alt: hero.title }] : undefined,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: seo.ogImage ? [seo.ogImage] : undefined,
-    },
-  };
+  return metadataForPath(content, "/articles");
 }
 
 export default async function ArticlesRoute() {

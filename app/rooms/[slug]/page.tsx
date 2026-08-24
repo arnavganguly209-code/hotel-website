@@ -27,14 +27,21 @@ export async function generateMetadata({ params }: RoomDetailRouteProps): Promis
   const canonical = room.seo?.canonical || `/rooms/${publicSlug}`;
   const url = canonical.startsWith("http") ? canonical : `${SITE_URL}${canonical.startsWith("/") ? "" : "/"}${canonical}`;
   const image = room.seo?.ogImage || room.imageSrc || content.seo.ogImage;
+  const ogTitle = room.seo?.ogTitle || title;
+  const ogDescription = room.seo?.ogDescription || description;
+  const robotsRaw = (room.seo?.robots || "index,follow").toLowerCase();
 
   return {
     title,
     description,
+    robots: {
+      index: !robotsRaw.includes("noindex"),
+      follow: !robotsRaw.includes("nofollow"),
+    },
     alternates: { canonical: url },
     openGraph: {
-      title,
-      description,
+      title: ogTitle,
+      description: ogDescription,
       url,
       siteName: content.hotel.name,
       type: "website",
@@ -42,8 +49,8 @@ export async function generateMetadata({ params }: RoomDetailRouteProps): Promis
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
+      title: ogTitle,
+      description: ogDescription,
       images: room.seo?.twitterImage ? [room.seo.twitterImage] : image ? [image] : undefined,
     },
   };

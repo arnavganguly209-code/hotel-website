@@ -1,21 +1,14 @@
 import type { Metadata } from "next";
 import { getContent } from "@/lib/cms/store";
-import { buildPageMetadata, buildBreadcrumbSchema } from "@/lib/seo/page-metadata";
+import { buildBreadcrumbSchema } from "@/lib/seo/page-metadata";
+import { metadataForPath } from "@/lib/seo/page-catalog";
 import { SITE_URL } from "@/lib/seo";
 import { SpaHero } from "@/components/spa/SpaHero";
 import { SpaPage } from "@/sections/pages/SpaPage";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getContent();
-  const seo = content.spaPage.seo ?? {
-    title: "Spa & Wellness | Hotel Thamel Park",
-    description: `Luxury spa and wellness at ${content.hotel.name}, Kathmandu.`,
-  };
-  const meta = buildPageMetadata(seo, "/spa", content.hotel.name);
-  if (seo.keywords) {
-    return { ...meta, keywords: seo.keywords };
-  }
-  return meta;
+  return metadataForPath(content, "/spa");
 }
 
 export default async function SpaRoute() {

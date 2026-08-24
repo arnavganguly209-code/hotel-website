@@ -16,6 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: `Book Your Stay | ${content.hotel.name}`,
     description: "Complete your luxury room reservation at Hotel Thamel Park.",
+    robots: { index: false, follow: true },
   };
 }
 

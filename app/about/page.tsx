@@ -4,43 +4,14 @@ import { AboutHero } from "@/components/about/AboutHero";
 import { AboutPage } from "@/sections/pages/AboutPage";
 import { SITE_URL } from "@/lib/seo";
 import { buildBreadcrumbSchema } from "@/lib/seo/page-metadata";
+import { metadataForPath } from "@/lib/seo/page-catalog";
 import { siteConfig } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getContent();
-  const { seo, hero } = content.aboutPage;
-  const title =
-    seo.title || "About Hotel Thamel Park | Luxury Hotel in Thamel, Kathmandu";
-  const description =
-    seo.description ||
-    `Discover ${content.hotel.name || siteConfig.name} in Thamel, Kathmandu — luxury rooms, Korean dining, spa wellness, and genuine Nepalese hospitality.`;
-  const canonical = seo.canonical || "/about";
-  const ogImage = seo.ogImage || hero.imageSrc;
-
-  return {
-    title,
-    description,
-    keywords: seo.keywords,
-    alternates: { canonical },
-    openGraph: {
-      title,
-      description,
-      url: canonical,
-      type: "website",
-      siteName: content.hotel.name || siteConfig.name,
-      images: ogImage
-        ? [{ url: ogImage, alt: hero.subtitle || "Hotel Thamel Park" }]
-        : undefined,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: ogImage ? [ogImage] : undefined,
-    },
-  };
+  return metadataForPath(content, "/about");
 }
 
 function aboutSchema(content: Awaited<ReturnType<typeof getContent>>) {

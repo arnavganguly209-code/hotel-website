@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getContent } from "@/lib/cms/store";
-import { buildPageMetadata, buildBreadcrumbSchema } from "@/lib/seo/page-metadata";
+import { buildBreadcrumbSchema } from "@/lib/seo/page-metadata";
+import { metadataForPath } from "@/lib/seo/page-catalog";
 import { RoomsPage } from "@/sections/pages/RoomsPage";
 import { bookingSearchFromParams } from "@/lib/booking/utils";
 
@@ -9,7 +10,7 @@ export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getContent();
-  return buildPageMetadata(content.roomsPage.seo, "/rooms", content.hotel.name);
+  return metadataForPath(content, "/rooms");
 }
 
 interface RoomsRouteProps {

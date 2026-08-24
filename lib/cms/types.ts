@@ -20,11 +20,21 @@ export interface PageHero {
   imageSrc: string;
 }
 
+export type RobotsDirective =
+  | "index,follow"
+  | "noindex,follow"
+  | "index,nofollow"
+  | "noindex,nofollow";
+
 export interface PageSeo {
   title: string;
   description: string;
   canonical?: string;
   ogImage?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  robots?: RobotsDirective | string;
+  updatedAt?: string;
 }
 
 export interface SectionToggle {
@@ -147,7 +157,12 @@ export interface SiteContent {
     location: string;
     address: string;
     phone: string;
+    mobile?: string;
     email: string;
+    reservationEmail?: string;
+    enquiryEmail?: string;
+    whatsapp?: string;
+    hours?: string;
     social: {
       facebook: string;
       instagram: string;
@@ -530,12 +545,15 @@ export interface SiteContent {
     checkOutTime?: string;
     cancellationLabel?: string;
     seo?: {
-      metaTitle: string;
-      metaDescription: string;
+      metaTitle?: string;
+      metaDescription?: string;
       canonical: string;
       ogImage: string;
-      twitterImage: string;
+      twitterImage?: string;
       altText: string;
+      ogTitle?: string;
+      ogDescription?: string;
+      robots?: string;
     };
   }>;
   roomBooking: {
@@ -1343,7 +1361,10 @@ export interface SiteContent {
     robotsAllow: boolean;
     googleSiteVerification: string;
     bingSiteVerification: string;
+    defaultRobots?: string;
   };
+  /** Per-route SEO overrides for static public pages (admin-editable). */
+  pageSeo?: Record<string, PageSeo>;
   performanceSettings: {
     lazyLoadImages: boolean;
     reduceMotionOnMobile: boolean;

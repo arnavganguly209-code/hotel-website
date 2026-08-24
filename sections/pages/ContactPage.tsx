@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/accordion";
 import { ContactEnquiryForm } from "@/components/contact/ContactEnquiryForm";
 import { normalizeGoogleMapEmbedUrl } from "@/lib/google-map-embed";
+import { resolveSiteContact } from "@/lib/cms/contact";
 import type { SiteContent } from "@/lib/cms/types";
 import { cn } from "@/lib/utils";
 
@@ -46,7 +47,22 @@ const WHY_ICONS: Record<string, typeof Phone> = {
 
 export function ContactPage({ content }: ContactPageProps) {
   const page = content.contactPage;
-  const cards = page.cards.filter((c) => c.enabled !== false).sort((a, b) => a.order - b.order);
+  const contact = resolveSiteContact(content);
+  const phone = contact.phone;
+  const email = contact.email;
+  const address = contact.address;
+  const whatsapp = contact.whatsapp;
+  const cards = page.cards
+    .filter((c) => c.enabled !== false)
+    .sort((a, b) => a.order - b.order)
+    .map((card) => {
+      if (card.icon === "phone") return { ...card, value: phone || card.value };
+      if (card.icon === "mail") return { ...card, value: email || card.value };
+      if (card.icon === "map-pin") return { ...card, value: address || card.value };
+      if (card.icon === "message-circle") return { ...card, value: whatsapp || card.value };
+      if (card.icon === "clock") return { ...card, value: contact.hours || card.value };
+      return card;
+    });
   const whyItems = page.whyContact.items
     .filter((i) => i.enabled !== false)
     .sort((a, b) => a.order - b.order);

@@ -25,15 +25,19 @@ export async function generateMetadata({
   const publicSlug = roomPublicSlug(room);
   const path = roomReservePath(publicSlug);
 
-  return buildPageMetadata(
-    {
-      title: `Reserve ${room.name} | ${content.hotel.name}`,
-      description: `Complete your reservation for ${room.name} at ${content.hotel.name}. Secure online or pay-at-hotel options.`,
-      canonical: path,
-    },
-    path,
-    content.hotel.name
-  );
+  return {
+    ...buildPageMetadata(
+      {
+        title: `Reserve ${room.name} | ${content.hotel.name}`,
+        description: `Complete your reservation for ${room.name} at ${content.hotel.name}. Secure online or pay-at-hotel options.`,
+        canonical: path,
+        robots: "noindex,follow",
+      },
+      path,
+      content.hotel.name
+    ),
+    robots: { index: false, follow: true },
+  };
 }
 
 export default async function ReserveRoute({ params, searchParams }: ReserveRouteProps) {

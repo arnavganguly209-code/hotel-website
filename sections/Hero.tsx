@@ -18,6 +18,7 @@ export function Hero({ content, theme, rooms }: HeroProps) {
 
   return (
     <section id="hero" className="relative h-screen overflow-hidden bg-luxury-cream-light">
+      <h1 className="sr-only">Hotel Thamel Park</h1>
       <LuxuryHeroBackground animation={content.animation} colors={content.colors} champagne={theme.champagne} />
       {content.showBookingBar && content.bookingBar.enabled && (
         <PremiumFloatingBookingBar rooms={rooms} bookingBar={content.bookingBar} variant="hero" />

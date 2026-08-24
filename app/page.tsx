@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { getContent } from "@/lib/cms/store";
+import { getRouteSeo, metadataForPath, PUBLIC_SEO_PAGES } from "@/lib/seo/page-catalog";
 import { Hero } from "@/sections/Hero";
 import { Overview } from "@/sections/Overview";
 import { RoomsSection } from "@/sections/RoomsSection";
@@ -22,6 +24,12 @@ function isEnabled(section: { enabled: boolean }) {
 }
 
 export const revalidate = 60;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const content = await getContent();
+  const seo = getRouteSeo(content, PUBLIC_SEO_PAGES[0]);
+  return { ...metadataForPath(content, "/"), title: { absolute: seo.title } };
+}
 
 export default async function HomePage() {
   const content = await getContent();

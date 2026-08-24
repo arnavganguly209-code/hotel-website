@@ -99,7 +99,14 @@ export function PremiumFooter({ content }: PremiumFooterProps) {
               description={description}
             />
             <FooterQuickLinks links={footer.quickLinks} />
-            <FooterGuestServices contact={footer.contact} />
+            <FooterGuestServices
+              contact={{
+                ...footer.contact,
+                phone: content.hotel.phone || footer.contact.phone,
+                email: content.hotel.email || footer.contact.email,
+                location: content.hotel.address || footer.contact.location,
+              }}
+            />
             <FooterNewsletter newsletter={footer.newsletter} social={footer.social} />
             {footer.showPayments !== false ? (
               <FooterSecurePayments

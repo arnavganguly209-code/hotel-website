@@ -265,6 +265,8 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
           aria-hidden
         />
 
+        <h1 className="sr-only">Hotel Thamel Park</h1>
+
         {showBooking ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-[3.5%] z-20 hidden lg:block">
             <div className="pointer-events-auto mx-auto w-[calc(100%-40px)] max-w-none">

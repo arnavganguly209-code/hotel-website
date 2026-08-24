@@ -4,23 +4,24 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BedDouble,
+  Bell,
   CalendarOff,
+  ClipboardList,
   CreditCard,
+  Hash,
   LayoutDashboard,
   LogOut,
   Mail,
   Menu,
   MessageSquare,
   Package,
+  Search,
   Settings,
   Sparkles,
   Utensils,
   Users,
   Warehouse,
   X,
-  ClipboardList,
-  Bell,
-  Hash,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ArticlesNavGroup } from "@/components/admin-pms/ArticlesNavGroup";
@@ -41,6 +42,7 @@ const NAV = [
   { href: "/admin/inquiries/spa", label: "Spa", icon: Sparkles },
   { href: "/admin/inquiries/meetings", label: "Meetings", icon: Users },
   { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
+  { href: "/admin/seo", label: "SEO Dashboard", icon: Search },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

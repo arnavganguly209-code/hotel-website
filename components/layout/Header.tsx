@@ -83,7 +83,7 @@ export function Header({ header, hotelName }: HeaderProps) {
     setMenuOpen(false);
   }, [pathname]);
 
-  const phoneDisplay = header.phone || "+977 014701536";
+  const phoneDisplay = header.phone || "";
   const phoneHref = `tel:${phoneDisplay.replace(/[^\d+]/g, "")}`;
   // Luxury slim header: logo ~10% larger, less empty air, bar +~9%.
   const barHeight = Math.max(70, Math.min(78, header.height || 74));

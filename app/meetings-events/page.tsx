@@ -3,28 +3,11 @@ import { getContent } from "@/lib/cms/store";
 import { InnerPageHero } from "@/components/shared/InnerPageHero";
 import { MeetingsEventsPage } from "@/sections/pages/MeetingsEventsPage";
 import { siteConfig } from "@/lib/config";
+import { metadataForPath } from "@/lib/seo/page-catalog";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getContent();
-  const { seo, hero } = content.meetingsEventsPage;
-  const title = seo.title || "Meetings & Events";
-  const description =
-    seo.description ||
-    `Host exceptional meetings and events at ${siteConfig.name}, Kathmandu.`;
-
-  return {
-    title,
-    description,
-    keywords: seo.keywords,
-    alternates: seo.canonical ? { canonical: seo.canonical } : undefined,
-    openGraph: {
-      title,
-      description,
-      url: seo.canonical || "/meetings-events",
-      type: "website",
-      images: seo.ogImage ? [{ url: seo.ogImage, alt: hero.title }] : undefined,
-    },
-  };
+  return metadataForPath(content, "/meetings-events");
 }
 
 function eventSchema(content: Awaited<ReturnType<typeof getContent>>) {

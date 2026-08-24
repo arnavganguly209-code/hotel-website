@@ -2,20 +2,11 @@ import type { Metadata } from "next";
 import { getContent } from "@/lib/cms/store";
 import { InnerPageHero } from "@/components/shared/InnerPageHero";
 import { CulturalExperiencePage } from "@/sections/pages/CulturalExperiencePage";
+import { metadataForPath } from "@/lib/seo/page-catalog";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getContent();
-  const { seo } = content.culturalExperiencePage;
-  return {
-    title: seo.title,
-    description: seo.description,
-    alternates: seo.canonical ? { canonical: seo.canonical } : undefined,
-    openGraph: {
-      title: seo.title,
-      description: seo.description,
-      images: seo.ogImage ? [{ url: seo.ogImage }] : undefined,
-    },
-  };
+  return metadataForPath(content, "/cultural-experience");
 }
 
 export default async function CulturalExperienceRoute() {

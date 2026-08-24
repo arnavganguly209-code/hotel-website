@@ -1,34 +1,11 @@
 import type { Metadata } from "next";
 import { getContent } from "@/lib/cms/store";
 import { GalleryPage } from "@/components/gallery/GalleryPage";
+import { metadataForPath } from "@/lib/seo/page-catalog";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getContent();
-  const { seo, hero } = content.galleryPage;
-  const title = seo.title || "Gallery";
-  const description =
-    seo.description ||
-    `Visual journey through ${content.hotel.name} — luxury hospitality in Kathmandu.`;
-
-  return {
-    title,
-    description,
-    keywords: seo.keywords,
-    alternates: seo.canonical ? { canonical: seo.canonical } : undefined,
-    openGraph: {
-      title,
-      description,
-      url: seo.canonical || "/gallery",
-      type: "website",
-      images: seo.ogImage ? [{ url: seo.ogImage, alt: hero.title }] : undefined,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: seo.ogImage ? [seo.ogImage] : undefined,
-    },
-  };
+  return metadataForPath(content, "/gallery");
 }
 
 export default async function GalleryRoute() {

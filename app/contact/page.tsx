@@ -4,42 +4,23 @@ import { ContactHero } from "@/components/contact/ContactHero";
 import { ContactPage } from "@/sections/pages/ContactPage";
 import { siteConfig } from "@/lib/config";
 import { SITE_URL } from "@/lib/seo";
-import { buildBreadcrumbSchema, buildPageMetadata } from "@/lib/seo/page-metadata";
+import { buildBreadcrumbSchema } from "@/lib/seo/page-metadata";
+import { metadataForPath } from "@/lib/seo/page-catalog";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getContent();
-  const { seo } = content.contactPage;
-  return buildPageMetadata(
-    {
-      title: seo.title || "Contact | Hotel Thamel Park",
-      description:
-        seo.description ||
-        `Contact ${content.hotel.name || siteConfig.name} for reservations and concierge assistance.`,
-      canonical: seo.canonical,
-      ogImage: seo.ogImage,
-    },
-    "/contact",
-    content.hotel.name
-  );
+  return metadataForPath(content, "/contact");
 }
 
 function contactSchema(content: Awaited<ReturnType<typeof getContent>>) {
   const page = content.contactPage;
   return {
     "@context": "https://schema.org",
-    "@type": "Hotel",
-    name: content.hotel.name || siteConfig.name,
+    "@type": "ContactPage",
+    name: `Contact ${content.hotel.name || siteConfig.name}`,
     description: page.seo.description,
     url: `${SITE_URL}/contact`,
-    image: page.hero.imageSrc || page.seo.ogImage,
-    telephone: page.phone || content.hotel.phone,
-    email: page.email || content.hotel.email,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: page.address || content.hotel.address,
-      addressLocality: "Kathmandu",
-      addressCountry: "NP",
-    },
+    mainEntity: { "@id": `${SITE_URL}/#hotel` },
   };
 }
 

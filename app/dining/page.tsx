@@ -1,21 +1,14 @@
 import type { Metadata } from "next";
 import { getContent } from "@/lib/cms/store";
-import { buildPageMetadata, buildBreadcrumbSchema } from "@/lib/seo/page-metadata";
+import { buildBreadcrumbSchema } from "@/lib/seo/page-metadata";
+import { metadataForPath } from "@/lib/seo/page-catalog";
 import { SITE_URL } from "@/lib/seo";
 import { DiningHero } from "@/components/dining/DiningHero";
 import { DiningPage } from "@/sections/pages/DiningPage";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getContent();
-  const seo = content.diningPage.seo ?? {
-    title: "Dining | Hotel Thamel Park",
-    description: `Fine dining at ${content.hotel.name}, Kathmandu.`,
-  };
-  const meta = buildPageMetadata(seo, "/dining", content.hotel.name);
-  if (seo.keywords) {
-    return { ...meta, keywords: seo.keywords };
-  }
-  return meta;
+  return metadataForPath(content, "/dining");
 }
 
 export default async function DiningRoute() {

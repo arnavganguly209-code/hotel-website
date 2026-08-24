@@ -558,6 +558,7 @@ export function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
       ),
     },
     seo: { ...defaultContent.seo, ...partial.seo },
+    pageSeo: { ...(defaultContent.pageSeo ?? {}), ...(partial.pageSeo ?? {}) },
     performanceSettings: {
       ...defaultContent.performanceSettings,
       ...(partial.performanceSettings ?? {}),
