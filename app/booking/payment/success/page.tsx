@@ -85,12 +85,22 @@ export default async function PaymentSuccessPage({
       ) : null}
       <div className="mt-10 flex flex-wrap justify-center gap-3">
         {booking ? (
-          <a
-            href={`/api/bookings/${booking.id}/pdf?email=${encodeURIComponent(booking.email)}&download=1`}
-            className="inline-flex rounded-lg bg-[#c5a059] px-5 py-2.5 text-sm font-semibold text-white"
-          >
-            Download voucher PDF
-          </a>
+          <>
+            <a
+              href={`/api/bookings/${booking.id}/voucher?email=${encodeURIComponent(booking.email)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex rounded-lg bg-[#173a2b] px-5 py-2.5 text-sm font-semibold text-[#d4af37]"
+            >
+              Print / view voucher
+            </a>
+            <a
+              href={`/api/bookings/${booking.id}/pdf?email=${encodeURIComponent(booking.email)}&download=1`}
+              className="inline-flex rounded-lg bg-[#c5a059] px-5 py-2.5 text-sm font-semibold text-white"
+            >
+              Download voucher PDF
+            </a>
+          </>
         ) : null}
         <Link href="/" className="inline-flex rounded-lg border border-[#c5a059]/40 px-5 py-2.5 text-sm text-[#173a2b]">
           Back to home

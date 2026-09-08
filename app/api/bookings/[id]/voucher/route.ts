@@ -4,7 +4,7 @@ import { getAdminSessionUser } from "@/lib/admin/auth";
 import { getContent } from "@/lib/cms/store";
 import { buildReservationVoucherHtml } from "@/lib/booking/voucher";
 import { splitVatInclusive, DEFAULT_VAT_RATE, DEFAULT_CURRENCY } from "@/lib/booking/vat";
-import { BRAND_LOGO_PATH } from "@/lib/brand";
+import { BRAND_VOUCHER_LOGO_PATH, brandAsset } from "@/lib/brand";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -66,10 +66,10 @@ export async function GET(req: Request, { params }: Params) {
     hotelEmail:
       content.settings?.bookingEmail ||
       content.hotel?.email ||
-      "reservations@hotelthamelpark.com",
+      "booking@hotelthamelpark.com",
     hotelPhone: content.hotel?.phone || "",
     hotelAddress: content.hotel?.location || "Thamel, Kathmandu, Nepal",
-    logoUrl: `${siteUrl.replace(/\/$/, "")}${content.header?.logoSrc || BRAND_LOGO_PATH}`,
+    logoUrl: `${siteUrl.replace(/\/$/, "")}${brandAsset(BRAND_VOUCHER_LOGO_PATH)}`,
     guestName: booking.name,
     guestEmail: booking.email,
     guestPhone: booking.phone,
@@ -88,7 +88,6 @@ export async function GET(req: Request, { params }: Params) {
     paymentStatus: booking.paymentStatus,
     bookingStatus: booking.status,
     specialRequests: booking.specialRequests,
-    verifyUrl: `${siteUrl.replace(/\/$/, "")}/api/bookings/${booking.id}/voucher?email=${encodeURIComponent(booking.email)}`,
   });
 
   return new NextResponse(html, {

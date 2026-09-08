@@ -1,7 +1,9 @@
 /** Canonical Hotel Thamel Park brand mark — bump ICON_VERSION to bust caches. */
-export const ICON_VERSION = "brand-20260722";
+export const ICON_VERSION = "brand-20260820";
 
 export const BRAND_LOGO_PATH = "/brand/thamelpark-logo.png";
+/** Print-safe green wordmark on transparent background (vouchers / PDF invoices). */
+export const BRAND_VOUCHER_LOGO_PATH = "/brand/voucher-logo.png";
 export const BRAND_OG_IMAGE_PATH = "/brand/og-image.png";
 export const BRAND_OG_LOGO_PATH = "/brand/og-logo.png";
 export const BRAND_FAVICON_PATH = "/favicon.ico";

@@ -1,4 +1,3 @@
-import QRCode from "qrcode";
 import {
   formatUsd,
   formatVatPercent,
@@ -30,7 +29,6 @@ export type ReservationVoucherData = {
   paymentStatus: string;
   bookingStatus: string;
   specialRequests?: string;
-  verifyUrl: string;
 };
 
 function esc(value: string): string {
@@ -41,16 +39,10 @@ function esc(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-/** Professional A4 HTML voucher / invoice (print → PDF). */
+/** Original A4 voucher — green logo (+15% size), QR removed. No layout redesign. */
 export async function buildReservationVoucherHtml(
   data: ReservationVoucherData
 ): Promise<string> {
-  const qrDataUrl = await QRCode.toDataURL(data.verifyUrl, {
-    width: 160,
-    margin: 1,
-    color: { dark: "#14352C", light: "#FFFFFF" },
-  });
-
   const vatLabel = `VAT (${formatVatPercent(data.vat.vatRate)})`;
 
   return `<!DOCTYPE html>
@@ -59,7 +51,7 @@ export async function buildReservationVoucherHtml(
   <meta charset="utf-8" />
   <title>Reservation #${data.bookingId} — ${esc(data.hotelName)}</title>
   <style>
-    @page { size: A4; margin: 18mm 16mm; }
+    @page { size: A4; margin: 8mm 6mm; }
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -68,11 +60,12 @@ export async function buildReservationVoucherHtml(
       background: #f7f3ea;
     }
     .sheet {
+      width: 100%;
       max-width: 210mm;
       margin: 0 auto;
       background: #fffdf8;
       border: 1px solid #d4af37;
-      padding: 28px 32px 36px;
+      padding: 18px 12px 22px;
     }
     .header {
       display: flex;
@@ -89,7 +82,17 @@ export async function buildReservationVoucherHtml(
       letter-spacing: 0.04em;
     }
     .brand p { margin: 4px 0 0; font-size: 12px; color: #5a635c; }
-    .logo { max-height: 64px; max-width: 180px; object-fit: contain; }
+    /* Original was 64×180 — +15% for green print logo */
+    .logo {
+      display: block;
+      max-height: 74px;
+      max-width: 207px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      background: transparent;
+      margin-bottom: 8px;
+    }
     .meta { text-align: right; font-size: 12px; color: #5a635c; }
     .meta strong { display: block; color: #14352c; font-size: 14px; margin-bottom: 4px; }
     h2 {
@@ -139,16 +142,10 @@ export async function buildReservationVoucherHtml(
     }
     .footer {
       margin-top: 24px;
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      align-items: flex-end;
       border-top: 1px solid #e5d7b4;
       padding-top: 16px;
     }
-    .terms { flex: 1; font-size: 11px; color: #6b7a73; line-height: 1.5; }
-    .qr { text-align: center; font-size: 10px; color: #6b7a73; }
-    .qr img { display: block; margin: 0 auto 6px; width: 120px; height: 120px; }
+    .terms { font-size: 11px; color: #6b7a73; line-height: 1.5; }
     .actions { margin: 16px auto; text-align: center; }
     .actions button {
       background: #14352c;
@@ -163,7 +160,12 @@ export async function buildReservationVoucherHtml(
     }
     @media print {
       body { background: white; }
-      .sheet { border: none; max-width: none; padding: 0; }
+      .sheet {
+        border: 1px solid #d4af37;
+        max-width: none;
+        width: auto;
+        padding: 12px 10px 16px;
+      }
       .actions { display: none; }
     }
   </style>
@@ -249,10 +251,6 @@ export async function buildReservationVoucherHtml(
         Check-in from 14:00 · Check-out by 12:00 · Cancellations subject to hotel policy ·
         Rates quoted in ${esc(data.vat.currency)} · Present this voucher or booking number on arrival ·
         For changes contact ${esc(data.hotelEmail)} or ${esc(data.hotelPhone)}.
-      </div>
-      <div class="qr">
-        <img src="${qrDataUrl}" alt="Booking QR code" />
-        Scan to verify booking
       </div>
     </div>
   </div>
