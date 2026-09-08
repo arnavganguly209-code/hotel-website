@@ -125,8 +125,6 @@ export async function buildReservationPdf(ctx: BookingEmailContext): Promise<Buf
       // ~74×207 CSS px ≈ +15% over original 64×180
       doc.image(logoBuf, left, y, {
         fit: [155, 55],
-        align: "left",
-        valign: "top",
       });
       y += 58;
     } catch (err) {
@@ -269,7 +267,11 @@ export async function buildReservationPdf(ctx: BookingEmailContext): Promise<Buf
     "VAT is shown for accounting only and is not added again." +
     (special ? `\n\nSpecial requests: ${special}` : "");
 
-  const noteH = Math.max(48, doc.heightOfString(noteText, { width: contentW - 20, fontSize: 9 }) + 18);
+  doc.fontSize(9);
+  const noteH = Math.max(
+    48,
+    doc.heightOfString(noteText, { width: contentW - 20 }) + 22
+  );
   doc.roundedRect(left, y, contentW, noteH, 2).fillAndStroke(NOTE_BG, NOTE_BORDER);
   doc.fillColor(MUTED).fontSize(9).text(noteText, left + 10, y + 9, {
     width: contentW - 20,
