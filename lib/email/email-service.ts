@@ -5,7 +5,7 @@ import { formatBookingNumber } from "@/lib/booking/booking-number";
 import {
   EMAIL_TEMPLATES,
   SMTP_MAX_RETRIES,
-  getBookingNotifyEmail,
+  getHotelNotifyAddressList,
   getBookingPdfUrl,
   getMailFromHeader,
   getHotelMailConfig,
@@ -308,7 +308,7 @@ export class EmailService {
     guest: SendEmailResult;
     hotel: SendEmailResult;
   }> {
-    const adminTo = getBookingNotifyEmail();
+    const adminTo = getHotelNotifyAddressList();
     logStep("Preparing customer email", {
       bookingId: ctx.bookingId,
       to: ctx.guestEmail,

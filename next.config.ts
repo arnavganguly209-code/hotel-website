@@ -26,6 +26,82 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["pdfkit", "qrcode"],
   async redirects() {
     return [
+      // Legacy WordPress accommodation URLs (production VPS).
+      {
+        source: "/accommodation/deluxe-room",
+        destination: "/rooms/deluxe-room",
+        permanent: true,
+      },
+      {
+        source: "/accommodation/super-deluxe-room",
+        destination: "/rooms/super-deluxe-room",
+        permanent: true,
+      },
+      {
+        source: "/accommodation/family-room",
+        destination: "/rooms/family-room",
+        permanent: true,
+      },
+      {
+        source: "/accommodation/super-deluxe-twin-room",
+        destination: "/rooms/super-deluxe-twin-room",
+        permanent: true,
+      },
+      {
+        source: "/accommodation/:path*",
+        destination: "/rooms/:path*",
+        permanent: true,
+      },
+      {
+        source: "/home/rooms",
+        destination: "/rooms",
+        permanent: true,
+      },
+      {
+        source: "/home/about-us",
+        destination: "/about",
+        permanent: true,
+      },
+      {
+        source: "/rooms-suites",
+        destination: "/rooms",
+        permanent: true,
+      },
+      {
+        source: "/about-us",
+        destination: "/about",
+        permanent: true,
+      },
+      {
+        source: "/contact-us",
+        destination: "/contact",
+        permanent: true,
+      },
+      {
+        source: "/our-gallery",
+        destination: "/gallery",
+        permanent: true,
+      },
+      {
+        source: "/terms-conditions",
+        destination: "/legal/terms",
+        permanent: true,
+      },
+      {
+        source: "/blog",
+        destination: "/articles",
+        permanent: true,
+      },
+      {
+        source: "/service",
+        destination: "/meetings-events",
+        permanent: true,
+      },
+      {
+        source: "/product/paynow",
+        destination: "/book",
+        permanent: true,
+      },
       {
         source: "/restaurant",
         destination: "/dining",
@@ -60,6 +136,16 @@ const nextConfig: NextConfig = {
       {
         source: "/legal/refund",
         destination: "/legal/cancellation",
+        permanent: true,
+      },
+      {
+        source: "/meetings-weddings",
+        destination: "/meetings-events",
+        permanent: true,
+      },
+      {
+        source: "/legal",
+        destination: "/legal/privacy",
         permanent: true,
       },
     ];

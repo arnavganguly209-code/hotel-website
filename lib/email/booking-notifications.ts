@@ -2,7 +2,7 @@ import { db, isDatabaseAvailable } from "@/lib/db";
 import { formatBookingNumber } from "@/lib/booking/booking-number";
 import {
   EMAIL_TEMPLATES,
-  getBookingNotifyEmail,
+  getHotelNotifyAddressList,
   getBookingPdfUrl,
   type EmailTemplateId,
 } from "./config";
@@ -110,7 +110,7 @@ export async function notifyNewRoomBooking(
     const hotel = await emailService.sendBookingEmail({
       template: EMAIL_TEMPLATES.HOTEL_NEW_BOOKING,
       ctx,
-      to: getBookingNotifyEmail(),
+      to: getHotelNotifyAddressList(),
       attachPdf: true,
     });
     const result = { guest, hotel };

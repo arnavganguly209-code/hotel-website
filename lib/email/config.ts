@@ -165,6 +165,37 @@ export function getBookingNotifyEmail(): string {
   );
 }
 
+/**
+ * All hotel inboxes that should receive booking / enquiry staff copies.
+ * Always includes booking@ (or BOOKING_NOTIFY_EMAIL) plus Gmail mirror by default.
+ * Override extras with comma-separated BOOKING_NOTIFY_EXTRA.
+ */
+export function getHotelNotifyRecipients(extraPrimary?: string): string[] {
+  const defaults = [
+    getBookingNotifyEmail(),
+    extraPrimary || "",
+    env("BOOKING_NOTIFY_EXTRA") || "hotelthamelpark.com@gmail.com",
+  ];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const chunk of defaults) {
+    for (const part of chunk.split(/[,;]/)) {
+      const email = part.trim();
+      if (!email || !email.includes("@")) continue;
+      const key = email.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(email);
+    }
+  }
+  return out;
+}
+
+/** Comma-joined list for nodemailer `to` (booking + Gmail, etc.). */
+export function getHotelNotifyAddressList(extraPrimary?: string): string {
+  return getHotelNotifyRecipients(extraPrimary).join(", ");
+}
+
 export const EMAIL_TEMPLATES = {
   BOOKING_CONFIRMATION: "booking_confirmation",
   BOOKING_PENDING: "booking_pending",

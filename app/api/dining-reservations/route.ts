@@ -3,7 +3,7 @@ import { isAuthenticated } from "@/lib/cms/auth";
 import { db, isDatabaseAvailable } from "@/lib/db";
 import { getContent } from "@/lib/cms/store";
 import { sendDiningReservationEmails } from "@/lib/mail";
-import { getBookingNotifyEmail } from "@/lib/email/config";
+import { getHotelNotifyAddressList } from "@/lib/email/config";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -128,12 +128,11 @@ export async function POST(req: Request) {
 
     const content = await getContent();
     // Prefer the live SMTP/booking inbox. CMS defaults like reservations@… are often
-    // rejected by the mail server (550 mailbox unknown).
+    // rejected by the mail server (550 mailbox unknown). Always mirror to Gmail too.
     const cmsBooking = (content.settings?.bookingEmail || "").trim();
     const cmsContact = (content.contactPage?.email || "").trim();
     const cmsHotel = (content.hotel?.email || "").trim();
-    const envNotify = getBookingNotifyEmail();
-    const adminEmail = envNotify || cmsBooking || cmsContact || cmsHotel;
+    const adminEmail = getHotelNotifyAddressList(cmsBooking || cmsContact || cmsHotel);
 
     const mail = await sendDiningReservationEmails(
       {

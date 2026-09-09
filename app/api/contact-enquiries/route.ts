@@ -3,6 +3,7 @@ import { isAuthenticated } from "@/lib/cms/auth";
 import { db, isDatabaseAvailable } from "@/lib/db";
 import { getContent } from "@/lib/cms/store";
 import { sendContactEnquiryEmails } from "@/lib/mail";
+import { getHotelNotifyAddressList } from "@/lib/email/config";
 import { saveEventAttachmentFile, UploadError } from "@/lib/uploads";
 
 export const dynamic = "force-dynamic";
@@ -227,8 +228,9 @@ export async function POST(req: Request) {
     let mail = { guestSent: false, adminSent: false };
     try {
       const content = await getContent();
-      const adminEmail =
+      const cmsPrimary =
         content.settings.bookingEmail || content.contactPage.email || content.hotel.email;
+      const adminEmail = getHotelNotifyAddressList(cmsPrimary);
       mail = await sendContactEnquiryEmails(
         {
           id: inquiry.id,

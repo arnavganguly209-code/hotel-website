@@ -5,6 +5,8 @@ export {
   getSmtpConfig,
   isSmtpConfigured,
   getBookingNotifyEmail,
+  getHotelNotifyAddressList,
+  getHotelNotifyRecipients,
   type EmailTemplateId,
 } from "./config";
 export { emailService, EmailService } from "./email-service";
