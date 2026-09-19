@@ -119,7 +119,16 @@ export default function AdminBlocksPage() {
         <p className="text-[11px] uppercase tracking-[0.25em] text-[#c5a059]">Availability</p>
         <h1 className="mt-1 font-serif text-3xl font-light text-[#0f2420]">Date Blocking</h1>
         <p className="mt-2 text-sm text-[#5a635c]">
-          Close a room out for maintenance, renovation, private events, or owner use.
+          Close a whole room category for a date range (maintenance, renovation, private events).
+          For month/date sellable counts (how many rooms can sell online), use{" "}
+          <a href="/admin/inventory" className="font-medium text-[#0f2420] underline underline-offset-2">
+            Inventory
+          </a>
+          . For green / yellow / red unit status, use{" "}
+          <a href="/admin/units" className="font-medium text-[#0f2420] underline underline-offset-2">
+            Room Numbers
+          </a>
+          .
         </p>
       </div>
 

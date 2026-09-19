@@ -290,7 +290,8 @@ model RoomUnit {
   id         String   @id @default(cuid())
   roomSlug   String
   roomNumber String
-  status     String   @default("available") // available | occupied | maintenance
+  // available | occupied | maintenance | unavailable
+  status     String   @default("available")
   notes      String   @default("")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

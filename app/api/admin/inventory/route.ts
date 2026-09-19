@@ -1,20 +1,27 @@
 import { NextResponse } from "next/server";
 import { db, isDatabaseAvailable } from "@/lib/db";
 import { assertSameOrigin, getAdminSessionUser } from "@/lib/admin/auth";
-import { getAvailableCount } from "@/lib/admin/availability";
+import {
+  getAvailableCount,
+  parseInventoryOverrides,
+  type InventoryOverrides,
+} from "@/lib/admin/availability";
 import { getContent } from "@/lib/cms/store";
 import { isLiveRoomCategory, roomPublicSlug } from "@/lib/booking/utils";
 
 export const dynamic = "force-dynamic";
 
-function startOfDay(d = new Date()): Date {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
+function localIsoDate(d = new Date()): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
-function isoDate(d: Date): string {
-  return d.toISOString().slice(0, 10);
+function addDaysLocal(iso: string, days: number): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const dt = new Date(y, m - 1, d + days);
+  return localIsoDate(dt);
 }
 
 export async function GET() {
@@ -29,19 +36,19 @@ export async function GET() {
   const content = await getContent();
   const inventory = await db.roomInventory.findMany();
 
-  const today = startOfDay();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const checkIn = localIsoDate();
+  const checkOut = addDaysLocal(checkIn, 1);
 
   const rooms = await Promise.all(
     content.rooms.filter(isLiveRoomCategory).map(async (room) => {
       const slug = roomPublicSlug(room);
       const inv = inventory.find((i) => i.roomSlug === slug);
       const totalRooms = inv?.totalRooms ?? 1;
+      const overrides = parseInventoryOverrides(inv?.overrides);
       const availability = await getAvailableCount({
         roomSlug: slug,
-        checkIn: isoDate(today),
-        checkOut: isoDate(tomorrow),
+        checkIn,
+        checkOut,
         fallbackTotal: totalRooms,
       });
       return {
@@ -51,6 +58,8 @@ export async function GET() {
         occupiedToday: availability.occupied,
         availableToday: availability.available,
         blockedToday: availability.blocked,
+        cappedToday: availability.cappedTotal,
+        overrides,
         updatedAt: inv?.updatedAt ?? null,
       };
     })
@@ -72,22 +81,63 @@ export async function PUT(req: Request) {
   }
 
   try {
-    const body = (await req.json()) as { roomSlug?: string; totalRooms?: number };
-    if (!body.roomSlug?.trim() || typeof body.totalRooms !== "number" || !Number.isFinite(body.totalRooms) || body.totalRooms < 0) {
+    const body = (await req.json()) as {
+      roomSlug?: string;
+      totalRooms?: number;
+      overrides?: InventoryOverrides;
+      mergeOverrides?: boolean;
+    };
+
+    if (!body.roomSlug?.trim()) {
+      return NextResponse.json({ success: false, error: "roomSlug is required" }, { status: 400 });
+    }
+
+    const roomSlug = body.roomSlug.trim();
+    const existing = await db.roomInventory.findUnique({ where: { roomSlug } });
+
+    const data: { totalRooms?: number; overrides?: InventoryOverrides } = {};
+
+    if (typeof body.totalRooms === "number" && Number.isFinite(body.totalRooms)) {
+      data.totalRooms = Math.max(1, Math.round(body.totalRooms));
+    }
+
+    if (body.overrides) {
+      const incoming = parseInventoryOverrides(body.overrides);
+      if (body.mergeOverrides) {
+        const prev = parseInventoryOverrides(existing?.overrides);
+        data.overrides = {
+          monthly: { ...(prev.monthly || {}), ...(incoming.monthly || {}) },
+          daily: { ...(prev.daily || {}), ...(incoming.daily || {}) },
+        };
+      } else {
+        data.overrides = incoming;
+      }
+    }
+
+    if (!data.totalRooms && !data.overrides) {
       return NextResponse.json(
-        { success: false, error: "roomSlug and a valid totalRooms are required" },
+        { success: false, error: "Provide totalRooms and/or overrides" },
         { status: 400 }
       );
     }
 
-    const totalRooms = Math.max(1, Math.round(body.totalRooms));
     const inventory = await db.roomInventory.upsert({
-      where: { roomSlug: body.roomSlug.trim() },
-      create: { roomSlug: body.roomSlug.trim(), totalRooms },
-      update: { totalRooms },
+      where: { roomSlug },
+      create: {
+        roomSlug,
+        totalRooms: data.totalRooms ?? existing?.totalRooms ?? 1,
+        overrides: data.overrides ?? {},
+      },
+      update: data,
     });
 
-    return NextResponse.json({ success: true, inventory });
+    return NextResponse.json({
+      success: true,
+      inventory: {
+        ...inventory,
+        overrides: parseInventoryOverrides(inventory.overrides),
+      },
+    });
   } catch (error) {
     console.error("[AdminInventory]", error);
     return NextResponse.json({ success: false, error: "Unable to update inventory" }, { status: 500 });

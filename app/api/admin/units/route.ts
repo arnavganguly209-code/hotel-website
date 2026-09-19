@@ -4,7 +4,7 @@ import { assertSameOrigin, getAdminSessionUser } from "@/lib/admin/auth";
 
 export const dynamic = "force-dynamic";
 
-const UNIT_STATUSES = new Set(["available", "occupied", "maintenance"]);
+const UNIT_STATUSES = new Set(["available", "occupied", "maintenance", "unavailable"]);
 
 export async function GET(req: Request) {
   if (!isDatabaseAvailable()) {

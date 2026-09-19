@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { db, isDatabaseAvailable } from "@/lib/db";
 import { getAdminSessionUser } from "@/lib/admin/auth";
 import { getContent } from "@/lib/cms/store";
+import { sumAvailableToday } from "@/lib/admin/availability";
+import { isLiveRoomCategory, roomPublicSlug } from "@/lib/booking/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -24,8 +26,6 @@ export async function GET() {
 
   const today = startOfDay();
   const month = startOfMonth();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
 
   const [
     todaysBookings,
@@ -43,7 +43,6 @@ export async function GET() {
     spaToday,
     meetingsToday,
     newsletter,
-    inventory,
     blocks,
     visitToday,
     recentBookings,
@@ -78,7 +77,6 @@ export async function GET() {
     db.spaInquiry.count({ where: { createdAt: { gte: today } } }),
     db.eventInquiry.count({ where: { createdAt: { gte: today } } }),
     db.newsletterSubscriber.count({ where: { status: "active" } }),
-    db.roomInventory.findMany(),
     db.roomBlock.count({
       where: { endDate: { gte: today } },
     }),
@@ -106,24 +104,12 @@ export async function GET() {
   ]);
 
   const content = await getContent();
-  const roomSlugs = content.rooms.map((r) => r.slug?.trim() || r.id);
-  let totalPhysical = 0;
-  for (const slug of roomSlugs) {
-    const inv = inventory.find((i) => i.roomSlug === slug);
-    totalPhysical += inv?.totalRooms ?? 1;
-  }
-
-  const activeStay = await db.booking.aggregate({
-    _sum: { roomQuantity: true },
-    where: {
-      status: { in: ["confirmed", "checked_in"] },
-      checkIn: { lte: today },
-      checkOut: { gt: today },
-    },
-  });
-  const occupied = activeStay._sum.roomQuantity ?? 0;
+  const roomSlugs = content.rooms
+    .filter(isLiveRoomCategory)
+    .map((r) => roomPublicSlug(r));
+  const stock = await sumAvailableToday(roomSlugs);
   const occupancy =
-    totalPhysical > 0 ? Math.round((occupied / totalPhysical) * 100) : 0;
+    stock.total > 0 ? Math.round((stock.occupied / stock.total) * 100) : 0;
 
   return NextResponse.json(
     {
@@ -138,7 +124,7 @@ export async function GET() {
         todaysRevenue: todayRevenueAgg._sum.totalAmount ?? 0,
         monthlyRevenue: monthRevenueAgg._sum.totalAmount ?? 0,
         roomOccupancy: occupancy,
-        availableRooms: Math.max(0, totalPhysical - occupied),
+        availableRooms: stock.available,
         blockedRooms: blocks,
         pendingPayments: unpaid,
         paidPayments: paid,

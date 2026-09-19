@@ -27,7 +27,6 @@ import {
   buildReserveUrl,
   buildRoomDetailUrl,
   formatBookingDate,
-  isRoomAvailableForSearch,
   roomPublicSlug,
 } from "@/lib/booking/utils";
 import { roomDetailPath } from "@/lib/navigation";
@@ -40,6 +39,7 @@ interface RoomsPageProps {
   page: SiteContent["roomsPage"];
   search: BookingSearchParams;
   hasSearch: boolean;
+  unavailableMessage?: string;
 }
 
 const GOLD = "#C5A059";
@@ -219,9 +219,16 @@ function RoomListingRow({
   );
 }
 
-export function RoomsPage({ rooms, page, search, hasSearch }: RoomsPageProps) {
+export function RoomsPage({
+  rooms,
+  page,
+  search,
+  hasSearch,
+  unavailableMessage = "",
+}: RoomsPageProps) {
+  // Server already filters by live stock when dates are present.
   const available = hasSearch
-    ? rooms.filter((room) => isRoomAvailableForSearch(room, search))
+    ? rooms
     : rooms.filter((room) => room.available !== false);
 
   const ordered = available
@@ -347,10 +354,13 @@ export function RoomsPage({ rooms, page, search, hasSearch }: RoomsPageProps) {
             <div className="rounded-[28px] border border-[#c6aa72]/25 bg-white/80 p-10 text-center shadow-lg sm:p-16">
               <Check className="mx-auto h-8 w-8 text-[#b38b4a]" />
               <h2 className="mt-5 font-display text-3xl text-[#173a2b]">
-                No matching room is available
+                {unavailableMessage
+                  ? "No rooms available for these dates"
+                  : "No matching room is available"}
               </h2>
               <p className="mt-3 text-sm text-[#68736d]">
-                Adjust the dates, guest count, or number of rooms and search again.
+                {unavailableMessage ||
+                  "Adjust the dates, guest count, or number of rooms and search again."}
               </p>
               <Button asChild variant="gold" className="mt-7">
                 <Link href="/#hero">Edit Search</Link>

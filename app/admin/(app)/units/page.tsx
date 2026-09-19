@@ -16,12 +16,18 @@ interface RoomUnit {
   notes: string;
 }
 
-const STATUSES = ["available", "occupied", "maintenance"] as const;
+const STATUSES = [
+  { value: "available", label: "Available (Green)" },
+  { value: "maintenance", label: "Maintenance (Yellow)" },
+  { value: "unavailable", label: "Not available (Red)" },
+  { value: "occupied", label: "Occupied" },
+] as const;
 
 const STATUS_STYLES: Record<string, string> = {
-  available: "bg-emerald-50 text-emerald-800 border-emerald-200",
-  occupied: "bg-amber-50 text-amber-900 border-amber-200",
-  maintenance: "bg-slate-100 text-slate-700 border-slate-200",
+  available: "bg-emerald-50 text-emerald-800 border-emerald-300 ring-1 ring-emerald-200",
+  maintenance: "bg-amber-50 text-amber-900 border-amber-300 ring-1 ring-amber-200",
+  unavailable: "bg-red-50 text-red-800 border-red-300 ring-1 ring-red-200",
+  occupied: "bg-sky-50 text-sky-900 border-sky-200",
 };
 
 export default function AdminUnitsPage() {
@@ -137,7 +143,11 @@ export default function AdminUnitsPage() {
         <p className="text-[11px] uppercase tracking-[0.25em] text-[#c5a059]">Physical Rooms</p>
         <h1 className="mt-1 font-serif text-3xl font-light text-[#0f2420]">Room Numbers</h1>
         <p className="mt-2 text-sm text-[#5a635c]">
-          Manage individual room units per category. When units exist, availability uses their count.
+          Manage each room number. Status colors drive sellable stock:
+          <span className="ml-1 font-medium text-emerald-700">Green = available</span>,
+          <span className="ml-1 font-medium text-amber-700">Yellow = maintenance</span>,
+          <span className="ml-1 font-medium text-red-700">Red = not available</span>.
+          Bookings (online + pay at hotel) only sell green rooms.
         </p>
       </div>
 
@@ -201,8 +211,8 @@ export default function AdminUnitsPage() {
             className="w-full rounded-lg border border-[#c5a059]/35 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#c5a059]"
           >
             {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
+              <option key={s.value} value={s.value}>
+                {s.label}
               </option>
             ))}
           </select>
@@ -226,6 +236,21 @@ export default function AdminUnitsPage() {
           </button>
         </div>
       </form>
+
+      <div className="flex flex-wrap gap-3 text-xs text-[#5a635c]">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-800">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" /> Available
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-900">
+          <span className="h-2 w-2 rounded-full bg-amber-400" /> Maintenance
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-red-800">
+          <span className="h-2 w-2 rounded-full bg-red-500" /> Not available
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sky-900">
+          <span className="h-2 w-2 rounded-full bg-sky-500" /> Occupied
+        </span>
+      </div>
 
       {loading ? (
         <div className="flex items-center gap-2 text-[#5a635c]">
@@ -256,8 +281,8 @@ export default function AdminUnitsPage() {
                   className="rounded-lg border border-[#c5a059]/35 bg-white px-3 py-1.5 text-xs outline-none"
                 >
                   {STATUSES.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
+                    <option key={s.value} value={s.value}>
+                      {s.label}
                     </option>
                   ))}
                 </select>
