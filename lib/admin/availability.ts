@@ -319,3 +319,113 @@ export async function sumAvailableToday(
 
   return { available, total, occupied };
 }
+
+export type CalendarDayStock = {
+  date: string;
+  sellableBase: number;
+  cap: number;
+  booked: number;
+  available: number;
+  blocked: boolean;
+  hasDailyCap: boolean;
+  hasMonthlyCap: boolean;
+};
+
+/** Month grid for admin: booked vs free online stock per night. */
+export async function getMonthCalendarStock(options: {
+  roomSlug: string;
+  year: number;
+  month: number; // 1-12
+}): Promise<{
+  roomSlug: string;
+  year: number;
+  month: number;
+  monthKey: string;
+  sellableBase: number;
+  monthlyCap: number | null;
+  days: CalendarDayStock[];
+}> {
+  const { roomSlug, year, month } = options;
+  const monthKey = `${year}-${String(month).padStart(2, "0")}`;
+  const sellableBase = await getSellableTotal(roomSlug, 1);
+  const overrides = await getInventoryOverrides(roomSlug);
+  const monthlyCap =
+    overrides.monthly && overrides.monthly[monthKey] != null
+      ? overrides.monthly[monthKey]
+      : null;
+
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const rangeStart = `${monthKey}-01`;
+  const rangeEnd = addDays(
+    `${monthKey}-${String(daysInMonth).padStart(2, "0")}`,
+    1
+  );
+
+  const start = dayStart(rangeStart);
+  const end = dayStart(rangeEnd);
+
+  const [bookings, blocks] = await Promise.all([
+    isDatabaseAvailable()
+      ? db.booking.findMany({
+          where: {
+            roomSlug,
+            status: { in: [...ACTIVE_STATUSES] },
+            checkIn: { lt: end },
+            checkOut: { gt: start },
+          },
+          select: { checkIn: true, checkOut: true, roomQuantity: true },
+        })
+      : Promise.resolve([]),
+    isDatabaseAvailable()
+      ? db.roomBlock.findMany({
+          where: {
+            roomSlug,
+            startDate: { lt: end },
+            endDate: { gt: start },
+          },
+          select: { startDate: true, endDate: true },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const days: CalendarDayStock[] = [];
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = `${monthKey}-${String(day).padStart(2, "0")}`;
+    const night = dayStart(date);
+    const next = dayStart(addDays(date, 1));
+
+    const blocked = blocks.some((b) => b.startDate < next && b.endDate > night);
+    const booked = bookings.reduce((sum, b) => {
+      if (b.checkIn < next && b.checkOut > night) {
+        return sum + Math.max(1, b.roomQuantity || 1);
+      }
+      return sum;
+    }, 0);
+
+    const hasDailyCap = Boolean(overrides.daily && overrides.daily[date] != null);
+    const hasMonthlyCap = monthlyCap != null;
+    const cap = blocked ? 0 : cappedCapacityForNight(sellableBase, date, overrides);
+    const available = blocked ? 0 : Math.max(0, cap - booked);
+
+    days.push({
+      date,
+      sellableBase,
+      cap,
+      booked,
+      available,
+      blocked,
+      hasDailyCap,
+      hasMonthlyCap,
+    });
+  }
+
+  return {
+    roomSlug,
+    year,
+    month,
+    monthKey,
+    sellableBase,
+    monthlyCap,
+    days,
+  };
+}
