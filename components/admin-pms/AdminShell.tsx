@@ -20,6 +20,7 @@ import {
   Sparkles,
   Utensils,
   Users,
+  Table2,
   Warehouse,
   X,
 } from "lucide-react";
@@ -33,6 +34,7 @@ const NAV = [
   { href: "/admin/rooms", label: "Rooms", icon: BedDouble },
   { href: "/admin/units", label: "Room Numbers", icon: Hash },
   { href: "/admin/inventory", label: "Inventory", icon: Warehouse },
+  { href: "/admin/inventory-manage", label: "Inventory Manage", icon: Table2 },
   { href: "/admin/blocks", label: "Date Blocking", icon: CalendarOff },
   { href: "/admin/bookings/online", label: "Online Bookings", icon: ClipboardList },
   { href: "/admin/bookings/offline", label: "Offline Bookings", icon: Package },

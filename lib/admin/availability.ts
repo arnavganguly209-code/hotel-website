@@ -110,19 +110,22 @@ export async function getInventoryOverrides(
   return parseInventoryOverrides(row?.overrides);
 }
 
-/** Cap for one night after monthly/daily admin overrides. */
+/** Cap for one night after monthly/daily admin overrides.
+ * Daily override is authoritative (Expedia-style allotment for that date).
+ * Monthly cap applies only when no daily allotment is set.
+ */
 export function cappedCapacityForNight(
   baseSellable: number,
   nightIso: string,
   overrides: InventoryOverrides
 ): number {
+  if (overrides.daily && overrides.daily[nightIso] != null) {
+    return Math.max(0, Math.floor(overrides.daily[nightIso]));
+  }
   let cap = Math.max(0, baseSellable);
   const monthKey = nightIso.slice(0, 7);
   if (overrides.monthly && overrides.monthly[monthKey] != null) {
     cap = Math.min(cap, overrides.monthly[monthKey]);
-  }
-  if (overrides.daily && overrides.daily[nightIso] != null) {
-    cap = Math.min(cap, overrides.daily[nightIso]);
   }
   return Math.max(0, cap);
 }
@@ -428,4 +431,158 @@ export async function getMonthCalendarStock(options: {
     monthlyCap,
     days,
   };
+}
+
+export type ManageDayCell = {
+  date: string;
+  inventory: number;
+  booked: number;
+  available: number;
+  open: boolean;
+  blocked: boolean;
+  hasDailyCap: boolean;
+};
+
+export type ManageRoomRow = {
+  roomSlug: string;
+  roomName: string;
+  sellableBase: number;
+  days: ManageDayCell[];
+};
+
+/** Horizontal date-range stock for multiple categories (Inventory Manage). */
+export async function getInventoryManageGrid(options: {
+  roomSlugs: { slug: string; name: string }[];
+  startDate: string;
+  endDateInclusive: string;
+}): Promise<{ dates: string[]; rooms: ManageRoomRow[] }> {
+  const dates = nightsInStay(options.startDate, addDays(options.endDateInclusive, 1));
+  if (dates.length === 0) {
+    return { dates: [], rooms: [] };
+  }
+
+  const rangeStart = dates[0];
+  const rangeEnd = addDays(dates[dates.length - 1], 1);
+  const start = dayStart(rangeStart);
+  const end = dayStart(rangeEnd);
+
+  const rooms: ManageRoomRow[] = [];
+
+  for (const { slug, name } of options.roomSlugs) {
+    const sellableBase = await getSellableTotal(slug, 1);
+    const overrides = await getInventoryOverrides(slug);
+
+    const [bookings, blocks] = await Promise.all([
+      isDatabaseAvailable()
+        ? db.booking.findMany({
+            where: {
+              roomSlug: slug,
+              status: { in: [...ACTIVE_STATUSES] },
+              checkIn: { lt: end },
+              checkOut: { gt: start },
+            },
+            select: { checkIn: true, checkOut: true, roomQuantity: true },
+          })
+        : Promise.resolve([]),
+      isDatabaseAvailable()
+        ? db.roomBlock.findMany({
+            where: {
+              roomSlug: slug,
+              startDate: { lt: end },
+              endDate: { gt: start },
+            },
+            select: { startDate: true, endDate: true },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const days: ManageDayCell[] = dates.map((date) => {
+      const night = dayStart(date);
+      const next = dayStart(addDays(date, 1));
+      const blocked = blocks.some((b) => b.startDate < next && b.endDate > night);
+      const booked = bookings.reduce((sum, b) => {
+        if (b.checkIn < next && b.checkOut > night) {
+          return sum + Math.max(1, b.roomQuantity || 1);
+        }
+        return sum;
+      }, 0);
+      const hasDailyCap = Boolean(overrides.daily && overrides.daily[date] != null);
+      const inventory = blocked ? 0 : cappedCapacityForNight(sellableBase, date, overrides);
+      const available = blocked ? 0 : Math.max(0, inventory - booked);
+      const open = !blocked && inventory > 0;
+      return {
+        date,
+        inventory,
+        booked,
+        available,
+        open,
+        blocked,
+        hasDailyCap,
+      };
+    });
+
+    rooms.push({ roomSlug: slug, roomName: name, sellableBase, days });
+  }
+
+  return { dates, rooms };
+}
+
+/** Merge daily allotments into RoomInventory.overrides (shared source of truth). */
+export async function upsertDailyInventoryAllotments(options: {
+  roomSlug: string;
+  dates: string[];
+  /** Absolute inventory for each date; use null to clear daily override (open to base). */
+  inventory: number | null;
+}): Promise<InventoryOverrides> {
+  if (!isDatabaseAvailable()) return {};
+  const roomSlug = options.roomSlug.trim();
+  const existing = await db.roomInventory.findUnique({ where: { roomSlug } });
+  const prev = parseInventoryOverrides(existing?.overrides);
+  const daily = { ...(prev.daily || {}) };
+
+  for (const date of options.dates) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+    if (options.inventory == null) {
+      delete daily[date];
+    } else {
+      daily[date] = Math.max(0, Math.floor(options.inventory));
+    }
+  }
+
+  const overrides: InventoryOverrides = {
+    monthly: prev.monthly || {},
+    daily,
+  };
+
+  await db.roomInventory.upsert({
+    where: { roomSlug },
+    create: {
+      roomSlug,
+      totalRooms: existing?.totalRooms ?? 1,
+      overrides,
+    },
+    update: { overrides },
+  });
+
+  return overrides;
+}
+
+/** Copy one date's daily allotment (or computed inventory) onto a target range. */
+export async function copyDailyInventory(options: {
+  roomSlug: string;
+  sourceDate: string;
+  targetDates: string[];
+}): Promise<InventoryOverrides> {
+  const sellableBase = await getSellableTotal(options.roomSlug, 1);
+  const overrides = await getInventoryOverrides(options.roomSlug);
+  const sourceInv = cappedCapacityForNight(
+    sellableBase,
+    options.sourceDate,
+    overrides
+  );
+  return upsertDailyInventoryAllotments({
+    roomSlug: options.roomSlug,
+    dates: options.targetDates,
+    inventory: sourceInv,
+  });
 }
