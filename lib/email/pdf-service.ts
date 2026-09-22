@@ -4,7 +4,7 @@ import path from "path";
 import { formatBookingNumber } from "@/lib/booking/booking-number";
 import { formatUsd, formatVatPercent } from "@/lib/booking/vat";
 import { getHotelMailConfig } from "./config";
-import type { BookingEmailContext } from "./template-service";
+import { roomsBookedLabel, type BookingEmailContext } from "./template-service";
 
 /** A4 — matches HTML reservation voucher (green logo, no QR, tight sides). */
 const MM = 2.834645669;
@@ -222,7 +222,7 @@ export async function buildReservationPdf(ctx: BookingEmailContext): Promise<Buf
   );
 
   section("Stay Information");
-  pair(["Room Type", ctx.roomName], ["Rooms", String(ctx.roomQuantity || 1)]);
+  pair(["Room Type", ctx.roomName], ["Rooms Booked", roomsBookedLabel(ctx.roomQuantity)]);
   pair(["Check-in", ctx.checkIn], ["Check-out", ctx.checkOut]);
   pair(
     ["Nights", String(ctx.nights)],

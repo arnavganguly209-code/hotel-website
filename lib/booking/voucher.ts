@@ -44,6 +44,8 @@ export async function buildReservationVoucherHtml(
   data: ReservationVoucherData
 ): Promise<string> {
   const vatLabel = `VAT (${formatVatPercent(data.vat.vatRate)})`;
+  const roomsBooked = Math.max(1, Math.trunc(Number(data.roomQuantity) || 1));
+  const roomsLabel = roomsBooked === 1 ? "1 Room" : `${roomsBooked} Rooms`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -199,7 +201,7 @@ export async function buildReservationVoucherHtml(
     <h2>Stay Information</h2>
     <div class="grid">
       <div><div class="label">Room Type</div><div class="value">${esc(data.roomName)}</div></div>
-      <div><div class="label">Rooms</div><div class="value">${data.roomQuantity}</div></div>
+      <div><div class="label">Rooms</div><div class="value">${esc(roomsLabel)}</div></div>
       <div><div class="label">Check-in</div><div class="value">${esc(data.checkIn)}</div></div>
       <div><div class="label">Check-out</div><div class="value">${esc(data.checkOut)}</div></div>
       <div><div class="label">Nights</div><div class="value">${data.nights}</div></div>

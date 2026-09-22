@@ -126,6 +126,12 @@ function bookingNo(ctx: BookingEmailContext): string {
   return ctx.bookingNumber || formatBookingNumber(ctx.bookingId);
 }
 
+/** Same count the admin Print Voucher shows, written so 1 vs 2 cannot be missed. */
+export function roomsBookedLabel(qty: number): string {
+  const n = Math.max(1, Math.trunc(Number(qty) || 1));
+  return n === 1 ? "1 Room" : `${n} Rooms`;
+}
+
 function logoMarkup(_useCid?: boolean): string {
   const hotel = getHotelMailConfig();
   // Full Hotel Thamel Park & Spa mark (name is inside the logo).
@@ -216,6 +222,7 @@ function guestCards(ctx: BookingEmailContext): string {
     "Stay Details",
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
       ${kv("Room Type", esc(ctx.roomName))}
+      ${kv("Rooms Booked", esc(roomsBookedLabel(ctx.roomQuantity)))}
       ${kv("Check In", esc(ctx.checkIn))}
       ${kv("Check Out", esc(ctx.checkOut))}
       ${kv("Nights", String(ctx.nights))}
@@ -287,6 +294,19 @@ function paymentSummaryText(ctx: BookingEmailContext): string {
   ].join("\n");
 }
 
+function stayDetailsText(ctx: BookingEmailContext): string {
+  return [
+    `Room Type: ${ctx.roomName}`,
+    `Rooms Booked: ${roomsBookedLabel(ctx.roomQuantity)}`,
+    `Check In: ${ctx.checkIn}`,
+    `Check Out: ${ctx.checkOut}`,
+    `Nights: ${ctx.nights}`,
+    `Adults: ${ctx.adults}`,
+    `Children: ${ctx.children}`,
+    `Meal Plan: ${ctx.mealPlan || "Breakfast Included"}`,
+  ].join("\n");
+}
+
 function guestText(ctx: BookingEmailContext, message: string, hotelName: string): string {
   return [
     `Dear ${ctx.guestName},`,
@@ -295,9 +315,11 @@ function guestText(ctx: BookingEmailContext, message: string, hotelName: string)
     message,
     "",
     `Booking No: ${bookingNo(ctx)}`,
-    `Download PDF: ${pdfDownloadUrl(ctx)}`,
+    stayDetailsText(ctx),
     "",
     paymentSummaryText(ctx),
+    "",
+    `Download PDF: ${pdfDownloadUrl(ctx)}`,
     "",
     `Thank you for choosing ${hotelName}.`,
   ].join("\n");
@@ -308,47 +330,86 @@ function adminDashboardHtml(ctx: BookingEmailContext): string {
   const adminUrl = getAdminDashboardUrl();
   const pdfHref = pdfDownloadUrl(ctx);
   return luxuryShell({
-    preheader: `New booking ${bookingNo(ctx)} — ${ctx.guestName}`,
+    preheader: `New booking ${bookingNo(ctx)} — ${ctx.guestName} — ${roomsBookedLabel(ctx.roomQuantity)}`,
     eyebrow: "Reservations Desk",
     title: "New Booking Received",
     useCidLogo: ctx.useCidLogo,
     bodyHtml: `
-      <p style="margin:0 0 18px;font-size:14px;color:#5a635c;">Internal hotel notification — review and confirm this reservation.</p>
+      <p style="margin:0 0 18px;font-size:14px;color:#5a635c;">Internal hotel notification — full reservation details are below. Rooms booked: <strong>${esc(roomsBookedLabel(ctx.roomQuantity))}</strong>.</p>
       ${card(
-        "Reservation Snapshot",
+        "Guest",
         `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
           ${kv("Booking No", esc(bookingNo(ctx)))}
+          ${kv("Booking Date", esc(ctx.bookingDate))}
           ${kv("Booking Status", statusBadge(ctx.bookingStatus))}
           ${kv("Payment Status", statusBadge(ctx.paymentStatus))}
+          ${kv("Payment Method", esc(ctx.paymentMethod || "—"))}
           ${kv("Guest Name", esc(ctx.guestName))}
           ${kv("Phone", esc(ctx.guestPhone || "—"))}
           ${kv("Email", esc(ctx.guestEmail))}
           ${kv("Country", esc(ctx.guestCountry || "—"))}
-          ${kv("Room", esc(ctx.roomName))}
-          ${kv("Arrival", esc(ctx.checkIn))}
-          ${kv("Departure", esc(ctx.checkOut))}
+        </table>`
+      )}
+      ${card(
+        "Stay Details",
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          ${kv("Room Type", esc(ctx.roomName))}
+          ${kv("Rooms Booked", `<strong>${esc(roomsBookedLabel(ctx.roomQuantity))}</strong>`)}
+          ${ctx.roomNumber ? kv("Room Number", esc(ctx.roomNumber)) : ""}
+          ${kv("Check In", esc(ctx.checkIn))}
+          ${kv("Check Out", esc(ctx.checkOut))}
+          ${kv("Nights", String(ctx.nights))}
           ${kv("Adults", String(ctx.adults))}
           ${kv("Children", String(ctx.children))}
-          ${kv("Special Request", esc(ctx.specialRequests || "—"))}
-          ${kv("Room Charge", money(ctx.basePrice))}
-          ${kv("VAT", money(ctx.vatAmount))}
-          ${kv("Grand Total", `<strong>${money(ctx.grandTotal)} ${esc(ctx.currency || "USD")}</strong>`)}
-          ${kv("Booking Time", esc(ctx.bookingTime || ctx.bookingDate))}
-          ${kv("IP Address", esc(ctx.ipAddress || "—"))}
-          ${kv("Browser", esc((ctx.userAgent || "—").slice(0, 120)))}
-          ${kv("Device", esc(ctx.device || "—"))}
+          ${kv("Meal Plan", esc(ctx.mealPlan || "Breakfast Included"))}
+          ${kv("Special Requests", esc(ctx.specialRequests || "—"))}
         </table>`
+      )}
+      ${card(
+        "Payment Summary",
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          ${kv("Website Price (VAT Included)", money(ctx.displayPrice))}
+          ${kv("Room Charge", money(ctx.basePrice))}
+          ${kv(`VAT (${formatVatPercent(ctx.vatRate || 0.13)})`, money(ctx.vatAmount))}
+          ${kv("Grand Total", `<span style="font-size:18px;color:#153a2a;">${money(ctx.grandTotal)} ${esc(ctx.currency || "USD")}</span>`)}
+        </table>
+        <p style="margin:10px 0 0;font-size:12px;color:#6b746e;">Website rates are VAT inclusive — VAT is not added again. Total is for ${esc(roomsBookedLabel(ctx.roomQuantity))}.</p>`
       )}
       <div style="margin-top:8px;text-align:center;">
         ${btn(adminUrl, "Open Admin Bookings", "green")}
         ${btn(pdfHref, "Download Booking PDF", "gold")}
       </div>
       <p style="margin:16px 0 0;font-size:12px;color:#6b746e;text-align:center;">
-        Reservation PDF is also attached to this message when available.<br/>
+        Reservation PDF is also attached. It shows rooms booked as ${esc(roomsBookedLabel(ctx.roomQuantity))}.<br/>
         ${esc(hotel.website)}
       </p>
     `,
   });
+}
+
+function hotelText(ctx: BookingEmailContext): string {
+  return [
+    `New Booking ${bookingNo(ctx)}`,
+    "",
+    `Guest: ${ctx.guestName}`,
+    `Phone: ${ctx.guestPhone || "—"}`,
+    `Email: ${ctx.guestEmail}`,
+    `Country: ${ctx.guestCountry || "—"}`,
+    `Booking Status: ${ctx.bookingStatus}`,
+    `Payment Status: ${ctx.paymentStatus}`,
+    `Payment Method: ${ctx.paymentMethod || "—"}`,
+    "",
+    stayDetailsText(ctx),
+    ctx.roomNumber ? `Room Number: ${ctx.roomNumber}` : null,
+    `Special Requests: ${ctx.specialRequests || "—"}`,
+    "",
+    paymentSummaryText(ctx),
+    "",
+    `Download PDF: ${pdfDownloadUrl(ctx)}`,
+    `Admin: ${getAdminDashboardUrl()}`,
+  ]
+    .filter((line): line is string => line !== null)
+    .join("\n");
 }
 
 /** Render guest / hotel booking email templates (premium HTML). */
@@ -374,13 +435,7 @@ export function renderBookingEmail(
       template,
       subject: `New Booking Received | ${code}`,
       html: adminDashboardHtml(withPdf),
-      text: [
-        `New Booking ${code}`,
-        `Guest: ${ctx.guestName}`,
-        `Download PDF: ${pdfDownloadUrl(withPdf)}`,
-        `Admin: ${getAdminDashboardUrl()}`,
-        `Grand Total: ${money(ctx.grandTotal)} ${ctx.currency || "USD"}`,
-      ].join("\n"),
+      text: hotelText(withPdf),
     };
   }
 
