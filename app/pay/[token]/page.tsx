@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ShieldCheck } from "lucide-react";
 import { db, isDatabaseAvailable } from "@/lib/db";
 import { getHotelMailConfig, getPublicAppUrl } from "@/lib/email/config";
 import { absoluteAssetUrl, canCollectPayment, formatUsdAmount, publicPayUrl } from "@/lib/pay-links/money";
 import { PayLinkPayButton } from "@/components/pay-links/PayLinkPayButton";
+import { PayLinkField, PayLinkPublicShell } from "@/components/pay-links/PayLinkPublicShell";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +45,16 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
+function statusCopy(status: string, expired: boolean) {
+  if (expired || status === "EXPIRED") return { label: "Expired", tone: "muted" as const };
+  if (status === "PAID") return { label: "Paid", tone: "success" as const };
+  if (status === "FAILED") return { label: "Unsuccessful", tone: "alert" as const };
+  if (status === "CANCELLED") return { label: "Cancelled", tone: "muted" as const };
+  if (status === "PROCESSING") return { label: "Confirming", tone: "info" as const };
+  if (status === "PENDING") return { label: "Pending", tone: "info" as const };
+  return { label: "Ready", tone: "info" as const };
+}
+
 export default async function PublicPayLinkPage({ params }: Params) {
   const { token } = await params;
   const link = await loadLink(token);
@@ -51,80 +63,105 @@ export default async function PublicPayLinkPage({ params }: Params) {
   const expired = Boolean(link.expiresAt && link.expiresAt.getTime() <= Date.now());
   const collectable = canCollectPayment(link.paymentStatus, link.expiresAt) && !expired;
   const image = absoluteAssetUrl(link.imageUrl);
+  const total = formatUsdAmount(link.totalAmountUsd ?? link.amountUsd);
+  const paidAmount = formatUsdAmount(link.paidAmount || link.totalAmountUsd || link.amountUsd);
+  const status = statusCopy(link.paymentStatus, expired);
 
   return (
-    <main className="min-h-screen bg-[#efe9dc] px-4 py-10">
-      <div className="mx-auto max-w-xl overflow-hidden rounded-[28px] border border-[#d4af37] bg-[#fffdf8] shadow-[0_24px_70px_rgba(21,58,42,0.12)]">
-        <div className="border-b-4 border-[#c5a059] bg-white px-8 py-6 text-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={hotel.logoUrl} alt="Hotel Thamel Park" className="mx-auto h-16 w-auto" />
-        </div>
-        {image ? (
-          <div className="relative aspect-[1200/630] bg-[#153a2a]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={image} alt={link.title} className="h-full w-full object-cover" />
-          </div>
-        ) : null}
-        <div className="space-y-5 px-8 py-8">
-          <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-[#c5a059]">
-            Payment Request
-          </p>
-          <h1 className="text-center font-serif text-3xl text-[#153a2a]">{link.title}</h1>
-          <dl className="space-y-2 text-sm text-[#5a635c]">
-            <div className="flex justify-between gap-4">
-              <dt>Customer</dt>
-              <dd className="font-semibold text-[#153a2a]">{link.customerName}</dd>
+    <PayLinkPublicShell hotelName={hotel.name} logoUrl={hotel.logoUrl}>
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)] lg:gap-12 xl:gap-16">
+        <section className="min-w-0">
+          <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#c5a059]">Payment Request</p>
+          <h1 className="mt-2 font-serif text-[clamp(1.75rem,2.4vw,2.5rem)] leading-tight text-[#153a2a]">{link.title}</h1>
+
+          {image ? (
+            <div className="mt-6 overflow-hidden rounded-[14px] bg-[#153a2a]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={image} alt={link.title} className="aspect-video w-full object-cover" />
             </div>
-            <div className="flex justify-between gap-4">
-              <dt>Reference</dt>
-              <dd className="font-semibold text-[#153a2a]">{link.publicToken}</dd>
-            </div>
-          </dl>
-          {link.description ? (
-            <p className="text-sm leading-7 text-[#5a635c]">{link.description}</p>
           ) : null}
-          <dl className="space-y-2 text-sm text-[#5a635c]">
+
+          <dl className="mt-6">
+            <PayLinkField label="Customer">{link.customerName}</PayLinkField>
+            {link.customerEmail ? <PayLinkField label="Email">{link.customerEmail}</PayLinkField> : null}
+            <PayLinkField label="Reference">
+              <span className="font-mono tracking-wide">{link.publicToken}</span>
+            </PayLinkField>
+            {link.description ? <PayLinkField label="Description">{link.description}</PayLinkField> : null}
+            <PayLinkField label="Status">
+              <span
+                className={
+                  status.tone === "success"
+                    ? "text-emerald-800"
+                    : status.tone === "alert"
+                      ? "text-[#7a2e24]"
+                      : status.tone === "muted"
+                        ? "text-[#6f7a74]"
+                        : "text-[#153a2a]"
+                }
+              >
+                {status.label}
+              </span>
+            </PayLinkField>
+          </dl>
+        </section>
+
+        <aside className="lg:sticky lg:top-8">
+          <div className="rounded-[16px] border border-[#e4dcc9] bg-[#fffdf8] px-5 py-6 sm:px-7 sm:py-8">
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#8a918b]">
+              {link.paymentStatus === "PAID" ? "Amount Paid" : "Amount Due"}
+            </p>
+            <p className="mt-3 font-serif text-[clamp(2.25rem,4vw,3.25rem)] leading-none text-[#153a2a]">
+              {link.paymentStatus === "PAID" ? paidAmount : total}
+              <span className="ml-2 align-middle font-sans text-base font-medium tracking-[0.12em] text-[#7a8a82]">
+                USD
+              </span>
+            </p>
+
             {link.cardFeeEnabled ? (
-              <>
+              <dl className="mt-6 space-y-2.5 border-t border-[#ece6d8] pt-5 text-sm text-[#5a635c]">
                 <div className="flex justify-between gap-4">
-                  <dt>Base Amount</dt>
-                  <dd className="font-semibold text-[#153a2a]">{formatUsdAmount(link.subtotalAmountUsd)} USD</dd>
+                  <dt>Subtotal</dt>
+                  <dd className="font-medium text-[#153a2a]">{formatUsdAmount(link.subtotalAmountUsd)} USD</dd>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <dt>Card Fee</dt>
-                  <dd className="font-semibold text-[#153a2a]">{formatUsdAmount(link.cardFeeAmount)} USD</dd>
+                  <dt>Card processing fee</dt>
+                  <dd className="font-medium text-[#153a2a]">{formatUsdAmount(link.cardFeeAmount)} USD</dd>
                 </div>
-              </>
-            ) : (
-              <div className="flex justify-between gap-4">
-                <dt>Amount</dt>
-                <dd className="font-semibold text-[#153a2a]">{formatUsdAmount(link.amountUsd)} USD</dd>
-              </div>
-            )}
-          </dl>
-          <p className="text-center font-serif text-5xl text-[#153a2a]">
-            {formatUsdAmount(link.totalAmountUsd ?? link.amountUsd)}
-            <span className="ml-2 text-lg text-[#7a8a82]">USD</span>
-          </p>
-          {link.cardFeeEnabled ? (
-            <p className="text-center text-xs uppercase tracking-[0.16em] text-[#7a8a82]">Customer total</p>
-          ) : null}
-          {link.paymentStatus === "PAID" ? (
-            <p className="rounded-xl bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-800">
-              This payment has already been completed. Thank you.
-            </p>
-          ) : collectable ? (
-            <PayLinkPayButton token={link.publicToken} />
-          ) : (
-            <p className="rounded-xl bg-red-50 px-4 py-3 text-center text-sm text-red-800">
-              This payment link is no longer active.
-            </p>
-          )}
-          <p className="flex items-center justify-center gap-2 text-center text-[11px] uppercase tracking-[0.16em] text-[#7a8a82]">
-            Secure Himalayan Bank payment
-          </p>
-        </div>
+                <div className="flex justify-between gap-4 border-t border-[#ece6d8] pt-3 text-[#153a2a]">
+                  <dt className="font-semibold">Total</dt>
+                  <dd className="font-semibold">{total} USD</dd>
+                </div>
+              </dl>
+            ) : null}
+
+            <div className="mt-7">
+              {link.paymentStatus === "PAID" ? (
+                <div className="rounded-[12px] border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm leading-6 text-emerald-900">
+                  <p className="font-semibold">Payment Completed</p>
+                  <p className="mt-1">Your payment has been successfully received.</p>
+                </div>
+              ) : collectable ? (
+                <PayLinkPayButton token={link.publicToken} />
+              ) : (
+                <p className="rounded-[12px] border border-[#ead8d4] bg-[#fbf4f2] px-4 py-4 text-sm leading-6 text-[#7a2e24]">
+                  This payment link is no longer active.
+                </p>
+              )}
+            </div>
+
+            {collectable && link.paymentStatus !== "PAID" ? (
+              <p className="mt-5 flex items-start gap-2 text-[12px] leading-5 text-[#6f7a74]">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#c5a059]" aria-hidden />
+                <span>
+                  Secure payment. Your payment is processed through Himalayan Bank. Hotel Thamel Park never stores card
+                  details on this page.
+                </span>
+              </p>
+            ) : null}
+          </div>
+        </aside>
       </div>
-    </main>
+    </PayLinkPublicShell>
   );
 }

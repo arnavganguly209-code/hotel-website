@@ -24,10 +24,19 @@ export function SiteShell({ children, content }: SiteShellProps) {
   const pathname = usePathname();
   const isOrbit = pathname.startsWith("/orbit");
   const isAdmin = pathname.startsWith("/admin");
+  const isPayLink = pathname.startsWith("/pay");
 
-  // Admin PMS and Orbit CMS use their own shells — never wrap with public site chrome.
+  // Admin PMS, Orbit CMS, and public Payment Links use their own chrome.
   if (isOrbit || isAdmin) {
     return <>{children}</>;
+  }
+
+  if (isPayLink) {
+    return (
+      <ThemeProvider theme={content.theme}>
+        <PerformanceProvider value={content.performanceSettings}>{children}</PerformanceProvider>
+      </ThemeProvider>
+    );
   }
 
   const hotelName = stripSpaBrand(content.hotel.name || "Hotel Thamel Park");

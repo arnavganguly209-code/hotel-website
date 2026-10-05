@@ -3,6 +3,7 @@ import { db, isDatabaseAvailable } from "@/lib/db";
 import { getHotelMailConfig } from "@/lib/email/config";
 import { formatUsdAmount } from "@/lib/pay-links/money";
 import { PayLinkConfirmingRefresh } from "@/components/pay-links/PayLinkConfirmingRefresh";
+import { PayLinkField, PayLinkPublicShell } from "@/components/pay-links/PayLinkPublicShell";
 
 export const dynamic = "force-dynamic";
 
@@ -17,26 +18,26 @@ export default async function PayLinkSuccessPage({ params }: Params) {
   if (!link) notFound();
   const hotel = getHotelMailConfig();
   const paid = link.paymentStatus === "PAID";
+  const amount = formatUsdAmount(link.paidAmount || link.totalAmountUsd || link.amountUsd);
 
   return (
-    <main className="min-h-screen bg-[#efe9dc] px-4 py-16">
-      <div className="mx-auto max-w-lg rounded-[28px] border border-[#d4af37] bg-white px-8 py-12 text-center shadow-lg">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={hotel.logoUrl} alt={hotel.name} className="mx-auto h-14 w-auto" />
-        <h1 className="mt-8 font-serif text-4xl text-[#153a2a]">
-          {paid ? "Payment Successful" : "Payment received — confirming"}
-        </h1>
-        <p className="mt-4 text-sm leading-7 text-[#5a635c]">
-          Thank you, {link.customerName}.
-          <br />
-          Your payment of{" "}
-          <strong>{formatUsdAmount(link.paidAmount || link.totalAmountUsd || link.amountUsd)} USD</strong>{" "}
-          {paid ? "has been successfully received." : "is being confirmed."}
+    <PayLinkPublicShell hotelName={hotel.name} logoUrl={hotel.logoUrl}>
+      <div className="mx-auto max-w-xl rounded-[16px] border border-[#e4dcc9] bg-[#fffdf8] px-6 py-10 sm:px-10">
+        <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#c5a059]">
+          {paid ? "Payment Completed" : "Confirming Payment"}
         </p>
-        <p className="mt-6 text-xs uppercase tracking-[0.2em] text-[#c5a059]">Reference {link.publicToken}</p>
+        <h1 className="mt-3 font-serif text-[clamp(1.85rem,3vw,2.4rem)] text-[#153a2a]">
+          {paid ? "Your payment has been successfully received." : "Payment received — confirming"}
+        </h1>
+        <p className="mt-4 text-sm leading-7 text-[#5a635c]">Thank you, {link.customerName}.</p>
+        <dl className="mt-6">
+          <PayLinkField label="Reference">
+            <span className="font-mono tracking-wide">{link.publicToken}</span>
+          </PayLinkField>
+          <PayLinkField label={paid ? "Amount Paid" : "Amount"}>{amount} USD</PayLinkField>
+        </dl>
         {!paid ? <PayLinkConfirmingRefresh /> : null}
-        <p className="mt-10 text-sm text-[#7a8a82]">{hotel.name}</p>
       </div>
-    </main>
+    </PayLinkPublicShell>
   );
 }
