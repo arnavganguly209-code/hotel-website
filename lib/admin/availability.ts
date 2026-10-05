@@ -1,4 +1,10 @@
 import { db, isDatabaseAvailable } from "@/lib/db";
+import {
+  parseDailyRatesMap,
+  parseOccupancyNightRate,
+  type OccupancyNightRate,
+  type OccupancyRatePatch,
+} from "@/lib/booking/daily-rates";
 
 const ACTIVE_STATUSES = [
   "pending",
@@ -15,6 +21,10 @@ export type InventoryOverrides = {
   monthly?: Record<string, number>;
   /** YYYY-MM-DD → max rooms sellable that night */
   daily?: Record<string, number>;
+  /** Category default occupancy rates (VAT inclusive). */
+  rateDefaults?: OccupancyNightRate;
+  /** YYYY-MM-DD occupancy rates for 1 / 2 / 3 adults + children. */
+  rates?: Record<string, OccupancyNightRate>;
 };
 
 export function parseInventoryOverrides(raw: unknown): InventoryOverrides {
@@ -44,7 +54,9 @@ export function parseInventoryOverrides(raw: unknown): InventoryOverrides {
       daily[k] = Math.floor(n);
     }
   }
-  return { monthly, daily };
+  const rates = parseDailyRatesMap(obj.rates);
+  const rateDefaults = parseOccupancyNightRate(obj.rateDefaults) || undefined;
+  return { monthly, daily, rates, rateDefaults };
 }
 
 function dayStart(isoDate: string): Date {
@@ -441,12 +453,19 @@ export type ManageDayCell = {
   open: boolean;
   blocked: boolean;
   hasDailyCap: boolean;
+  hasDailyRate: boolean;
+  adult1: number;
+  adult2: number;
+  adult3: number;
+  includedChildren: number;
+  extraChildPrice: number;
 };
 
 export type ManageRoomRow = {
   roomSlug: string;
   roomName: string;
   sellableBase: number;
+  rateDefaults: OccupancyNightRate | null;
   days: ManageDayCell[];
 };
 
@@ -510,6 +529,16 @@ export async function getInventoryManageGrid(options: {
       const inventory = blocked ? 0 : cappedCapacityForNight(sellableBase, date, overrides);
       const available = blocked ? 0 : Math.max(0, inventory - booked);
       const open = !blocked && inventory > 0;
+      const hasDailyRate = Boolean(overrides.rates && overrides.rates[date]);
+      const rate = hasDailyRate
+        ? overrides.rates![date]
+        : overrides.rateDefaults || {
+            adult1: 0,
+            adult2: 0,
+            adult3: 0,
+            includedChildren: 0,
+            extraChildPrice: 0,
+          };
       return {
         date,
         inventory,
@@ -518,10 +547,22 @@ export async function getInventoryManageGrid(options: {
         open,
         blocked,
         hasDailyCap,
+        hasDailyRate,
+        adult1: rate.adult1,
+        adult2: rate.adult2,
+        adult3: rate.adult3,
+        includedChildren: rate.includedChildren,
+        extraChildPrice: rate.extraChildPrice,
       };
     });
 
-    rooms.push({ roomSlug: slug, roomName: name, sellableBase, days });
+    rooms.push({
+      roomSlug: slug,
+      roomName: name,
+      sellableBase,
+      rateDefaults: overrides.rateDefaults || null,
+      days,
+    });
   }
 
   return { dates, rooms };
@@ -552,6 +593,8 @@ export async function upsertDailyInventoryAllotments(options: {
   const overrides: InventoryOverrides = {
     monthly: prev.monthly || {},
     daily,
+    rates: prev.rates || {},
+    rateDefaults: prev.rateDefaults,
   };
 
   await db.roomInventory.upsert({
@@ -585,4 +628,110 @@ export async function copyDailyInventory(options: {
     dates: options.targetDates,
     inventory: sourceInv,
   });
+}
+
+async function persistOverrides(
+  roomSlug: string,
+  next: InventoryOverrides
+): Promise<InventoryOverrides> {
+  if (!isDatabaseAvailable()) return next;
+  const existing = await db.roomInventory.findUnique({ where: { roomSlug } });
+  await db.roomInventory.upsert({
+    where: { roomSlug },
+    create: {
+      roomSlug,
+      totalRooms: existing?.totalRooms ?? 1,
+      overrides: next,
+    },
+    update: { overrides: next },
+  });
+  return next;
+}
+
+function mergeRate(base: OccupancyNightRate | undefined, patch: OccupancyRatePatch): OccupancyNightRate {
+  const fallback: OccupancyNightRate = base || {
+    adult1: 0,
+    adult2: 0,
+    adult3: 0,
+    includedChildren: 0,
+    extraChildPrice: 0,
+  };
+  return {
+    adult1: patch.adult1 != null ? Math.max(0, Math.round(patch.adult1)) : fallback.adult1,
+    adult2: patch.adult2 != null ? Math.max(0, Math.round(patch.adult2)) : fallback.adult2,
+    adult3: patch.adult3 != null ? Math.max(0, Math.round(patch.adult3)) : fallback.adult3,
+    includedChildren:
+      patch.includedChildren != null
+        ? Math.max(0, Math.trunc(patch.includedChildren))
+        : fallback.includedChildren,
+    extraChildPrice:
+      patch.extraChildPrice != null
+        ? Math.max(0, Math.round(patch.extraChildPrice))
+        : fallback.extraChildPrice,
+  };
+}
+
+/** Set occupancy rates for one or more dates. Empty patch fields keep previous/default. */
+export async function upsertDailyOccupancyRates(options: {
+  roomSlug: string;
+  dates: string[];
+  patch: OccupancyRatePatch;
+  asDefaults?: boolean;
+}): Promise<InventoryOverrides> {
+  if (!isDatabaseAvailable()) return {};
+  const roomSlug = options.roomSlug.trim();
+  const existing = await db.roomInventory.findUnique({ where: { roomSlug } });
+  const prev = parseInventoryOverrides(existing?.overrides);
+  const rates = { ...(prev.rates || {}) };
+  const defaults = prev.rateDefaults;
+
+  if (options.asDefaults) {
+    return persistOverrides(roomSlug, {
+      monthly: prev.monthly || {},
+      daily: prev.daily || {},
+      rates,
+      rateDefaults: mergeRate(defaults, options.patch),
+    });
+  }
+
+  for (const date of options.dates) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+    rates[date] = mergeRate(rates[date] || defaults, options.patch);
+  }
+
+  return persistOverrides(roomSlug, {
+    monthly: prev.monthly || {},
+    daily: prev.daily || {},
+    rates,
+    rateDefaults: defaults,
+  });
+}
+
+/** Copy one date's occupancy rates onto a target range. */
+export async function copyDailyOccupancyRates(options: {
+  roomSlug: string;
+  sourceDate: string;
+  targetDates: string[];
+}): Promise<InventoryOverrides> {
+  if (!isDatabaseAvailable()) return {};
+  const prev = await getInventoryOverrides(options.roomSlug);
+  const source = prev.rates?.[options.sourceDate] || prev.rateDefaults;
+  if (!source) {
+    return prev;
+  }
+  return upsertDailyOccupancyRates({
+    roomSlug: options.roomSlug,
+    dates: options.targetDates,
+    patch: source,
+  });
+}
+
+/** Copy inventory allotment and occupancy rates together. */
+export async function copyDailyInventoryAndRates(options: {
+  roomSlug: string;
+  sourceDate: string;
+  targetDates: string[];
+}): Promise<InventoryOverrides> {
+  await copyDailyInventory(options);
+  return copyDailyOccupancyRates(options);
 }

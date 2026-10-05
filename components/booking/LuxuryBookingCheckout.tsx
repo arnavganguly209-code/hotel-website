@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, CreditCard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -84,7 +84,25 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
   const roomQuantity = Math.max(1, Number(stay.rooms) || 1);
   const adultCount = Math.max(1, Number(stay.adults) || 1);
   const childCount = Math.max(0, Number(stay.children) || 0);
-  const breakdown = useMemo(
+  const [quote, setQuote] = useState<{
+    grandTotal: number;
+    roomSubtotal: number;
+    extraGuestCharge: number;
+    occupancyLabel?: string;
+    includedChildren?: number;
+    extraChildren?: number;
+    available?: boolean;
+    error?: string | null;
+    vat: {
+      displayPrice: number;
+      basePrice: number;
+      vatRate: number;
+      vatAmount: number;
+      grandTotal: number;
+      currency: string;
+    };
+  } | null>(null);
+  const fallback = useMemo(
     () =>
       calculateExtraGuestBreakdown({
         room,
@@ -95,6 +113,51 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
       }),
     [room, adultCount, childCount, nights, roomQuantity]
   );
+
+  useEffect(() => {
+    if (!bookingDatesAreValid(stay.checkIn, stay.checkOut)) {
+      setQuote(null);
+      return;
+    }
+    const controller = new AbortController();
+    const params = new URLSearchParams({
+      roomSlug: roomPublicSlug(room),
+      checkIn: stay.checkIn,
+      checkOut: stay.checkOut,
+      adults: String(adultCount),
+      children: String(childCount),
+      rooms: String(roomQuantity),
+    });
+    fetch(`/api/booking/quote?${params}`, { cache: "no-store", signal: controller.signal })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data?.success) return;
+        setQuote({
+          grandTotal: data.grandTotal,
+          roomSubtotal: data.roomSubtotal,
+          extraGuestCharge: data.extraGuestCharge,
+          occupancyLabel: data.occupancyLabel,
+          includedChildren: data.includedChildren,
+          extraChildren: data.extraChildren,
+          available: data.available,
+          error: data.error,
+          vat: data.vat,
+        });
+      })
+      .catch(() => {
+        /* keep fallback */
+      });
+    return () => controller.abort();
+  }, [room, stay.checkIn, stay.checkOut, adultCount, childCount, roomQuantity]);
+
+  const breakdown = quote
+    ? {
+        roomSubtotal: quote.roomSubtotal,
+        total: quote.extraGuestCharge,
+        vat: quote.vat,
+        grandTotal: quote.grandTotal,
+      }
+    : fallback;
   const total = breakdown.grandTotal;
   const inputClass = (name: string) =>
     `${fieldClass} ${fieldErrors[name] ? "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-500/10" : ""}`;
@@ -106,6 +169,8 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
         errors.dates = "Choose valid future check-in and check-out dates.";
       } else if (!roomFitsOccupancy(room, adultCount, childCount, roomQuantity)) {
         errors.dates = "Guest count exceeds this room’s maximum occupancy.";
+      } else if (quote && quote.available === false) {
+        errors.dates = quote.error || "Selected dates are not available for this room.";
       }
       if (!guest.firstName.trim()) errors.firstName = "First name is required.";
       if (!guest.lastName.trim()) errors.lastName = "Last name is required.";
@@ -323,6 +388,18 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
                       />
                     </label>
                     <label className="text-xs font-semibold text-[#4f5f56]">
+                      Rooms
+                      <input
+                        required
+                        type="number"
+                        min="1"
+                        max="8"
+                        value={stay.rooms}
+                        onChange={(e) => setStay({ ...stay, rooms: e.target.value })}
+                        className={`mt-2 ${fieldClass}`}
+                      />
+                    </label>
+                    <label className="text-xs font-semibold text-[#4f5f56]">
                       Children
                       <input
                         type="number"
@@ -337,7 +414,9 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
                   <FieldError message={fieldErrors.dates} />
                   <div className="mt-5 flex justify-between rounded-2xl border border-[#ae8645] bg-[#f5edde] p-4 text-sm text-[#173a2b]">
                     <span>Breakfast Included · VAT inclusive</span>
-                    <strong>${room.price} / night</strong>
+                    <strong>
+                      ${quote?.vat ? Math.round(quote.roomSubtotal / Math.max(1, nights * roomQuantity)) : room.price} / night
+                    </strong>
                   </div>
                 </div>
 
@@ -598,7 +677,9 @@ export function LuxuryBookingCheckout({ room, booking, search }: LuxuryBookingCh
             <div className="flex justify-between gap-3"><dt>Check-in</dt><dd className="text-right text-white">{formatBookingDate(stay.checkIn)}</dd></div>
             <div className="flex justify-between gap-3"><dt>Check-out</dt><dd className="text-right text-white">{formatBookingDate(stay.checkOut)}</dd></div>
             <div className="flex justify-between"><dt>Nights</dt><dd className="text-white">{nights}</dd></div>
+            <div className="flex justify-between"><dt>Rooms</dt><dd className="text-white">{roomQuantity === 1 ? "1 Room" : `${roomQuantity} Rooms`}</dd></div>
             <div className="flex justify-between"><dt>Guests</dt><dd className="text-white">{stay.adults} adults, {stay.children} children</dd></div>
+            <div className="flex justify-between"><dt>Occupancy rate</dt><dd className="text-white">{quote?.occupancyLabel || "—"}</dd></div>
             <div className="flex justify-between"><dt>Rate</dt><dd className="text-white">Breakfast Included</dd></div>
           </dl>
           <VatInclusivePriceSummary

@@ -24,24 +24,53 @@ type ManageDayCell = {
   open: boolean;
   blocked: boolean;
   hasDailyCap: boolean;
+  hasDailyRate?: boolean;
+  adult1: number;
+  adult2: number;
+  adult3: number;
+  includedChildren: number;
+  extraChildPrice: number;
 };
 
 type ManageRoomRow = {
   roomSlug: string;
   roomName: string;
   sellableBase: number;
+  rateDefaults?: {
+    adult1: number;
+    adult2: number;
+    adult3: number;
+    includedChildren: number;
+    extraChildPrice: number;
+  } | null;
   days: ManageDayCell[];
 };
 
 type CategoryOption = { slug: string; name: string };
 
-type MetricRow = "availability" | "inventory" | "booked" | "available";
+type MetricRow =
+  | "availability"
+  | "inventory"
+  | "booked"
+  | "available"
+  | "adult1"
+  | "adult2"
+  | "adult3"
+  | "includedChildren"
+  | "extraChildPrice";
 
-const METRIC_ROWS: { key: MetricRow; label: string }[] = [
+type RateField = "adult1" | "adult2" | "adult3" | "includedChildren" | "extraChildPrice";
+
+const METRIC_ROWS: { key: MetricRow; label: string; editable?: boolean; rate?: boolean }[] = [
   { key: "availability", label: "Availability" },
-  { key: "inventory", label: "Inventory" },
+  { key: "inventory", label: "Inventory", editable: true },
   { key: "booked", label: "Booked" },
   { key: "available", label: "Available" },
+  { key: "adult1", label: "Rate (USD) 1 adult", editable: true, rate: true },
+  { key: "adult2", label: "Rate (USD) 2 adults", editable: true, rate: true },
+  { key: "adult3", label: "Rate (USD) 3 adults", editable: true, rate: true },
+  { key: "includedChildren", label: "Children included", editable: true, rate: true },
+  { key: "extraChildPrice", label: "Extra child (USD)", editable: true, rate: true },
 ];
 
 function pad2(n: number) {
@@ -105,7 +134,7 @@ export default function InventoryManagePage() {
   const [saving, setSaving] = useState(false);
 
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-  const [editing, setEditing] = useState<{ slug: string; date: string } | null>(null);
+  const [editing, setEditing] = useState<{ slug: string; date: string; field: MetricRow } | null>(null);
   const [editValue, setEditValue] = useState("");
 
   // Bulk panel
@@ -113,6 +142,11 @@ export default function InventoryManagePage() {
   const [bulkFrom, setBulkFrom] = useState(today);
   const [bulkTo, setBulkTo] = useState(addDaysIso(today, 10));
   const [bulkInventory, setBulkInventory] = useState("10");
+  const [bulkAdult1, setBulkAdult1] = useState("50");
+  const [bulkAdult2, setBulkAdult2] = useState("50");
+  const [bulkAdult3, setBulkAdult3] = useState("55");
+  const [bulkChildrenIncluded, setBulkChildrenIncluded] = useState("1");
+  const [bulkExtraChild, setBulkExtraChild] = useState("5");
   const [copySource, setCopySource] = useState(today);
   const [copyFrom, setCopyFrom] = useState(addDaysIso(today, 1));
   const [copyTo, setCopyTo] = useState(addDaysIso(today, 7));
@@ -200,8 +234,10 @@ export default function InventoryManagePage() {
           : data.action === "open"
             ? `Opened ${data.datesUpdated} date(s) to base inventory.`
             : data.action === "copy"
-              ? `Copied inventory to ${data.datesUpdated} date(s).`
-              : `Updated inventory on ${data.datesUpdated} date(s).`
+              ? `Copied inventory and rates to ${data.datesUpdated} date(s).`
+              : data.action === "set-rates"
+                ? `Updated occupancy rates on ${data.datesUpdated} date(s).`
+                : `Updated inventory on ${data.datesUpdated} date(s).`
       );
       await load();
       return true;
@@ -213,19 +249,53 @@ export default function InventoryManagePage() {
     }
   }
 
-  async function saveCell(slug: string, date: string, value: string) {
+  async function saveCell(slug: string, date: string, field: MetricRow, value: string) {
     const n = Number(value);
     if (!Number.isFinite(n) || n < 0) {
-      setError("Inventory must be a number ≥ 0");
+      setError("Value must be a number ≥ 0");
       return;
     }
+    if (field === "inventory") {
+      const ok = await mutate({
+        action: "set",
+        roomSlug: slug,
+        date,
+        inventory: Math.floor(n),
+      });
+      if (ok) setEditing(null);
+      return;
+    }
+    const rateFields: RateField[] = [
+      "adult1",
+      "adult2",
+      "adult3",
+      "includedChildren",
+      "extraChildPrice",
+    ];
+    if (!rateFields.includes(field as RateField)) return;
     const ok = await mutate({
-      action: "set",
+      action: "set-rates",
       roomSlug: slug,
       date,
-      inventory: Math.floor(n),
+      [field]: field === "includedChildren" ? Math.floor(n) : Math.round(n),
     });
     if (ok) setEditing(null);
+  }
+
+  async function onBulkRates(e: FormEvent) {
+    e.preventDefault();
+    if (!bulkRoom) return;
+    await mutate({
+      action: "set-rates",
+      roomSlug: bulkRoom,
+      startDate: bulkFrom,
+      endDate: bulkTo,
+      adult1: Math.round(Number(bulkAdult1)),
+      adult2: Math.round(Number(bulkAdult2)),
+      adult3: Math.round(Number(bulkAdult3)),
+      includedChildren: Math.floor(Number(bulkChildrenIncluded)),
+      extraChildPrice: Math.round(Number(bulkExtraChild)),
+    });
   }
 
   async function onBulkSet(e: FormEvent) {
@@ -288,6 +358,11 @@ export default function InventoryManagePage() {
     }
     if (metric === "inventory") return cell.inventory;
     if (metric === "booked") return cell.booked;
+    if (metric === "adult1") return cell.adult1;
+    if (metric === "adult2") return cell.adult2;
+    if (metric === "adult3") return cell.adult3;
+    if (metric === "includedChildren") return cell.includedChildren;
+    if (metric === "extraChildPrice") return cell.extraChildPrice;
     return cell.available;
   }
 
@@ -297,9 +372,9 @@ export default function InventoryManagePage() {
         <p className="text-[11px] uppercase tracking-[0.25em] text-[#c5a059]">Channel Manager</p>
         <h1 className="mt-1 font-serif text-3xl font-light text-[#0f2420]">Inventory Manage</h1>
         <p className="mt-2 max-w-3xl text-sm text-[#5a635c]">
-          Date-wise allotment for every room category. Same database as{" "}
-          <span className="font-medium text-[#0f2420]">Available Today</span> and public booking —
-          inventory − booked = available. No rates here.
+          Date-wise allotment and occupancy rates. Inventory − booked = available. Website checkout
+          charges the 1 / 2 / 3 adult rate for that night, plus extra-child charges after included
+          children.
         </p>
       </div>
 
@@ -507,7 +582,7 @@ export default function InventoryManagePage() {
       </div>
 
       {/* Bulk panel */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 xl:grid-cols-3">
         <form
           onSubmit={onBulkSet}
           className="space-y-3 rounded-2xl border border-[#c5a059]/20 bg-white/90 p-5 shadow-[0_8px_30px_rgba(15,36,32,0.04)]"
@@ -587,14 +662,110 @@ export default function InventoryManagePage() {
         </form>
 
         <form
+          onSubmit={onBulkRates}
+          className="space-y-3 rounded-2xl border border-[#c5a059]/20 bg-white/90 p-5 shadow-[0_8px_30px_rgba(15,36,32,0.04)]"
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#c5a059]">
+            Day-wise occupancy rates
+          </p>
+          <p className="text-xs text-[#5a635c]">
+            VAT-inclusive nightly price per room for 1 / 2 / 3 adults. Extra children pay after the
+            included count.
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            <label className="block text-xs text-[#5a635c]">
+              1 adult
+              <input
+                type="number"
+                min={0}
+                value={bulkAdult1}
+                onChange={(e) => setBulkAdult1(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#c5a059]/25 px-2 py-2 text-sm"
+              />
+            </label>
+            <label className="block text-xs text-[#5a635c]">
+              2 adults
+              <input
+                type="number"
+                min={0}
+                value={bulkAdult2}
+                onChange={(e) => setBulkAdult2(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#c5a059]/25 px-2 py-2 text-sm"
+              />
+            </label>
+            <label className="block text-xs text-[#5a635c]">
+              3 adults
+              <input
+                type="number"
+                min={0}
+                value={bulkAdult3}
+                onChange={(e) => setBulkAdult3(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#c5a059]/25 px-2 py-2 text-sm"
+              />
+            </label>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="block text-xs text-[#5a635c]">
+              Children included
+              <input
+                type="number"
+                min={0}
+                value={bulkChildrenIncluded}
+                onChange={(e) => setBulkChildrenIncluded(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#c5a059]/25 px-2 py-2 text-sm"
+              />
+            </label>
+            <label className="block text-xs text-[#5a635c]">
+              Extra child $
+              <input
+                type="number"
+                min={0}
+                value={bulkExtraChild}
+                onChange={(e) => setBulkExtraChild(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#c5a059]/25 px-2 py-2 text-sm"
+              />
+            </label>
+          </div>
+          <div className="flex flex-wrap gap-2 pt-1">
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-full bg-[#1e5a9a] px-4 py-2 text-xs font-medium text-white hover:bg-[#17487c] disabled:opacity-60"
+            >
+              Apply rates to dates
+            </button>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() =>
+                void mutate({
+                  action: "set-rates",
+                  roomSlug: bulkRoom,
+                  date: bulkFrom,
+                  asDefaults: true,
+                  adult1: Math.round(Number(bulkAdult1)),
+                  adult2: Math.round(Number(bulkAdult2)),
+                  adult3: Math.round(Number(bulkAdult3)),
+                  includedChildren: Math.floor(Number(bulkChildrenIncluded)),
+                  extraChildPrice: Math.round(Number(bulkExtraChild)),
+                })
+              }
+              className="rounded-full border border-[#1e5a9a]/40 px-4 py-2 text-xs font-medium text-[#1e5a9a] disabled:opacity-60"
+            >
+              Save as room default
+            </button>
+          </div>
+        </form>
+
+        <form
           onSubmit={onCopy}
           className="space-y-3 rounded-2xl border border-[#c5a059]/20 bg-white/90 p-5 shadow-[0_8px_30px_rgba(15,36,32,0.04)]"
         >
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#c5a059]">
-            Copy inventory
+            Copy inventory & rates
           </p>
           <p className="text-xs text-[#5a635c]">
-            Copy one date&apos;s inventory allotment onto a target range (same room as bulk panel).
+            Copy one date&apos;s inventory allotment and occupancy rates onto a target range.
           </p>
           <label className="block text-xs text-[#5a635c]">
             Source date
@@ -657,11 +828,11 @@ function FragmentRoom({
   dates: string[];
   collapsed: boolean;
   onToggle: () => void;
-  editing: { slug: string; date: string } | null;
+  editing: { slug: string; date: string; field: MetricRow } | null;
   editValue: string;
-  setEditing: (v: { slug: string; date: string } | null) => void;
+  setEditing: (v: { slug: string; date: string; field: MetricRow } | null) => void;
   setEditValue: (v: string) => void;
-  onSaveCell: (slug: string, date: string, value: string) => Promise<void>;
+  onSaveCell: (slug: string, date: string, field: MetricRow, value: string) => Promise<void>;
   cellValue: (cell: ManageDayCell, metric: MetricRow) => ReactNode;
   statusTone: (cell: ManageDayCell) => string;
   today: string;
@@ -711,9 +882,10 @@ function FragmentRoom({
                   );
                 }
                 const isEdit =
-                  metric.key === "inventory" &&
+                  Boolean(metric.editable) &&
                   editing?.slug === room.roomSlug &&
-                  editing?.date === iso;
+                  editing?.date === iso &&
+                  editing?.field === metric.key;
                 const tone =
                   metric.key === "available" || metric.key === "availability"
                     ? statusTone(cell)
@@ -721,7 +893,9 @@ function FragmentRoom({
                       ? cell.hasDailyCap
                         ? "bg-[#1e5a9a]/5"
                         : ""
-                      : "";
+                      : metric.rate && cell.hasDailyRate
+                        ? "bg-[#1e5a9a]/5"
+                        : "";
 
                 return (
                   <td
@@ -730,7 +904,7 @@ function FragmentRoom({
                       iso === today ? "bg-[#1e5a9a]/5" : ""
                     }`}
                   >
-                    {metric.key === "inventory" ? (
+                    {metric.editable ? (
                       isEdit ? (
                         <input
                           autoFocus
@@ -739,11 +913,11 @@ function FragmentRoom({
                           value={editValue}
                           disabled={saving}
                           onChange={(e) => setEditValue(e.target.value)}
-                          onBlur={() => void onSaveCell(room.roomSlug, iso, editValue)}
+                          onBlur={() => void onSaveCell(room.roomSlug, iso, metric.key, editValue)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
                               e.preventDefault();
-                              void onSaveCell(room.roomSlug, iso, editValue);
+                              void onSaveCell(room.roomSlug, iso, metric.key, editValue);
                             }
                             if (e.key === "Escape") setEditing(null);
                           }}
@@ -752,14 +926,14 @@ function FragmentRoom({
                       ) : (
                         <button
                           type="button"
-                          title="Click to edit inventory"
+                          title={`Click to edit ${metric.label.toLowerCase()}`}
                           onClick={() => {
-                            setEditing({ slug: room.roomSlug, date: iso });
-                            setEditValue(String(cell.inventory));
+                            setEditing({ slug: room.roomSlug, date: iso, field: metric.key });
+                            setEditValue(String(cellValue(cell, metric.key)));
                           }}
                           className={`mx-auto block w-full min-w-[2.75rem] rounded px-1 py-1.5 text-sm font-semibold hover:ring-2 hover:ring-[#1e5a9a]/40 ${tone}`}
                         >
-                          {cell.inventory}
+                          {cellValue(cell, metric.key)}
                         </button>
                       )
                     ) : (

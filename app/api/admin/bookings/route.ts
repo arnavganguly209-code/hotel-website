@@ -5,11 +5,11 @@ import { assertBookingAvailability } from "@/lib/admin/availability";
 import { getContent } from "@/lib/cms/store";
 import {
   bookingDatesAreValid,
-  calculateBookingTotal,
   calculateNights,
   roomFitsOccupancy,
   roomPublicSlug,
 } from "@/lib/booking/utils";
+import { quoteRoomStay } from "@/lib/booking/quote";
 import { taxFieldsFromInclusiveTotal } from "@/lib/booking/tax-snapshot";
 
 export const dynamic = "force-dynamic";
@@ -153,14 +153,17 @@ export async function POST(req: Request) {
     const totalAmount =
       typeof body.totalAmount === "number" && Number.isFinite(body.totalAmount) && body.totalAmount >= 0
         ? body.totalAmount
-        : calculateBookingTotal({
-            room,
-            nights,
-            roomQuantity,
-            breakfast,
-            adults: guests,
-            children,
-          });
+        : (
+            await quoteRoomStay({
+              room,
+              checkIn: body.checkIn,
+              checkOut: body.checkOut,
+              adults: guests,
+              children,
+              roomQuantity,
+              roomSlug: slug,
+            })
+          ).grandTotal;
     const tax = taxFieldsFromInclusiveTotal(totalAmount);
 
     const status = body.status && BOOKING_STATUSES.has(body.status) ? body.status : "confirmed";

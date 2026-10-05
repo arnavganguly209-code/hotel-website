@@ -10,6 +10,7 @@ import {
   roomPublicSlug,
 } from "@/lib/booking/utils";
 import { getAvailableCount } from "@/lib/admin/availability";
+import { quoteRoomStay } from "@/lib/booking/quote";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -34,8 +35,11 @@ export default async function RoomsRoute({ searchParams }: RoomsRouteProps) {
   ]);
 
   const roomQty = Math.max(1, Number(search.rooms) || 1);
+  const adults = Math.max(1, Number(search.guests) || 1);
+  const children = Math.max(0, Number(search.children) || 0);
   let rooms = content.rooms;
   let unavailableMessage = "";
+  const quotes: Record<string, { nightly: number; total: number }> = {};
 
   if (hasSearch && search.checkIn && search.checkOut) {
     const withStock = await Promise.all(
@@ -43,11 +47,24 @@ export default async function RoomsRoute({ searchParams }: RoomsRouteProps) {
         if (!isLiveRoomCategory(room) || !isRoomAvailableForSearch(room, search)) {
           return { room, stockOk: false };
         }
+        const slug = roomPublicSlug(room);
         const stock = await getAvailableCount({
-          roomSlug: roomPublicSlug(room),
+          roomSlug: slug,
           checkIn: search.checkIn!,
           checkOut: search.checkOut!,
         });
+        if (stock.available >= roomQty) {
+          const priced = await quoteRoomStay({
+            room,
+            checkIn: search.checkIn!,
+            checkOut: search.checkOut!,
+            adults,
+            children,
+            roomQuantity: roomQty,
+            roomSlug: slug,
+          });
+          quotes[slug] = { nightly: priced.baseNightly, total: priced.grandTotal };
+        }
         return { room, stockOk: stock.available >= roomQty };
       })
     );
@@ -69,6 +86,7 @@ export default async function RoomsRoute({ searchParams }: RoomsRouteProps) {
         search={search}
         hasSearch={hasSearch}
         unavailableMessage={unavailableMessage}
+        quotes={quotes}
       />
     </>
   );

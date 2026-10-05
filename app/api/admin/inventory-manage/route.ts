@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import { isDatabaseAvailable } from "@/lib/db";
 import { assertSameOrigin, getAdminSessionUser } from "@/lib/admin/auth";
 import {
-  copyDailyInventory,
+  copyDailyInventoryAndRates,
   getInventoryManageGrid,
   nightsInStay,
   upsertDailyInventoryAllotments,
+  upsertDailyOccupancyRates,
 } from "@/lib/admin/availability";
+import { defaultOccupancyRateFromRoom } from "@/lib/booking/daily-rates";
 import { getContent } from "@/lib/cms/store";
 import { isLiveRoomCategory, roomPublicSlug } from "@/lib/booking/utils";
 
@@ -43,7 +45,8 @@ export async function GET(req: Request) {
   }
 
   const content = await getContent();
-  const roomSlugs = content.rooms.filter(isLiveRoomCategory).map((r) => ({
+  const liveRooms = content.rooms.filter(isLiveRoomCategory);
+  const roomSlugs = liveRooms.map((r) => ({
     slug: roomPublicSlug(r),
     name: r.name,
   }));
@@ -63,6 +66,52 @@ export async function GET(req: Request) {
     endDateInclusive,
   });
 
+  const rooms = grid.rooms.map((row) => {
+    const cms = liveRooms.find((r) => roomPublicSlug(r) === row.roomSlug);
+    const fallback = cms
+      ? defaultOccupancyRateFromRoom(cms)
+      : {
+          adult1: 0,
+          adult2: 0,
+          adult3: 0,
+          includedChildren: 0,
+          extraChildPrice: 0,
+        };
+    const rateDefaults = row.rateDefaults
+      ? {
+          adult1: row.rateDefaults.adult1 || fallback.adult1,
+          adult2: row.rateDefaults.adult2 || fallback.adult2,
+          adult3: row.rateDefaults.adult3 || fallback.adult3,
+          includedChildren:
+            row.rateDefaults.includedChildren >= 0
+              ? row.rateDefaults.includedChildren
+              : fallback.includedChildren,
+          extraChildPrice:
+            row.rateDefaults.extraChildPrice >= 0
+              ? row.rateDefaults.extraChildPrice
+              : fallback.extraChildPrice,
+        }
+      : fallback;
+    return {
+      ...row,
+      rateDefaults,
+      days: row.days.map((day) =>
+        day.hasDailyRate
+          ? day
+          : {
+              ...day,
+              adult1: day.adult1 || rateDefaults.adult1,
+              adult2: day.adult2 || rateDefaults.adult2,
+              adult3: day.adult3 || rateDefaults.adult3,
+              includedChildren:
+                day.includedChildren >= 0 ? day.includedChildren : rateDefaults.includedChildren,
+              extraChildPrice:
+                day.extraChildPrice >= 0 ? day.extraChildPrice : rateDefaults.extraChildPrice,
+            }
+      ),
+    };
+  });
+
   return NextResponse.json(
     {
       success: true,
@@ -70,7 +119,8 @@ export async function GET(req: Request) {
       endDateInclusive,
       days,
       categories: roomSlugs,
-      ...grid,
+      dates: grid.dates,
+      rooms,
     },
     { headers: { "Cache-Control": "no-store" } }
   );
@@ -80,7 +130,8 @@ type ManageAction =
   | "set"
   | "close"
   | "open"
-  | "copy";
+  | "copy"
+  | "set-rates";
 
 export async function PUT(req: Request) {
   if (!isDatabaseAvailable()) {
@@ -105,6 +156,12 @@ export async function PUT(req: Request) {
       sourceDate?: string;
       targetStart?: string;
       targetEnd?: string;
+      asDefaults?: boolean;
+      adult1?: number;
+      adult2?: number;
+      adult3?: number;
+      includedChildren?: number;
+      extraChildPrice?: number;
     };
 
     const roomSlug = body.roomSlug?.trim() || "";
@@ -126,12 +183,17 @@ export async function PUT(req: Request) {
       }
       const end = targetEnd >= targetStart ? targetEnd : targetStart;
       const targetDates = nightsInStay(targetStart, addDaysIso(end, 1));
-      const overrides = await copyDailyInventory({
+      const overrides = await copyDailyInventoryAndRates({
         roomSlug,
         sourceDate,
         targetDates,
       });
-      return NextResponse.json({ success: true, overrides, datesUpdated: targetDates.length });
+      return NextResponse.json({
+        success: true,
+        action: "copy",
+        overrides,
+        datesUpdated: targetDates.length,
+      });
     }
 
     // Single cell or range
@@ -153,6 +215,33 @@ export async function PUT(req: Request) {
     }
     if (dates.length > 400) {
       return NextResponse.json({ success: false, error: "Date range too large (max 400 nights)" }, { status: 400 });
+    }
+
+    if (action === "set-rates") {
+      const patch = {
+        adult1: body.adult1,
+        adult2: body.adult2,
+        adult3: body.adult3,
+        includedChildren: body.includedChildren,
+        extraChildPrice: body.extraChildPrice,
+      };
+      const hasField = Object.values(patch).some((v) => typeof v === "number" && Number.isFinite(v));
+      if (!hasField) {
+        return NextResponse.json({ success: false, error: "Provide at least one rate field" }, { status: 400 });
+      }
+      const overrides = await upsertDailyOccupancyRates({
+        roomSlug,
+        dates,
+        patch,
+        asDefaults: Boolean(body.asDefaults),
+      });
+      return NextResponse.json({
+        success: true,
+        action,
+        roomSlug,
+        datesUpdated: dates.length,
+        overrides,
+      });
     }
 
     let inventory: number | null = null;

@@ -4,11 +4,11 @@ import { getContent } from "@/lib/cms/store";
 import { assertBookingAvailability } from "@/lib/admin/availability";
 import {
   bookingDatesAreValid,
-  calculateExtraGuestBreakdown,
   calculateNights,
   roomFitsOccupancy,
   roomPublicSlug,
 } from "@/lib/booking/utils";
+import { quoteRoomStay } from "@/lib/booking/quote";
 import { taxFieldsFromInclusiveTotal } from "@/lib/booking/tax-snapshot";
 import { formatBookingNumber } from "@/lib/booking/booking-number";
 import {
@@ -121,12 +121,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: availability.error }, { status: 400 });
     }
 
-    const price = calculateExtraGuestBreakdown({
+    const price = await quoteRoomStay({
       room,
+      checkIn: body.checkIn,
+      checkOut: body.checkOut,
       adults: guests,
       children,
-      nights,
       roomQuantity,
+      roomSlug: roomPublicSlug(room),
     });
     // Settlement currency is server-owned (default USD).
     // Use BOOKING_CURRENCY=NPR only for intentional NPR-site mode.

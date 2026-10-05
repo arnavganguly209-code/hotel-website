@@ -40,6 +40,7 @@ interface RoomsPageProps {
   search: BookingSearchParams;
   hasSearch: boolean;
   unavailableMessage?: string;
+  quotes?: Record<string, { nightly: number; total: number }>;
 }
 
 const GOLD = "#C5A059";
@@ -73,11 +74,15 @@ function RoomListingRow({
   index,
   detailHref,
   reserveHref,
+  nightlyFrom,
+  stayTotal,
 }: {
   room: SiteContent["rooms"][number];
   index: number;
   detailHref: string;
   reserveHref: string;
+  nightlyFrom?: number;
+  stayTotal?: number;
 }) {
   const features = buildFeatureList(room);
   const imageRight = index % 2 === 1;
@@ -135,10 +140,13 @@ function RoomListingRow({
             }}
           >
             <p className="font-display text-lg font-semibold leading-none tracking-wide sm:text-xl" style={{ color: GOLD }}>
-              ${room.price}{" "}
+              ${nightlyFrom ?? room.price}{" "}
               <span className="text-xs font-semibold uppercase tracking-[0.12em]">/ Night</span>
             </p>
             <p className="mt-1.5 text-[10px] leading-none text-white/85">Includes taxes and fees</p>
+            {typeof stayTotal === "number" ? (
+              <p className="mt-1.5 text-[10px] leading-none text-white/85">Stay total ${stayTotal}</p>
+            ) : null}
           </div>
         </div>
 
@@ -225,6 +233,7 @@ export function RoomsPage({
   search,
   hasSearch,
   unavailableMessage = "",
+  quotes,
 }: RoomsPageProps) {
   // Server already filters by live stock when dates are present.
   const available = hasSearch
@@ -346,6 +355,8 @@ export function RoomsPage({
                     index={index}
                     detailHref={detailHref}
                     reserveHref={reserveHref}
+                    nightlyFrom={quotes?.[slug]?.nightly}
+                    stayTotal={quotes?.[slug]?.total}
                   />
                 );
               })}

@@ -108,6 +108,8 @@ export async function PUT(req: Request) {
         data.overrides = {
           monthly: { ...(prev.monthly || {}), ...(incoming.monthly || {}) },
           daily: { ...(prev.daily || {}), ...(incoming.daily || {}) },
+          rates: { ...(prev.rates || {}), ...(incoming.rates || {}) },
+          rateDefaults: incoming.rateDefaults || prev.rateDefaults,
         };
       } else {
         data.overrides = incoming;

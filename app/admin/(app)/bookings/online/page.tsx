@@ -213,6 +213,9 @@ export default function AdminOnlineBookingsPage() {
                       <p className="text-xs text-[#7a8a82]">
                         {new Date(b.checkIn).toLocaleDateString()} → {new Date(b.checkOut).toLocaleDateString()}
                       </p>
+                      <p className="text-xs text-[#7a8a82]">
+                        {b.roomQuantity === 1 ? "1 Room" : `${b.roomQuantity || 1} Rooms`}
+                      </p>
                     </td>
                     <td className="px-4 py-3">
                       <select
