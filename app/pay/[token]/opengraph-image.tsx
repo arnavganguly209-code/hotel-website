@@ -16,7 +16,7 @@ export default async function PayLinkOgImage({ params }: Params) {
     ? await db.paymentLink.findUnique({ where: { publicToken: token.trim().toUpperCase() } })
     : null;
   const title = link?.title || "Payment Request";
-  const amount = link ? `${formatUsdAmount(link.amountUsd)} USD` : "";
+  const amount = link ? `${formatUsdAmount(link.totalAmountUsd ?? link.amountUsd)} USD` : "";
   const photo = link?.imageUrl ? absoluteAssetUrl(link.imageUrl) : "";
 
   return new ImageResponse(

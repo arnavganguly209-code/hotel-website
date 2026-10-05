@@ -54,6 +54,26 @@ function kv(label: string, value: string) {
   </tr>`;
 }
 
+function moneyRows(link: {
+  amountUsd: unknown;
+  subtotalAmountUsd?: unknown;
+  totalAmountUsd?: unknown;
+  cardFeeEnabled?: boolean;
+  cardFeeAmount?: unknown;
+  currency?: string;
+  paidAmount?: unknown;
+}) {
+  const currency = link.currency || "USD";
+  const base = `${formatUsdAmount(link.subtotalAmountUsd ?? link.amountUsd)} ${currency}`;
+  const total = `${formatUsdAmount(link.paidAmount ?? link.totalAmountUsd ?? link.amountUsd)} ${currency}`;
+  let html = kv("Amount", esc(base));
+  if (link.cardFeeEnabled) {
+    html += kv("Card Fee", esc(`${formatUsdAmount(link.cardFeeAmount)} ${currency}`));
+  }
+  html += kv("Total", `<span style="font-size:20px;color:#153a2a;">${esc(total)}</span>`);
+  return { html, base, total };
+}
+
 async function send(opts: { to: string; subject: string; html: string; text: string }) {
   if (!isSmtpConfigured() || !opts.to.trim()) {
     return { ok: false as const, error: "SMTP not configured or missing recipient" };
@@ -78,11 +98,15 @@ export async function sendPayLinkInvite(link: {
   customerEmail: string;
   title: string;
   description: string;
-  amountUsd: number;
+  amountUsd: unknown;
   currency: string;
+  cardFeeEnabled?: boolean;
+  cardFeeAmount?: unknown;
+  subtotalAmountUsd?: unknown;
+  totalAmountUsd?: unknown;
 }) {
   const payUrl = publicPayUrl(link.publicToken);
-  const amount = `${formatUsdAmount(link.amountUsd)} ${link.currency || "USD"}`;
+  const money = moneyRows(link);
   const html = shell(
     "Payment Request",
     `<p style="margin:0 0 16px;font-size:16px;">Dear ${esc(link.customerName)},</p>
@@ -90,7 +114,7 @@ export async function sendPayLinkInvite(link: {
      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
        ${kv("Payment", esc(link.title))}
        ${kv("Description", esc(link.description || "—"))}
-       ${kv("Amount", `<span style="font-size:20px;color:#153a2a;">${esc(amount)}</span>`)}
+       ${money.html}
        ${kv("Reference", esc(link.publicToken))}
      </table>
      <p style="margin:22px 0;text-align:center;">
@@ -101,7 +125,9 @@ export async function sendPayLinkInvite(link: {
     `Dear ${link.customerName},`,
     `Please complete your payment to Hotel Thamel Park.`,
     `Payment: ${link.title}`,
-    `Amount: ${amount}`,
+    `Amount: ${money.base}`,
+    ...(link.cardFeeEnabled ? [`Card Fee: ${formatUsdAmount(link.cardFeeAmount)} ${link.currency || "USD"}`] : []),
+    `Total: ${money.total}`,
     `Reference: ${link.publicToken}`,
     `Pay: ${payUrl}`,
   ].join("\n");
@@ -123,7 +149,7 @@ export async function sendPayLinkPaidEmail(linkId: string) {
   const link = await db.paymentLink.findUnique({ where: { id: linkId } });
   if (!link || link.paymentStatus !== "PAID") return { ok: true as const, skipped: true };
 
-  const amount = `${formatUsdAmount(link.paidAmount || link.amountUsd)} ${link.paidCurrency || "USD"}`;
+  const money = moneyRows(link);
   const paidDate = (link.paidAt || new Date()).toISOString().slice(0, 10);
   const html = shell(
     "Payment Received",
@@ -132,7 +158,7 @@ export async function sendPayLinkPaidEmail(linkId: string) {
      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
        ${kv("Payment", esc(link.title))}
        ${kv("Description", esc(link.description || "—"))}
-       ${kv("Paid amount", `<span style="font-size:20px;color:#153a2a;">${esc(amount)}</span>`)}
+       ${money.html}
        ${kv("Reference", esc(link.publicToken))}
        ${kv("Date", esc(paidDate))}
        ${kv("Status", "PAID")}
@@ -140,8 +166,11 @@ export async function sendPayLinkPaidEmail(linkId: string) {
   );
   const text = [
     `Dear ${link.customerName},`,
-    `Your payment of ${amount} has been received.`,
+    `Your payment of ${money.total} has been received.`,
     `Payment: ${link.title}`,
+    `Amount: ${money.base}`,
+    ...(link.cardFeeEnabled ? [`Card Fee: ${formatUsdAmount(link.cardFeeAmount)} ${link.paidCurrency || "USD"}`] : []),
+    `Total Paid: ${money.total}`,
     `Reference: ${link.publicToken}`,
     `Status: PAID`,
   ].join("\n");
@@ -175,14 +204,14 @@ export async function sendPayLinkFailedEmail(linkId: string) {
   const link = await db.paymentLink.findUnique({ where: { id: linkId } });
   if (!link || link.paymentStatus === "PAID") return { ok: true as const, skipped: true };
 
-  const amount = `${formatUsdAmount(link.amountUsd)} ${link.currency}`;
+  const money = moneyRows(link);
   const html = shell(
     "Payment Unsuccessful",
     `<p style="margin:0 0 16px;font-size:16px;">Dear ${esc(link.customerName)},</p>
      <p style="margin:0 0 18px;color:#3d5a4c;">We could not complete your payment. You may try again using the original payment link, or contact Hotel Thamel Park.</p>
      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
        ${kv("Payment", esc(link.title))}
-       ${kv("Amount", esc(amount))}
+       ${money.html}
        ${kv("Reference", esc(link.publicToken))}
        ${kv("Status", "PAYMENT FAILED")}
      </table>
@@ -205,7 +234,7 @@ export async function sendPayLinkFailedEmail(linkId: string) {
     to: recipients,
     subject: "Payment Unsuccessful — Hotel Thamel Park",
     html,
-    text: `Dear ${link.customerName}, we could not complete your payment of ${amount}. Reference ${link.publicToken}.`,
+    text: `Dear ${link.customerName}, we could not complete your payment of ${money.total}. Reference ${link.publicToken}.`,
   });
   if (!result.ok) {
     await db.paymentLink.update({

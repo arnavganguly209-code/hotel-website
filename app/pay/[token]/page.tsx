@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const url = publicPayUrl(link.publicToken);
   const ogImage = `${getPublicAppUrl()}/pay/${encodeURIComponent(link.publicToken)}/opengraph-image`;
   const title = `${link.title} | Hotel Thamel Park`;
-  const description = `${formatUsdAmount(link.amountUsd)} USD — ${link.description || link.title}`;
+  const description = `${formatUsdAmount(link.totalAmountUsd ?? link.amountUsd)} USD — ${link.description || link.title}`;
   return {
     title,
     description,
@@ -83,10 +83,32 @@ export default async function PublicPayLinkPage({ params }: Params) {
           {link.description ? (
             <p className="text-sm leading-7 text-[#5a635c]">{link.description}</p>
           ) : null}
+          <dl className="space-y-2 text-sm text-[#5a635c]">
+            {link.cardFeeEnabled ? (
+              <>
+                <div className="flex justify-between gap-4">
+                  <dt>Base Amount</dt>
+                  <dd className="font-semibold text-[#153a2a]">{formatUsdAmount(link.subtotalAmountUsd)} USD</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt>Card Fee</dt>
+                  <dd className="font-semibold text-[#153a2a]">{formatUsdAmount(link.cardFeeAmount)} USD</dd>
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-between gap-4">
+                <dt>Amount</dt>
+                <dd className="font-semibold text-[#153a2a]">{formatUsdAmount(link.amountUsd)} USD</dd>
+              </div>
+            )}
+          </dl>
           <p className="text-center font-serif text-5xl text-[#153a2a]">
-            {formatUsdAmount(link.amountUsd)}
+            {formatUsdAmount(link.totalAmountUsd ?? link.amountUsd)}
             <span className="ml-2 text-lg text-[#7a8a82]">USD</span>
           </p>
+          {link.cardFeeEnabled ? (
+            <p className="text-center text-xs uppercase tracking-[0.16em] text-[#7a8a82]">Customer total</p>
+          ) : null}
           {link.paymentStatus === "PAID" ? (
             <p className="rounded-xl bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-800">
               This payment has already been completed. Thank you.

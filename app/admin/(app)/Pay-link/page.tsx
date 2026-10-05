@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { FileUpload } from "@/components/admin/FileUpload";
+import { computePayLinkQuote, formatUsdAmount, sharePayLinkMessage } from "@/lib/pay-links/money";
 
 type PayLink = {
   id: string;
@@ -20,10 +21,16 @@ type PayLink = {
   customerEmail: string;
   title: string;
   description: string;
-  amountUsd: number;
+  amountUsd: string | number;
   currency: string;
   imageUrl: string;
   internalReference: string;
+  cardFeeEnabled: boolean;
+  cardFeeType: string;
+  cardFeeValue: string | number;
+  cardFeeAmount: string | number;
+  subtotalAmountUsd: string | number;
+  totalAmountUsd: string | number;
   paymentStatus: string;
   status: string;
   gatewayTxnId: string | null;
@@ -31,6 +38,7 @@ type PayLink = {
   createdAt: string;
   paidAt: string | null;
   createdBy: string;
+  financialLocked?: boolean;
 };
 
 const emptyForm = {
@@ -41,6 +49,9 @@ const emptyForm = {
   description: "",
   imageUrl: "",
   internalReference: "",
+  cardFeeEnabled: false,
+  cardFeeType: "PERCENT" as "PERCENT" | "FIXED",
+  cardFeeValue: "3.00",
 };
 
 function statusBadge(status: string) {
@@ -70,19 +81,7 @@ function statusBadge(status: string) {
 }
 
 function shareMessage(link: PayLink) {
-  return `Hello ${link.customerName},
-
-Please use the secure payment link below to complete your payment to Hotel Thamel Park.
-
-Payment:
-${link.title}
-Amount:
-$${Number(link.amountUsd).toFixed(2)} USD
-Payment Link:
-${link.publicUrl}
-
-Thank you,
-Hotel Thamel Park`;
+  return sharePayLinkMessage(link);
 }
 
 export default function AdminPayLinkPage() {
@@ -126,7 +125,10 @@ export default function AdminPayLinkPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          amountUsd: Number(form.amountUsd),
+          amountUsd: form.amountUsd,
+          cardFeeEnabled: form.cardFeeEnabled,
+          cardFeeType: form.cardFeeType,
+          cardFeeValue: form.cardFeeValue,
         }),
       });
       const data = await res.json();
@@ -186,6 +188,16 @@ export default function AdminPayLinkPage() {
   }
 
   const createdShare = useMemo(() => (created ? shareMessage(created) : ""), [created]);
+  const liveQuote = useMemo(
+    () =>
+      computePayLinkQuote({
+        baseAmount: form.amountUsd,
+        cardFeeEnabled: form.cardFeeEnabled,
+        cardFeeType: form.cardFeeType,
+        cardFeeValue: form.cardFeeValue,
+      }),
+    [form.amountUsd, form.cardFeeEnabled, form.cardFeeType, form.cardFeeValue]
+  );
 
   return (
     <div className="space-y-8">
@@ -245,6 +257,51 @@ export default function AdminPayLinkPage() {
             placeholder="450.00"
           />
         </label>
+        <div className="rounded-xl border border-[#c5a059]/25 bg-[#fbf8f1] p-4 text-xs text-[#5a635c] lg:col-span-2">
+          <label className="flex items-center gap-2 font-medium text-[#0f2420]">
+            <input
+              type="checkbox"
+              checked={form.cardFeeEnabled}
+              onChange={(e) => setForm({ ...form, cardFeeEnabled: e.target.checked })}
+            />
+            Add Card Fee
+          </label>
+          {form.cardFeeEnabled ? (
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <label>
+                Card Fee Type
+                <select
+                  value={form.cardFeeType}
+                  onChange={(e) => setForm({ ...form, cardFeeType: e.target.value as "PERCENT" | "FIXED" })}
+                  className="mt-1 w-full rounded-lg border border-[#c5a059]/30 bg-white px-3 py-2 text-sm text-[#0f2420]"
+                >
+                  <option value="PERCENT">Percentage (%)</option>
+                  <option value="FIXED">Fixed Amount (USD)</option>
+                </select>
+              </label>
+              <label>
+                {form.cardFeeType === "PERCENT" ? "Fee (%)" : "Fee (USD)"}
+                <input
+                  value={form.cardFeeValue}
+                  onChange={(e) => setForm({ ...form, cardFeeValue: e.target.value })}
+                  className="mt-1 w-full rounded-lg border border-[#c5a059]/30 bg-white px-3 py-2 text-sm text-[#0f2420]"
+                  placeholder={form.cardFeeType === "PERCENT" ? "3.00" : "15.00"}
+                />
+              </label>
+            </div>
+          ) : null}
+          <div className="mt-3 space-y-1 text-[#0f2420]">
+            {liveQuote.ok ? (
+              <>
+                <p>Subtotal: {formatUsdAmount(liveQuote.quote.subtotalUsd)} USD</p>
+                {form.cardFeeEnabled ? <p>Card Fee: {formatUsdAmount(liveQuote.quote.feeUsd)} USD</p> : null}
+                <p className="font-serif text-lg">Customer Total: {formatUsdAmount(liveQuote.quote.totalUsd)} USD</p>
+              </>
+            ) : (
+              <p className="text-red-800">{form.amountUsd ? liveQuote.error : "Enter an amount to preview the total."}</p>
+            )}
+          </div>
+        </div>
         <label className="text-xs text-[#5a635c]">
           Payment Title
           <input
@@ -359,9 +416,10 @@ export default function AdminPayLinkPage() {
               <tr>
                 <th className="px-4 py-3">Customer</th>
                 <th className="px-4 py-3">Payment</th>
-                <th className="px-4 py-3">Amount</th>
+                <th className="px-4 py-3">Base</th>
+                <th className="px-4 py-3">Fee</th>
+                <th className="px-4 py-3">Total</th>
                 <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Reference</th>
                 <th className="px-4 py-3">Created</th>
                 <th className="px-4 py-3">Paid At</th>
                 <th className="px-4 py-3">Actions</th>
@@ -370,13 +428,13 @@ export default function AdminPayLinkPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-10 text-[#5a635c]">
+                  <td colSpan={9} className="px-4 py-10 text-[#5a635c]">
                     <Loader2 className="mr-2 inline h-4 w-4 animate-spin" /> Loading…
                   </td>
                 </tr>
               ) : links.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-10 text-[#5a635c]">
+                  <td colSpan={9} className="px-4 py-10 text-[#5a635c]">
                     No payment links yet.
                   </td>
                 </tr>
@@ -388,9 +446,12 @@ export default function AdminPayLinkPage() {
                       <p className="text-xs text-[#7a8a82]">{link.customerEmail || "—"}</p>
                     </td>
                     <td className="px-4 py-3">{link.title}</td>
-                    <td className="px-4 py-3 font-medium">${Number(link.amountUsd).toFixed(2)} USD</td>
+                    <td className="px-4 py-3">{formatUsdAmount(link.subtotalAmountUsd ?? link.amountUsd)}</td>
+                    <td className="px-4 py-3">
+                      {link.cardFeeEnabled ? formatUsdAmount(link.cardFeeAmount) : "—"}
+                    </td>
+                    <td className="px-4 py-3 font-medium">{formatUsdAmount(link.totalAmountUsd ?? link.amountUsd)} USD</td>
                     <td className="px-4 py-3">{statusBadge(link.paymentStatus)}</td>
-                    <td className="px-4 py-3 text-xs">{link.publicToken}</td>
                     <td className="px-4 py-3 text-xs">{new Date(link.createdAt).toLocaleString()}</td>
                     <td className="px-4 py-3 text-xs">
                       {link.paidAt ? new Date(link.paidAt).toLocaleString() : "—"}
@@ -448,8 +509,21 @@ export default function AdminPayLinkPage() {
               <div className="flex justify-between"><dt>Customer</dt><dd>{detail.customerName}</dd></div>
               <div className="flex justify-between"><dt>Email</dt><dd>{detail.customerEmail || "—"}</dd></div>
               <div className="flex justify-between"><dt>Title</dt><dd>{detail.title}</dd></div>
-              <div className="flex justify-between"><dt>Amount</dt><dd>${Number(detail.amountUsd).toFixed(2)} USD</dd></div>
+              <div className="flex justify-between"><dt>Description</dt><dd className="max-w-[60%] text-right">{detail.description || "—"}</dd></div>
+              <div className="flex justify-between"><dt>Base amount</dt><dd>{formatUsdAmount(detail.subtotalAmountUsd ?? detail.amountUsd)} USD</dd></div>
+              <div className="flex justify-between"><dt>Card fee</dt><dd>{detail.cardFeeEnabled ? "Enabled" : "Disabled"}</dd></div>
+              {detail.cardFeeEnabled ? (
+                <>
+                  <div className="flex justify-between"><dt>Fee type</dt><dd>{detail.cardFeeType}</dd></div>
+                  <div className="flex justify-between"><dt>Fee value</dt><dd>{String(detail.cardFeeValue)}</dd></div>
+                  <div className="flex justify-between"><dt>Fee amount</dt><dd>{formatUsdAmount(detail.cardFeeAmount)} USD</dd></div>
+                </>
+              ) : null}
+              <div className="flex justify-between"><dt>Customer total</dt><dd>{formatUsdAmount(detail.totalAmountUsd ?? detail.amountUsd)} USD</dd></div>
+              <div className="flex justify-between"><dt>Currency</dt><dd>{detail.currency}</dd></div>
               <div className="flex justify-between"><dt>Status</dt><dd>{detail.paymentStatus}</dd></div>
+              <div className="flex justify-between"><dt>Created</dt><dd>{new Date(detail.createdAt).toLocaleString()}</dd></div>
+              <div className="flex justify-between"><dt>Paid at</dt><dd>{detail.paidAt ? new Date(detail.paidAt).toLocaleString() : "—"}</dd></div>
               <div className="flex justify-between"><dt>Reference</dt><dd>{detail.publicToken}</dd></div>
               <div className="flex justify-between"><dt>Gateway</dt><dd>{detail.gatewayTxnId || "—"}</dd></div>
               <div className="flex justify-between"><dt>Approval</dt><dd>{detail.gatewayReference || "—"}</dd></div>
@@ -467,8 +541,15 @@ export default function AdminPayLinkPage() {
                     customerEmail: String(data.get("customerEmail") || ""),
                     title: String(data.get("title") || ""),
                     description: String(data.get("description") || ""),
-                    amountUsd: Number(data.get("amountUsd") || detail.amountUsd),
                     internalReference: String(data.get("internalReference") || ""),
+                    ...(detail.financialLocked
+                      ? {}
+                      : {
+                          amountUsd: String(data.get("amountUsd") || detail.amountUsd),
+                          cardFeeEnabled: data.get("cardFeeEnabled") === "on",
+                          cardFeeType: String(data.get("cardFeeType") || detail.cardFeeType),
+                          cardFeeValue: String(data.get("cardFeeValue") || detail.cardFeeValue),
+                        }),
                   }).then(() => setDetail(null));
                 }}
               >
@@ -477,7 +558,21 @@ export default function AdminPayLinkPage() {
                 <input name="customerEmail" defaultValue={detail.customerEmail} className="w-full rounded-lg border border-[#c5a059]/30 px-3 py-2 text-sm" />
                 <input name="title" defaultValue={detail.title} className="w-full rounded-lg border border-[#c5a059]/30 px-3 py-2 text-sm" />
                 <textarea name="description" defaultValue={detail.description} className="w-full rounded-lg border border-[#c5a059]/30 px-3 py-2 text-sm" />
-                <input name="amountUsd" type="number" step="0.01" min="0.5" defaultValue={detail.amountUsd} className="w-full rounded-lg border border-[#c5a059]/30 px-3 py-2 text-sm" />
+                {detail.financialLocked ? (
+                  <p className="text-xs text-[#7a8a82]">Amounts are locked while a Himalayan Bank payment is in progress.</p>
+                ) : (
+                  <>
+                    <input name="amountUsd" defaultValue={String(detail.subtotalAmountUsd ?? detail.amountUsd)} className="w-full rounded-lg border border-[#c5a059]/30 px-3 py-2 text-sm" />
+                    <label className="flex items-center gap-2 text-xs">
+                      <input type="checkbox" name="cardFeeEnabled" defaultChecked={detail.cardFeeEnabled} /> Add Card Fee
+                    </label>
+                    <select name="cardFeeType" defaultValue={detail.cardFeeType || "PERCENT"} className="w-full rounded-lg border border-[#c5a059]/30 px-3 py-2 text-sm">
+                      <option value="PERCENT">Percentage (%)</option>
+                      <option value="FIXED">Fixed Amount (USD)</option>
+                    </select>
+                    <input name="cardFeeValue" defaultValue={String(detail.cardFeeValue || "")} className="w-full rounded-lg border border-[#c5a059]/30 px-3 py-2 text-sm" />
+                  </>
+                )}
                 <input name="internalReference" defaultValue={detail.internalReference} className="w-full rounded-lg border border-[#c5a059]/30 px-3 py-2 text-sm" />
                 <button type="submit" className="rounded-full bg-[#0f2420] px-4 py-2 text-xs font-medium text-white">
                   Save changes

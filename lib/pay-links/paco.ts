@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { Prisma } from "@prisma/client";
 import { db, isDatabaseAvailable } from "@/lib/db";
 import {
   createPrePaymentUi,
@@ -8,7 +9,14 @@ import {
   parseInquiryOutcome,
   pacoLog,
 } from "@/lib/payments/paco";
-import { canCollectPayment, normalizeUsdAmount } from "./money";
+import {
+  ACTIVE_PAY_LINK_ATTEMPT_STATUSES,
+  canCollectPayment,
+  centsToMajorNumber,
+  centsToUsdString,
+  decimalToCents,
+  inquiryMayMarkPaid,
+} from "./money";
 
 const COOKIE = "hbl_paylink_order";
 
@@ -36,8 +44,12 @@ function siteBase() {
   );
 }
 
+function linkTotalCents(link: { totalAmountUsd: unknown; amountUsd: unknown }): number | null {
+  return decimalToCents(link.totalAmountUsd) ?? decimalToCents(link.amountUsd);
+}
+
 /**
- * Start HBL PACO for a payment link using DB amount only.
+ * Start HBL PACO for a payment link using DB customer total only.
  * Does not write Booking / PaymentTransaction rows.
  */
 export async function initiatePayLinkPayment(opts: {
@@ -57,94 +69,145 @@ export async function initiatePayLinkPayment(opts: {
   }
 
   const token = opts.token.trim().toUpperCase();
-  const link = await db.paymentLink.findUnique({ where: { publicToken: token } });
-  if (!link) return { ok: false as const, error: "Payment link not found", status: 404 };
 
-  if (link.expiresAt && link.expiresAt.getTime() <= Date.now()) {
-    if (link.paymentStatus !== "EXPIRED") {
-      await db.paymentLink.update({
-        where: { id: link.id },
-        data: { paymentStatus: "EXPIRED", status: "EXPIRED" },
+  return db.$transaction(async (tx) => {
+    const rows = await tx.$queryRaw<{ id: string }[]>`
+      SELECT id FROM "PaymentLink" WHERE "publicToken" = ${token} FOR UPDATE
+    `;
+    if (!rows[0]) return { ok: false as const, error: "Payment link not found", status: 404 };
+
+    const link = await tx.paymentLink.findUnique({ where: { id: rows[0].id } });
+    if (!link) return { ok: false as const, error: "Payment link not found", status: 404 };
+
+    if (link.expiresAt && link.expiresAt.getTime() <= Date.now()) {
+      if (link.paymentStatus !== "EXPIRED") {
+        await tx.paymentLink.update({
+          where: { id: link.id },
+          data: { paymentStatus: "EXPIRED", status: "EXPIRED" },
+        });
+      }
+      return { ok: false as const, error: "This payment link has expired.", status: 410 };
+    }
+
+    if (!canCollectPayment(link.paymentStatus, link.expiresAt)) {
+      if (link.paymentStatus === "PAID") {
+        return { ok: false as const, error: "This payment has already been completed.", status: 409 };
+      }
+      return { ok: false as const, error: "This payment link is no longer active.", status: 409 };
+    }
+
+    const active = await tx.paymentLinkAttempt.findFirst({
+      where: {
+        paymentLinkId: link.id,
+        status: { in: [...ACTIVE_PAY_LINK_ATTEMPT_STATUSES] },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    if (active?.paymentPageUrl) {
+      return {
+        ok: true as const,
+        paymentPageURL: active.paymentPageUrl,
+        orderNo: active.orderNo,
+        token: link.publicToken,
+        reused: true,
+      };
+    }
+
+    const totalCents = linkTotalCents(link);
+    const quoteCheck = decimalToCents(link.subtotalAmountUsd);
+    if (
+      totalCents == null ||
+      link.currency !== "USD" ||
+      quoteCheck == null ||
+      quoteCheck + (decimalToCents(link.cardFeeAmount) ?? 0) !== totalCents
+    ) {
+      return { ok: false as const, error: "Invalid payment amount.", status: 400 };
+    }
+
+    const amount = centsToMajorNumber(totalCents);
+    const paco = getPacoConfig();
+    const base = paco.siteUrl || siteBase();
+    let payment: Awaited<ReturnType<typeof createPrePaymentUi>>;
+    try {
+      payment = await createPrePaymentUi({
+        amount,
+        currency: "USD",
+        productDescription: `Pay link ${link.publicToken} — ${link.title}`.slice(0, 240),
+        bookingId: 0,
+        bookingNumber: link.publicToken,
+        browserIp: opts.ip || "0.0.0.0",
+        browserUserAgent: opts.userAgent || "",
+        successUrl: `${base}/api/pay-links/hbl/success`,
+        failedUrl: `${base}/api/pay-links/hbl/failed`,
+        cancelUrl: `${base}/api/pay-links/hbl/cancel`,
+        backendUrl: `${base}/api/pay-links/hbl/callback`,
       });
+    } catch (err) {
+      pacoLog("error", "paylink_payment_init_failed", {
+        token: link.publicToken,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      return {
+        ok: false as const,
+        error: "Unable to start payment. Please try again.",
+        status: 502,
+      };
     }
-    return { ok: false as const, error: "This payment link has expired.", status: 410 };
-  }
 
-  if (!canCollectPayment(link.paymentStatus, link.expiresAt)) {
-    if (link.paymentStatus === "PAID") {
-      return { ok: false as const, error: "This payment has already been completed.", status: 409 };
+    try {
+      await tx.paymentLinkAttempt.create({
+        data: {
+          paymentLinkId: link.id,
+          orderNo: payment.orderNo,
+          amount: new Prisma.Decimal(centsToUsdString(totalCents)),
+          currency: "USD",
+          status: "redirected",
+          paymentPageUrl: payment.paymentPageURL,
+        },
+      });
+    } catch (err) {
+      const existing = await tx.paymentLinkAttempt.findFirst({
+        where: {
+          paymentLinkId: link.id,
+          status: { in: [...ACTIVE_PAY_LINK_ATTEMPT_STATUSES] },
+        },
+      });
+      if (existing?.paymentPageUrl) {
+        return {
+          ok: true as const,
+          paymentPageURL: existing.paymentPageUrl,
+          orderNo: existing.orderNo,
+          token: link.publicToken,
+          reused: true,
+        };
+      }
+      throw err;
     }
-    return { ok: false as const, error: "This payment link is no longer active.", status: 409 };
-  }
 
-  const amount = normalizeUsdAmount(link.amountUsd);
-  if (!amount || link.currency !== "USD") {
-    return { ok: false as const, error: "Invalid payment amount.", status: 400 };
-  }
-
-  const paco = getPacoConfig();
-  const base = paco.siteUrl || siteBase();
-  let payment: Awaited<ReturnType<typeof createPrePaymentUi>>;
-  try {
-    payment = await createPrePaymentUi({
-      amount,
-      currency: "USD",
-      productDescription: `Pay link ${link.publicToken} — ${link.title}`.slice(0, 240),
-      bookingId: 0,
-      bookingNumber: link.publicToken,
-      browserIp: opts.ip || "0.0.0.0",
-      browserUserAgent: opts.userAgent || "",
-      successUrl: `${base}/api/pay-links/hbl/success`,
-      failedUrl: `${base}/api/pay-links/hbl/failed`,
-      cancelUrl: `${base}/api/pay-links/hbl/cancel`,
-      backendUrl: `${base}/api/pay-links/hbl/callback`,
+    await tx.paymentLink.update({
+      where: { id: link.id },
+      data: {
+        pacoOrderNo: payment.orderNo,
+        paymentStatus: "PENDING",
+        status: "PENDING",
+        lastError: "",
+      },
     });
-  } catch (err) {
-    pacoLog("error", "paylink_payment_init_failed", {
+
+    pacoLog("info", "paylink_payment_init", {
       token: link.publicToken,
-      error: err instanceof Error ? err.message : String(err),
-    });
-    return {
-      ok: false as const,
-      error: "Unable to start payment. Please try again.",
-      status: 502,
-    };
-  }
-
-  await db.paymentLinkAttempt.create({
-    data: {
-      paymentLinkId: link.id,
       orderNo: payment.orderNo,
       amount,
       currency: "USD",
-      status: "redirected",
-      paymentPageUrl: payment.paymentPageURL,
-    },
-  });
+    });
 
-  await db.paymentLink.update({
-    where: { id: link.id },
-    data: {
-      pacoOrderNo: payment.orderNo,
-      paymentStatus: "PENDING",
-      status: "PENDING",
-      lastError: "",
-    },
+    return {
+      ok: true as const,
+      paymentPageURL: payment.paymentPageURL,
+      orderNo: payment.orderNo,
+      token: link.publicToken,
+    };
   });
-
-  pacoLog("info", "paylink_payment_init", {
-    token: link.publicToken,
-    orderNo: payment.orderNo,
-    amount,
-    currency: "USD",
-  });
-
-  return {
-    ok: true as const,
-    paymentPageURL: payment.paymentPageURL,
-    orderNo: payment.orderNo,
-    token: link.publicToken,
-  };
 }
 
 export function normalizePayLinkOrderNo(value: string | null | undefined): string {
@@ -173,6 +236,9 @@ export async function syncPayLinkFromInquiry(
   if (link.paymentStatus === "PAID") {
     return { ok: true as const, alreadyPaid: true, paid: true, token: link.publicToken, linkId: link.id };
   }
+  if (link.paymentStatus === "CANCELLED" || link.paymentStatus === "EXPIRED") {
+    return { ok: false as const, error: "This payment link is no longer active.", token: link.publicToken };
+  }
 
   let inquiry: Record<string, unknown>;
   try {
@@ -187,21 +253,20 @@ export async function syncPayLinkFromInquiry(
   }
 
   const outcome = parseInquiryOutcome(inquiry);
-  const expectedAmount = Number(attempt.amount);
-  const inquiryAmount = outcome.amount;
-  const inquiryCurrency = String(outcome.currency || "").toUpperCase();
-  const amountMismatch =
-    typeof inquiryAmount === "number" &&
-    Number.isFinite(expectedAmount) &&
-    Math.round(inquiryAmount * 100) !== Math.round(expectedAmount * 100);
-  const currencyMismatch = inquiryCurrency && inquiryCurrency !== "USD";
+  const paidCheck = inquiryMayMarkPaid({
+    outcomePaid: outcome.paid,
+    inquiryAmount: outcome.amount,
+    inquiryCurrency: outcome.currency,
+    attemptAmount: attempt.amount,
+    linkTotal: link.totalAmountUsd,
+  });
 
-  if (outcome.paid && (amountMismatch || currencyMismatch)) {
-    pacoLog("error", "paylink_inquiry_money_mismatch", {
+  if (outcome.paid && !paidCheck.ok) {
+    pacoLog("error", "paylink_inquiry_money_rejected", {
       orderNo,
-      expectedAmount,
-      inquiryAmount,
-      inquiryCurrency,
+      reason: paidCheck.reason,
+      inquiryAmount: outcome.amount,
+      inquiryCurrency: outcome.currency,
     });
     await db.paymentLink.update({
       where: { id: link.id },
@@ -213,18 +278,18 @@ export async function syncPayLinkFromInquiry(
     return { ok: false as const, error: "Amount mismatch", token: link.publicToken };
   }
 
-  if (outcome.paid) {
+  if (paidCheck.ok) {
     await db.paymentLinkAttempt.update({
       where: { id: attempt.id },
       data: { status: "paid" },
     });
-    const updated = await db.paymentLink.update({
-      where: { id: link.id },
+    const paidRows = await db.paymentLink.updateMany({
+      where: { id: link.id, paymentStatus: { not: "PAID" } },
       data: {
         paymentStatus: "PAID",
         status: "PAID",
         paidAt: new Date(),
-        paidAmount: typeof inquiryAmount === "number" ? inquiryAmount : expectedAmount,
+        paidAmount: new Prisma.Decimal(centsToUsdString(paidCheck.inquiryCents)),
         paidCurrency: "USD",
         gatewayTxnId: outcome.invoiceNo || orderNo,
         gatewayReference: outcome.approvalCode || orderNo,
@@ -233,7 +298,10 @@ export async function syncPayLinkFromInquiry(
         lastError: "",
       },
     });
-    return { ok: true as const, paid: true, token: updated.publicToken, linkId: updated.id };
+    if (paidRows.count === 0) {
+      return { ok: true as const, alreadyPaid: true, paid: true, token: link.publicToken, linkId: link.id };
+    }
+    return { ok: true as const, paid: true, token: link.publicToken, linkId: link.id };
   }
 
   if (outcome.failed) {

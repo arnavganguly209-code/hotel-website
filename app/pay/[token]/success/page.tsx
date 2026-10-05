@@ -29,7 +29,8 @@ export default async function PayLinkSuccessPage({ params }: Params) {
         <p className="mt-4 text-sm leading-7 text-[#5a635c]">
           Thank you, {link.customerName}.
           <br />
-          Your payment of <strong>{formatUsdAmount(link.paidAmount || link.amountUsd)} USD</strong>{" "}
+          Your payment of{" "}
+          <strong>{formatUsdAmount(link.paidAmount || link.totalAmountUsd || link.amountUsd)} USD</strong>{" "}
           {paid ? "has been successfully received." : "is being confirmed."}
         </p>
         <p className="mt-6 text-xs uppercase tracking-[0.2em] text-[#c5a059]">Reference {link.publicToken}</p>
