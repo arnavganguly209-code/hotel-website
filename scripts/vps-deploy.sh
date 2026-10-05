@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Hostinger VPS production deploy (GitHub Actions → /var/www/hotel-website)
 # Protects: public/uploads (never delete) | DATABASE_URL must be localhost thamelpark only
+#
+# Production builds MUST go through this script (or GitHub Actions, which calls it).
+# Do not run a bare `npm run build` on the VPS — it does not take
+# /tmp/htp-prod-deploy.lock and can corrupt the live `.next` folder
+# (ENOENT .next/build-manifest.json).
 
 set -euxo pipefail
 
@@ -10,6 +15,17 @@ HEALTH_URL="${HEALTH_URL:-$SITE_URL}"
 EXPECTED_SHA="${GITHUB_SHA:-}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
+
+HTP_PROD_DEPLOY_LOCK="${HTP_PROD_DEPLOY_LOCK:-/tmp/htp-prod-deploy.lock}"
+if [ "${HTP_PROD_DEPLOY_LOCK_HELD:-}" != "1" ]; then
+  exec 9>"$HTP_PROD_DEPLOY_LOCK"
+  echo "Waiting for exclusive production deploy lock ($HTP_PROD_DEPLOY_LOCK)..."
+  flock 9
+  export HTP_PROD_DEPLOY_LOCK_HELD=1
+  echo "Acquired production deploy lock"
+else
+  echo "Production deploy lock already held by caller ($HTP_PROD_DEPLOY_LOCK)"
+fi
 
 echo "========== PRE-DEPLOY DIAGNOSTICS =========="
 pwd
@@ -128,26 +144,34 @@ set +e
 npx prisma db execute --file prisma/migrations/20260719230000_rooms_booking_flow/migration.sql
 set -e
 
-if [ -d .next ]; then
-  echo "Backing up previous build → .next.prev"
-  rm -rf .next.prev
-  cp -a .next .next.prev
-fi
-
-echo "Building project (npm run build)"
+# Build into a sibling directory so the live `.next` PM2 is serving is never
+# truncated mid-compile. A failed build leaves production `.next` untouched.
+BUILD_DIST=".next.building"
+echo "Building project into $BUILD_DIST (live .next is not written during compile)"
+rm -rf "$BUILD_DIST"
 set +e
-npm run build
+HTP_NEXT_DIST_DIR="$BUILD_DIST" npm run build
 BUILD_STATUS=$?
 set -e
 
 if [ "$BUILD_STATUS" -ne 0 ]; then
-  echo "ERROR: Build failed — restoring previous .next"
-  if [ -d .next.prev ]; then
-    rm -rf .next
-    mv .next.prev .next
-  fi
+  echo "ERROR: Build failed (exit $BUILD_STATUS) — live .next and PM2 were not changed"
+  rm -rf "$BUILD_DIST"
   exit "$BUILD_STATUS"
 fi
+
+if [ ! -f "$BUILD_DIST/BUILD_ID" ]; then
+  echo "ERROR: Build reported success but $BUILD_DIST/BUILD_ID is missing — live .next untouched"
+  rm -rf "$BUILD_DIST"
+  exit 1
+fi
+
+echo "Swapping $BUILD_DIST into live .next"
+rm -rf .next.prev
+if [ -d .next ]; then
+  mv .next .next.prev
+fi
+mv "$BUILD_DIST" .next
 
 echo "Reloading PM2 ($APP_NAME) from current .env (not stale PM2 dump)"
 if pm2 describe hotel-thamel-park-spa >/dev/null 2>&1; then
@@ -167,9 +191,10 @@ HTTP_CODE="$(curl -sS -o /tmp/hotel-health-body.txt -w "%{http_code}" \
 set -e
 
 if [ "$HTTP_CODE" != "200" ]; then
-  echo "ERROR: Health check failed (HTTP $HTTP_CODE) — rolling back build"
+  echo "ERROR: Health check failed (HTTP $HTTP_CODE) — restoring previous .next and reloading PM2"
   if [ -d .next.prev ]; then
-    rm -rf .next
+    rm -rf .next.failed
+    mv .next .next.failed
     mv .next.prev .next
     node scripts/pm2-reload-from-dotenv.mjs || true
   fi

@@ -13,11 +13,10 @@ on:
   workflow_dispatch:
 
 concurrency:
-  # Only the newest main deploy should run. Stale queued/in-progress
-  # SSH deploys were stacking (~15–22m) and showing as failed/cancelled in Actions
-  # even when production was already updated via a later manual/SSH deploy.
+  # One production VPS deploy at a time. Queue later pushes instead of cancelling
+  # an in-flight SSH build (cancellation left half-written `.next` artifacts).
   group: production-vps-deploy
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -68,6 +67,8 @@ jobs:
             exec 9>"$LOCK_FILE"
             # Wait for any concurrent SSH/manual deploy to finish (do not -n fail)
             flock 9
+            export HTP_PROD_DEPLOY_LOCK_HELD=1
+            export HTP_PROD_DEPLOY_LOCK="$LOCK_FILE"
             cd "$APP_DIR" || exit 1
 
             mkdir -p public/uploads/general

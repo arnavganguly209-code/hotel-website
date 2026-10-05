@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Production deploys may set HTP_NEXT_DIST_DIR=.next.building so `next build`
+  // never writes into the live `.next` folder PM2 is serving.
+  distDir: process.env.HTP_NEXT_DIST_DIR || ".next",
   images: {
     // Hostinger VPS: serve local /public files directly (no optimizer).
     unoptimized: true,
