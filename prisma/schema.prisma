@@ -345,3 +345,54 @@ model SiteVisitDay {
   count     Int      @default(0)
   updatedAt DateTime @updatedAt
 }
+
+/** Isolated admin payment-link records. Not part of room bookings. */
+model PaymentLink {
+  id                 String    @id @default(cuid())
+  publicToken        String    @unique
+  customerName       String
+  customerEmail      String    @default("")
+  title              String
+  description        String    @default("")
+  amountUsd          Float
+  currency           String    @default("USD")
+  imageUrl           String    @default("")
+  ogImageUrl         String    @default("")
+  internalReference  String    @default("")
+  status             String    @default("CREATED")
+  paymentStatus      String    @default("CREATED")
+  pacoOrderNo        String?   @unique
+  gatewayTxnId       String?
+  gatewayReference   String?
+  paidAmount         Float?
+  paidCurrency       String?
+  createdBy          String    @default("")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  paidAt             DateTime?
+  failedAt           DateTime?
+  expiresAt          DateTime?
+  successEmailSentAt DateTime?
+  failureEmailSentAt DateTime?
+  lastError          String    @default("")
+  rawInquiry         Json?
+  rawCallback        Json?
+  attempts           PaymentLinkAttempt[]
+
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+model PaymentLinkAttempt {
+  id             String      @id @default(cuid())
+  paymentLinkId  String
+  paymentLink    PaymentLink @relation(fields: [paymentLinkId], references: [id], onDelete: Cascade)
+  orderNo        String      @unique
+  amount         Float
+  currency       String      @default("USD")
+  status         String      @default("initiated")
+  paymentPageUrl String      @default("")
+  createdAt      DateTime    @default(now())
+
+  @@index([paymentLinkId])
+}
