@@ -1,8 +1,8 @@
 import { ShieldCheck } from "lucide-react";
+import { BRAND_VOUCHER_LOGO_PATH, brandAsset } from "@/lib/brand";
 
 export function PayLinkPublicShell({
   hotelName,
-  logoUrl,
   children,
 }: {
   hotelName: string;
@@ -15,9 +15,9 @@ export function PayLinkPublicShell({
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-4 py-3.5 sm:px-6 lg:px-12 lg:py-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={logoUrl}
+            src={brandAsset(BRAND_VOUCHER_LOGO_PATH)}
             alt={hotelName}
-            className="h-auto w-[min(100%,10.5rem)] max-w-[190px] object-contain object-left sm:w-[min(100%,15rem)] sm:max-w-[240px]"
+            className="h-auto w-[min(100%,11.5rem)] max-w-[200px] bg-transparent object-contain object-left sm:w-[min(100%,15.5rem)] sm:max-w-[240px]"
           />
           <p className="flex shrink-0 items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-[#6f7a74] sm:text-[11px]">
             <ShieldCheck className="h-3.5 w-3.5 text-[#c5a059]" aria-hidden />

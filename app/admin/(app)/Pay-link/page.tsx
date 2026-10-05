@@ -5,13 +5,12 @@ import {
   Check,
   Copy,
   Loader2,
-  Mail,
-  MessageCircle,
   Trash2,
   X,
 } from "lucide-react";
 import { FileUpload } from "@/components/admin/FileUpload";
-import { computePayLinkQuote, formatUsdAmount, sharePayLinkMessage } from "@/lib/pay-links/money";
+import { computePayLinkQuote, formatUsdAmount } from "@/lib/pay-links/money";
+import { PayLinkShareMenu } from "@/components/pay-links/PayLinkShareMenu";
 
 type PayLink = {
   id: string;
@@ -78,10 +77,6 @@ function statusBadge(status: string) {
       {label[status] || status}
     </span>
   );
-}
-
-function shareMessage(link: PayLink) {
-  return sharePayLinkMessage(link);
 }
 
 export default function AdminPayLinkPage() {
@@ -187,7 +182,6 @@ export default function AdminPayLinkPage() {
     setNotice("Payment link email sent.");
   }
 
-  const createdShare = useMemo(() => (created ? shareMessage(created) : ""), [created]);
   const liveQuote = useMemo(
     () =>
       computePayLinkQuote({
@@ -359,35 +353,15 @@ export default function AdminPayLinkPage() {
             Payment link created
           </p>
           <p className="break-all font-medium text-[#0f2420]">{created.publicUrl}</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <PayLinkShareMenu link={created} />
             <button
               type="button"
               onClick={() => void copy(created.publicUrl, "url")}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#c5a059]/40 bg-white px-4 py-2 text-xs font-medium"
+              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-[#c5a059]/40 bg-white px-4 py-2 text-xs font-medium"
             >
               {copied === "url" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-              Copy Link
-            </button>
-            <a
-              href={`https://wa.me/?text=${encodeURIComponent(createdShare)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-4 py-2 text-xs font-medium text-white"
-            >
-              <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
-            </a>
-            <a
-              href={`mailto:${encodeURIComponent(created.customerEmail || "")}?subject=${encodeURIComponent(`Payment request — ${created.title}`)}&body=${encodeURIComponent(createdShare)}`}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#c5a059]/40 bg-white px-4 py-2 text-xs font-medium"
-            >
-              <Mail className="h-3.5 w-3.5" /> Email
-            </a>
-            <button
-              type="button"
-              onClick={() => void copy(createdShare, "msg")}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#c5a059]/40 bg-white px-4 py-2 text-xs font-medium"
-            >
-              Copy Message
+              {copied === "url" ? "Copied" : "Copy Link"}
             </button>
           </div>
           <div className="flex flex-wrap items-end gap-2">
@@ -461,17 +435,10 @@ export default function AdminPayLinkPage() {
                         <button type="button" className="rounded-md px-2 py-1 text-[11px] text-[#1e5a9a]" onClick={() => setDetail(link)}>
                           {link.paymentStatus === "PAID" ? "Details" : "View / Edit"}
                         </button>
+                        <PayLinkShareMenu link={link} />
                         <button type="button" className="rounded-md px-2 py-1 text-[11px] text-[#1e5a9a]" onClick={() => void copy(link.publicUrl, link.id)}>
-                          Copy
+                          {copied === link.id ? "Copied" : "Copy"}
                         </button>
-                        <a
-                          className="rounded-md px-2 py-1 text-[11px] text-[#1e5a9a]"
-                          href={`https://wa.me/?text=${encodeURIComponent(shareMessage(link))}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Share
-                        </a>
                         {link.paymentStatus !== "PAID" ? (
                           <button
                             type="button"
@@ -529,6 +496,9 @@ export default function AdminPayLinkPage() {
               <div className="flex justify-between"><dt>Approval</dt><dd>{detail.gatewayReference || "—"}</dd></div>
             </dl>
             <p className="mt-4 break-all text-xs text-[#1e5a9a]">{detail.publicUrl}</p>
+            <div className="mt-3">
+              <PayLinkShareMenu link={detail} />
+            </div>
             {detail.paymentStatus !== "PAID" && detail.paymentStatus !== "CANCELLED" ? (
               <form
                 className="mt-5 space-y-3 border-t border-[#c5a059]/20 pt-4"

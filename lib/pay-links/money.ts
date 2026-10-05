@@ -259,27 +259,38 @@ export function sharePayLinkMessage(link: {
   customerName: string;
   title: string;
   publicUrl: string;
+  publicToken?: string;
   cardFeeEnabled?: boolean;
   amountUsd?: unknown;
   subtotalAmountUsd?: unknown;
   cardFeeAmount?: unknown;
   totalAmountUsd?: unknown;
 }): string {
-  const base = formatUsdAmount(link.subtotalAmountUsd ?? link.amountUsd);
   const total = formatUsdAmount(link.totalAmountUsd ?? link.amountUsd);
+  const reference = String(link.publicToken || "").trim();
   const lines = [
+    "Payment Request – Hotel Thamel Park & Spa",
+    "",
     `Hello ${link.customerName},`,
     "",
-    "Please use the secure payment link below to complete your payment to Hotel Thamel Park.",
+    "You have received a payment request from Hotel Thamel Park & Spa.",
     "",
     "Payment:",
     link.title,
     "Amount:",
-    `${base} USD`,
+    `${total} USD`,
   ];
   if (link.cardFeeEnabled) {
-    lines.push("Card Fee:", `${formatUsdAmount(link.cardFeeAmount)} USD`, "Total:", `${total} USD`);
+    lines.push(`Includes card processing fee of ${formatUsdAmount(link.cardFeeAmount)} USD.`);
   }
-  lines.push("Payment Link:", link.publicUrl, "", "Thank you,", "Hotel Thamel Park");
+  lines.push(
+    "Payment Reference:",
+    reference || link.publicUrl,
+    "Please complete your secure payment using the link below:",
+    link.publicUrl,
+    "",
+    "Thank you,",
+    "Hotel Thamel Park & Spa"
+  );
   return lines.join("\n");
 }
