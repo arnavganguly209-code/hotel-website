@@ -208,44 +208,16 @@ header.site-header {
   }
 }
 
+/* First screen is only the hero. Search sits on the bottom edge, so
+   there is no cream gap and no scroll to reach the booking bar.
+   100dvh tracks the visible viewport on phones, laptops, and large monitors. */
 #hero.site-hero {
-  height: clamp(420px, var(--hero-mobile-height, 68svh), 600px);
-}
-
-@media (min-width: 480px) {
-  #hero.site-hero {
-    height: clamp(460px, var(--hero-mobile-height, 70svh), 640px);
-  }
-}
-
-@media (min-width: 1024px) {
-  #hero.site-hero {
-    height: clamp(560px, var(--hero-desktop-height, 74svh), 860px);
-  }
-}
-
-@media (min-width: 1440px) {
-  #hero.site-hero {
-    height: clamp(600px, min(var(--hero-desktop-height, 70svh), 70svh), 940px);
-  }
-}
-
-@media (min-width: 1920px) {
-  #hero.site-hero {
-    height: clamp(640px, 64svh, 1020px);
-  }
-}
-
-@media (min-width: 2560px) {
-  #hero.site-hero {
-    height: clamp(700px, 56svh, 1120px);
-  }
-}
-
-@media (max-height: 760px) and (min-width: 1024px) {
-  #hero.site-hero {
-    height: clamp(500px, 86svh, 620px);
-  }
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
 }
 
 @layer utilities {

@@ -268,8 +268,11 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
         <h1 className="sr-only">Hotel Thamel Park</h1>
 
         {showBooking ? (
-          <div className="pointer-events-none absolute inset-x-0 bottom-[3%] z-20 hidden min-[1180px]:block">
-            <div className="pointer-events-auto mx-auto w-[min(1360px,calc(100%-1.5rem))] xl:w-[min(1480px,calc(100%-2.5rem))] 2xl:w-[min(1640px,calc(100%-4rem))] min-[2400px]:w-[min(1800px,calc(100%-8rem))]">
+          <div
+            className="pointer-events-none absolute inset-x-0 z-20 px-3 min-[375px]:px-4 sm:px-5 min-[1180px]:px-0"
+            style={{ bottom: "max(12px, env(safe-area-inset-bottom))" }}
+          >
+            <div className="pointer-events-auto mx-auto w-full min-[1180px]:w-[min(1360px,calc(100%-1.5rem))] xl:w-[min(1480px,calc(100%-2.5rem))] 2xl:w-[min(1640px,calc(100%-4rem))] min-[2400px]:w-[min(1800px,calc(100%-8rem))]">
               <PremiumFloatingBookingBar
                 rooms={rooms}
                 bookingBar={bookingSettings}
@@ -279,16 +282,6 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
           </div>
         ) : null}
       </section>
-
-      {showBooking ? (
-        <div className="relative z-20 px-3 pb-5 pt-3 min-[375px]:px-4 sm:px-6 min-[1180px]:hidden">
-          <PremiumFloatingBookingBar
-            rooms={rooms}
-            bookingBar={bookingSettings}
-            variant="hero"
-          />
-        </div>
-      ) : null}
     </>
   );
 }
