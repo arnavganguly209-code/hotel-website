@@ -179,7 +179,7 @@ export function SafeImage({
         sizes={sizes}
         loading={priority || !lazy ? "eager" : "lazy"}
         decoding="async"
-        fetchPriority={priority ? "high" : "auto"}
+        fetchPriority={priority ? "high" : "low"}
         className={cn(
           fill && "absolute inset-0 h-full w-full",
           objectFit === "contain" && "object-contain object-center",

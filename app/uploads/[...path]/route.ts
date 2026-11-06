@@ -87,10 +87,16 @@ async function handle(
   }
 
   const etag = `"${Math.trunc(file.mtimeMs).toString(36)}-${file.size.toString(36)}"`;
+  const ext = path.extname(file.absolutePath).toLowerCase();
+  const isImage = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif", ".svg"].includes(ext);
   const headers = new Headers({
     "Content-Type": contentTypeFor(file.absolutePath),
     "Content-Length": String(file.size),
-    "Cache-Control": "public, max-age=30, stale-while-revalidate=60, must-revalidate",
+    // Versioned image URLs (?v=) change when Orbit replaces a file, so a long
+    // cache is safe. Video range responses keep the short header.
+    "Cache-Control": isImage
+      ? "public, max-age=604800, stale-while-revalidate=2592000"
+      : "public, max-age=30, stale-while-revalidate=60, must-revalidate",
     "Last-Modified": new Date(file.mtimeMs).toUTCString(),
     ETag: etag,
     "Accept-Ranges": "bytes",

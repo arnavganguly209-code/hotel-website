@@ -4,6 +4,7 @@ import { getContent } from "@/lib/cms/store";
 import { routes, legalSectionPath, LEGAL_SECTIONS } from "@/lib/navigation";
 import { SITE_URL } from "@/lib/seo";
 import { getRouteSeo, PUBLIC_SEO_PAGES } from "@/lib/seo/page-catalog";
+import { ALT_SEO_PAGES, altPagePath } from "@/lib/seo/alt-pages";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -55,6 +56,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency,
       priority,
+    });
+  }
+
+  for (const page of ALT_SEO_PAGES) {
+    pushUnique(out, {
+      url: `${SITE_URL}${altPagePath(page.slug)}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
     });
   }
 

@@ -75,6 +75,13 @@
     padding-bottom: env(safe-area-inset-bottom, 0);
   }
 
+  /* Skip layout and image decode for sections below the hero until they
+     are near the viewport. The hero video is not a section match here. */
+  main section:not(#hero) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 640px;
+  }
+
   ::selection {
     background-color: rgba(200, 161, 69, 0.25);
     color: #0f2420;

@@ -186,12 +186,13 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Short TTL so Orbit delete/replace never serves stale media from CDN/browser.
+        // Image URLs include ?v= when Orbit replaces a file, so the browser and
+        // CDN can keep the bytes. Hero video is served from /media, not here.
         source: "/uploads/:path*",
         headers: [
           {
             key: "Cache-Control",
-            value: "public, max-age=60, must-revalidate",
+            value: "public, max-age=604800, stale-while-revalidate=2592000",
           },
         ],
       },

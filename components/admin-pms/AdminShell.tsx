@@ -8,6 +8,7 @@ import {
   CalendarOff,
   ClipboardList,
   CreditCard,
+  FileSearch,
   Hash,
   LayoutDashboard,
   Link2,
@@ -47,6 +48,7 @@ const NAV = [
   { href: "/admin/inquiries/meetings", label: "Meetings", icon: Users },
   { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
   { href: "/admin/seo", label: "SEO Dashboard", icon: Search },
+  { href: "/admin/seo-alt", label: "SEO Alt Page", icon: FileSearch },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
