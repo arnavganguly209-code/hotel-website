@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ALT_SEO_PAGES, altPagePath, scoreAltPage } from "@/lib/seo/alt-pages";
 
 export const metadata: Metadata = {
-  title: "SEO Alt Page",
+  title: "Backlink Page",
   robots: { index: false, follow: false },
 };
 
@@ -14,10 +14,10 @@ export default function SeoAltAdminPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <p className="text-[11px] uppercase tracking-[0.25em] text-[#c5a059]">Search</p>
-      <h1 className="mt-1 font-serif text-3xl font-light text-[#0f2420]">SEO Alt Page</h1>
+      <h1 className="mt-1 font-serif text-3xl font-light text-[#0f2420]">Backlink Page</h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#3d5a4c]">
-        These guides are for search. They are not linked from the public menu, homepage, or footer.
-        Each one is indexable, has its own title, description, and questions, and is listed in the XML sitemap.
+        Every SEO guide built for search. These pages are indexable and listed in the sitemap.
+        They are not linked from the public menu, homepage, or footer.
       </p>
       <p className="mt-4 text-sm text-[#0f2420]">
         {ready} of {rows.length} pages at 100%.

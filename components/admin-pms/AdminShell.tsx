@@ -36,6 +36,7 @@ const NAV = [
   { href: "/admin/rooms", label: "Rooms", icon: BedDouble },
   { href: "/admin/units", label: "Room Numbers", icon: Hash },
   { href: "/admin/inventory", label: "Inventory", icon: Warehouse },
+  { href: "/admin/seo-alt", label: "Backlink Page", icon: FileSearch },
   { href: "/admin/inventory-manage", label: "Inventory Manage", icon: Table2 },
   { href: "/admin/blocks", label: "Date Blocking", icon: CalendarOff },
   { href: "/admin/bookings/online", label: "Online Bookings", icon: ClipboardList },
@@ -48,7 +49,6 @@ const NAV = [
   { href: "/admin/inquiries/meetings", label: "Meetings", icon: Users },
   { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
   { href: "/admin/seo", label: "SEO Dashboard", icon: Search },
-  { href: "/admin/seo-alt", label: "SEO Alt Page", icon: FileSearch },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
