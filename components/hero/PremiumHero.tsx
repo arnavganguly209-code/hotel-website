@@ -238,7 +238,7 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
       <section
         ref={sectionRef}
         id="hero"
-        className="relative isolate w-full overflow-visible bg-[#0f1f18] h-[var(--hero-mobile-height)] min-h-[460px] max-h-[720px] lg:h-[var(--hero-desktop-height)] lg:min-h-[680px] lg:max-h-none"
+        className="site-hero relative isolate w-full overflow-hidden bg-[#0f1f18]"
         style={heroStyle}
       >
         <div
@@ -268,8 +268,8 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
         <h1 className="sr-only">Hotel Thamel Park</h1>
 
         {showBooking ? (
-          <div className="pointer-events-none absolute inset-x-0 bottom-[3.5%] z-20 hidden lg:block">
-            <div className="pointer-events-auto mx-auto w-[calc(100%-40px)] max-w-none">
+          <div className="pointer-events-none absolute inset-x-0 bottom-[3%] z-20 hidden min-[1180px]:block">
+            <div className="pointer-events-auto mx-auto w-[min(1360px,calc(100%-1.5rem))] xl:w-[min(1480px,calc(100%-2.5rem))] 2xl:w-[min(1640px,calc(100%-4rem))] min-[2400px]:w-[min(1800px,calc(100%-8rem))]">
               <PremiumFloatingBookingBar
                 rooms={rooms}
                 bookingBar={bookingSettings}
@@ -281,7 +281,7 @@ export function PremiumHero({ hero, rooms }: PremiumHeroProps) {
       </section>
 
       {showBooking ? (
-        <div className="relative z-20 px-4 pb-6 pt-4 sm:px-6 lg:hidden">
+        <div className="relative z-20 px-3 pb-5 pt-3 min-[375px]:px-4 sm:px-6 min-[1180px]:hidden">
           <PremiumFloatingBookingBar
             rooms={rooms}
             bookingBar={bookingSettings}

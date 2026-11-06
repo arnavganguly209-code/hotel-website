@@ -32,7 +32,7 @@ export function LuxurySection({
     <section
       id={id}
       className={cn(
-        "relative overflow-hidden px-6 py-24 md:px-8 md:py-32 lg:py-36",
+        "relative overflow-hidden px-4 py-14 min-[375px]:px-5 sm:px-6 sm:py-16 md:py-20 lg:px-8 lg:py-24 xl:py-28 2xl:py-32",
         variants[variant],
         className
       )}

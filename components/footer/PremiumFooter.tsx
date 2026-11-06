@@ -91,7 +91,7 @@ export function PremiumFooter({ content }: PremiumFooterProps) {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
-            className="grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-x-16 md:gap-y-16 lg:grid-cols-5 lg:gap-x-14 lg:gap-y-0"
+            className="grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-x-10 md:gap-y-12 lg:gap-x-12 xl:grid-cols-5 xl:gap-x-10 2xl:gap-x-14"
           >
             <FooterBrand
               logoSrc={logoSrc}

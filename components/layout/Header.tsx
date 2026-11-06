@@ -86,10 +86,7 @@ export function Header({ header, hotelName }: HeaderProps) {
   const phoneDisplay = header.phone || "";
   const phoneHref = `tel:${phoneDisplay.replace(/[^\d+]/g, "")}`;
   // Luxury slim header: logo ~10% larger, less empty air, bar +~9%.
-  const barHeight = Math.max(70, Math.min(78, header.height || 74));
   const logoWidth = header.logoSize && header.logoSize > 0 ? header.logoSize : 539;
-  // Tight equal top/bottom air — optical center via slight upward nudge on logo.
-  const logoFitH = Math.max(58, barHeight - 8);
   const primaryNav = (
     header.primaryNavItems?.length > 0
       ? header.primaryNavItems
@@ -144,11 +141,8 @@ export function Header({ header, hotelName }: HeaderProps) {
 
   return (
     <>
-      <header className={headerStyle} style={{ height: barHeight, minHeight: barHeight, ...surfaceStyle }}>
-        <div
-          className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-2 px-3 min-[375px]:px-4 sm:gap-3 sm:px-5 lg:gap-5 lg:px-8"
-          style={{ height: barHeight }}
-        >
+      <header className={cn(headerStyle, "site-header")} style={surfaceStyle}>
+        <div className="mx-auto grid h-full w-full max-w-[1680px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 min-[375px]:px-4 sm:gap-3 sm:px-5 lg:gap-4 lg:px-8 xl:max-w-[1760px] 2xl:max-w-[1920px] min-[2400px]:max-w-[2100px] min-[2400px]:px-12">
           <div className="flex h-full min-w-0 shrink-0 items-center">
             <Logo
               variant="light"
@@ -159,14 +153,15 @@ export function Header({ header, hotelName }: HeaderProps) {
               hideText={header.hideText}
               logoSrc={header.logoSrc}
               logoSize={logoWidth}
-              fitHeight={logoFitH}
-              className="min-w-0 -translate-y-[3px]"
+              className="min-w-0"
             />
           </div>
 
-          {showPrimaryNav && (
-            <nav
-              className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-0.5 md:flex lg:gap-1"
+          <nav
+              className={cn(
+                "min-w-0 items-center justify-center gap-0 lg:gap-0.5 xl:gap-1",
+                showPrimaryNav ? "hidden md:flex" : "hidden"
+              )}
               aria-label="Primary"
             >
               {primaryNav.map((item) => {
@@ -185,7 +180,7 @@ export function Header({ header, hotelName }: HeaderProps) {
                     href={isOverview ? routes.home : item.href}
                     onClick={(e) => handlePrimaryClick(e, item)}
                     className={cn(
-                      "group/nav relative whitespace-nowrap px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] lg:px-2.5 lg:text-[11px] xl:px-3 xl:text-[12px]",
+                      "group/nav relative whitespace-nowrap px-1.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] lg:px-2 lg:text-[11px] lg:tracking-[0.1em] xl:px-2.5 xl:text-[12px] xl:tracking-[0.12em] 2xl:px-3 2xl:text-[13px]",
                       "!text-white transition-[color,transform,text-shadow] duration-300 ease-out",
                       "hover:!text-[#E8C56A] hover:scale-[1.03]",
                       "hover:[text-shadow:0_0_18px_rgba(232,197,106,0.55)]",
@@ -205,13 +200,12 @@ export function Header({ header, hotelName }: HeaderProps) {
                 );
               })}
             </nav>
-          )}
 
           <div className="relative z-10 flex h-full shrink-0 items-center justify-end gap-1.5 sm:gap-2">
             {header.showPhone && (
               <motion.a
                 href={phoneHref}
-                className="group/phone relative hidden items-center gap-1.5 rounded-full border border-[#D4AF37]/40 bg-white/[0.08] px-2.5 py-1 text-[11px] font-bold tracking-[0.04em] !text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] md:flex lg:px-3 lg:text-[12px]"
+                className="group/phone relative hidden items-center gap-1.5 rounded-full border border-[#D4AF37]/40 bg-white/[0.08] px-2.5 py-1 text-[11px] font-bold tracking-[0.04em] !text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] xl:flex xl:px-3 xl:text-[12px] 2xl:text-[13px]"
                 aria-label={`Call ${phoneDisplay}`}
                 initial={{ opacity: 0.92, x: 6 }}
                 animate={{ opacity: 1, x: 0 }}

@@ -279,7 +279,7 @@ export function PremiumFloatingBookingBar({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, delay: 0.12, ease: luxuryEase }}
       style={{ ...glassStyle, padding: "3px 5px" }}
-      className="hidden w-full overflow-visible lg:block"
+      className="hidden w-full overflow-visible min-[1180px]:block"
     >
       <div
         className="grid w-full items-stretch"
@@ -290,13 +290,13 @@ export function PremiumFloatingBookingBar({
       >
         {show("checkIn") && (
           <FieldCell
-            id="hero-check-in"
+            id="d-check-in"
             label={settings.labels.checkIn}
             icon={resolveIcon(settings.icons.checkIn)}
             {...cellColors}
           >
             <LuxuryDatePicker
-              id="hero-check-in"
+              id="d-check-in"
               value={checkIn}
               onChange={handleCheckIn}
               preferAbove
@@ -305,13 +305,13 @@ export function PremiumFloatingBookingBar({
         )}
         {show("checkOut") && (
           <FieldCell
-            id="hero-check-out"
+            id="d-check-out"
             label={settings.labels.checkOut}
             icon={resolveIcon(settings.icons.checkOut)}
             {...cellColors}
           >
             <LuxuryDatePicker
-              id="hero-check-out"
+              id="d-check-out"
               value={checkOut}
               onChange={setCheckOut}
               min={checkoutMin}
@@ -321,13 +321,13 @@ export function PremiumFloatingBookingBar({
         )}
         {show("guests") && (
           <FieldCell
-            id="hero-guests"
+            id="d-guests"
             label={settings.labels.guests}
             icon={resolveIcon(settings.icons.guests)}
             {...cellColors}
           >
             <LuxuryNumberStepper
-              id="hero-guests"
+              id="d-guests"
               value={guests}
               onChange={setGuests}
               min={1}
@@ -339,13 +339,13 @@ export function PremiumFloatingBookingBar({
         )}
         {show("children") && (
           <FieldCell
-            id="hero-children"
+            id="d-children"
             label={settings.labels.children}
             icon={resolveIcon(settings.icons.children)}
             {...cellColors}
           >
             <LuxuryNumberStepper
-              id="hero-children"
+              id="d-children"
               value={childrenCount}
               onChange={setChildrenCount}
               min={0}
@@ -356,13 +356,13 @@ export function PremiumFloatingBookingBar({
         )}
         {show("room") && (
           <FieldCell
-            id="hero-room"
+            id="d-room"
             label={settings.labels.room}
             icon={resolveIcon(settings.icons.room)}
             {...cellColors}
           >
             <LuxuryNumberStepper
-              id="hero-room"
+              id="d-room"
               value={roomQuantity}
               onChange={setRoomQuantity}
               min={1}
@@ -373,13 +373,13 @@ export function PremiumFloatingBookingBar({
           </FieldCell>
         )}
         <FieldCell
-          id="hero-promo"
+          id="d-promo"
           label="Promo Code"
           icon={Tag}
           bordered={false}
           {...cellColors}
         >
-          {promoInput("hero-promo")}
+          {promoInput("d-promo")}
         </FieldCell>
         <div className="flex items-center justify-center px-1 py-0.5">
           {submitButton({ tall: true })}
@@ -399,7 +399,7 @@ export function PremiumFloatingBookingBar({
         borderRadius: settings.responsive.mobileRadius || "16px",
         padding: "10px",
       }}
-      className="overflow-visible lg:hidden"
+      className="overflow-visible min-[1180px]:hidden"
     >
       <div className="grid grid-cols-2 gap-2">
         {show("checkIn") && (

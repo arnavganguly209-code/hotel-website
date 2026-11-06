@@ -52,7 +52,7 @@ export function LuxurySplitSection({
         <div className="grid items-stretch gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20">
           <motion.div
             variants={fadeUp}
-            className={`relative min-h-[400px] lg:min-h-[580px] ${imageLeft ? "order-1" : "order-1 lg:order-2"}`}
+            className={`relative min-h-[280px] sm:min-h-[360px] lg:min-h-[460px] xl:min-h-[520px] 2xl:min-h-[580px] ${imageLeft ? "order-1" : "order-1 lg:order-2"}`}
           >
             {media?.imageSrc ? (
               <LuxuryMediaFrame

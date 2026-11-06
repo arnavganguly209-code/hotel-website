@@ -102,9 +102,10 @@ export function Logo({
             blendDarkBackground && "mix-blend-lighten"
           )}
           style={{
-            height: maxH,
+            height: "auto",
+            maxHeight: "var(--logo-max-h, " + maxH + "px)",
             width: "auto",
-            maxWidth: `min(${logoWidth}px, 62vw)`,
+            maxWidth: "var(--logo-max, min(" + logoWidth + "px, 58vw))",
             background: "transparent",
           }}
           priority
